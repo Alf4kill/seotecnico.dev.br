@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Variáveis base ─────────────────────────────────────────────────────────── */
+/* O tema (cores, fonte, spacing) fica em tailwind.config.js.                    */
+/* Mantemos aqui apenas as variáveis referenciadas diretamente neste CSS.        */
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+  --color-primary: #2563EB;
+}
+
+/* ── Reset global ───────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+a {
+  text-decoration: none;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONTAINERS — padrão percentual (baseado em utility.css de referência)
+   Uso: <div class="container"> ou <Container> / <Container variant="xl">
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/*
+  .container     → conteúdo padrão    80% / max 1280px
+  .container-wide → seções largas     80% / max 1600px
+  .container-xl  → header e full-bleed 90% / max 1600px
+*/
+
+.container {
+  width: 80%;
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+.container-wide {
+  width: 80%;
+  max-width: 1600px;
+  margin-inline: auto;
+}
+
+.container-xl {
+  width: 90%;
+  max-width: 1600px;
+  margin-inline: auto;
+}
+
+.container-xxl {
+  width: 95%;
+  max-width: 1600px;
+  margin-inline: auto;
+}
+
+/* Tablet / mobile */
+@media (max-width: 768px) {
+  .container,
+  .container-wide {
+    width: 90%;
+  }
+}
+
+/* Mobile pequeno */
+@media (max-width: 350px) {
+  .container,
+  .container-wide,
+  .container-xl {
+    width: 95%;
+  }
+}
+
+
+/* ── Search dialog ──────────────────────────────────────────────────────────── */
+/* Reset do <dialog> nativo — posicionamento é feito pelo overlay interno       */
+dialog.search-dialog {
+  padding: 0;
+  border: none;
+  background: transparent;
+  margin: 0;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+}
+
+dialog.search-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RICH TEXT — corpo de artigos e guias renderizados a partir de MDX.
+   Uso: <div class="rich-text"><MDXRemote ... /></div>
+   ───────────────────────────────────────────────────────────────────────────── */
+.rich-text {
+  color: var(--foreground);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+.rich-text > :first-child {
+  margin-top: 0;
+}
+.rich-text p {
+  margin: 0 0 0.85em;
+}
+.rich-text h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 1.4em 0 0.5em;
+}
+.rich-text h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 1.3em 0 0.45em;
+}
+.rich-text h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.2em 0 0.4em;
+}
+.rich-text ul {
+  list-style: disc;
+  padding-left: 1.4em;
+  margin: 0 0 0.85em;
+}
+.rich-text ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+  margin: 0 0 0.85em;
+}
+.rich-text li {
+  margin: 0.25em 0;
+}
+.rich-text a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.rich-text blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1em;
+  margin: 0 0 0.85em;
+  color: #6B7280;
+  font-style: italic;
+}
+.rich-text strong {
+  font-weight: 700;
+}
+.rich-text code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.rich-text pre {
+  background: #111827;
+  color: #F9FAFB;
+  padding: 0.9em 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0 0 0.85em;
+}
+.rich-text pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+.rich-text table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 0.85em;
+  font-size: 0.9rem;
+}
+.rich-text th,
+.rich-text td {
+  border: 1px solid #E5E7EB;
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.rich-text th {
+  background: #F9FAFB;
+  font-weight: 600;
+}
+.rich-text hr {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 1.5em 0;
+}
+
+
+/* ── Scrollbar (padrão W3C) ─────────────────────────────────────────────────── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) #f1f1f1;
+}
