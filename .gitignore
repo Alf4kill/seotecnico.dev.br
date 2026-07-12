@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment — never commit secrets
+.env*
+!.env.example
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db

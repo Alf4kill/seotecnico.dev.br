@@ -1,0 +1,58 @@
+import type { Metadata } from 'next'
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
+import { getGuide } from '@/lib/content'
+import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+
+const CANONICAL_PATH = '/guia/seo-tecnico-nextjs'
+
+export function generateMetadata(): Metadata {
+  const { frontmatter } = getGuide()
+  return {
+    title: { absolute: frontmatter.title },
+    description: frontmatter.description,
+    alternates: { canonical: CANONICAL_PATH },
+    openGraph: {
+      type: 'article',
+      publishedTime: frontmatter.datePublished,
+      modifiedTime: frontmatter.dateModified,
+    },
+  }
+}
+
+export default function GuiaPage() {
+  const { frontmatter, content } = getGuide()
+
+  return (
+    <>
+      <ArticleJsonLd frontmatter={frontmatter} path={CANONICAL_PATH} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', path: '/' },
+          { name: 'Guia de SEO técnico para Next.js', path: CANONICAL_PATH },
+        ]}
+      />
+
+      <article className="container max-w-3xl py-12 lg:py-16">
+        <header>
+          <h1 className="font-bold text-foreground text-3xl leading-tight md:text-4xl">
+            {frontmatter.title}
+          </h1>
+          <p className="mt-3 text-sm text-muted">
+            Atualizado em{' '}
+            <time dateTime={frontmatter.dateModified}>
+              {new Date(`${frontmatter.dateModified}T00:00:00`).toLocaleDateString('pt-BR')}
+            </time>
+          </p>
+        </header>
+
+        <div className="rich-text mt-8">
+          <MDXRemote
+            source={content}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          />
+        </div>
+      </article>
+    </>
+  )
+}
