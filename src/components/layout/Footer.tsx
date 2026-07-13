@@ -15,10 +15,11 @@ const LinkedinIcon = () => (
 )
 
 const footerLinks = [
-  { label: 'Guia de SEO técnico', href: '/guia/seo-tecnico-nextjs' },
-  { label: 'Blog',                href: '/blog' },
-  { label: 'Ferramentas',         href: '/ferramentas' },
-  { label: 'Sobre',               href: '/sobre' },
+  { label: 'Guia de SEO técnico',      href: '/guia/seo-tecnico-nextjs' },
+  { label: 'Blog',                     href: '/blog' },
+  { label: 'Ferramentas',              href: '/ferramentas' },
+  { label: 'Sobre',                    href: '/sobre' },
+  { label: 'Política de privacidade',  href: '/politica-de-privacidade' },
 ]
 
 export function Footer() {
