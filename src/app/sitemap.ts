@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/ferramentas`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/sobre`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/politica-de-privacidade`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ]
 
   const posts: MetadataRoute.Sitemap = getAllPosts().map(({ frontmatter }) => ({
