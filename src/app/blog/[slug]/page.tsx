@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm'
 import { getAllPosts, getPostBySlug } from '@/lib/content'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
+import { site } from '@/lib/site'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -80,6 +81,14 @@ export default async function BlogPostPage({ params }: PageProps) {
             options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
           />
         </div>
+
+        <footer className="mt-10 border-t border-gray pt-4">
+          <p className="text-xs text-muted">
+            © {frontmatter.dateModified.slice(0, 4)} {site.author.name}. Todos
+            os direitos reservados. Citações curtas com atribuição e link para
+            o artigo original são bem-vindas.
+          </p>
+        </footer>
       </article>
 
       {frontmatter.faq && frontmatter.faq.length > 0 && (

@@ -3,6 +3,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import { getGuide } from '@/lib/content'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+import { site } from '@/lib/site'
 
 const CANONICAL_PATH = '/guia/seo-tecnico-nextjs'
 
@@ -52,6 +53,14 @@ export default function GuiaPage() {
             options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
           />
         </div>
+
+        <footer className="mt-10 border-t border-gray pt-4">
+          <p className="text-xs text-muted">
+            © {frontmatter.dateModified.slice(0, 4)} {site.author.name}. Todos
+            os direitos reservados. Citações curtas com atribuição e link para
+            o guia original são bem-vindas.
+          </p>
+        </footer>
       </article>
     </>
   )

@@ -18,10 +18,10 @@ export const site = {
   // Preencher URLs públicas quando disponíveis; campos vazios não são
   // renderizados nem incluídos no JSON-LD.
   author: {
-    name: 'Nalpi',
+    name: 'Henrique Lopes Souza',
     jobTitle: 'Technical SEO Engineer',
-    github: '',
-    linkedin: '',
+    github: 'https://github.com/Alf4kill',
+    linkedin: 'https://www.linkedin.com/in/henrique-lopes-souza-028a1215a/',
     email: '',
   },
 } as const

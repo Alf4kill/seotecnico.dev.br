@@ -316,3 +316,45 @@ A page or feature is DONE only when:
 - CMS integrations
 - Content outside the niche (general marketing SEO, news commentary)
 - Anything that doesn't map to an objective in section 3
+
+---
+
+## 14. Repository, secrets & content protection (decisions)
+
+**Repository visibility: PUBLIC — by design.** The public repo is the
+portfolio artifact (§2). Public means read-only for the world: nobody can
+commit without being added as a collaborator; external changes arrive only as
+pull requests that the owner reviews and merges manually. If a collaborator
+is ever added, enable branch protection on `main` (require PR review).
+
+**Secrets hygiene (non-negotiable):**
+- Secrets and API keys live ONLY in Vercel environment variables — never in
+  code, never in the repo. `.gitignore` blocks `.env*`; `.env.example`
+  documents variable NAMES only.
+- Enable GitHub push protection / secret scanning on the repo.
+- If a secret ever lands in a commit: rotate the key immediately; do not rely
+  on history rewriting.
+- No personal email in repo or site. Author contact uses a dedicated site
+  email (to be created), set in `site.ts` → `author.email` (rendered only
+  when non-empty).
+
+**Licensing (split):**
+- Code → MIT (`/LICENSE`).
+- Content (`/content`, images, original data visualizations) → all rights
+  reserved (`/content/LICENSE.md`). Explicitly NOT covered by MIT.
+- Every article/guide page renders a copyright line; the site footer states
+  the split.
+
+**Content copy protection — win attribution, don't block copying:**
+- NEVER add right-click blockers, copy-disabling JS, or text-as-images: they
+  hurt accessibility and SEO and stop nobody.
+- The defenses that work: self-referencing canonicals, `Article` JSON-LD with
+  `datePublished`/`dateModified`, `Person` author schema, byline and internal
+  links inside the content itself, and requesting indexing in GSC immediately
+  on publish (first-indexed wins attribution).
+- Original charts and OG images carry the domain/brand inside the image.
+  Publish aggregated results, not raw datasets.
+- Enforcement against scrapers/republishers: DMCA takedown to the copy's
+  hosting provider + Google's DMCA form (removes the copy from search).
+- Monitoring: Google Alert with a distinctive exact phrase per published
+  article; periodic GSC checks for scraped copies.
