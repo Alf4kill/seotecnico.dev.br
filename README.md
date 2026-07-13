@@ -26,6 +26,14 @@ npm run lint    # eslint
 Copy `.env.example` to `.env.local` for local configuration. The site defaults
 to `noindex` unless `SITE_INDEXABLE=true` is set (production fail-safe).
 
+## Licensing
+
+- **Code** — [MIT](./LICENSE). Learn from it, reuse it, adapt it.
+- **Content** — articles and guides in [`/content`](./content), images, and
+  original data visualizations are **all rights reserved**
+  ([details](./content/LICENSE.md)). Short quotes with attribution and a link
+  to the original are welcome; republishing is not.
+
 ## Project reference
 
 See [CLAUDE.md](./CLAUDE.md) for the full project spec: objectives, site

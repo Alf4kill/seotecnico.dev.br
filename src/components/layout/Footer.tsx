@@ -91,7 +91,9 @@ export function Footer() {
       <div className="border-t border-gray">
         <div className="container py-4">
           <p className="text-xs text-muted">
-            © {year} {site.name} — projeto pessoal e laboratório público de SEO técnico.
+            © {year} {site.name} — projeto pessoal e laboratório público de SEO
+            técnico. Conteúdo e imagens © {site.author.name}, todos os direitos
+            reservados; código-fonte sob licença MIT.
           </p>
         </div>
       </div>
