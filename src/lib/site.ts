@@ -3,6 +3,16 @@
 // Todos os metadados, schemas JSON-LD, header e footer consomem daqui.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Extrai o ID do container GTM (GTM-XXXXXXX) do valor da env var, tolerando que
+ * alguém cole o snippet inteiro do GTM por engano (foi o que aconteceu em
+ * produção). Retorna '' quando não há ID — assim o <GoogleTagManager> não monta,
+ * em vez de pedir um container malformado. Ver docs/gtm-container-setup.md.
+ */
+export function parseGtmId(raw: string | undefined): string {
+  return (raw ?? '').match(/GTM-[A-Z0-9]+/i)?.[0] ?? ''
+}
+
 export const site = {
   // ── Identidade ──────────────────────────────────────────────────────────────
   name: 'SEO Técnico',
@@ -12,7 +22,7 @@ export const site = {
   locale: 'pt_BR',
 
   // ── Analytics / Tracking ────────────────────────────────────────────────────
-  gtmId: process.env.NEXT_PUBLIC_GTM_ID ?? '',
+  gtmId: parseGtmId(process.env.NEXT_PUBLIC_GTM_ID),
 
   // ── Autor (E-E-A-T) ─────────────────────────────────────────────────────────
   // Preencher URLs públicas quando disponíveis; campos vazios não são
