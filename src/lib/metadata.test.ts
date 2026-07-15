@@ -27,6 +27,13 @@ describe('buildMetadata', () => {
     expect(meta.openGraph?.url).toBe(`${BASE}/blog`)
   })
 
+  it('links the RSS feed for autodiscovery on every page', () => {
+    const meta = buildMetadata(page)
+    expect(meta.alternates?.types).toEqual({
+      'application/rss+xml': [{ url: '/feed.xml', title: site.name }],
+    })
+  })
+
   it('always carries siteName and locale (lost on pages that set openGraph)', () => {
     const meta = buildMetadata(page)
     expect(meta.openGraph?.siteName).toBe(site.name)

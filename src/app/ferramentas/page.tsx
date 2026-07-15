@@ -1,5 +1,6 @@
 import { Braces, FileSearch, Gauge } from 'lucide-react'
 import { buildMetadata } from '@/lib/metadata'
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 
 export const metadata = buildMetadata({
   title: 'Ferramentas gratuitas de SEO técnico',
@@ -32,6 +33,13 @@ const ferramentas = [
 export default function FerramentasPage() {
   return (
     <section className="container py-12 lg:py-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', path: '/' },
+          { name: 'Ferramentas', path: '/ferramentas' },
+        ]}
+      />
+
       <h1 className="font-bold text-foreground text-3xl md:text-4xl">
         Ferramentas gratuitas de SEO técnico
       </h1>
