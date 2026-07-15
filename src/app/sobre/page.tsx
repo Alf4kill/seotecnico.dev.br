@@ -1,14 +1,14 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PersonJsonLd } from '@/components/seo/JsonLd'
+import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: 'Sobre o projeto SEO Técnico',
   description:
     'Quem faz o SEO Técnico: um desenvolvedor implementando e medindo SEO técnico em público, com dados reais do Search Console e CrUX.',
-  alternates: { canonical: '/sobre' },
-}
+  path: '/sobre',
+})
 
 export default function SobrePage() {
   return (

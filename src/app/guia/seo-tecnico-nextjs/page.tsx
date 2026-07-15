@@ -3,22 +3,23 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import { getGuide } from '@/lib/content'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
+import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
 const CANONICAL_PATH = '/guia/seo-tecnico-nextjs'
 
 export function generateMetadata(): Metadata {
   const { frontmatter } = getGuide()
-  return {
-    title: { absolute: frontmatter.title },
+  return buildMetadata({
+    title: frontmatter.title,
+    absoluteTitle: true,
     description: frontmatter.description,
-    alternates: { canonical: CANONICAL_PATH },
-    openGraph: {
-      type: 'article',
+    path: CANONICAL_PATH,
+    article: {
       publishedTime: frontmatter.datePublished,
       modifiedTime: frontmatter.dateModified,
     },
-  }
+  })
 }
 
 export default function GuiaPage() {
