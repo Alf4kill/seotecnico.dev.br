@@ -9,6 +9,8 @@ export const metadata = buildMetadata({
   absoluteTitle: true,
   description: site.description,
   path: '/',
+  // A home fica no mesmo segmento de app/opengraph-image.tsx.
+  fileOgImage: true,
 })
 
 const destaques = [

@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       publishedTime: frontmatter.datePublished,
       modifiedTime: frontmatter.dateModified,
     },
+    fileOgImage: true,
   })
 }
 
