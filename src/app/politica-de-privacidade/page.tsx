@@ -1,13 +1,13 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: 'Política de privacidade',
   description:
     'Como o SEO Técnico trata seus dados: analytics somente com consentimento, sem cadastro, sem venda de dados. Transparência conforme a LGPD.',
-  alternates: { canonical: '/politica-de-privacidade' },
-}
+  path: '/politica-de-privacidade',
+})
 
 export default function PoliticaDePrivacidadePage() {
   return (

@@ -1,13 +1,13 @@
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { BuscaResults } from '@/components/search/BuscaResults'
+import { buildMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: 'Busca',
   description: 'Busque artigos, ferramentas e páginas do SEO Técnico.',
-  alternates: { canonical: '/busca' },
-  robots: { index: false, follow: true },
-}
+  path: '/busca',
+  noindex: true,
+})
 
 // Página estática: a query (?q=) é lida no cliente via useSearchParams,
 // dentro de <BuscaResults>, mantendo a rota 100% SSG.
