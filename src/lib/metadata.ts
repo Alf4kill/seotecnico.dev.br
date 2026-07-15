@@ -74,7 +74,14 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      // Autodiscovery do feed em toda página. Precisa estar aqui (e não no
+      // root layout) porque `alternates` da página substitui o herdado.
+      types: {
+        'application/rss+xml': [{ url: '/feed.xml', title: site.name }],
+      },
+    },
     // og:title/og:description/twitter:* são preenchidos pelo Next.js a partir
     // de title/description — aqui só entra o que a herança não cobre.
     openGraph: {
