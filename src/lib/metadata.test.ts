@@ -38,6 +38,18 @@ describe('buildMetadata', () => {
     expect(meta.openGraph).toMatchObject({ type: 'website' })
   })
 
+  it('always sets the brand og:image (pages replace inherited openGraph, so it cannot cascade)', () => {
+    const meta = buildMetadata(page)
+    expect(meta.openGraph?.images).toEqual([
+      { url: '/opengraph-image', width: 1200, height: 630, alt: expect.stringContaining(site.name) },
+    ])
+  })
+
+  it('omits og:image when the segment has its own opengraph-image file', () => {
+    const meta = buildMetadata({ ...page, fileOgImage: true })
+    expect(meta.openGraph).not.toHaveProperty('images')
+  })
+
   it('uses og:type article with timestamps when article dates are given', () => {
     const meta = buildMetadata({
       ...page,

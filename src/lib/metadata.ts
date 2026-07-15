@@ -17,6 +17,12 @@ import { site } from '@/lib/site'
 const TITLE_MAX = 60
 const DESCRIPTION_MAX = 155
 
+// Dimensões/tipo/alt das imagens OG — consumidos pelas rotas opengraph-image
+// e pelo fallback de og:image abaixo (fonte única, módulo sem JSX).
+export const OG_SIZE = { width: 1200, height: 630 }
+export const OG_CONTENT_TYPE = 'image/png'
+export const OG_BRAND_ALT = `${site.name} — SEO técnico para desenvolvedores Next.js`
+
 export interface BuildMetadataInput {
   /** Título da página. Com `absoluteTitle`, ignora o template "%s | SEO Técnico". */
   title: string
@@ -31,6 +37,13 @@ export interface BuildMetadataInput {
   }
   /** Para rotas utilitárias (ex.: /busca) que não devem ser indexadas. */
   noindex?: boolean
+  /**
+   * true ⇒ o segmento tem seu próprio opengraph-image.tsx: o helper não emite
+   * og:image e deixa a file convention preencher (com hash de cache). Config
+   * de página tem prioridade sobre o arquivo do segmento — por isso o padrão
+   * da marca precisa ser suprimido aqui, e não "sobreposto" lá.
+   */
+  fileOgImage?: boolean
 }
 
 /** URL absoluta de um caminho do site; a home fica sem barra final. */
@@ -40,7 +53,7 @@ export function absoluteUrl(path: string): string {
 }
 
 export function buildMetadata(input: BuildMetadataInput): Metadata {
-  const { title, description, path, absoluteTitle, article, noindex } = input
+  const { title, description, path, absoluteTitle, article, noindex, fileOgImage } = input
 
   if (!path.startsWith('/')) {
     throw new Error(`buildMetadata: path deve começar com '/' (recebido: "${path}")`)
@@ -68,6 +81,21 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
       url: absoluteUrl(path),
       siteName: site.name,
       locale: site.locale,
+      // og:image padrão da marca (rota de app/opengraph-image.tsx). Precisa
+      // estar aqui: como este objeto substitui o openGraph herdado, a imagem
+      // do root layout NÃO cascateia para as subpáginas.
+      ...(fileOgImage
+        ? {}
+        : {
+            images: [
+              {
+                url: '/opengraph-image',
+                width: OG_SIZE.width,
+                height: OG_SIZE.height,
+                alt: OG_BRAND_ALT,
+              },
+            ],
+          }),
       ...(article
         ? {
             type: 'article',
