@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 
 export const metadata = buildMetadata({
   title: 'Política de privacidade',
@@ -12,6 +13,13 @@ export const metadata = buildMetadata({
 export default function PoliticaDePrivacidadePage() {
   return (
     <section className="container max-w-3xl py-12 lg:py-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', path: '/' },
+          { name: 'Política de privacidade', path: '/politica-de-privacidade' },
+        ]}
+      />
+
       <h1 className="font-bold text-foreground text-3xl md:text-4xl">
         Política de privacidade
       </h1>

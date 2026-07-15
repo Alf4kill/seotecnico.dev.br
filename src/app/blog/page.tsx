@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { getAllPosts } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 
 export const metadata = buildMetadata({
   title: 'Blog de SEO técnico para Next.js',
@@ -15,6 +16,13 @@ export default function BlogPage() {
 
   return (
     <section className="container py-12 lg:py-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', path: '/' },
+          { name: 'Blog', path: '/blog' },
+        ]}
+      />
+
       <h1 className="font-bold text-foreground text-3xl md:text-4xl">
         Blog de SEO técnico
       </h1>
