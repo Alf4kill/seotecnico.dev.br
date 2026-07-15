@@ -1,12 +1,12 @@
-import type { Metadata } from 'next'
 import { Braces, FileSearch, Gauge } from 'lucide-react'
+import { buildMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: 'Ferramentas gratuitas de SEO técnico',
   description:
     'Ferramentas gratuitas de SEO para desenvolvedores: gerador de JSON-LD, validador de meta tags e checador de Core Web Vitals. Sem login.',
-  alternates: { canonical: '/ferramentas' },
-}
+  path: '/ferramentas',
+})
 
 const ferramentas = [
   {

@@ -1,14 +1,15 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, BookOpen, Wrench, FlaskConical } from 'lucide-react'
 import { WebSiteJsonLd, PersonJsonLd } from '@/components/seo/JsonLd'
+import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
-export const metadata: Metadata = {
-  title: { absolute: 'SEO Técnico: guias e ferramentas de SEO para Next.js' },
+export const metadata = buildMetadata({
+  title: 'SEO Técnico: guias e ferramentas de SEO para Next.js',
+  absoluteTitle: true,
   description: site.description,
-  alternates: { canonical: '/' },
-}
+  path: '/',
+})
 
 const destaques = [
   {
