@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { PersonJsonLd } from '@/components/seo/JsonLd'
+import { PersonJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
@@ -14,6 +14,12 @@ export default function SobrePage() {
   return (
     <>
       <PersonJsonLd />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', path: '/' },
+          { name: 'Sobre', path: '/sobre' },
+        ]}
+      />
 
       <section className="container max-w-3xl py-12 lg:py-16">
         <h1 className="font-bold text-foreground text-3xl md:text-4xl">
