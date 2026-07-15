@@ -42,11 +42,12 @@ export const metadata: Metadata = {
     index: indexable,
     follow: indexable,
   },
+  // Sem `url` aqui: og:url é sempre definido por página via buildMetadata
+  // (um url estático no root era herdado e apontava toda subpágina à home).
   openGraph: {
     type: 'website',
     locale: site.locale,
     siteName: site.name,
-    url: site.url,
   },
   twitter: {
     card: 'summary_large_image',

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import { getAllPosts, getPostBySlug } from '@/lib/content'
+import { buildMetadata } from '@/lib/metadata'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
 import { site } from '@/lib/site'
@@ -24,16 +25,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!post) return {}
 
   const { frontmatter } = post
-  return {
-    title: { absolute: frontmatter.title },
+  return buildMetadata({
+    title: frontmatter.title,
+    absoluteTitle: true,
     description: frontmatter.description,
-    alternates: { canonical: `/blog/${frontmatter.slug}` },
-    openGraph: {
-      type: 'article',
+    path: `/blog/${frontmatter.slug}`,
+    article: {
       publishedTime: frontmatter.datePublished,
       modifiedTime: frontmatter.dateModified,
     },
-  }
+  })
 }
 
 export default async function BlogPostPage({ params }: PageProps) {

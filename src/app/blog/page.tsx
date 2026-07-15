@@ -1,14 +1,14 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { getAllPosts } from '@/lib/content'
+import { buildMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: 'Blog de SEO técnico para Next.js',
   description:
     'Artigos práticos de SEO técnico para desenvolvedores Next.js: Metadata API, JSON-LD, sitemaps, Core Web Vitals e experimentos medidos.',
-  alternates: { canonical: '/blog' },
-}
+  path: '/blog',
+})
 
 export default function BlogPage() {
   const posts = getAllPosts()
