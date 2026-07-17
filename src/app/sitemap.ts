@@ -12,6 +12,12 @@ import { getAllPosts, getGuide } from '@/lib/content'
 
 const toDate = (d: string) => new Date(`${d}T00:00:00`)
 
+// Ativos de imagem por artigo, declarados no image sitemap (diagramas
+// exportados de /public — os "ativos de link" do cluster).
+const postImages: Record<string, string[]> = {
+  'melhorar-lcp-nextjs': ['/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp'],
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = site.url.replace(/\/$/, '')
   const guide = getGuide()
@@ -42,6 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: toDate(frontmatter.dateModified),
     changeFrequency: 'monthly',
     priority: 0.7,
+    images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
   }))
 
   return [...staticPages, ...postPages]
