@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
 import { getAllPosts, getPostBySlug } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
+import { mdxOptions } from '@/lib/mdx'
+import { mdxComponents } from '@/components/mdx/mdx-components'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
 import { site } from '@/lib/site'
@@ -78,13 +79,12 @@ export default async function BlogPostPage({ params }: PageProps) {
         </header>
 
         <div className="rich-text mt-8">
-          <MDXRemote
-            source={content}
-            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
-          />
+          <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />
         </div>
 
-        <footer className="mt-10 border-t border-gray pt-4">
+        {/* id estável: alvo do trigger de element visibility do evento
+            `article_read` no GTM (docs/measurement-plan.md). */}
+        <footer id="article-end" className="mt-10 border-t border-gray pt-4">
           <p className="text-xs text-muted">
             © {frontmatter.dateModified.slice(0, 4)} {site.author.name}. Todos
             os direitos reservados. Citações curtas com atribuição e link para
