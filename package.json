@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:seo": "playwright test",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.6",
@@ -22,6 +24,8 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
