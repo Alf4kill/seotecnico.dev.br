@@ -3,7 +3,7 @@ title: 'Como melhorar o LCP no Next.js: guia pelas 4 subpartes'
 description: 'Guia prático para melhorar o LCP no Next.js: diagnóstico pelas 4 subpartes, preload no next/image (v16), next/font e verificação no PSI e CrUX.'
 slug: melhorar-lcp-nextjs
 datePublished: '2026-07-17'
-dateModified: '2026-07-17'
+dateModified: '2026-07-18'
 primaryQuery: 'melhorar lcp next.js'
 lang: pt-BR
 faq:
@@ -128,8 +128,8 @@ Duas pegadinhas que eu sempre confiro:
   Google avalia mobile primeiro.
 - **O elemento pode mudar durante o carregamento.** Se algo re-renderiza
   maior depois (hidratação, slider), o LCP é remarcado para esse momento.
-  Esse tipo de armadilha vai render um artigo próprio no cluster, sobre os
-  erros que impedem o LCP de melhorar.
+  Esse tipo de armadilha tem artigo próprio no cluster, sobre os
+  [erros que impedem o LCP de melhorar](/blog/lcp-alto-next-js).
 
 Com o elemento identificado, a pergunta vira: onde o tempo está indo?
 
@@ -250,8 +250,8 @@ principal terminar. Ele lê **markup, não CSS nem JavaScript**
 Uma `<img>` no HTML da resposta é descoberta imediatamente; uma imagem que
 só existe dentro de um CSS ou depois de um script executar, não. Os padrões
 invisíveis ao scanner (background-image, hero atrás de `"use client"`,
-cadeias de `@import`) merecem um artigo inteiro dedicado — será o próximo
-do cluster.
+cadeias de `@import`) merecem um artigo inteiro dedicado — o catálogo está
+em [por que o LCP não melhora mesmo depois de otimizar](/blog/lcp-alto-next-js).
 
 Garantida a descoberta, o segundo passo é **prioridade**. No Next.js 16:
 
@@ -385,8 +385,8 @@ Quando houver dados de campo numa janela estatisticamente útil, atualizo
 esta seção com a medição.
 
 Outras causas de render delay — fade-in no hero, anti-flicker de A/B
-testing, cadeias de `@import` — são anti-patterns, e ficam para o próximo
-artigo do cluster, sobre os erros que seguram o LCP.
+testing, cadeias de `@import` — são anti-patterns, e estão catalogadas no
+artigo do cluster sobre os [erros que seguram o LCP](/blog/lcp-alto-next-js).
 
 ## Quando o elemento LCP não é imagem
 

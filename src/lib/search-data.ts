@@ -70,6 +70,14 @@ export const searchData: SearchItem[] = [
     category: 'artigo',
     keywords: ['lcp', 'core web vitals', 'cwv', 'performance', 'preload', 'next/image', 'next/font', 'ttfb', 'render delay'],
   },
+  {
+    id: 'artigo-lcp-alto-next-js',
+    title: 'LCP alto no Next.js: os erros que impedem de melhorar',
+    description: 'Background-image invisível ao scanner, render delay auto-infligido e preload pela culatra',
+    href: '/blog/lcp-alto-next-js',
+    category: 'artigo',
+    keywords: ['lcp alto', 'lcp', 'preload scanner', 'background-image', 'use client', 'render delay', 'fade-in', 'anti-flicker', '@import', 'preload', 'skeleton', 'hidratação'],
+  },
 
   // ── Ferramentas (em breve — apontam para o índice até serem lançadas) ───
   {
