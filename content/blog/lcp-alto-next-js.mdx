@@ -1,0 +1,393 @@
+---
+title: 'LCP alto no Next.js: os erros que impedem de melhorar'
+description: 'Por que o LCP continua alto no Next.js mesmo depois de otimizar: background-image invisível ao scanner, render delay auto-infligido e preload pela culatra.'
+slug: lcp-alto-next-js
+datePublished: '2026-07-18'
+dateModified: '2026-07-18'
+primaryQuery: 'lcp alto next.js'
+lang: pt-BR
+faq:
+  - question: 'Otimizei tudo e o LCP do meu Next.js não melhora. Por quê?'
+    answer: >-
+      Quase sempre é um recurso que o preload scanner não enxerga: um
+      background-image em CSS, um hero atrás de use client, ou uma cadeia de
+      import que serializa o CSS. Também pode ser render delay que você mesmo
+      criou (fade-in, anti-flicker de A/B) ou preload demais competindo por
+      banda. O caminho é abrir o DevTools, confirmar qual elemento é o LCP e em
+      que fase o tempo está indo, antes de mexer no código.
+  - question: 'Troquei tudo por next/image e o LCP continua alto. O que faltou?'
+    answer: >-
+      O next/image não toca em background-image de CSS. Se o seu hero é um
+      background definido em CSS, o navegador só o descobre depois de montar o
+      DOM, e o audit de imagens do Lighthouse passa verde porque não há img mal
+      configurada na página. A correção é mover o hero para uma img real acima da
+      dobra, com fetchPriority alto.
+  - question: 'Adicionei preload no hero e o LCP piorou. Faz sentido?'
+    answer: >-
+      Faz. Preload diz ao navegador que o recurso é urgente; se vários recursos
+      são marcados como urgentes, eles competem por banda e o LCP real chega mais
+      tarde. A regra é preloadar só o elemento LCP. No caso de fonte, preload só
+      ajuda quando a fonte é o gargalo real; quando o LCP é texto e a fonte já
+      usa display optional, o preload da fonte só atrapalha.
+  - question: 'Meu elemento LCP é um texto, não uma imagem. Como corrijo?'
+    answer: >-
+      LCP de texto costuma travar em CSS render-blocking e na fonte no caminho
+      crítico. Embutir o CSS crítico no HTML remove um request da frente da
+      pintura, e carregar a fonte com display optional deixa o navegador pintar
+      com a fonte de sistema em vez de esperar a fonte web. No Next.js isso é
+      feito com next/font e inline do CSS crítico.
+  - question: 'No Next.js 16 uso priority ou preload na imagem?'
+    answer: >-
+      A prop priority foi depreciada no Next.js 16 em favor de preload, e para a
+      maioria dos casos a recomendação passou a ser loading eager ou
+      fetchPriority high. Material antigo ainda ensina priority, que não existe
+      mais. O objetivo continua o mesmo: garantir que o navegador descubra e
+      priorize o recurso LCP cedo.
+  - question: 'O LCP está bom no PageSpeed mas ruim no campo. Em qual acreditar?'
+    answer: >-
+      Nos dois, para coisas diferentes. O PageSpeed roda um teste de laboratório,
+      simulado e consistente, bom para diagnosticar. Os dados de campo (CrUX,
+      RUM) medem usuários reais em redes e dispositivos variados, e são o que o
+      Google usa para ranquear. Use o lab para achar e corrigir o problema, e o
+      campo para confirmar que a correção chegou aos usuários.
+---
+
+Se o LCP do seu Next.js continua alto mesmo depois de trocar tudo por `next/image`
+e marcar o hero como prioritário, o culpado quase nunca é o que o Lighthouse
+aponta. Costuma ser um padrão que esconde o recurso do preload scanner — um
+`background-image` em CSS, um hero atrás de `"use client"` —, um render delay que
+você mesmo criou com uma animação ou um script de A/B, ou um preload que compete
+por banda e atrasa justamente o elemento que deveria acelerar. O hub do cluster
+ensina [como o LCP se divide em fases e como corrigir cada uma](/blog/melhorar-lcp-nextjs);
+este artigo é o outro lado do problema: por que ele **não melhora** depois de
+você já ter otimizado. Cada seção abaixo é um erro — o sintoma que aparece no
+PageSpeed Insights ou na waterfall, o mecanismo por trás dele, e o que fazer.
+
+## O `next/image` não conserta um hero em `background-image`
+
+O sintoma é frustrante justamente porque tudo parece certo: você trocou cada
+imagem por `next/image`, o audit de imagens do Lighthouse está todo verde, e o
+LCP continua alto. Na maioria dos diagnósticos que eu faço, quando o audit passa
+mas o LCP não melhora, o elemento LCP é um `background-image` de CSS — e o
+`next/image` não toca nele.
+
+O mecanismo está no preload scanner. Antes de montar o DOM, o navegador roda um
+parser secundário que lê o HTML cru procurando recursos para baixar cedo. Ele
+enxerga o que está declarado no markup — uma `<img>` com `src`, um
+`<link rel="preload">` no `head`. Um `background-image` mora no CSS, não no
+markup, então o scanner nunca chega a vê-lo: o download só é enfileirado depois
+que o navegador constrói o DOM, aplica os estilos e descobre que aquele elemento
+precisa de uma imagem. Descoberta tardia vira LCP alto, e o audit de imagens não
+acusa nada porque, do ponto de vista dele, não há `<img>` mal configurada
+na página.
+
+<figure>
+  <svg viewBox="0 0 680 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="O que o preload scanner enxerga no markup e o que fica invisível para ele">
+    <title>O que o preload scanner vê e o que fica invisível</title>
+    <desc>O preload scanner lê o HTML inicial e descobre cedo recursos declarados no markup, como uma tag img com src. Recursos escondidos em CSS ou atrás de JavaScript de cliente ficam invisíveis e só são descobertos tarde, depois de o navegador construir o DOM.</desc>
+    <text x="20" y="30" fontSize="15" fontWeight="500" fill="var(--foreground, #111827)">O que o preload scanner enxerga no markup inicial</text>
+    <text x="20" y="50" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">Ele lê o HTML antes do DOM. Só descobre cedo o que está declarado no markup.</text>
+    <rect x="20" y="68" width="180" height="52" rx="8" fill="var(--background, #ffffff)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="110" y="90" fontSize="14" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">HTML inicial chega</text>
+    <text x="110" y="108" fontSize="12" textAnchor="middle" fill="var(--color-diagram-axis, #9CA3AF)">antes do DOM montar</text>
+    <line x1="200" y1="94" x2="248" y2="94" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="250" y="68" width="180" height="52" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="340" y="90" fontSize="14" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Preload scanner</text>
+    <text x="340" y="108" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">varre o markup</text>
+    <line x1="340" y1="120" x2="340" y2="150" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="20" y="158" width="300" height="120" rx="12" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="40" y="184" fontSize="14" fontWeight="500" fill="var(--foreground, #111827)">Visível → descoberto cedo</text>
+    <text x="40" y="210" fontSize="12" fill="var(--foreground, #111827)">img com src no markup</text>
+    <text x="40" y="234" fontSize="12" fill="var(--foreground, #111827)">link rel=preload no head</text>
+    <rect x="360" y="158" width="300" height="120" rx="12" fill="var(--color-accent, #F59E0B)" fillOpacity="0.15" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="380" y="184" fontSize="14" fontWeight="500" fill="var(--foreground, #111827)">Invisível → descoberto tarde</text>
+    <text x="380" y="210" fontSize="12" fill="var(--foreground, #111827)">background-image em CSS</text>
+    <text x="380" y="234" fontSize="12" fill="var(--foreground, #111827)">hero atrás de "use client"</text>
+    <line x1="170" y1="278" x2="170" y2="320" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <line x1="510" y1="278" x2="510" y2="320" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="40" y="328" width="260" height="44" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="170" y="352" fontSize="14" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Baixa junto com o HTML</text>
+    <rect x="380" y="328" width="260" height="44" rx="8" fill="var(--color-accent, #F59E0B)" fillOpacity="0.15" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="510" y="352" fontSize="14" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Só baixa após o DOM/JS</text>
+    <rect x="20" y="396" width="640" height="58" rx="12" fill="var(--color-accent, #F59E0B)" fillOpacity="0.12" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="44" y="422" fontSize="12" fill="var(--foreground, #111827)">É por isso que trocar tudo por next/image não resolve um hero em background-image:</text>
+    <text x="44" y="442" fontSize="12" fill="var(--foreground, #111827)">o scanner nunca chega a vê-lo. Mover para img real devolve a descoberta cedo.</text>
+  </svg>
+  <figcaption>
+    O preload scanner descobre cedo só o que está no markup; recursos em CSS
+    ou atrás de client component ficam invisíveis para ele.
+  </figcaption>
+</figure>
+
+| O scanner vê (descoberto cedo) | O scanner não vê (descoberto tarde) |
+|---|---|
+| `<img>` com `src` no markup | `background-image` em CSS |
+| `<link rel="preload">` no `head` | hero atrás de `"use client"` |
+| baixa junto com o HTML | só baixa depois do DOM/JS |
+
+O fix é mover o hero de volta para o markup. Troque o `background-image` por uma
+`<img>` real acima da dobra — no Next.js, um `next/image` com a imagem
+declarada no JSX:
+
+```tsx
+// app/(marketing)/hero.tsx
+import Image from 'next/image'
+
+export function Hero() {
+  return (
+    <section className="hero">
+      <Image
+        src="/hero.webp"
+        alt="..."
+        width={1600}
+        height={900}
+        preload
+      />
+    </section>
+  )
+}
+```
+
+Duas coisas mudaram no Next.js 16 e valem a correção mental: a prop `priority`
+foi depreciada em favor de `preload`, e para a maioria dos casos a recomendação
+passou a ser `loading="eager"` ou `fetchPriority="high"` em vez do preload
+explícito. O efeito prático é o mesmo — devolver a descoberta cedo que o
+`background-image` tinha tirado —, mas boa parte do material que ainda rankeia
+para essa dúvida ensina `priority`, que já não existe. Se você precisa mesmo de
+um plano de fundo (uma textura decorativa atrás do conteúdo, por exemplo), a
+saída é preloadar o recurso à mão com um `<link rel="preload" as="image">`
+no `head` — mas isso só vale quando aquele fundo é de fato o elemento LCP.
+
+## Hero atrás de `"use client"`: descoberto tarde demais
+
+Aqui o audit também passa, mas por outro motivo: a `<img>` existe no JSX,
+só que dentro de um componente marcado com `"use client"`. O sintoma no trace é
+um hero que só aparece depois da hidratação, com o LCP marcado bem além do que o
+filmstrip sugere.
+
+O mecanismo é o mesmo do caso anterior, por um caminho diferente. Se o hero só
+passa a existir depois que o client component monta no navegador, o HTML inicial
+que o scanner lê não contém aquela `<img>`. O recurso vira invisível para a
+descoberta cedo — não porque está no CSS, mas porque está atrás de JavaScript que
+ainda não rodou. O componente pode até renderizar no servidor por padrão, mas se
+a imagem depende de estado de cliente (um valor de `useState`, um cálculo de
+viewport, um dado que só chega após a montagem), o markup que sai do SSR não a
+inclui.
+
+O fix é manter o elemento LCP no server component. Renderize o hero no servidor,
+com a `src` resolvida em tempo de build ou de request, e isole a interatividade
+numa ilha menor — um botão, um controle — em vez de embrulhar o hero inteiro em
+`"use client"`. O hub trata a mecânica de descoberta cedo em detalhe na seção
+sobre [o navegador precisar achar a imagem cedo](/blog/melhorar-lcp-nextjs#resource-load-delay-o-navegador-precisa-descobrir-a-imagem-cedo);
+aqui o ponto é reconhecer o padrão: se o hero depende de cliente, o scanner não o vê.
+
+## Cadeia de `@import`: o CSS que baixa em série
+
+O último padrão de descoberta tardia não é uma imagem, é o próprio CSS. O sintoma
+aparece na waterfall: requests de folha de estilo em cascata, cada um começando
+só quando o anterior termina, empurrando o first paint para o fim da fila.
+
+O mecanismo é como o `@import` funciona. Um `@import` dentro de um arquivo CSS só
+é descoberto depois que o arquivo que o contém termina de baixar e ser
+interpretado. Encadear imports — um CSS que importa um tema, que importa as
+fontes — serializa os downloads: nada baixa em paralelo, tudo espera a vez. E
+como o navegador precisa do CSS para pintar, essa cascata atrasa diretamente o
+render do elemento LCP, seja ele imagem ou texto.
+
+<figure>
+  <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparação de requests CSS em série com @import encadeado versus em paralelo com links no head">
+    <title>Cadeia de @import: requests em série vs. em paralelo</title>
+    <desc>Com @import encadeado, cada arquivo CSS só começa a baixar depois que o anterior termina, formando uma cascata em série que atrasa o first paint. Com links paralelos no head, os arquivos baixam ao mesmo tempo e terminam muito antes.</desc>
+    <text x="20" y="30" fontSize="15" fontWeight="500" fill="var(--foreground, #111827)">Cadeia de @import vs. links paralelos</text>
+    <text x="20" y="50" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">Cada barra é um request CSS. Eixo horizontal = tempo.</text>
+    <text x="20" y="84" fontSize="14" fontWeight="500" fill="var(--foreground, #111827)">Em série (@import encadeado)</text>
+    <rect x="20" y="96" width="150" height="22" rx="4" fill="var(--color-accent, #F59E0B)" fillOpacity="0.3" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="28" y="111" fontSize="12" fill="var(--foreground, #111827)">base.css</text>
+    <rect x="170" y="124" width="150" height="22" rx="4" fill="var(--color-accent, #F59E0B)" fillOpacity="0.3" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="178" y="139" fontSize="12" fill="var(--foreground, #111827)">@import theme.css</text>
+    <rect x="320" y="152" width="150" height="22" rx="4" fill="var(--color-accent, #F59E0B)" fillOpacity="0.3" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="328" y="167" fontSize="12" fill="var(--foreground, #111827)">@import fonts.css</text>
+    <line x1="470" y1="110" x2="470" y2="194" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" strokeDasharray="3 3" />
+    <text x="476" y="186" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">first paint tarde</text>
+    <text x="20" y="226" fontSize="14" fontWeight="500" fill="var(--foreground, #111827)">Em paralelo (links no head)</text>
+    <rect x="20" y="238" width="150" height="22" rx="4" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="28" y="253" fontSize="12" fill="var(--foreground, #111827)">base.css</text>
+    <rect x="20" y="266" width="150" height="22" rx="4" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="28" y="281" fontSize="12" fill="var(--foreground, #111827)">theme.css</text>
+    <rect x="20" y="294" width="150" height="22" rx="4" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="28" y="309" fontSize="12" fill="var(--foreground, #111827)">fonts.css</text>
+    <line x1="170" y1="232" x2="170" y2="320" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" strokeDasharray="3 3" />
+    <text x="176" y="276" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">first paint cedo</text>
+  </svg>
+  <figcaption>
+    @import encadeado serializa os downloads de CSS; links paralelos no head
+    baixam tudo de uma vez.
+  </figcaption>
+</figure>
+
+O fix é achatar a cadeia. Troque os `@import` encadeados por `<link>`
+paralelos no `head`, ou deixe o bundler resolver os imports em tempo de build
+para que o CSS chegue num único request em vez de uma sequência. No Next.js, os
+estilos importados nos seus componentes já entram nesse caminho otimizado; a
+armadilha costuma estar em CSS de terceiros ou legado que ainda usa `@import` para
+puxar dependências. Vale abrir a waterfall e conferir: se houver folhas de estilo
+esperando umas pelas outras, é aí que o first paint está preso.
+
+## Fade-in no hero: o LCP não conta até a animação terminar
+
+Este é o primeiro dos render delays que você inflige em si mesmo. O sintoma é
+enganoso: o elemento aparece rápido no filmstrip, mas o LCP é marcado bem depois.
+Nada está lento para baixar — o problema é quando o navegador considera o
+elemento "pintado".
+
+O mecanismo é a definição de LCP. O navegador não conta o elemento como pintado
+enquanto ele não estiver visível de verdade, e um elemento com `opacity: 0` que
+sobe para `1` numa animação de entrada só fica visível quando a animação termina.
+Se o seu hero tem um fade-in de meio segundo, você adicionou meio segundo de
+render delay ao LCP — mesmo que a imagem já estivesse na tela, transparente, o
+tempo todo.
+
+O fix é não animar a `opacity` do elemento LCP. Se o efeito de entrada importa
+para o design, anime outra coisa — um elemento vizinho, um detalhe secundário —
+e deixe o hero pintar imediatamente. O hub cobre a fase de
+[render delay em detalhe](/blog/melhorar-lcp-nextjs#element-render-delay-a-imagem-chegou-falta-pintar);
+o padrão a reconhecer aqui é que uma animação bonita no elemento errado custa LCP.
+
+## Snippet anti-flicker de A/B testing: render bloqueado de propósito
+
+Se você roda testes A/B com uma ferramenta que injeta um snippet no `head`, pode
+ter importado um render delay sem perceber. O sintoma é um render delay alto com
+o corpo da página escondido nos primeiros instantes do carregamento.
+
+O mecanismo é intencional, e é aí que mora a armadilha. Ferramentas de
+experimento escondem a página — tipicamente com `opacity: 0` ou
+`visibility: hidden` no `<body>` — até o script decidir qual variante mostrar,
+para o usuário não ver a versão original "piscar" antes da variante. Esse
+anti-flicker bloqueia a pintura de tudo, inclusive do elemento LCP, por design.
+Quanto mais o script demora, mais longo o render delay.
+
+O fix depende de quanto você controla a ferramenta. O caminho mais seguro é
+carregar o experimento no servidor ou o mais cedo possível de forma assíncrona,
+com um timeout curto de anti-flicker para a página não ficar refém de um script
+lento. Onde o teste não é crítico para o above-the-fold, tirar o snippet do
+caminho de render do hero elimina o problema. O princípio é o mesmo do fade-in:
+nada que esconde o elemento LCP deve estar no caminho crítico.
+
+## CSS render-blocking + fonte no caminho crítico: o LCP de texto
+
+Nem todo LCP é imagem — e quando é texto, a conversa muda de lugar. O sintoma é
+um LCP alto num elemento que não tem nada para baixar: um parágrafo, um título.
+Aqui a otimização de imagem não ajuda, porque o gargalo é o CSS e a fonte
+segurando a pintura do texto.
+
+Este é o caso que eu medi no próprio site, e uso como exemplo porque o
+antes/depois é limpo. A home tinha o LCP num parágrafo do hero, com PageSpeed
+Insights mobile em 78 e LCP de 4,9s — um render delay de 1.280ms. Dois fixes
+resolveram: inline do CSS crítico (via `experimental.inlineCss` no config) e a
+fonte Inter carregada com `display: 'optional'` e `preload: false`, tirando o
+woff2 do caminho crítico. O resultado, medido depois do deploy, foi PSI mobile
+100, LCP de 0,9s, render delay de 530ms e CLS zero.
+
+<figure>
+  <Image
+    src="/images/blog/lcp-alto-next-js/psi-render-delay-antes-depois.webp"
+    alt="Comparação do insight Detalhamento da LCP no PageSpeed Insights para a home do seotecnico.dev.br: antes, com Performance 78 e LCP de 4,9 segundos, o atraso na renderização do elemento era de 1.280 ms; depois do fix, com Performance 100 e LCP de 0,9 segundos, caiu para 530 ms — os dois valores destacados por caixas laranja"
+    width="1600"
+    height="486"
+  />
+  <figcaption>
+    O mesmo insight do PSI, antes e depois do fix: o render delay caiu de
+    1.280 ms para 530 ms — e a home foi de Performance 78 / LCP 4,9 s para
+    100 / 0,9 s.
+  </figcaption>
+</figure>
+
+O mecanismo dos dois fixes é o mesmo: tirar bloqueios do caminho até o primeiro
+paint do texto. CSS externo é render-blocking — o navegador não pinta até baixar
+e interpretar a folha de estilo —, então embutir o CSS crítico no HTML remove um
+request inteiro da frente da pintura. E uma fonte no caminho crítico segura o
+texto pelo mesmo motivo: com `display: 'optional'`, o navegador desiste de
+esperar a fonte web e pinta com a fonte de sistema, sem bloquear. No Next.js, o
+`next/font` é o caminho para isso — a nuance é que `display: 'swap'` ainda deixa
+uma janela de troca; `'optional'` é o que corta o bloqueio quando o LCP é texto.
+Vale a ressalva: essas magnitudes são de uma medição minha, num site específico;
+o seu número vai depender do seu CSS e das suas fontes. O que se transfere é o
+mecanismo, não o "4,9s vira 0,9s".
+
+## Hidratação, sliders e skeletons: o LCP remarcado pra frente
+
+Há uma classe de erro em que o LCP não está alto por lentidão, mas porque foi
+**remarcado**. O sintoma é um LCP pior do que o filmstrip faz parecer: a página
+aparece pronta, e ainda assim o número reportado é tardio.
+
+O mecanismo é que o elemento LCP pode mudar durante o carregamento. O LCP não é
+travado no primeiro paint — se algo re-renderiza um elemento maior depois, o
+navegador remarca o LCP para esse momento posterior. Um carrossel que troca o
+slide após a hidratação, um skeleton que é substituído por um conteúdo maior, um
+bloco que só assume o tamanho final quando o JavaScript roda: em todos, o "maior
+elemento" aparece tarde, e o LCP acompanha.
+
+O fix é estabilizar o elemento LCP antes da hidratação. Renderize o hero já no
+seu tamanho final no SSR, para que o maior elemento não troque depois que o
+cliente assume. Se você usa skeleton, dimensione-o igual ao conteúdo real — um
+skeleton menor que o conteúdo faz o elemento crescer na hidratação e remarca o
+LCP. E evite que sliders ou carrosséis promovam um elemento maior depois do
+primeiro paint. A regra prática: o que o navegador vê como maior no início
+precisa continuar sendo o maior.
+
+## Preload demais: a competição por banda que atrasa o próprio LCP
+
+O último erro é o mais contraintuitivo, porque nasce de uma tentativa de
+otimizar. O sintoma é direto: você adicionou um preload e o LCP piorou.
+
+O mecanismo é a competição por banda. Um preload diz ao navegador "isto é
+urgente, baixe já". Se você marca cinco recursos como urgentes — o hero, a fonte,
+um script, um CSS —, eles disputam a banda entre si e com o CSS/JS crítico. Se
+tudo é urgente, nada é: o recurso LCP que realmente importava é rebaixado pelo
+ruído dos outros preloads, e chega mais tarde do que chegaria sozinho.
+
+Há uma nuance que eu medi e que ilustra bem o "depende". No caso do LCP de texto
+da home, o preload da fonte woff2 (cerca de 48KB) estava **adicionando** por
+volta de 1,7s de render delay no LCP simulado do Lighthouse — porque, com o LCP
+sendo texto e a fonte disponível com `display: optional`, aquele preload só
+competia por banda sem acelerar nada que importasse. Tirá-lo do caminho crítico
+foi um dos fixes. Mas a condição importa: preload de fonte não é ruim sempre — é
+ruim quando o LCP é texto e a fonte já tem um `display` que não bloqueia. Num
+cenário onde a fonte é o gargalo, o preload ajuda.
+
+O fix é preloadar só o recurso LCP e mais nada. No Next.js 16, `fetchPriority="high"`
+no próprio elemento marca o hero como prioritário sem adicionar um hint separado,
+e `fetchPriority="low"` serve para o oposto: deprioritizar recursos above-the-fold
+que não são o LCP, liberando banda para o que é. O FAQ do hub trata dessa mesma
+armadilha de preload; a regra que eu sigo é conseguir explicar em uma frase por
+que cada preload está ali — se não consigo, ele sai.
+
+## Como verificar que o LCP realmente melhorou
+
+Nenhum desses fixes vale sem confirmar que funcionou, e "o PSI subiu" não é
+confirmação suficiente. O roteiro que eu uso vai do lab ao campo, nessa ordem.
+
+Comece pelo PageSpeed Insights para o número de lab e o breakdown das quatro
+fases — ele diz qual fase encolheu. Depois abra o DevTools, grave um trace e
+confirme dois pontos: qual elemento foi marcado como LCP e em que fase o tempo
+está indo. Se o elemento não é o que você esperava (um background-image, um
+skeleton), você achou o problema antes de tocar em qualquer código. Em seguida,
+o view-source: o markup inicial contém o recurso LCP, ou ele está escondido em
+CSS ou atrás de client component? É o teste direto de "o scanner vê isto?".
+
+Lab não é campo, e é aí que entra o RUM. Este site coleta LCP de usuários reais
+desde meados de 2026 — web-vitals com attribution enviando as quatro subpartes
+para o GA4 —, embora ainda sem uma janela estatística grande o bastante para
+conclusões, e ainda fora do CrUX por estar abaixo do limite de tráfego. Mesmo
+assim, o RUM é o que fecha o loop: o lab simula, o campo mede.
+
+Uma última calibragem do que **não** perseguir. Nem toda bandeira do PSI vale
+uma caçada: o Next.js embute cerca de 14KiB de JavaScript legado (os polyfills
+core-js incondicionais no chunk do framework) que o PSI sinaliza e que você não
+consegue remover — um browserslist moderno produz um output byte a byte idêntico.
+Gastar horas atrás desses 14KiB é tempo que renderia muito mais aplicado a
+qualquer um dos erros acima. Se precisar de um ponto de partida para a
+verificação, o cluster reúne os [validadores e ferramentas de medição](/ferramentas)
+que eu uso nesse roteiro — e para o contexto além do LCP (metadados, dados
+estruturados, renderização), o ponto de entrada é o
+[guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs).

@@ -1,0 +1,32 @@
+<svg viewBox="0 0 680 470" width="680" height="470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="O que o preload scanner enxerga no markup e o que fica invisível para ele" font-family="Arial, Helvetica, sans-serif">
+  <title>O que o preload scanner vê e o que fica invisível</title>
+  <desc>O preload scanner lê o HTML inicial e descobre cedo recursos declarados no markup, como uma tag img com src. Recursos escondidos em CSS ou atrás de JavaScript de cliente ficam invisíveis e só são descobertos tarde, depois de o navegador construir o DOM.</desc>
+  <rect x="0" y="0" width="680" height="470" fill="#ffffff"/>
+  <text x="20" y="30" font-size="15" font-weight="500" fill="#111827">O que o preload scanner enxerga no markup inicial</text>
+  <text x="20" y="50" font-size="12" fill="#9CA3AF">Ele lê o HTML antes do DOM. Só descobre cedo o que está declarado no markup.</text>
+  <rect x="20" y="68" width="180" height="52" rx="8" fill="#ffffff" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="110" y="90" font-size="14" font-weight="500" text-anchor="middle" fill="#111827">HTML inicial chega</text>
+  <text x="110" y="108" font-size="12" text-anchor="middle" fill="#9CA3AF">antes do DOM montar</text>
+  <line x1="200" y1="94" x2="248" y2="94" stroke="#9CA3AF" stroke-width="1"/>
+  <rect x="250" y="68" width="180" height="52" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="340" y="90" font-size="14" font-weight="500" text-anchor="middle" fill="#111827">Preload scanner</text>
+  <text x="340" y="108" font-size="12" text-anchor="middle" fill="#111827">varre o markup</text>
+  <line x1="340" y1="120" x2="340" y2="150" stroke="#9CA3AF" stroke-width="1"/>
+  <rect x="20" y="158" width="300" height="120" rx="12" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="40" y="184" font-size="14" font-weight="500" fill="#111827">Visível → descoberto cedo</text>
+  <text x="40" y="210" font-size="12" fill="#111827">img com src no markup</text>
+  <text x="40" y="234" font-size="12" fill="#111827">link rel=preload no head</text>
+  <rect x="360" y="158" width="300" height="120" rx="12" fill="#F59E0B" fill-opacity="0.15" stroke="#F59E0B" stroke-width="0.5"/>
+  <text x="380" y="184" font-size="14" font-weight="500" fill="#111827">Invisível → descoberto tarde</text>
+  <text x="380" y="210" font-size="12" fill="#111827">background-image em CSS</text>
+  <text x="380" y="234" font-size="12" fill="#111827">hero atrás de "use client"</text>
+  <line x1="170" y1="278" x2="170" y2="320" stroke="#9CA3AF" stroke-width="1"/>
+  <line x1="510" y1="278" x2="510" y2="320" stroke="#9CA3AF" stroke-width="1"/>
+  <rect x="40" y="328" width="260" height="44" rx="8" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="170" y="352" font-size="14" font-weight="500" text-anchor="middle" fill="#111827">Baixa junto com o HTML</text>
+  <rect x="380" y="328" width="260" height="44" rx="8" fill="#F59E0B" fill-opacity="0.15" stroke="#F59E0B" stroke-width="0.5"/>
+  <text x="510" y="352" font-size="14" font-weight="500" text-anchor="middle" fill="#111827">Só baixa após o DOM/JS</text>
+  <rect x="20" y="396" width="640" height="58" rx="12" fill="#F59E0B" fill-opacity="0.12" stroke="#F59E0B" stroke-width="0.5"/>
+  <text x="44" y="422" font-size="12" fill="#111827">É por isso que trocar tudo por next/image não resolve um hero em background-image:</text>
+  <text x="44" y="442" font-size="12" fill="#111827">o scanner nunca chega a vê-lo. Mover para img real devolve a descoberta cedo.</text>
+</svg>
