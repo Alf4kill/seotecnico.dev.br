@@ -25,9 +25,16 @@ gtag('consent', 'default', {
 });
 `
 
+// display 'optional' + sem preload: o LCP da home é TEXTO (parágrafo do hero);
+// com preload, o woff2 de ~48KB entra no caminho crítico do LCP simulado
+// (PSI/Lighthouse) e adiciona ~1.7s de render delay no slow-4G. Com 'optional'
+// o fallback ajustado (adjustFontFallback) pinta imediatamente e fica
+// definitivo se a fonte perder a janela de bloqueio — sem repaint, sem CLS;
+// a Inter entra do cache nas navegações seguintes.
 const inter = Inter({
   subsets: ['latin'],
-  display: 'swap',
+  display: 'optional',
+  preload: false,
   variable: '--font-inter',
 })
 
