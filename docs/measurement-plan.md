@@ -25,7 +25,7 @@
 | `article_read` | Reader reached the end of an article | Element Visibility — CSS selector `#article-end` (article footer, `src/app/blog/[slug]/page.tsx`) | `article_slug` | no | first article published 2026-07-17; selector in place — pending GTM trigger + tag |
 | `outbound_click` | Click on external link | Link Click — outbound | `link_domain` | no | pending GTM setup |
 | `scroll_depth` | Scroll milestones | Scroll Depth 25/50/75/90% | `percent` | no | pending GTM setup |
-| `web_vitals` | Own RUM: a Core Web Vitals metric measured on a real visit (`web-vitals` attribution build; LCP only for now — INP/CLS may be added later under the same event name) | Custom Event `web_vitals` (dataLayer push from `src/lib/rum.ts` when the metric finalizes — page hidden or first interaction) | `metric_name` (`LCP`), `metric_id` (unique per page load, for dedup), `metric_value` (ms, rounded), `metric_rating` (`good` / `needs-improvement` / `poor`), `lcp_element` (CSS selector, ≤100 chars), `lcp_ttfb`, `lcp_load_delay`, `lcp_load_duration`, `lcp_render_delay` (ms, rounded — the 4 LCP subparts) | no | documented 2026-07-17; pending GTM trigger + tag |
+| `web_vitals` | Own RUM: a Core Web Vitals metric measured on a real visit (`web-vitals` attribution build; LCP only for now — INP/CLS may be added later under the same event name) | Custom Event `web_vitals` (dataLayer push from `src/lib/rum.ts` when the metric finalizes — page hidden or first interaction) | `metric_name` (`LCP`), `metric_id` (unique per page load, for dedup), `metric_value` (ms, rounded), `metric_rating` (`good` / `needs-improvement` / `poor`), `lcp_element` (CSS selector, ≤100 chars), `lcp_ttfb`, `lcp_load_delay`, `lcp_load_duration`, `lcp_render_delay` (ms, rounded — the 4 LCP subparts) | no | **live** — GTM tag/trigger created and container published 2026-07-18; tag fired with correct subpart sums in Tag Assistant preview against production (TTFB 616 + render 148 = 764 = metric_value) and confirmed again via consented production dataLayer (67 + 109 = 176). GA4 custom definitions registered 2026-07-18: 4 event-scoped dimensions (`metric_name`, `metric_rating`, `lcp_element`, `metric_id`) + 5 custom metrics in ms (`metric_value` + the 4 `lcp_*`) |
 
 ### Why the RUM sink is GA4 (and not an `/api/rum` endpoint)
 
@@ -76,7 +76,7 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [x] Banner "Recusar" / no choice → **no `_ga` cookies**; cookieless ping with `gcs=G100` (Consent Mode v2 *advanced*)
 - [x] Choice persists across reloads (localStorage; banner does not reappear)
 - [x] `page_view` fires on load **and on SPA navigation** (History Change → correct `dl`/`dt`)
-- [ ] GTM Preview (Tag Assistant) connects to the production URL
+- [x] GTM Preview (Tag Assistant) connects to the production URL (2026-07-18, `web_vitals` tag validation)
 - [ ] Confirm the same hits in GA4 Admin → DebugView on the live domain (`debug_mode`)
 - [ ] Each tool event appears in DebugView with its parameters (when tools ship)
 - [ ] Key events marked in GA4 Admin → Events (after first real events arrive)
