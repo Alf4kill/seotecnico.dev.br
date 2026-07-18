@@ -234,6 +234,19 @@ Use the standard container proportions (applied via Tailwind):
 Keep the design clean, fast, and content-first. No heavy JS libraries for
 presentation. Dark/light respect `prefers-color-scheme` if implemented at all.
 
+**Diagram palette (inline SVGs in articles)** — CSS custom properties defined
+in `globals.css`, shared by every cluster's diagrams and screenshot
+annotations. Use these tokens (English names, per §10) instead of hardcoded
+colors:
+
+- `--color-accent: #F59E0B` — highlight phases / annotation boxes and arrows
+- `--color-diagram-phase-a: #DBEAFE` — neutral phase fill (blue)
+- `--color-diagram-phase-b: #D1FAE5` — neutral phase fill (green)
+- `--color-diagram-axis: #9CA3AF` — axes, connector lines
+- Text inside diagrams uses `--foreground`; diagrams are inline SVG in MDX
+  (real `<text>` labels, crawlable/citable), each with a textual mirror
+  (table or paragraph) next to it.
+
 ---
 
 ## 10. Content conventions

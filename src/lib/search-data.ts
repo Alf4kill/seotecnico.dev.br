@@ -61,6 +61,16 @@ export const searchData: SearchItem[] = [
     keywords: ['autor', 'contato', 'projeto'],
   },
 
+  // ── Artigos ─────────────────────────────────────────────────────────────
+  {
+    id: 'artigo-melhorar-lcp-nextjs',
+    title: 'Como melhorar o LCP no Next.js: guia pelas 4 subpartes',
+    description: 'Diagnóstico pelas 4 subpartes, preload no next/image (v16), next/font e verificação no PSI',
+    href: '/blog/melhorar-lcp-nextjs',
+    category: 'artigo',
+    keywords: ['lcp', 'core web vitals', 'cwv', 'performance', 'preload', 'next/image', 'next/font', 'ttfb', 'render delay'],
+  },
+
   // ── Ferramentas (em breve — apontam para o índice até serem lançadas) ───
   {
     id: 'gerador-json-ld',
