@@ -377,9 +377,11 @@ ele, o texto fica invisível durante o período de block da fonte — e texto
 invisível não conta como renderizado para o LCP.
 
 Neste próprio site a fonte carrega via `next/font` desde o primeiro deploy.
-Instrumentar um RUM próprio (`web-vitals` → endpoint) está no roadmap — o
-site ainda não aparece no CrUX, que exige um volume mínimo de tráfego;
-quando houver dados de campo numa janela estatisticamente útil, atualizo
+E como o site ainda não aparece no CrUX — que exige um volume mínimo de
+tráfego — instrumentei um RUM próprio: o `web-vitals` reporta o LCP real de
+cada visita, com as 4 subpartes como parâmetros, direto para o GA4 (o
+código está na [seção de verificação](#como-verificar-se-funcionou)).
+Quando houver dados de campo numa janela estatisticamente útil, atualizo
 esta seção com a medição.
 
 Outras causas de render delay — fade-in no hero, anti-flicker de A/B
@@ -482,21 +484,38 @@ Otimização sem verificação é palpite. O roteiro que eu uso, na ordem:
    resposta do servidor — o DOM do DevTools mostra o estado *depois* de
    JS/CSS, que não é o que o preload scanner viu.
 4. **RUM próprio.** O pacote `web-vitals` (build de attribution) reporta o
-   LCP real dos usuários com a subparte dominante:
+   LCP real dos usuários com a subparte dominante. É o que este site faz —
+   o evento vai para o GA4 via GTM, sem backend nenhum (o consentimento é
+   tratado pelo Consent Mode, como qualquer outra tag):
 
 ```ts
-// lib/rum.ts
+// lib/rum.ts — o código real deste site (simplificado)
 import { onLCP } from 'web-vitals/attribution'
 
-onLCP(({ value, attribution }) => {
-  navigator.sendBeacon('/api/rum', JSON.stringify({
-    lcp: value,
-    element: attribution.element,
-    loadDelay: attribution.resourceLoadDelay,
-    renderDelay: attribution.elementRenderDelay,
-  }))
+onLCP(({ value, rating, attribution }) => {
+  window.dataLayer?.push({
+    event: 'web_vitals',
+    metric_name: 'LCP',
+    metric_value: Math.round(value),
+    metric_rating: rating,
+    lcp_element: attribution.target, // v5: era `element` até a v4
+    lcp_ttfb: Math.round(attribution.timeToFirstByte),
+    lcp_load_delay: Math.round(attribution.resourceLoadDelay),
+    lcp_load_duration: Math.round(attribution.resourceLoadDuration),
+    lcp_render_delay: Math.round(attribution.elementRenderDelay),
+  })
 })
 ```
+
+   No GTM, um trigger de Custom Event `web_vitals` alimenta uma tag GA4 com
+   esses parâmetros — e as subpartes viram colunas numa exploração. Duas
+   notas de implementação: na **v5** do `web-vitals` o seletor do elemento
+   mudou de `attribution.element` para `attribution.target` (em JS puro, o
+   campo antigo devolve `undefined` sem reclamar); e o callback só dispara
+   quando a métrica *finaliza* — a página ficar oculta ou a primeira
+   interação — então não espere o evento no load. Se você tem backend com
+   armazenamento, `navigator.sendBeacon` para um endpoint próprio também
+   funciona; num deploy serverless sem banco, o GA4 é o sink que sobra.
 
 5. **Campo, com paciência.** CrUX/GSC usam janela móvel de 28 dias no p75 —
    não julgue um fix pelo dia seguinte. E se o site é novo, o CrUX pode

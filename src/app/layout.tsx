@@ -5,6 +5,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ConsentBanner } from '@/components/layout/ConsentBanner'
+import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter'
 import { SearchProvider } from '@/components/search/SearchContext'
 import { SearchModal } from '@/components/search/SearchModal'
 import { site, indexable } from '@/lib/site'
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SearchModal />
         </SearchProvider>
         <ConsentBanner />
+        <WebVitalsReporter />
         {site.gtmId && <GoogleTagManager gtmId={site.gtmId} />}
       </body>
     </html>
