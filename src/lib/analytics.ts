@@ -19,6 +19,18 @@ export type AnalyticsEvent =
   | { event: 'tool_check_cwv'; lcp_bucket: 'good' | 'needs-improvement' | 'poor' | 'no-data' }
   | { event: 'article_read'; article_slug: string }
   | { event: 'outbound_click'; link_domain: string }
+  | {
+      event: 'web_vitals'
+      metric_name: 'LCP'
+      metric_id: string
+      metric_value: number
+      metric_rating: 'good' | 'needs-improvement' | 'poor'
+      lcp_element: string
+      lcp_ttfb: number
+      lcp_load_delay: number
+      lcp_load_duration: number
+      lcp_render_delay: number
+    }
 
 export function pushEvent(e: AnalyticsEvent): void {
   if (typeof window === 'undefined') return
