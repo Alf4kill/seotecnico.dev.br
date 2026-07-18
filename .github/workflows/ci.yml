@@ -40,6 +40,66 @@ jobs:
       - name: Production build
         run: npm run build
 
-  # Roadmap (CLAUDE.md §8): add jobs for the Playwright SEO regression suite and
-  # Lighthouse CI performance budgets once those are wired up. They belong here
-  # so CI fails when an SEO invariant or a Core Web Vitals budget regresses.
+  # SEO regression suite (CLAUDE.md §8): per route — exactly one h1, title and
+  # description within limits, self-referencing canonical, JSON-LD with the
+  # expected @type, hreflang consistency. Routes are enumerated from
+  # app/sitemap.ts, so new articles are covered automatically.
+  seo:
+    name: SEO regression (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      # SITE_INDEXABLE=true mirrors production: it lets the suite assert that
+      # indexable pages carry no noindex (and that /busca still does).
+      - name: Production build (indexable)
+        run: npm run build
+        env:
+          SITE_INDEXABLE: 'true'
+
+      - name: SEO regression suite
+        run: npm run test:seo
+        env:
+          SITE_INDEXABLE: 'true'
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # Core Web Vitals budgets (CLAUDE.md §6): Performance ≥95, LCP <2.0s,
+  # CLS <0.05, TBT <200ms (lab proxy for INP). Budgets live in lighthouserc.js;
+  # the build fails if any of them regresses.
+  lighthouse:
+    name: Lighthouse CI budgets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Lighthouse CI
+        run: npm run lhci
