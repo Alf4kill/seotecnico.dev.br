@@ -9,6 +9,13 @@
   --background: #ffffff;
   --foreground: #111827;
   --color-primary: #2563EB;
+
+  /* Paleta de diagramas (SVGs inline dos artigos — CLAUDE.md §9).
+     accent também é a cor de anotação de screenshots (caixas/setas). */
+  --color-accent: #F59E0B;
+  --color-diagram-phase-a: #DBEAFE;
+  --color-diagram-phase-b: #D1FAE5;
+  --color-diagram-axis: #9CA3AF;
 }
 
 /* ── Reset global ───────────────────────────────────────────────────────────── */
@@ -194,6 +201,26 @@ dialog.search-dialog::backdrop {
   border: none;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   margin: 1.5em 0;
+}
+.rich-text figure {
+  margin: 1.5em 0;
+}
+.rich-text figure svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.rich-text figure img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+.rich-text figcaption {
+  margin-top: 0.5em;
+  font-size: 0.85rem;
+  color: #6B7280;
+  text-align: center;
 }
 
 

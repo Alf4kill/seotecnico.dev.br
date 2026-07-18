@@ -22,7 +22,7 @@
 | `tool_generate_jsonld` | User generated a schema in the JSON-LD tool | Custom Event `tool_generate_jsonld` (dataLayer push on generate) | `schema_type` | **yes** | helper ready; tool not built |
 | `tool_validate_meta` | User validated a URL in the meta tag tool | Custom Event `tool_validate_meta` | `issues_found` | **yes** | helper ready; tool not built |
 | `tool_check_cwv` | User checked a domain in the CWV tool | Custom Event `tool_check_cwv` | `lcp_bucket` (`good` / `needs-improvement` / `poor` / `no-data`) | **yes** | helper ready; tool not built |
-| `article_read` | Reader reached the end of an article | Element Visibility (article footer element) | `article_slug` | no | pending first articles |
+| `article_read` | Reader reached the end of an article | Element Visibility — CSS selector `#article-end` (article footer, `src/app/blog/[slug]/page.tsx`) | `article_slug` | no | first article published 2026-07-17; selector in place — pending GTM trigger + tag |
 | `outbound_click` | Click on external link | Link Click — outbound | `link_domain` | no | pending GTM setup |
 | `scroll_depth` | Scroll milestones | Scroll Depth 25/50/75/90% | `percent` | no | pending GTM setup |
 
