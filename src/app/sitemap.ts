@@ -16,6 +16,7 @@ const toDate = (d: string) => new Date(`${d}T00:00:00`)
 // exportados de /public — os "ativos de link" do cluster).
 const postImages: Record<string, string[]> = {
   'melhorar-lcp-nextjs': ['/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp'],
+  'lcp-alto-next-js': ['/images/blog/lcp-alto-next-js/preload-scanner-visivel-invisivel.webp'],
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
