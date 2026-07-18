@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
 import { getGuide } from '@/lib/content'
+import { mdxOptions } from '@/lib/mdx'
+import { mdxComponents } from '@/components/mdx/mdx-components'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
@@ -49,10 +50,7 @@ export default function GuiaPage() {
         </header>
 
         <div className="rich-text mt-8">
-          <MDXRemote
-            source={content}
-            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
-          />
+          <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />
         </div>
 
         <footer className="mt-10 border-t border-gray pt-4">

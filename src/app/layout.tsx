@@ -5,6 +5,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ConsentBanner } from '@/components/layout/ConsentBanner'
+import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter'
 import { SearchProvider } from '@/components/search/SearchContext'
 import { SearchModal } from '@/components/search/SearchModal'
 import { site, indexable } from '@/lib/site'
@@ -25,9 +26,16 @@ gtag('consent', 'default', {
 });
 `
 
+// display 'optional' + sem preload: o LCP da home é TEXTO (parágrafo do hero);
+// com preload, o woff2 de ~48KB entra no caminho crítico do LCP simulado
+// (PSI/Lighthouse) e adiciona ~1.7s de render delay no slow-4G. Com 'optional'
+// o fallback ajustado (adjustFontFallback) pinta imediatamente e fica
+// definitivo se a fonte perder a janela de bloqueio — sem repaint, sem CLS;
+// a Inter entra do cache nas navegações seguintes.
 const inter = Inter({
   subsets: ['latin'],
-  display: 'swap',
+  display: 'optional',
+  preload: false,
   variable: '--font-inter',
 })
 
@@ -73,6 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SearchModal />
         </SearchProvider>
         <ConsentBanner />
+        <WebVitalsReporter />
         {site.gtmId && <GoogleTagManager gtmId={site.gtmId} />}
       </body>
     </html>
