@@ -10,8 +10,13 @@ import {
   type ConsentChoice,
 } from '@/lib/analytics'
 
-// No SSR o banner nunca é renderizado; a escolha só existe no navegador.
-const getServerSnapshot = (): ConsentChoice | null => 'denied'
+// No SSR o banner É renderizado (snapshot null = "sem escolha salva"): assim
+// ele entra no HTML estático e pinta junto com o FCP. Montá-lo só após a
+// hidratação fazia dele o elemento LCP (~1.2s mais tarde) em páginas com pouco
+// conteúdo — medido pelo Lighthouse CI em /blog. Para visitantes que já
+// escolheram, a hidratação o remove logo em seguida (flash breve, overlay
+// `fixed`, sem CLS).
+const getServerSnapshot = (): ConsentChoice | null => null
 
 function choose(choice: ConsentChoice) {
   applyConsent(choice)
