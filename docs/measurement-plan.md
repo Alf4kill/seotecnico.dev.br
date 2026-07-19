@@ -19,12 +19,12 @@
 | Event name | Description | Trigger (GTM) | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
 | `page_view` | Pageview incl. SPA navigations | Google tag, Initialization — All Pages + History Change | default | no | **verified** — fires to `G-59LQZ6LR72` on load + SPA nav, consent-gated (2026-07-13, local hit inspection) |
-| `tool_generate_jsonld` | User generated a schema in the JSON-LD tool | Custom Event `tool_generate_jsonld` (dataLayer push on successful generate — validation errors don't fire it) | `schema_type` (`Article` / `FAQPage` / `BreadcrumbList` / `Person` / `Organization`) | **yes** | **implemented** 2026-07-18 — tool live at `/ferramentas/gerador-json-ld`; pending in GTM: Custom Event trigger + GA4 event tag with `schema_type` mapped (same recipe as `web_vitals`), then mark as key event in GA4 Admin → Events after first hits |
+| `tool_generate_jsonld` | User generated a schema in the JSON-LD tool | Custom Event `tool_generate_jsonld` (dataLayer push on successful generate — validation errors don't fire it) | `schema_type` (`Article` / `FAQPage` / `BreadcrumbList` / `Person` / `Organization`) | **yes** | **live** — tool at `/ferramentas/gerador-json-ld` since 2026-07-18; GTM Custom Event trigger + GA4 tag published 2026-07-19 and validated in Tag Assistant against production (`schema_type` resolved to `Article`); `schema_type` registered as event-scoped custom dimension 2026-07-19. Remaining: mark as key event in GA4 Admin → Events after the first real hits |
 | `tool_validate_meta` | User validated a URL in the meta tag tool | Custom Event `tool_validate_meta` | `issues_found` | **yes** | helper ready; tool not built |
 | `tool_check_cwv` | User checked a domain in the CWV tool | Custom Event `tool_check_cwv` | `lcp_bucket` (`good` / `needs-improvement` / `poor` / `no-data`) | **yes** | helper ready; tool not built |
-| `article_read` | Reader reached the end of an article | Element Visibility — CSS selector `#article-end` (article footer, `src/app/blog/[slug]/page.tsx`) | `article_slug` | no | first article published 2026-07-17; selector in place — pending GTM trigger + tag |
-| `outbound_click` | Click on external link | Link Click — outbound | `link_domain` | no | pending GTM setup |
-| `scroll_depth` | Scroll milestones | Scroll Depth 25/50/75/90% | `percent` | no | pending GTM setup |
+| `article_read` | Reader reached the end of an article | Element Visibility — CSS selector `#article-end` (article footer, `src/app/blog/[slug]/page.tsx`), once per page, Observe DOM changes ON | `article_slug` (= `{{Page Path}}`, e.g. `/blog/melhorar-lcp-nextjs`) | no | **live** — GTM trigger + GA4 tag published 2026-07-19; validated by owner in Tag Assistant (headless checks can't exercise IntersectionObserver-based triggers) |
+| `outbound_click` | Click on external link | Link Click (Just Links) — Click URL does not contain `seotecnico.dev.br` | `link_domain` (Auto-Event Variable: Element URL → Host Name) | no | **live** — published 2026-07-19; verified on production: external-link click produces `gtm.linkClick` with the listener active (web.dev link) |
+| `scroll_depth` | Scroll milestones | Scroll Depth 25/50/75/90% (vertical) | `percent` (= `{{Scroll Depth Threshold}}` built-in) | no | **live** — published 2026-07-19; validated by owner in Tag Assistant (rAF-based trigger, not exercisable from hidden/headless tabs) |
 | `web_vitals` | Own RUM: a Core Web Vitals metric measured on a real visit (`web-vitals` attribution build; LCP only for now — INP/CLS may be added later under the same event name) | Custom Event `web_vitals` (dataLayer push from `src/lib/rum.ts` when the metric finalizes — page hidden or first interaction) | `metric_name` (`LCP`), `metric_id` (unique per page load, for dedup), `metric_value` (ms, rounded), `metric_rating` (`good` / `needs-improvement` / `poor`), `lcp_element` (CSS selector, ≤100 chars), `lcp_ttfb`, `lcp_load_delay`, `lcp_load_duration`, `lcp_render_delay` (ms, rounded — the 4 LCP subparts) | no | **live** — GTM tag/trigger created and container published 2026-07-18; tag fired with correct subpart sums in Tag Assistant preview against production (TTFB 616 + render 148 = 764 = metric_value) and confirmed again via consented production dataLayer (67 + 109 = 176). GA4 custom definitions registered 2026-07-18: 4 event-scoped dimensions (`metric_name`, `metric_rating`, `lcp_element`, `metric_id`) + 5 custom metrics in ms (`metric_value` + the 4 `lcp_*`) |
 
 ### Why the RUM sink is GA4 (and not an `/api/rum` endpoint)
@@ -63,6 +63,15 @@ were considered:
    name. To analyze: GA4 Explorations, filter `metric_name = LCP`, percentiles
    over `metric_value` (dedup by `metric_id` if a page load ever reports
    twice), break down by `lcp_element` / the subpart parameters.
+6. **Engagement triggers (no code involved)**: `article_read` via Element
+   Visibility on `#article-end` (once per page, Observe DOM changes ON, so it
+   re-arms across SPA navigations); `scroll_depth` via the native Scroll Depth
+   trigger (25/50/75/90, requires the Scroll Depth Threshold built-in
+   variable); `outbound_click` via Just Links with Click URL not containing
+   the site host, `link_domain` extracted by an Auto-Event Variable (Element
+   URL → Host Name). Keep GA4 Enhanced Measurement's "Scrolls" and "Outbound
+   clicks" toggles OFF — all logic lives in GTM (same single-source decision
+   as History Change pageviews).
 
 ## Validation checklist (DebugView) — Objective O3
 
