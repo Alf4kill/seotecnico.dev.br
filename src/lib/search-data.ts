@@ -79,14 +79,14 @@ export const searchData: SearchItem[] = [
     keywords: ['lcp alto', 'lcp', 'preload scanner', 'background-image', 'use client', 'render delay', 'fade-in', 'anti-flicker', '@import', 'preload', 'skeleton', 'hidratação'],
   },
 
-  // ── Ferramentas (em breve — apontam para o índice até serem lançadas) ───
+  // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
   {
     id: 'gerador-json-ld',
     title: 'Gerador de JSON-LD',
-    description: 'Gere dados estruturados schema.org válidos para o seu site (em breve)',
-    href: '/ferramentas',
+    description: 'Gere dados estruturados schema.org válidos, com saída pronta para Next.js',
+    href: '/ferramentas/gerador-json-ld',
     category: 'ferramenta',
-    keywords: ['schema', 'dados estruturados', 'rich snippets'],
+    keywords: ['schema', 'dados estruturados', 'rich snippets', 'json-ld', 'gerador', 'faq', 'breadcrumb', 'article'],
   },
   {
     id: 'validador-meta-tags',
