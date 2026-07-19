@@ -40,6 +40,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/guia/seo-tecnico-nextjs`, lastModified: toDate(guide.frontmatter.dateModified), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${base}/blog`, lastModified: newestPost ? toDate(newestPost) : undefined, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/ferramentas`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/ferramentas/gerador-json-ld`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/sobre`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/politica-de-privacidade`, changeFrequency: 'yearly', priority: 0.3 },
   ]
