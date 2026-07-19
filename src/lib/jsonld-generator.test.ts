@@ -150,6 +150,8 @@ describe('serialization', () => {
       expect(snippet).toContain(`export function ${componentNames[type]}()`)
       expect(snippet).toContain(`"@type": "${type}"`)
       expect(snippet).toContain("type=\"application/ld+json\"")
+      // Snippet must escape "<" like production does (Next.js JSON-LD guide).
+      expect(snippet).toContain("JSON.stringify(schema).replace(/</g, '\\\\u003c')")
     }
   })
 })
