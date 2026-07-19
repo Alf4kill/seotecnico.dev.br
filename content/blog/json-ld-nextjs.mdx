@@ -1,0 +1,597 @@
+---
+title: 'Como implementar JSON-LD no Next.js (App Router)'
+description: 'Como adicionar JSON-LD no App Router: Article, FAQPage e BreadcrumbList em Server Components, schema por rota dinâmica e validação — com código real.'
+slug: json-ld-nextjs
+datePublished: '2026-07-19'
+dateModified: '2026-07-19'
+primaryQuery: 'json-ld next.js'
+lang: pt-BR
+faq:
+  - question: 'JSON-LD deve ficar no page ou no layout do App Router?'
+    answer: >-
+      Depende do escopo do schema. Schema que muda a cada rota, como Article e
+      BreadcrumbList, vai no page.tsx da rota, porque só ali existe o dado
+      daquele conteúdo. Schema estável para o site inteiro, como WebSite ou
+      Organization, pode ficar no layout. A regra prática é renderizar o schema
+      no nível onde os dados que o alimentam realmente vivem.
+  - question: 'Posso ter mais de um bloco de JSON-LD na mesma página?'
+    answer: >-
+      Pode. O Googlebot lê vários blocos application/ld+json na mesma página sem
+      problema, então declarar Article, BreadcrumbList e outros tipos em scripts
+      separados é uma abordagem válida. A alternativa é reunir tudo num único
+      bloco usando um array @graph, com cada entidade referenciada por @id. As
+      duas formas funcionam; o que não pode é o mesmo tipo se contradizer entre
+      blocos.
+  - question: 'JSON-LD gerado em client component é lido pelo Google?'
+    answer: >-
+      Depende de quando o schema passa a existir. Um client component também é
+      renderizado no servidor, então o script sai no HTML inicial normalmente. O
+      problema é o schema que só nasce depois da hidratação, dentro de um
+      useEffect ou a partir de estado que só existe no navegador: aí o Googlebot
+      depende da segunda onda de renderização, que é enfileirada. Derive o
+      schema de dados disponíveis no servidor e essa dependência desaparece.
+  - question: 'FAQPage ainda vale a pena depois de maio de 2026?'
+    answer: >-
+      Como recurso visual no Google, não: desde 7 de maio de 2026 o rich result
+      de FAQ não é mais exibido, e em 15 de junho de 2026 o Google removeu a
+      documentação do recurso. Mas FAQPage segue sendo um tipo válido do
+      schema.org e o markup não causa problema. Se o seu FAQPage nasce da mesma
+      fonte do FAQ visível, mantê-lo tem custo praticamente zero. Só não espere
+      mais o dropdown no resultado de busca.
+  - question: 'Como escrever JSON-LD para uma rota dinâmica no Next.js?'
+    answer: >-
+      A ideia é derivar o schema dos mesmos dados que geram a página, dentro da
+      função assíncrona da rota. Você busca o conteúdo pelo parâmetro da rota,
+      monta o objeto de schema a partir desses campos e renderiza o script no
+      retorno do componente. Assim o schema nunca fica dessincronizado do
+      conteúdo, porque os dois saem da mesma fonte de verdade.
+---
+
+Para adicionar JSON-LD no Next.js com App Router, você renderiza uma tag
+`<script type="application/ld+json">` dentro de um Server Component — no
+`page.tsx` da rota ou no `layout.tsx`, dependendo do escopo do schema — e coloca
+o objeto de dados dentro dela com `JSON.stringify`. Não vai em `<Head>` e não
+precisa de `next/script`. Essa é a recomendação oficial do próprio Next.js, e o
+resto deste artigo é sobre onde cada tipo de schema deve viver, como derivá-lo da
+sua fonte de verdade em vez de escrever à mão, e como impedir que ele quebre
+silenciosamente depois.
+
+Este é o segundo caminho do [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs):
+não "como colar um script", e sim como a implementação de dados estruturados
+fica quando é código de produção, derivado do conteúdo e travado por teste
+automatizado. Cada seção abaixo é uma decisão de arquitetura — onde o schema
+nasce, o que o alimenta, e o que acontece quando ele para de fazer sentido.
+
+Uma ressalva que precisa vir antes de qualquer código, porque metade do conteúdo
+em português erra nisso: **dados estruturados não são um fator direto de
+ranking.** O JSON-LD não empurra sua posição para cima. O que ele faz é tornar a
+página elegível a rich results — o caminho de breadcrumb no lugar da URL, a
+exibição de autor e datas do artigo — e ajudar mecanismos a entender a estrutura
+da página. O ganho é de elegibilidade e de apresentação, não de classificação.
+
+## Onde o JSON-LD vive no App Router
+
+O JSON-LD precisa estar no HTML que o Googlebot lê no primeiro acesso. Essa é a
+única regra que decide a arquitetura inteira. No App Router, o caminho natural
+para isso é renderizar o script em um Server Component — o padrão de qualquer
+`page.tsx` ou `layout.tsx` que não tem `"use client"` no topo.
+
+O mecanismo é o seguinte. O Googlebot lê a página em duas ondas. Na primeira, ele
+processa o HTML que chega do servidor. Só depois, numa fila separada de
+renderização, ele executa o JavaScript e observa o DOM final. Se o seu bloco de
+JSON-LD só passa a existir depois que o React hidrata no cliente, existe uma
+janela em que o crawler vê o HTML inicial sem schema nenhum, e a renderização da
+segunda onda pode demorar.
+
+Aqui cabe uma precisão que quase todo artigo sobre o assunto erra. O problema
+**não** é o arquivo ter `"use client"` no topo. Um client component também é
+renderizado no servidor: o HTML dele sai na resposta inicial, script de schema
+incluído. O que quebra é o schema que só **nasce** depois da hidratação — montado
+dentro de um `useEffect`, ou derivado de um estado que só existe no navegador.
+Esse é o schema que não está no HTML inicial, porque no momento em que o servidor
+respondeu ele ainda não existia.
+
+<figure>
+  <svg viewBox="0 0 680 392" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Quando o Googlebot enxerga o JSON-LD conforme o schema é derivado no servidor ou criado depois da hidratação">
+    <title>Schema no HTML inicial vs. schema criado após a hidratação</title>
+    <desc>Comparação de dois caminhos de renderização de JSON-LD no Next.js App Router. No caminho recomendado, o schema é derivado de dados disponíveis no servidor e sai no HTML inicial, que o Googlebot lê na primeira onda de rastreamento. No caminho arriscado, o schema só é criado depois da hidratação no navegador, dentro de um efeito ou a partir de estado de cliente, deixando o Googlebot dependente da segunda onda de renderização, que é enfileirada; nesse intervalo, o HTML inicial não contém schema nenhum.</desc>
+    <text x="20" y="30" fontSize="15" fontWeight="500" fill="var(--foreground, #111827)">Quando o Googlebot enxerga o seu JSON-LD</text>
+    <text x="20" y="50" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">O que decide não é o arquivo ter use client, é quando o schema passa a existir.</text>
+    <text x="20" y="84" fontSize="14" fontWeight="500" fill="var(--foreground, #111827)">Schema derivado no servidor</text>
+    <rect x="20" y="96" width="180" height="52" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="110" y="118" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Dado no servidor</text>
+    <text x="110" y="136" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">frontmatter, banco</text>
+    <line x1="200" y1="122" x2="228" y2="122" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="230" y="96" width="200" height="52" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="330" y="118" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">HTML inicial</text>
+    <text x="330" y="136" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">já com o script de schema</text>
+    <line x1="430" y1="122" x2="458" y2="122" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="460" y="96" width="200" height="52" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="560" y="118" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Lido na 1ª onda</text>
+    <text x="560" y="136" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">sem depender de JS</text>
+    <line x1="20" y1="176" x2="660" y2="176" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" strokeDasharray="3 3" />
+    <text x="20" y="206" fontSize="14" fontWeight="500" fill="var(--foreground, #111827)">Schema criado após a hidratação</text>
+    <rect x="20" y="218" width="180" height="52" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="110" y="240" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Estado no cliente</text>
+    <text x="110" y="258" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">useEffect, useState</text>
+    <line x1="200" y1="244" x2="228" y2="244" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="230" y="218" width="200" height="52" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="330" y="240" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">HTML inicial sem schema</text>
+    <text x="330" y="258" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">o script ainda não existe</text>
+    <line x1="430" y1="244" x2="458" y2="244" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="460" y="218" width="200" height="52" rx="8" fill="var(--color-accent, #F59E0B)" fillOpacity="0.15" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="560" y="240" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Depende da 2ª onda</text>
+    <text x="560" y="258" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">fila de renderização</text>
+    <rect x="20" y="298" width="640" height="58" rx="12" fill="var(--color-accent, #F59E0B)" fillOpacity="0.12" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="44" y="324" fontSize="12" fill="var(--foreground, #111827)">A janela sem schema não existe porque o componente é de cliente: ela existe porque o</text>
+    <text x="44" y="344" fontSize="12" fill="var(--foreground, #111827)">schema foi criado depois da resposta do servidor. Derive do dado, não do estado.</text>
+  </svg>
+  <figcaption>
+    O que garante o schema no HTML inicial é ele ser derivado de dados que o
+    servidor já tem — não o arquivo estar fora de um client component.
+  </figcaption>
+</figure>
+
+| Como o schema é montado | Está no HTML inicial? | Quando o Googlebot vê |
+|---|---|---|
+| Derivado de dado do servidor | sim | 1ª onda, junto do HTML |
+| Renderizado dentro de client component com dado do servidor | sim | 1ª onda, junto do HTML |
+| Criado em `useEffect` ou a partir de estado do cliente | não | só na 2ª onda, enfileirada |
+
+Neste site a regra é seguida pelos dois lados. Os componentes de schema de
+página são Server Components puros; o bloco de `FAQPage` mora dentro do
+componente de FAQ, que é um client component por causa do acordeão — e mesmo
+assim o script sai no HTML inicial, porque as perguntas vêm do frontmatter, não
+de estado. É o caso que confirma a regra: o que importa é a procedência do dado.
+
+## O componente base: um `<script>` e nada mais
+
+O componente que emite o schema é deliberadamente burro: ele recebe um objeto,
+serializa com `JSON.stringify` e injeta o resultado dentro de uma tag `<script>`.
+Sem estado, sem efeito, sem `next/script`. Esse último ponto é intencional e a
+própria documentação do Next.js explica o porquê: o `next/script` serve para
+carregar e executar JavaScript, e JSON-LD é dado, não código executável — a tag
+`<script type="application/ld+json">` nativa é a escolha certa.
+
+Este é o padrão que roda em produção neste site — todos os schemas do site passam
+por essas dez linhas:
+
+```tsx
+// src/components/seo/JsonLd.tsx
+function JsonLdScript({ schema }: { schema: Record<string, unknown> }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}
+```
+
+O `dangerouslySetInnerHTML` assusta pelo nome, mas aqui ele é o caminho correto:
+é como se injeta o texto do schema sem o React escapar as aspas do JSON. O nome
+"dangerous" é um lembrete legítimo, e vale levá-lo a sério — a documentação do
+Next.js alerta que `JSON.stringify` não sanitiza strings usadas em injeção de
+XSS, e recomenda trocar o caractere de menor-que pelo equivalente unicode antes
+de injetar. A pergunta que dimensiona o risco é: de onde vêm os dados do schema?
+Se vierem de input de usuário, essa sanitização não é opcional. Neste site cada
+objeto é montado a partir do frontmatter do próprio conteúdo e de constantes do
+repositório — fontes que eu controlo, nunca texto digitado por um terceiro.
+
+Com esse componente pronto, o trabalho de cada tipo de schema vira apenas montar
+o objeto certo e passá-lo adiante. As próximas seções são exatamente isso, tipo
+por tipo.
+
+## `Article`: o schema que sai do frontmatter, não da mão
+
+O erro mais comum com `Article` é escrever o objeto à mão em cada post. Isso
+garante que, em algum momento, o `headline` do schema vai divergir do `<title>`
+da página, ou a `dateModified` vai ficar congelada numa data que não corresponde
+mais à última edição. Schema escrito à mão apodrece.
+
+A saída é derivar o `Article` da mesma fonte que gera a página. Neste site, todo
+post do blog e o guia têm um bloco de frontmatter no topo do arquivo MDX, e o
+componente de `Article` recebe esse frontmatter inteiro em vez de valores
+digitados:
+
+```tsx
+// src/components/seo/JsonLd.tsx
+export function ArticleJsonLd({
+  frontmatter,
+  path,
+}: {
+  frontmatter: PostFrontmatter
+  path?: string
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: frontmatter.title,
+    description: frontmatter.description,
+    datePublished: frontmatter.datePublished,
+    dateModified: frontmatter.dateModified,
+    inLanguage: frontmatter.lang,
+    mainEntityOfPage: `${site.url}${path ?? `/blog/${frontmatter.slug}`}`,
+    author: personSchema(),
+    publisher: { '@type': 'Organization', name: site.name, url: site.url },
+  }
+  return <JsonLdScript schema={schema} />
+}
+```
+
+O mapeamento é direto e é o ponto inteiro: `headline` vem do `title` do
+frontmatter, `description` do `description`, as datas das datas, `inLanguage` do
+`lang`, e `mainEntityOfPage` é a URL canônica montada a partir da base do site
+mais o caminho da rota. O `author` e o `publisher` não são digitados nunca: saem
+de uma função e de um módulo central. Escrevi o frontmatter uma vez; o schema se
+deriva dele. Não há um segundo lugar onde a data possa divergir, porque só existe
+um lugar onde ela é escrita.
+
+Esse é o princípio que se repete no resto do artigo: **schema não se escreve por
+página, se deriva da fonte de verdade.** Se você tem que atualizar o conteúdo em
+um lugar e o schema em outro, é só questão de tempo até os dois discordarem — e
+um schema que discorda da página é pior que schema nenhum, porque descreve uma
+página que não existe.
+
+Vale notar que `Article` continua gerando rich result: implementado com
+`headline`, datas e as entidades de autor e publisher, ele habilita a exibição de
+autor e das datas de publicação e modificação no resultado. Diferente do FAQ, que
+veremos adiante, aqui o esforço ainda tem contrapartida visual na busca.
+
+## `BreadcrumbList`: o schema que quase todo mundo esquece
+
+O `BreadcrumbList` é o schema de melhor custo-benefício que a maioria dos sites
+ignora. Ele descreve a trilha de navegação até a página — Home › Blog › título do
+post — e é um dos rich results que seguem plenamente ativos: no resultado de
+busca, ele substitui a URL crua por esse caminho legível. É trabalho pequeno com
+retorno visual concreto, e por isso vale ser sistemático.
+
+"Sistemático" aqui significa não escrever o breadcrumb por página. Ele é montado
+a partir da hierarquia da rota, do mesmo jeito que o `Article` é derivado do
+frontmatter:
+
+```tsx
+// src/components/seo/JsonLd.tsx
+export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${site.url}${item.path}`,
+    })),
+  }
+  return <JsonLdScript schema={schema} />
+}
+```
+
+Dois detalhes que o Google exige e que o mapeamento acima respeita: cada
+`ListItem` precisa de uma `position` sequencial começando em 1, e precisa de
+`name`. O `item` — a URL do nível — é o que faz cada degrau da trilha ser
+clicável. Um `BreadcrumbList` precisa de pelo menos dois níveis para fazer
+sentido; um único item não é uma trilha. É a mesma regra que o
+[gerador de JSON-LD](/ferramentas/gerador-json-ld) deste site aplica antes de
+deixar você gerar um breadcrumb: sem dois níveis, ele recusa.
+
+## `FAQPage`: o que mudou em maio de 2026 e por que ainda mantenho
+
+Aqui está a seção onde a maior parte do conteúdo em português está desatualizada,
+então vou ser direto: **desde 7 de maio de 2026, o Google não exibe mais o rich
+result de FAQ.** Aquele dropdown de perguntas e respostas que expandia embaixo do
+seu resultado de busca não aparece mais — para nenhum site. Não é uma restrição a
+certas categorias, como foi em 2023, quando o recurso ficou limitado a sites de
+governo e saúde. Desta vez o recurso saiu do ar por completo, e em 15 de junho de
+2026 o Google removeu a própria documentação do recurso.
+
+Isso tem uma consequência prática incômoda: boa parte do que você encontra
+pesquisando "FAQPage schema" hoje descreve um recurso que não existe mais, e a
+página oficial que serviria de referência não está mais lá para desmentir. Em
+dados estruturados, verificar a data da fonte deixou de ser preciosismo.
+
+Duas reações erradas circularam quando o aviso saiu, e vale desarmar as duas. A
+primeira: "schema morreu". Não morreu — o `FAQPage` continua um tipo válido do
+schema.org, o markup não gera erro e não prejudica a página, e outros tipos como
+`Article` e `BreadcrumbList` seguem produzindo rich results normalmente. A
+segunda: "então FAQPage agora é essencial para IA". Também não. No guia oficial
+de otimização para busca com IA generativa, publicado em maio de 2026, o Google
+afirma que não é preciso adicionar markup especial nem schema.org para aparecer
+em AI Overviews ou no AI Mode. Schema segue útil para os rich results
+tradicionais — que, por sua vez, alimentam as respostas de IA de forma indireta —
+mas não é uma alavanca direta de citação por IA. Quem trocou "vai virar rich
+result" por "vai ser citado pela IA" só trocou uma promessa sem base por outra.
+
+Então por que eu mantenho o `FAQPage` neste site, se o rich result acabou? Por
+uma razão de arquitetura: aqui, o FAQ visível na página e o FAQPage estruturado
+nascem da mesma fonte. Não existe um componente de `FAQPage` escrito à mão. O que
+existe é um array `faq` no frontmatter do artigo — as mesmas perguntas e
+respostas que aparecem no fim desta página para você — e um único componente lê
+esse array para renderizar duas coisas ao mesmo tempo: o acordeão visual e o
+JSON-LD correspondente.
+
+```tsx
+// src/components/sections/FaqSection.tsx
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: items.map(({ question, answer }) => ({
+        '@type': 'Question',
+        name: question,
+        acceptedAnswer: { '@type': 'Answer', text: answer },
+      })),
+    }),
+  }}
+/>
+```
+
+O `items` desse trecho é exatamente o mesmo array que o acordeão percorre para
+desenhar as perguntas na tela, algumas linhas acima no mesmo arquivo. Como a
+fonte é única, o custo marginal de manter o `FAQPage` é praticamente zero: eu
+escrevo o FAQ para o leitor de qualquer jeito, e o schema sai do mesmo array sem
+trabalho extra. E resolve por construção a exigência que o Google sempre fez do
+FAQPage — o conteúdo do schema tem que estar visível na página. Não pode
+divergir, porque é literalmente o mesmo dado.
+
+Esse detalhe importa mais do que parece, porque a validação automática não pega
+divergência. O teste de pesquisa aprimorada, quando ainda validava FAQ, nunca
+comparou o JSON-LD ao texto visível: ele checa sintaxe e propriedades, não se o
+schema bate com o que o usuário vê. Um schema que declara uma resposta e uma
+página que mostra outra passa na validação e mesmo assim viola a política.
+Derivar os dois da mesma fonte elimina essa classe de erro antes de ela existir.
+
+A recomendação, então, não é "adicione FAQPage para ganhar o rich result" — esse
+conselho morreu em maio. É: se você tem um FAQ genuíno na página, que responde
+perguntas reais, marcá-lo com FAQPage tem custo baixo e mantém a página bem
+descrita para os mecanismos que ainda leem o markup. Se o seu FAQ só existia para
+caçar o dropdown no SERP, a hora de repensá-lo é agora.
+
+## `Person` e `Organization`: a entidade autor e o E-E-A-T
+
+O `author` do `Article` lá em cima não é um nome solto numa string. É uma
+referência a uma entidade `Person` única, montada uma vez a partir do módulo
+central do site e reaproveitada por todos os artigos:
+
+```tsx
+// src/components/seo/JsonLd.tsx
+function personSchema() {
+  const sameAs = [site.author.github, site.author.linkedin].filter(Boolean)
+  return {
+    '@type': 'Person',
+    name: site.author.name,
+    jobTitle: site.author.jobTitle,
+    url: site.url,
+    ...(sameAs.length > 0 ? { sameAs } : {}),
+  }
+}
+```
+
+O campo que faz o trabalho pesado é o `sameAs`: ele liga a entidade `Person` do
+site aos perfis externos — GitHub, LinkedIn — que corroboram quem é o autor. Não
+é uma declaração de que a pessoa existe; é um conjunto de âncoras para outras
+presenças verificáveis dessa mesma pessoa na web. É assim que dados estruturados
+participam do E-E-A-T: não afirmando expertise, mas conectando a autoria a uma
+identidade rastreável.
+
+Repare no `filter(Boolean)` e no espalhamento condicional: se um perfil não
+estiver preenchido, o campo simplesmente não entra no schema. É uma regra que
+vale para todo tipo — campo vazio é pior que campo ausente, porque descreve a
+página com uma informação que não existe. O gerador do site segue a mesma
+política: campos em branco são omitidos da saída em vez de virarem string vazia.
+
+## `SoftwareApplication` e o caso das páginas de ferramenta
+
+Nem toda página é um artigo. Uma página que entrega uma ferramenta interativa é
+descrita pelo tipo `SoftwareApplication`, não por `Article`. Neste site, as
+páginas de ferramenta emitem esse schema com os campos que descrevem o que a
+ferramenta é:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+}
+```
+
+Os valores não são decorativos: `applicationCategory` diz que é uma ferramenta
+para desenvolvedores, `operatingSystem` que roda no navegador,
+`isAccessibleForFree` mais o `offers` com preço zero declaram que é gratuita. É a
+descrição honesta de uma ferramenta que roda inteiramente no cliente e não cobra
+nada. O princípio geral atravessa todos os tipos: o `@type` que você escolhe tem
+que corresponder ao que a página realmente é. Marcar uma página de ferramenta
+como `Article`, ou um artigo como `SoftwareApplication`, é o tipo de incoerência
+que o Google trata como sinal ruim.
+
+## Page vs. layout: onde cada schema deve ser renderizado
+
+Com os tipos definidos, sobra uma decisão de arquitetura que confunde bastante: o
+schema vai no `page.tsx` da rota ou no `layout.tsx`? A resposta não é uma
+preferência de estilo — ela cai direto da pergunta "de onde vêm os dados desse
+schema?".
+
+Schema que depende do conteúdo específico da rota vai no `page.tsx`. `Article` e
+`BreadcrumbList` de um post são assim: os dados que os alimentam — título, datas,
+trilha — só existem no nível daquela página. Não há como montá-los no layout,
+porque o layout não conhece o post.
+
+Schema estável para uma seção inteira pode viver no `layout.tsx` correspondente.
+Um `WebSite` ou uma `Organization` que valem para o site todo não precisam ser
+remontados a cada rota. A regra que resolve todos os casos: **renderize cada
+schema no nível onde os dados que o alimentam realmente vivem.** Se o dado é da
+página, o schema é da página. Se o dado é da seção, o schema é do layout.
+
+<figure>
+  <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tipos de schema JSON-LD emitidos por cada tipo de rota do site">
+    <title>Mapa de tipos de schema por tipo de página</title>
+    <desc>Mapa dos tipos de JSON-LD emitidos por cada tipo de rota do site. A home emite WebSite e Person. A página sobre emite Person e BreadcrumbList. Páginas de blog e o guia emitem Article e BreadcrumbList, além de FAQPage apenas quando o frontmatter do conteúdo tem um array de perguntas. Páginas de ferramenta emitem SoftwareApplication e BreadcrumbList. BreadcrumbList está presente em todas as páginas internas.</desc>
+    <text x="20" y="30" fontSize="15" fontWeight="500" fill="var(--foreground, #111827)">Que schema cada tipo de página emite</text>
+    <text x="20" y="50" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">É este mesmo mapa que a suíte de testes verifica em cada rota.</text>
+    <rect x="20" y="72" width="150" height="38" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="95" y="96" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Home</text>
+    <text x="95" y="138" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">WebSite</text>
+    <text x="95" y="160" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">Person</text>
+    <rect x="185" y="72" width="150" height="38" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="260" y="96" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Sobre</text>
+    <text x="260" y="138" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">Person</text>
+    <text x="260" y="160" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">BreadcrumbList</text>
+    <rect x="350" y="72" width="150" height="38" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="425" y="96" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Blog e guia</text>
+    <text x="425" y="138" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">Article</text>
+    <text x="425" y="160" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">BreadcrumbList</text>
+    <text x="425" y="182" fontSize="12" textAnchor="middle" fill="var(--color-accent, #F59E0B)">FAQPage</text>
+    <text x="425" y="200" fontSize="11" textAnchor="middle" fill="var(--color-diagram-axis, #9CA3AF)">só se houver faq</text>
+    <rect x="515" y="72" width="145" height="38" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="587" y="96" fontSize="13" fontWeight="500" textAnchor="middle" fill="var(--foreground, #111827)">Ferramenta</text>
+    <text x="587" y="138" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">SoftwareApplication</text>
+    <text x="587" y="160" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">BreadcrumbList</text>
+    <line x1="20" y1="230" x2="660" y2="230" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="20" y="256" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">BreadcrumbList aparece em toda página interna; FAQPage é o único condicional.</text>
+    <text x="20" y="278" fontSize="12" fill="var(--color-diagram-axis, #9CA3AF)">Cada tipo é derivado do dado que aquela rota já tem — nenhum é escrito à mão.</text>
+  </svg>
+  <figcaption>
+    Cada tipo de rota emite um conjunto fixo de tipos de schema. O FAQPage é o
+    único condicional: ele só aparece quando o conteúdo tem um FAQ.
+  </figcaption>
+</figure>
+
+| Tipo de rota | `@type` emitidos |
+|---|---|
+| Home | `WebSite`, `Person` |
+| Sobre | `Person`, `BreadcrumbList` |
+| Blog | `Article`, `BreadcrumbList`, `FAQPage` (se houver `faq`) |
+| Guia | `Article`, `BreadcrumbList` |
+| Ferramenta | `SoftwareApplication`, `BreadcrumbList` |
+
+Isso vale também para o caso mais dinâmico de todos — uma rota com parâmetro,
+como `/blog/[slug]`. O schema não é escrito para cada slug; ele é derivado, dentro
+da função assíncrona da rota, dos mesmos dados que geram a página. Você busca o
+conteúdo pelo parâmetro, monta o objeto de schema a partir desses campos, e
+renderiza o componente de script no retorno. O schema de uma rota dinâmica é
+dinâmico pela mesma razão que a página é: os dois saem da mesma busca.
+
+## Como validar: qual ferramenta para qual schema
+
+Validar dados estruturados hoje exige uma distinção que ficou nova este ano: nem
+toda ferramenta valida todo tipo de schema, porque o FAQ saiu do catálogo de rich
+results do Google. O roteiro depende de qual `@type` você está checando.
+
+Para os tipos que ainda geram rich result — `Article`, `BreadcrumbList`,
+`SoftwareApplication` — o
+[teste de pesquisa aprimorada do Google](https://search.google.com/test/rich-results)
+continua sendo a ferramenta certa. Cole a URL, não o código: pela URL a
+ferramenta renderiza a página como o Google a vê, o que importa justamente se
+algo do seu schema depender de renderização. Depois confira duas coisas. Erros
+bloqueiam a elegibilidade — uma propriedade obrigatória faltando, um `@type` que
+o Google não reconhece, um JSON que não faz parse. Avisos, não: eles apontam
+propriedades recomendadas ausentes, e o rich result ainda funciona sem elas, só
+com menos detalhe. Corrija todos os erros; trate os avisos como melhoria
+opcional.
+
+Para o `FAQPage`, o roteiro mudou. Sem rich result de FAQ, não há elegibilidade a
+testar — o que continua fazendo sentido é validar a **sintaxe** do schema, e para
+isso o caminho é o [validador do schema.org](https://validator.schema.org/), que
+confere se o markup está de acordo com o vocabulário independentemente de o
+Google gerar algum recurso visual a partir dele.
+
+Depois de publicar, o monitoramento contínuo é o Search Console. Os relatórios de
+melhorias mostram, em escala de site, quando um tipo de schema quebra em muitas
+páginas de uma vez — uma mudança de template que derruba o `Article` em duzentos
+posts aparece ali como um pico de itens inválidos que nenhum teste de URL
+individual pegaria. É a ferramenta de monitoramento ao longo do tempo,
+complementar ao teste pontual de antes de publicar. Cabe a ressalva honesta: este
+site é novo, então eu ainda não tenho histórico do relatório de melhorias para
+mostrar. O que descrevo é o papel da ferramenta, não um resultado meu.
+
+## Como impedir que quebre: o teste que roda no meu CI
+
+Validar antes de publicar resolve o dia do lançamento. Não resolve o terceiro
+mês, quando alguém — talvez você mesmo — mexe num template e derruba o schema de
+todas as páginas sem perceber. O jeito de garantir que isso não passe
+despercebido é transformar a validação em teste automatizado que bloqueia o
+deploy.
+
+A suíte roda em toda pull request, no GitHub Actions, e bloqueia o merge se
+falhar. O detalhe que a torna robusta é que as rotas testadas não são escritas à
+mão numa lista: elas vêm do `sitemap.ts`, que por sua vez deriva de todos os
+posts existentes em `/content`. Na prática, **um artigo novo entra na suíte no
+momento em que o arquivo é commitado** — inclusive este que você está lendo. Eu
+não preciso lembrar de adicionar o post ao teste; o teste descobre o post
+sozinho.
+
+Por rota, a suíte afirma um conjunto de invariantes. Existe exatamente um `<h1>`
+não vazio. O `<title>` está presente e tem no máximo 60 caracteres. A meta
+description está presente e tem no máximo 155. O canonical é autorreferente. E, o
+que importa aqui: **todo bloco `application/ld+json` da página faz `JSON.parse`
+sem erro**, e o conjunto de `@type` esperado para aquele tipo de rota está
+presente.
+
+```ts
+// tests/seo/seo.spec.ts — trecho da suíte de regressão de SEO
+const jsonLdBlocks = await page
+  .locator('script[type="application/ld+json"]')
+  .allTextContents()
+
+const foundTypes: string[] = []
+for (const raw of jsonLdBlocks) {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    throw new Error(`JSON-LD block on ${route} is not valid JSON:\n${raw}`)
+  }
+  for (const node of Array.isArray(parsed) ? parsed : [parsed]) {
+    const type = (node as { '@type'?: string })['@type']
+    if (type) foundTypes.push(type)
+  }
+}
+
+for (const type of expectedJsonLdTypes(route)) {
+  expect.soft(foundTypes, `JSON-LD @type "${type}" on ${route}`).toContain(type)
+}
+```
+
+O `expectedJsonLdTypes` é o mapa que você já viu no diagrama, escrito como
+função: uma rota de blog deve conter `Article` e `BreadcrumbList`, mais `FAQPage`
+se — e somente se — o frontmatter daquele post tiver um array `faq`; uma rota de
+ferramenta deve conter `SoftwareApplication` e `BreadcrumbList`, e assim por
+diante. A consequência é a frase que resume por que o teste existe: **se um bloco
+de JSON-LD deixar de fazer parse, ou um `@type` sumir de um template, o teste
+falha e o merge é bloqueado.**
+
+Há uma segunda camada, no próprio build. O frontmatter é validado na hora de
+montar a página: se faltar um campo obrigatório, ou se o `title` passar de 60
+caracteres, ou a `description` de 155, o build quebra. Não é um aviso que se
+ignora; é uma falha que impede a geração. Entre o build que recusa frontmatter
+inválido e a suíte que recusa schema inválido, o caminho para publicar uma página
+com dados estruturados quebrados fica fechado nos dois pontos onde o erro costuma
+entrar.
+
+## O que não perseguir
+
+Fecho com a calibragem honesta, porque metade do valor de um artigo técnico está
+em dizer o que não fazer. Não persiga ranking com JSON-LD: ele não é fator de
+classificação e nenhum volume de schema vai mudar isso. Não adicione `FAQPage`
+esperando o dropdown no SERP — ele foi descontinuado em maio de 2026 e não vai
+voltar por bem-intencionado que seja o seu markup. Não trate schema como um
+atalho para ser citado por IA; o próprio Google diz que não há markup especial
+exigido para isso. E não escreva schema à mão por página: o que se deriva da
+fonte de verdade não diverge, o que se digita duas vezes diverge.
+
+O que dados estruturados de fato entregam é mais modesto e mais real: eles tornam
+a página elegível aos rich results que ainda existem, descrevem a estrutura do
+conteúdo para quem lê o markup, e — se você travar isso com teste — permanecem
+corretos ao longo do tempo sem vigilância manual. Isso fecha o segundo caminho do
+[guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs); os outros tópicos
+seguem a mesma lógica de derivar do conteúdo em vez de escrever à mão. Quando
+você precisar gerar um schema rápido para um caso específico, o
+[gerador de JSON-LD](/ferramentas/gerador-json-ld) produz o objeto e o componente
+Next.js prontos, no mesmo padrão de Server Component que descrevi aqui. Este
+artigo é a arquitetura; a ferramenta é o atalho para quando você já entendeu a
+arquitetura e só quer o resultado.
