@@ -114,16 +114,17 @@ export function FaqJsonLd() {
           <p>
             Renderize o componente dentro da página (não no{' '}
             <code>layout.tsx</code>, a menos que o schema valha para o site
-            inteiro, como <code>WebSite</code>). A implementação completa —
-            incluindo <code>Article</code> por rota dinâmica e{' '}
-            <code>BreadcrumbList</code> — está no{' '}
+            inteiro, como <code>WebSite</code>). Este gerador entrega o schema
+            rápido; para a implementação completa — onde cada tipo vive no App
+            Router, como derivar o <code>Article</code> do frontmatter e como
+            travar tudo por teste automatizado — veja{' '}
             <Link
-              href="/guia/seo-tecnico-nextjs"
-              title="Guia de SEO técnico para Next.js"
+              href="/blog/json-ld-nextjs"
+              title="Como implementar JSON-LD no Next.js (App Router)"
             >
-              guia de SEO técnico para Next.js
-            </Link>{' '}
-            deste site.
+              como implementar JSON-LD no Next.js
+            </Link>
+            .
           </p>
 
           <h2>Como validar os dados estruturados</h2>

@@ -79,6 +79,15 @@ export const searchData: SearchItem[] = [
     keywords: ['lcp alto', 'lcp', 'preload scanner', 'background-image', 'use client', 'render delay', 'fade-in', 'anti-flicker', '@import', 'preload', 'skeleton', 'hidratação'],
   },
 
+  {
+    id: 'artigo-json-ld-nextjs',
+    title: 'Como implementar JSON-LD no Next.js (App Router)',
+    description: 'Onde cada schema vive no App Router, como derivá-lo do frontmatter e como travá-lo por teste',
+    href: '/blog/json-ld-nextjs',
+    category: 'artigo',
+    keywords: ['json-ld', 'dados estruturados', 'schema.org', 'app router', 'faqpage', 'breadcrumblist', 'article', 'rich results', 'server component', 'dangerouslySetInnerHTML'],
+  },
+
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
   {
     id: 'gerador-json-ld',
