@@ -36,6 +36,7 @@ const paths = [
   '/guia/seo-tecnico-nextjs',
   '/blog',
   '/ferramentas',
+  '/ferramentas/gerador-json-ld',
   '/sobre',
   '/politica-de-privacidade',
 ]

@@ -36,6 +36,7 @@ const postsBySlug = new Map(
 function expectedJsonLdTypes(path: string): string[] {
   if (path === '/') return ['WebSite', 'Person']
   if (path === '/sobre') return ['Person', 'BreadcrumbList']
+  if (path.startsWith('/ferramentas/')) return ['SoftwareApplication', 'BreadcrumbList']
   if (path.startsWith('/guia/')) return ['Article', 'BreadcrumbList']
   if (path.startsWith('/blog/')) {
     const frontmatter = postsBySlug.get(path.slice('/blog/'.length))

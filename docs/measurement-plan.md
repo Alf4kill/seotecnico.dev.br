@@ -19,7 +19,7 @@
 | Event name | Description | Trigger (GTM) | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
 | `page_view` | Pageview incl. SPA navigations | Google tag, Initialization — All Pages + History Change | default | no | **verified** — fires to `G-59LQZ6LR72` on load + SPA nav, consent-gated (2026-07-13, local hit inspection) |
-| `tool_generate_jsonld` | User generated a schema in the JSON-LD tool | Custom Event `tool_generate_jsonld` (dataLayer push on generate) | `schema_type` | **yes** | helper ready; tool not built |
+| `tool_generate_jsonld` | User generated a schema in the JSON-LD tool | Custom Event `tool_generate_jsonld` (dataLayer push on successful generate — validation errors don't fire it) | `schema_type` (`Article` / `FAQPage` / `BreadcrumbList` / `Person` / `Organization`) | **yes** | **implemented** 2026-07-18 — tool live at `/ferramentas/gerador-json-ld`; pending in GTM: Custom Event trigger + GA4 event tag with `schema_type` mapped (same recipe as `web_vitals`), then mark as key event in GA4 Admin → Events after first hits |
 | `tool_validate_meta` | User validated a URL in the meta tag tool | Custom Event `tool_validate_meta` | `issues_found` | **yes** | helper ready; tool not built |
 | `tool_check_cwv` | User checked a domain in the CWV tool | Custom Event `tool_check_cwv` | `lcp_bucket` (`good` / `needs-improvement` / `poor` / `no-data`) | **yes** | helper ready; tool not built |
 | `article_read` | Reader reached the end of an article | Element Visibility — CSS selector `#article-end` (article footer, `src/app/blog/[slug]/page.tsx`) | `article_slug` | no | first article published 2026-07-17; selector in place — pending GTM trigger + tag |
