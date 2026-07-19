@@ -67,6 +67,31 @@ export function ArticleJsonLd({
   return <JsonLdScript schema={schema} />
 }
 
+/** Schema das páginas de ferramenta (CLAUDE.md §6): app web gratuito. */
+export function SoftwareApplicationJsonLd({
+  name,
+  description,
+  path,
+}: {
+  name: string
+  description: string
+  path: string
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name,
+    description,
+    url: `${site.url}${path}`,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Web',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+    author: personSchema(),
+  }
+  return <JsonLdScript schema={schema} />
+}
+
 export interface BreadcrumbItem {
   name: string
   /** Path relative to the site root, e.g. "/blog" */
