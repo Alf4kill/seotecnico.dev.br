@@ -91,7 +91,9 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes' }: FaqSectio
         </div>
       </div>
 
-      {/* Rich snippet de FAQ (schema.org/FAQPage) */}
+      {/* Rich snippet de FAQ (schema.org/FAQPage).
+          `<` vira `<` para que nenhum texto de pergunta/resposta possa
+          fechar a tag script — mesmo escape usado em components/seo/JsonLd. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -103,7 +105,7 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes' }: FaqSectio
               name: question,
               acceptedAnswer: { '@type': 'Answer', text: answer },
             })),
-          }),
+          }).replace(/</g, '\\u003c'),
         }}
       />
     </section>
