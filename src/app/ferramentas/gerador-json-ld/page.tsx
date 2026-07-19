@@ -36,7 +36,7 @@ const faqItems = [
   {
     question: 'Onde eu colo o JSON-LD gerado no Next.js?',
     answer:
-      'Num Server Component da página, dentro de uma tag script com type application/ld+json, usando dangerouslySetInnerHTML com JSON.stringify do schema. A aba "Componente Next.js" da ferramenta já entrega esse código pronto — é o mesmo padrão que este site usa em produção.',
+      'Num Server Component da página, dentro de uma tag script com type application/ld+json, usando dangerouslySetInnerHTML com JSON.stringify do schema — escapando "<" como \\u003c, porque JSON.stringify não faz isso e um texto do schema poderia fechar a tag. A aba "Componente Next.js" da ferramenta já entrega esse código pronto — é o mesmo padrão que este site usa em produção.',
   },
   {
     question: 'Preciso validar o código antes de publicar?',
@@ -103,12 +103,10 @@ export default function GeradorJsonLdPage() {
 const schema = { /* saída do gerador */ }
 
 export function FaqJsonLd() {
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  )
+  // JSON.stringify não escapa "<": o replace impede que um texto do schema
+  // feche a tag script (recomendação do guia de JSON-LD do Next.js).
+  const json = JSON.stringify(schema).replace(/</g, '\\\\u003c')
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />
 }`}</code>
           </pre>
           <p>
