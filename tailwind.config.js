@@ -28,6 +28,10 @@ module.exports = {
         gray: {
           DEFAULT: "#E5E7EB",
         },
+        // Mesmo valor de --color-accent (globals.css) — destaque/anotação.
+        accent: {
+          DEFAULT: "#F59E0B",
+        },
       },
       fontFamily: {
         sans: [
