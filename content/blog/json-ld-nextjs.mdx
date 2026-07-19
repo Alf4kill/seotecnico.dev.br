@@ -154,7 +154,7 @@ carregar e executar JavaScript, e JSON-LD é dado, não código executável — 
 `<script type="application/ld+json">` nativa é a escolha certa.
 
 Este é o padrão que roda em produção neste site — todos os schemas do site passam
-por essas dez linhas:
+por essas poucas linhas:
 
 ```tsx
 // src/components/seo/JsonLd.tsx
@@ -162,7 +162,7 @@ function JsonLdScript({ schema }: { schema: Record<string, unknown> }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
     />
   )
 }
@@ -173,10 +173,20 @@ O `dangerouslySetInnerHTML` assusta pelo nome, mas aqui ele é o caminho correto
 "dangerous" é um lembrete legítimo, e vale levá-lo a sério — a documentação do
 Next.js alerta que `JSON.stringify` não sanitiza strings usadas em injeção de
 XSS, e recomenda trocar o caractere de menor-que pelo equivalente unicode antes
-de injetar. A pergunta que dimensiona o risco é: de onde vêm os dados do schema?
-Se vierem de input de usuário, essa sanitização não é opcional. Neste site cada
-objeto é montado a partir do frontmatter do próprio conteúdo e de constantes do
-repositório — fontes que eu controlo, nunca texto digitado por um terceiro.
+de injetar. É exatamente o que aquele `.replace()` faz: dentro de uma string
+JSON, `\u003c` é a forma escapada do caractere `<`. O parser lê o mesmo dado, mas
+nenhum texto do schema consegue mais escrever um `</script>` literal que feche a
+tag no meio do HTML.
+
+A pergunta que dimensiona o risco é: de onde vêm os dados do schema? Se vierem de
+input de usuário, essa sanitização não é opcional. Neste site cada objeto é
+montado a partir do frontmatter do próprio conteúdo e de constantes do
+repositório — fontes que eu controlo, nunca texto digitado por um terceiro. Ou
+seja: aqui o escape não corrige uma vulnerabilidade, ele remove a dependência de
+uma disciplina editorial. Sem ele, o dia em que uma resposta de FAQ mencionar uma
+tag HTML vira um bug de HTML quebrado. É uma linha de código para nunca precisar
+lembrar disso — e é por isso que ela está no componente, e não numa regra de
+revisão.
 
 Com esse componente pronto, o trabalho de cada tipo de schema vira apenas montar
 o objeto certo e passá-lo adiante. As próximas seções são exatamente isso, tipo
@@ -323,7 +333,7 @@ JSON-LD correspondente.
         name: question,
         acceptedAnswer: { '@type': 'Answer', text: answer },
       })),
-    }),
+    }).replace(/</g, '\\u003c'),
   }}
 />
 ```

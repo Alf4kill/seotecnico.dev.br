@@ -1,11 +1,18 @@
 import { site } from '@/lib/site'
 import type { PostFrontmatter } from '@/lib/content'
 
+/**
+ * Serializa o schema para dentro de <script type="application/ld+json">.
+ *
+ * `JSON.stringify` não escapa `<`, então uma string de schema com `</script>`
+ * fecharia a tag no HTML. Escapar `<` como `<` (recomendado pelo guia de
+ * JSON-LD do Next.js) é transparente para o parser JSON e neutraliza isso.
+ */
 function JsonLdScript({ schema }: { schema: Record<string, unknown> }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
     />
   )
 }

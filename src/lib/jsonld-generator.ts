@@ -265,12 +265,10 @@ export function toNextComponent(
 const schema = ${toJsonLd(schema)}
 
 export function ${name}() {
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  )
+  // JSON.stringify não escapa "<": o replace impede que um texto do schema
+  // feche a tag script (recomendação do guia de JSON-LD do Next.js).
+  const json = JSON.stringify(schema).replace(/</g, '\\\\u003c')
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />
 }
 `
 }
