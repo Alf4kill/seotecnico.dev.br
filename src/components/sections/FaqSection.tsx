@@ -22,7 +22,7 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes' }: FaqSectio
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section className="bg-[#F9FAFB] py-12 md:py-16 lg:py-20" aria-labelledby="faq-titulo">
+    <section className="bg-surface-2 py-12 md:py-16 lg:py-20" aria-labelledby="faq-titulo">
       <div className="container">
 
         <h2
@@ -44,7 +44,7 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes' }: FaqSectio
               <div
                 key={question}
                 className={[
-                  'rounded-xl bg-white transition-colors duration-200',
+                  'rounded-xl bg-surface transition-colors duration-200',
                   open
                     ? 'border border-primary'
                     : 'border border-transparent shadow-sm',

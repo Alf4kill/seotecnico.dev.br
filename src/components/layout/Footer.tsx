@@ -26,7 +26,7 @@ export function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-gray bg-white">
+    <footer className="border-t border-gray bg-surface">
       <div className="container py-10 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
 
         {/* ── Marca + byline ────────────────────────────────────── */}

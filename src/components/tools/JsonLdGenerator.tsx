@@ -33,7 +33,7 @@ const schemaOptions: { value: GeneratorSchemaType; label: string }[] = [
 type OutputTab = 'json' | 'next'
 
 const inputClass =
-  'w-full rounded-lg border border-gray bg-white px-3 py-2 text-sm text-foreground ' +
+  'w-full rounded-lg border border-gray bg-surface px-3 py-2 text-sm text-foreground ' +
   'placeholder:text-muted/60 focus:border-primary focus:outline-none'
 
 function Field({
@@ -98,7 +98,7 @@ export function JsonLdGenerator() {
   }
 
   return (
-    <div className="mt-10 rounded-2xl border border-gray bg-white p-5 md:p-8">
+    <div className="mt-10 rounded-2xl border border-gray bg-surface p-5 md:p-8">
       <Field label="Tipo de schema" required>
         <select
           className={inputClass}
@@ -432,7 +432,7 @@ export function JsonLdGenerator() {
       <button
         type="button"
         onClick={generate}
-        className="mt-6 rounded-lg bg-primary px-6 py-2.5 font-semibold text-white hover:bg-primary/90"
+        className="mt-6 rounded-lg bg-primary-solid px-6 py-2.5 font-semibold text-white hover:bg-primary/90"
       >
         Gerar JSON-LD
       </button>
@@ -459,7 +459,7 @@ export function JsonLdGenerator() {
                   className={[
                     'rounded-lg px-4 py-2 text-sm font-medium',
                     tab === value
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary-solid text-white'
                       : 'border border-gray text-foreground hover:border-primary',
                   ].join(' ')}
                 >
@@ -483,7 +483,7 @@ export function JsonLdGenerator() {
               )}
             </button>
           </div>
-          <pre className="mt-4 overflow-x-auto rounded-xl bg-[#22272e] p-4 text-sm leading-6 text-[#adbac7]">
+          <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--code-background)] p-4 text-sm leading-6 text-[#c9d1d9]">
             <code>{tab === 'json' ? output.json : output.next}</code>
           </pre>
           <p className="mt-3 text-sm text-muted">
