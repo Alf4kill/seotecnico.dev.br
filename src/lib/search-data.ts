@@ -88,6 +88,15 @@ export const searchData: SearchItem[] = [
     keywords: ['json-ld', 'dados estruturados', 'schema.org', 'app router', 'faqpage', 'breadcrumblist', 'article', 'rich results', 'server component', 'dangerouslySetInnerHTML'],
   },
 
+  {
+    id: 'artigo-sitemap-dinamico-nextjs',
+    title: 'Sitemap dinâmico no Next.js com sitemap.ts e robots.ts',
+    description: 'Só 2 dos 4 campos importam pro Google: derivar do conteúdo, corrigir o lastmod e o fail-safe do robots.ts',
+    href: '/blog/sitemap-dinamico-nextjs',
+    category: 'artigo',
+    keywords: ['sitemap', 'sitemap.ts', 'robots.ts', 'robots.txt', 'sitemap dinâmico', 'lastmod', 'priority', 'changefreq', 'noindex', 'disallow', 'image sitemap', 'generatesitemaps', 'indexação'],
+  },
+
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
   {
     id: 'gerador-json-ld',

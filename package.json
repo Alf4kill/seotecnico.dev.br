@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:seo": "playwright test",
-    "lhci": "lhci autorun"
+    "lhci": "lhci autorun",
+    "baseline:crawl": "node scripts/baseline-crawl.mjs",
+    "baseline:lighthouse": "node scripts/baseline-lighthouse.mjs"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.6",
