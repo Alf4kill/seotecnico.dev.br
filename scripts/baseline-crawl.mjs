@@ -25,6 +25,7 @@ const BASE = (arg('base', 'https://seotecnico.dev.br')).replace(/\/$/, '')
 // Data local (não UTC): o baseline é nomeado pelo dia em que foi capturado.
 const TODAY = new Date().toLocaleDateString('sv-SE')
 const OUT = arg('out', path.join('docs', 'baseline', TODAY))
+const FORCE = argv.includes('--force')
 
 // Rotas fora do sitemap por design, verificadas à parte: precisam responder o
 // status certo (busca e 404 são noindex; robots e feed são infraestrutura).
@@ -278,6 +279,19 @@ function toMarkdown(data) {
 }
 
 // ── Execução ────────────────────────────────────────────────────────────────
+
+// Um baseline já capturado é registro histórico: re-rodar no mesmo dia (para
+// verificar um fix, por exemplo) não pode sobrescrevê-lo em silêncio. Use
+// --out para mandar a verificação a outro lugar, ou --force se a intenção for
+// mesmo substituir a captura.
+if (!FORCE && fs.existsSync(path.join(OUT, 'crawl.md'))) {
+  console.error(
+    `[baseline] ${OUT} already holds a capture.\n` +
+      '  Re-running would overwrite it. Pass --out <dir> to write elsewhere,\n' +
+      '  or --force to replace the existing capture on purpose.',
+  )
+  process.exit(1)
+}
 
 const sitemap = await get(`${BASE}/sitemap.xml`)
 if (sitemap.status !== 200) {

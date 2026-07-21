@@ -27,6 +27,7 @@ const arg = (name, fallback) => {
 const BASE = arg('base', 'https://seotecnico.dev.br').replace(/\/$/, '')
 const TODAY = new Date().toLocaleDateString('sv-SE')
 const OUT = arg('out', path.join('docs', 'baseline', TODAY))
+const FORCE = argv.includes('--force')
 
 // Budgets do CLAUDE.md §6 — os mesmos que o lighthouserc.js aplica no CI.
 const BUDGETS = {
@@ -158,6 +159,17 @@ function toMarkdown(rows, meta) {
 }
 
 // ── Execução ────────────────────────────────────────────────────────────────
+
+// Mesma proteção do baseline-crawl: não sobrescrever uma captura já feita —
+// aqui ainda mais caro, porque a corrida leva minutos antes de escrever nada.
+if (!FORCE && fs.existsSync(path.join(OUT, 'lighthouse.md'))) {
+  console.error(
+    `[baseline] ${OUT} already holds a capture.\n` +
+      '  Re-running would overwrite it. Pass --out <dir> to write elsewhere,\n' +
+      '  or --force to replace the existing capture on purpose.',
+  )
+  process.exit(1)
+}
 
 const paths = await sitemapPaths()
 const reportsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lh-baseline-'))
