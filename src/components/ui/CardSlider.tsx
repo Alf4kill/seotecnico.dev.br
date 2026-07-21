@@ -27,16 +27,16 @@ const styles: Record<
 > = {
   // Sobre fundo escuro/verde: controles brancos.
   light: {
-    button: 'bg-white text-primary hover:bg-gray-50',
-    dotActive: 'bg-white',
+    button: 'bg-surface text-primary hover:bg-surface-2',
+    dotActive: 'bg-surface',
     dotIdle: 'bg-white/50 hover:bg-white/70',
     outline: 'focus-visible:outline-white',
   },
   // Sobre fundo claro: botões brancos com sombra, dots verdes.
   dark: {
-    button: 'bg-white text-primary shadow-md hover:bg-gray-50',
-    dotActive: 'bg-primary',
-    dotIdle: 'bg-gray-300 hover:bg-gray-400',
+    button: 'bg-surface text-primary shadow-md hover:bg-surface-2',
+    dotActive: 'bg-primary-solid',
+    dotIdle: 'bg-foreground/25 hover:bg-foreground/40',
     outline: 'focus-visible:outline-primary',
   },
 }

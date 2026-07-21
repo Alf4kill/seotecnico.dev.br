@@ -59,7 +59,7 @@ export function BuscaResults({ initialQuery }: BuscaResultsProps) {
   return (
     <div className="py-12">
       {/* Input de busca */}
-      <div className="flex items-center gap-3 border border-gray-200 rounded-full px-5 py-3 bg-white shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all mb-10 max-w-xl">
+      <div className="flex items-center gap-3 border border-gray rounded-full px-5 py-3 bg-surface shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all mb-10 max-w-xl">
         <Search className="w-5 h-5 text-gray-400 shrink-0" strokeWidth={2} />
         <input
           type="search"
@@ -87,7 +87,7 @@ export function BuscaResults({ initialQuery }: BuscaResultsProps) {
                     <li key={item.id}>
                       <Link
                         href={item.href}
-                        className="flex flex-col gap-1 p-4 rounded-xl border border-gray-100 bg-white hover:border-primary hover:shadow-sm transition-all"
+                        className="flex flex-col gap-1 p-4 rounded-xl border border-gray-100 bg-surface hover:border-primary hover:shadow-sm transition-all"
                       >
                         <span className="text-sm font-semibold text-foreground">
                           {item.title}

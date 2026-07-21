@@ -29,7 +29,7 @@ export function PageHero({ titulo, subtitulo, breadcrumb, imagem }: PageHeroProp
     <section className="p-4">
       <div
         className="relative flex min-h-[240px] items-center justify-center overflow-hidden
-                   rounded-2xl bg-gradient-to-br from-primary-dark to-primary md:min-h-[300px]"
+                   rounded-2xl bg-gradient-to-br from-primary-solid-hover to-primary-solid md:min-h-[300px]"
       >
         {/* Imagem de fundo (opcional) */}
         {imagem && (
