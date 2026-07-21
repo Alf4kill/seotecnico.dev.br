@@ -46,6 +46,17 @@ npm run baseline:lighthouse
 # 3. Fill search-console.md and crux.md by hand — steps are inside each file.
 ```
 
+A captured baseline is a historical record, so both scripts **refuse to
+overwrite** a folder that already holds a capture. To re-check production after
+shipping a fix — which is a verification, not a new baseline — send it
+somewhere else:
+
+```bash
+node scripts/baseline-crawl.mjs --out /tmp/verify
+```
+
+Pass `--force` only when replacing a capture is genuinely the intent.
+
 Both scripts accept `--base` (default `https://seotecnico.dev.br`) and `--out`
 (default `docs/baseline/<today>`), so a local build can be snapshotted the same
 way:
