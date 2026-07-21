@@ -1,0 +1,474 @@
+{
+  "crawledAt": "2026-07-21T00:09:39.543Z",
+  "crawledOn": "2026-07-20",
+  "base": "https://seotecnico.dev.br",
+  "urls": [
+    "https://seotecnico.dev.br",
+    "https://seotecnico.dev.br/guia/seo-tecnico-nextjs",
+    "https://seotecnico.dev.br/blog",
+    "https://seotecnico.dev.br/ferramentas",
+    "https://seotecnico.dev.br/ferramentas/gerador-json-ld",
+    "https://seotecnico.dev.br/sobre",
+    "https://seotecnico.dev.br/politica-de-privacidade",
+    "https://seotecnico.dev.br/blog/json-ld-nextjs",
+    "https://seotecnico.dev.br/blog/lcp-alto-next-js",
+    "https://seotecnico.dev.br/blog/melhorar-lcp-nextjs"
+  ],
+  "images": [
+    "https://seotecnico.dev.br/images/blog/lcp-alto-next-js/preload-scanner-visivel-invisivel.webp",
+    "https://seotecnico.dev.br/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp"
+  ],
+  "pages": [
+    {
+      "url": "https://seotecnico.dev.br",
+      "path": "/",
+      "status": 200,
+      "title": "SEO Técnico: guias e ferramentas de SEO para Next.js",
+      "description": "Laboratório vivo de SEO técnico para desenvolvedores Next.js: guias práticos, ferramentas gratuitas e experimentos medidos com dados reais.",
+      "canonical": "https://seotecnico.dev.br",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "website",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image?8f6e5db17e6121b6",
+      "h1Count": 1,
+      "h1": "SEO técnico para desenvolvedores Next.js",
+      "h2Count": 3,
+      "jsonldBlocks": 2,
+      "jsonldTypes": [
+        "WebSite",
+        "Person"
+      ],
+      "jsonldValid": true,
+      "words": 222,
+      "htmlBytes": 109587,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/guia/seo-tecnico-nextjs",
+      "path": "/guia/seo-tecnico-nextjs",
+      "status": 200,
+      "title": "Guia de SEO técnico para Next.js (App Router)",
+      "description": "O que é SEO técnico no Next.js e como implementar: metadados, JSON-LD, sitemaps, Core Web Vitals, hreflang e renderização — com código real.",
+      "canonical": "https://seotecnico.dev.br/guia/seo-tecnico-nextjs",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "article",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image",
+      "h1Count": 1,
+      "h1": "Guia de SEO técnico para Next.js (App Router)",
+      "h2Count": 2,
+      "jsonldBlocks": 2,
+      "jsonldTypes": [
+        "Article",
+        "BreadcrumbList"
+      ],
+      "jsonldValid": true,
+      "words": 372,
+      "htmlBytes": 107355,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/blog/json-ld-nextjs",
+        "/blog/lcp-alto-next-js",
+        "/blog/melhorar-lcp-nextjs",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/blog",
+      "path": "/blog",
+      "status": 200,
+      "title": "Blog de SEO técnico para Next.js | SEO Técnico",
+      "description": "Artigos práticos de SEO técnico para desenvolvedores Next.js: Metadata API, JSON-LD, sitemaps, Core Web Vitals e experimentos medidos.",
+      "canonical": "https://seotecnico.dev.br/blog",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "website",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image",
+      "h1Count": 1,
+      "h1": "Blog de SEO técnico",
+      "h2Count": 3,
+      "jsonldBlocks": 1,
+      "jsonldTypes": [
+        "BreadcrumbList"
+      ],
+      "jsonldValid": true,
+      "words": 225,
+      "htmlBytes": 106758,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/blog/json-ld-nextjs",
+        "/blog/lcp-alto-next-js",
+        "/blog/melhorar-lcp-nextjs",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/ferramentas",
+      "path": "/ferramentas",
+      "status": 200,
+      "title": "Ferramentas gratuitas de SEO técnico | SEO Técnico",
+      "description": "Ferramentas gratuitas de SEO para desenvolvedores: gerador de JSON-LD, validador de meta tags e checador de Core Web Vitals. Sem login.",
+      "canonical": "https://seotecnico.dev.br/ferramentas",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "website",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image",
+      "h1Count": 1,
+      "h1": "Ferramentas gratuitas de SEO técnico",
+      "h2Count": 3,
+      "jsonldBlocks": 1,
+      "jsonldTypes": [
+        "BreadcrumbList"
+      ],
+      "jsonldValid": true,
+      "words": 209,
+      "htmlBytes": 104869,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/ferramentas",
+        "/ferramentas/gerador-json-ld",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/ferramentas/gerador-json-ld",
+      "path": "/ferramentas/gerador-json-ld",
+      "status": 200,
+      "title": "Gerador de JSON-LD e dados estruturados | SEO Técnico",
+      "description": "Gere JSON-LD válido de Article, FAQPage, BreadcrumbList, Person e Organization — com saída pronta para Next.js. Grátis, sem login e sem armazenar dados.",
+      "canonical": "https://seotecnico.dev.br/ferramentas/gerador-json-ld",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "website",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image",
+      "h1Count": 1,
+      "h1": "Gerador de JSON-LD",
+      "h2Count": 4,
+      "jsonldBlocks": 3,
+      "jsonldTypes": [
+        "SoftwareApplication",
+        "BreadcrumbList",
+        "FAQPage"
+      ],
+      "jsonldValid": true,
+      "words": 713,
+      "htmlBytes": 120853,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/blog/json-ld-nextjs",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "developers.google.com",
+        "github.com",
+        "search.google.com",
+        "validator.schema.org",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/sobre",
+      "path": "/sobre",
+      "status": 200,
+      "title": "Sobre o projeto SEO Técnico | SEO Técnico",
+      "description": "Quem faz o SEO Técnico: um desenvolvedor implementando e medindo SEO técnico em público, com dados reais do Search Console e CrUX.",
+      "canonical": "https://seotecnico.dev.br/sobre",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "website",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image",
+      "h1Count": 1,
+      "h1": "Sobre o SEO Técnico",
+      "h2Count": 2,
+      "jsonldBlocks": 2,
+      "jsonldTypes": [
+        "Person",
+        "BreadcrumbList"
+      ],
+      "jsonldValid": true,
+      "words": 252,
+      "htmlBytes": 101333,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/politica-de-privacidade",
+      "path": "/politica-de-privacidade",
+      "status": 200,
+      "title": "Política de privacidade | SEO Técnico",
+      "description": "Como o SEO Técnico trata seus dados: analytics somente com consentimento, sem cadastro, sem venda de dados. Transparência conforme a LGPD.",
+      "canonical": "https://seotecnico.dev.br/politica-de-privacidade",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "website",
+      "ogImage": "https://seotecnico.dev.br/opengraph-image",
+      "h1Count": 1,
+      "h1": "Política de privacidade",
+      "h2Count": 4,
+      "jsonldBlocks": 1,
+      "jsonldTypes": [
+        "BreadcrumbList"
+      ],
+      "jsonldValid": true,
+      "words": 340,
+      "htmlBytes": 101989,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/blog/json-ld-nextjs",
+      "path": "/blog/json-ld-nextjs",
+      "status": 200,
+      "title": "Como implementar JSON-LD no Next.js (App Router)",
+      "description": "Como adicionar JSON-LD no App Router: Article, FAQPage e BreadcrumbList em Server Components, schema por rota dinâmica e validação — com código real.",
+      "canonical": "https://seotecnico.dev.br/blog/json-ld-nextjs",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "article",
+      "ogImage": "https://seotecnico.dev.br/blog/json-ld-nextjs/opengraph-image?ccc8a7733a7f8b62",
+      "h1Count": 1,
+      "h1": "Como implementar JSON-LD no Next.js (App Router)",
+      "h2Count": 12,
+      "jsonldBlocks": 3,
+      "jsonldTypes": [
+        "Article",
+        "BreadcrumbList",
+        "FAQPage"
+      ],
+      "jsonldValid": true,
+      "words": 4447,
+      "htmlBytes": 261144,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/ferramentas",
+        "/ferramentas/gerador-json-ld",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "search.google.com",
+        "validator.schema.org",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/blog/lcp-alto-next-js",
+      "path": "/blog/lcp-alto-next-js",
+      "status": 200,
+      "title": "LCP alto no Next.js: os erros que impedem de melhorar",
+      "description": "Por que o LCP continua alto no Next.js mesmo depois de otimizar: background-image invisível ao scanner, render delay auto-infligido e preload pela culatra.",
+      "canonical": "https://seotecnico.dev.br/blog/lcp-alto-next-js",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "article",
+      "ogImage": "https://seotecnico.dev.br/blog/lcp-alto-next-js/opengraph-image?ccc8a7733a7f8b62",
+      "h1Count": 1,
+      "h1": "LCP alto no Next.js: os erros que impedem de melhorar",
+      "h2Count": 10,
+      "jsonldBlocks": 3,
+      "jsonldTypes": [
+        "Article",
+        "BreadcrumbList",
+        "FAQPage"
+      ],
+      "jsonldValid": true,
+      "words": 3166,
+      "htmlBytes": 182749,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/blog/melhorar-lcp-nextjs",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "www.linkedin.com"
+      ]
+    },
+    {
+      "url": "https://seotecnico.dev.br/blog/melhorar-lcp-nextjs",
+      "path": "/blog/melhorar-lcp-nextjs",
+      "status": 200,
+      "title": "Como melhorar o LCP no Next.js: guia pelas 4 subpartes",
+      "description": "Guia prático para melhorar o LCP no Next.js: diagnóstico pelas 4 subpartes, preload no next/image (v16), next/font e verificação no PSI e CrUX.",
+      "canonical": "https://seotecnico.dev.br/blog/melhorar-lcp-nextjs",
+      "robots": [
+        "index, follow"
+      ],
+      "lang": "pt-BR",
+      "hreflang": [],
+      "ogType": "article",
+      "ogImage": "https://seotecnico.dev.br/blog/melhorar-lcp-nextjs/opengraph-image?ccc8a7733a7f8b62",
+      "h1Count": 1,
+      "h1": "Como melhorar o LCP no Next.js: guia pelas 4 subpartes",
+      "h2Count": 10,
+      "jsonldBlocks": 3,
+      "jsonldTypes": [
+        "Article",
+        "BreadcrumbList",
+        "FAQPage"
+      ],
+      "jsonldValid": true,
+      "words": 2967,
+      "htmlBytes": 229999,
+      "internalLinks": [
+        "/",
+        "/blog",
+        "/blog/lcp-alto-next-js",
+        "/ferramentas",
+        "/guia/seo-tecnico-nextjs",
+        "/politica-de-privacidade",
+        "/sobre"
+      ],
+      "externalHosts": [
+        "github.com",
+        "web.dev",
+        "www.linkedin.com"
+      ]
+    }
+  ],
+  "graph": {
+    "inbound": {
+      "/": 9,
+      "/guia/seo-tecnico-nextjs": 9,
+      "/blog": 9,
+      "/ferramentas": 9,
+      "/ferramentas/gerador-json-ld": 2,
+      "/sobre": 9,
+      "/politica-de-privacidade": 9,
+      "/blog/json-ld-nextjs": 3,
+      "/blog/lcp-alto-next-js": 3,
+      "/blog/melhorar-lcp-nextjs": 3
+    },
+    "depth": {
+      "/": 0,
+      "/blog": 1,
+      "/ferramentas": 1,
+      "/guia/seo-tecnico-nextjs": 1,
+      "/politica-de-privacidade": 1,
+      "/sobre": 1,
+      "/blog/json-ld-nextjs": 2,
+      "/blog/lcp-alto-next-js": 2,
+      "/blog/melhorar-lcp-nextjs": 2,
+      "/ferramentas/gerador-json-ld": 2
+    }
+  },
+  "offSitemap": {
+    "/robots.txt": {
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8"
+    },
+    "/feed.xml": {
+      "status": 200,
+      "contentType": "application/rss+xml; charset=utf-8"
+    },
+    "/busca": {
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "note": "robots: noindex, follow"
+    },
+    "/nao-existe-probe-404": {
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "note": "robots: noindex / index, follow"
+    }
+  },
+  "issues": [
+    {
+      "severity": "warn",
+      "page": "/busca",
+      "issue": "noindex + Disallow in robots.txt — the noindex can never be read"
+    }
+  ]
+}
