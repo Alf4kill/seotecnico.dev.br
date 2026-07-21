@@ -31,10 +31,10 @@ export default function NotFound() {
           href="/"
           title="Voltar para o início"
           className="inline-flex items-center gap-2 rounded-full font-semibold
-                     bg-primary text-white
+                     bg-primary-solid text-white
                      px-6 py-3.5 text-sm lg:text-base
                      transition duration-300 ease-in-out
-                     hover:bg-primary-dark
+                     hover:bg-primary-solid-hover
                      focus-visible:outline focus-visible:outline-2
                      focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
@@ -47,7 +47,7 @@ export default function NotFound() {
           href="/guia/seo-tecnico-nextjs"
           title="Guia de SEO técnico para Next.js"
           className="group inline-flex items-center gap-2 rounded-full font-semibold
-                     border-[1.5px] border-gray-200 text-foreground bg-white
+                     border-[1.5px] border-gray text-foreground bg-surface
                      px-6 py-3.5 text-sm lg:text-base
                      transition duration-300 ease-in-out
                      hover:border-primary hover:text-primary

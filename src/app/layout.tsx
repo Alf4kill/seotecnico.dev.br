@@ -5,6 +5,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ConsentBanner } from '@/components/layout/ConsentBanner'
+import { ThemeScript } from '@/components/layout/ThemeScript'
 import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter'
 import { SearchProvider } from '@/components/search/SearchContext'
 import { SearchModal } from '@/components/search/SearchModal'
@@ -67,7 +68,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/* Antes de qualquer coisa: aplica o tema salvo sem flash. */}
+        <ThemeScript />
+      </head>
       <body className="flex min-h-screen flex-col font-sans antialiased">
         <Script
           id="consent-default"

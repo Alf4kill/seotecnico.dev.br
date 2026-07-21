@@ -32,7 +32,7 @@ export default function BlogPage() {
       </p>
 
       {posts.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-gray bg-white p-8">
+        <div className="mt-10 rounded-2xl border border-gray bg-surface p-8">
           <p className="text-foreground font-semibold">
             Os primeiros artigos estão em produção.
           </p>
@@ -52,7 +52,7 @@ export default function BlogPage() {
         <ul className="mt-10 grid gap-6 md:grid-cols-2">
           {posts.map(({ frontmatter }) => (
             <li key={frontmatter.slug}>
-              <article className="flex h-full flex-col rounded-2xl border border-gray bg-white p-6 transition-shadow hover:shadow-md">
+              <article className="flex h-full flex-col rounded-2xl border border-gray bg-surface p-6 transition-shadow hover:shadow-md">
                 <h2 className="font-bold text-foreground text-lg">
                   <Link
                     href={`/blog/${frontmatter.slug}`}

@@ -46,7 +46,7 @@ export function ConsentBanner() {
     <div
       role="dialog"
       aria-label="Consentimento de cookies"
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-gray bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+      className="fixed inset-x-0 bottom-0 z-10 border-t border-gray bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
     >
       <div className="container-xl flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm leading-6 text-foreground">
@@ -73,7 +73,7 @@ export function ConsentBanner() {
           <button
             type="button"
             onClick={() => choose('granted')}
-            className="rounded-full border-[1.5px] border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+            className="rounded-full border-[1.5px] border-primary bg-primary-solid px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-solid-hover"
           >
             Aceitar
           </button>

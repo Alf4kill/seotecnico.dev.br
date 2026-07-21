@@ -17,20 +17,34 @@ module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      // Cores vêm dos tokens de globals.css, nunca de hex aqui: é o que faz o
+      // tema escuro alcançar toda utility já escrita nos componentes. A forma
+      // `rgb(var(--x) / <alpha-value>)` é obrigatória para que os modificadores
+      // de opacidade (bg-primary/10, text-foreground/50) continuem funcionando.
       colors: {
-        background: "#ffffff",
-        foreground: "#111827",
-        primary: {
-          DEFAULT: "#2563EB",
-          dark: "#1D4ED8",
+        background: "rgb(var(--background-rgb) / <alpha-value>)",
+        // surface = cartões, header, modais; surface-2 = preenchimento sutil.
+        // No claro surface é branco, então trocar bg-white por bg-surface não
+        // muda nada visualmente — só passa a acompanhar o tema.
+        surface: {
+          DEFAULT: "rgb(var(--surface-rgb) / <alpha-value>)",
+          2: "rgb(var(--surface-2-rgb) / <alpha-value>)",
         },
-        muted: "#6B7280",
+        foreground: "rgb(var(--foreground-rgb) / <alpha-value>)",
+        primary: {
+          DEFAULT: "rgb(var(--primary-rgb) / <alpha-value>)",
+          dark: "rgb(var(--primary-dark-rgb) / <alpha-value>)",
+          // Superfície de botão (texto branco por cima): não acompanha o tema.
+          solid: "rgb(var(--primary-solid-rgb) / <alpha-value>)",
+          "solid-hover": "rgb(var(--primary-solid-hover-rgb) / <alpha-value>)",
+        },
+        muted: "rgb(var(--muted-rgb) / <alpha-value>)",
         gray: {
-          DEFAULT: "#E5E7EB",
+          DEFAULT: "rgb(var(--border-rgb) / <alpha-value>)",
         },
         // Mesmo valor de --color-accent (globals.css) — destaque/anotação.
         accent: {
-          DEFAULT: "#F59E0B",
+          DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
         },
       },
       fontFamily: {
