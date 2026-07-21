@@ -3,7 +3,7 @@ title: 'Como melhorar o LCP no Next.js: guia pelas 4 subpartes'
 description: 'Guia prático para melhorar o LCP no Next.js: diagnóstico pelas 4 subpartes, preload no next/image (v16), next/font e verificação no PSI e CrUX.'
 slug: melhorar-lcp-nextjs
 datePublished: '2026-07-17'
-dateModified: '2026-07-18'
+dateModified: '2026-07-20'
 primaryQuery: 'melhorar lcp next.js'
 lang: pt-BR
 faq:
@@ -91,6 +91,16 @@ Dois detalhes que mudam decisões:
 teste sintético; o que o Google usa é o p75 dos usuários reais (CrUX),
 numa janela móvel de 28 dias. Um fix pode melhorar o lab hoje e só aparecer
 no campo semanas depois.
+
+Essa diferença tem uma consequência prática que quase ninguém explicita: **o
+seu budget de laboratório precisa ser mais rígido que o threshold de campo.**
+O lab roda em um aparelho emulado, numa rede emulada, geralmente com cache
+frio e sempre no mesmo cenário. O p75 de campo inclui a cauda lenta — o
+aparelho velho, o 4G ruim, a aba restaurada. Uma página que marca 2,4s no lab
+não está "quase passando": ela não tem margem nenhuma, e no campo tem tudo
+para estourar os 2,5s. Por isso o CI deste site reprova o build acima de
+**2,0s no lab**, e não em 2,5s. Não é discordância do threshold do Google — é
+a folga que separa um número sintético de um número real.
 
 **O elemento LCP não é necessariamente uma imagem.** Pode ser um headline,
 um bloco de texto ou um card renderizado a partir de dados. Isso importa
