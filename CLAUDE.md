@@ -160,6 +160,13 @@ Tools must work without login. No stored user data (LGPD simplicity).
 **Performance budgets (enforced by Lighthouse CI):**
 - Performance ≥ 95, LCP < 2.0s, CLS < 0.05, INP < 200ms (lab TBT proxy).
 - Build fails if budgets regress.
+- These are **lab** budgets, deliberately stricter than Google's **field**
+  thresholds (LCP 2.5s / INP 200ms / CLS 0.1 at p75 of CrUX). Lab runs one
+  emulated device on one emulated network; the field p75 includes the slow
+  tail. The gap is headroom, not a disagreement with the published threshold —
+  a page at 2.4s in lab has no margin left for real users. Never "relax" a lab
+  budget to match a field threshold: the published articles teach 2.5s as the
+  field number, and that stays correct.
 
 ---
 
