@@ -64,7 +64,7 @@ export default function HomePage() {
             <Link
               href="/guia/seo-tecnico-nextjs"
               title="Guia de SEO técnico para Next.js"
-              className="inline-flex items-center gap-2 rounded-full font-semibold bg-primary text-white px-6 py-3.5 text-sm lg:text-base transition-colors hover:bg-primary-dark"
+              className="inline-flex items-center gap-2 rounded-full font-semibold bg-primary-solid text-white px-6 py-3.5 text-sm lg:text-base transition-colors hover:bg-primary-solid-hover"
             >
               Começar pelo guia
               <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
@@ -72,7 +72,7 @@ export default function HomePage() {
             <Link
               href="/sobre"
               title="Sobre o projeto SEO Técnico"
-              className="inline-flex items-center gap-2 rounded-full font-semibold border-[1.5px] border-gray text-foreground bg-white px-6 py-3.5 text-sm lg:text-base transition-colors hover:border-primary hover:text-primary"
+              className="inline-flex items-center gap-2 rounded-full font-semibold border-[1.5px] border-gray text-foreground bg-surface px-6 py-3.5 text-sm lg:text-base transition-colors hover:border-primary hover:text-primary"
             >
               Conhecer o projeto
             </Link>
@@ -86,7 +86,7 @@ export default function HomePage() {
           {destaques.map(({ icon: Icon, titulo, descricao, href, cta }) => (
             <article
               key={href}
-              className="flex flex-col rounded-2xl border border-gray bg-white p-6 transition-shadow hover:shadow-md"
+              className="flex flex-col rounded-2xl border border-gray bg-surface p-6 transition-shadow hover:shadow-md"
             >
               <Icon className="h-8 w-8 text-primary" strokeWidth={1.75} aria-hidden="true" />
               <h2 className="mt-4 font-bold text-foreground text-lg">{titulo}</h2>

@@ -57,7 +57,7 @@ export default function FerramentasPage() {
           const card = (
             <article
               className={[
-                'flex h-full flex-col rounded-2xl border border-gray bg-white p-6',
+                'flex h-full flex-col rounded-2xl border border-gray bg-surface p-6',
                 href ? 'transition-colors hover:border-primary' : '',
               ].join(' ')}
             >
@@ -66,8 +66,11 @@ export default function FerramentasPage() {
                 <span
                   className={
                     href
-                      ? 'rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white'
-                      : 'rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'
+                      ? 'rounded-full bg-primary-solid px-3 py-1 text-xs font-semibold text-white'
+                      // text-primary-dark, não text-primary: sobre o tint de 10%
+                      // o primary dá 4,49:1 e reprova o audit de contraste (o
+                      // achado (3) da baseline de 2026-07-20). Assim são 5,82:1.
+                      : 'rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark'
                   }
                 >
                   {href ? 'Disponível' : 'Em breve'}

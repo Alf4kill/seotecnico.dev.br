@@ -2,20 +2,118 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Variáveis base ─────────────────────────────────────────────────────────── */
-/* O tema (cores, fonte, spacing) fica em tailwind.config.js.                    */
-/* Mantemos aqui apenas as variáveis referenciadas diretamente neste CSS.        */
+/* ── Tokens de tema ─────────────────────────────────────────────────────────── */
+/* Fonte única das cores. tailwind.config.js consome os `*-rgb` via              */
+/* rgb(var(--x) / <alpha-value>), que é o que faz `bg-primary/10` funcionar.     */
+/*                                                                              */
+/* Os SVGs inline dos artigos (§9) usam --foreground, --color-accent e           */
+/* --color-diagram-* diretamente como COR, não como canal — por isso esses três  */
+/* existem nas duas formas. Nunca troque a forma-cor por canais: quebraria todo  */
+/* diagrama já publicado.                                                        */
+/*                                                                              */
+/* Regra de contraste: todo par texto/fundo abaixo foi medido (AA, ≥4.5:1).      */
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
-  --color-primary: #2563EB;
+  color-scheme: light;
+
+  --background-rgb: 255 255 255;
+  --surface-rgb: 255 255 255;      /* cards, header, modais */
+  --surface-2-rgb: 249 250 251;    /* preenchimentos sutis, hover de lista */
+  --foreground-rgb: 17 24 39;
+  --muted-rgb: 107 114 128;
+  --border-rgb: 229 231 235;
+
+  /* primary = cor de TEXTO/link/tint: precisa contrastar com o fundo da página.
+     primary-dark = seu estado hover.                                           */
+  --primary-rgb: 37 99 235;
+  --primary-dark-rgb: 29 78 216;
+  /* primary-solid = SUPERFÍCIE de botão, sempre com texto branco por cima.
+     Não acompanha o tema: clarear no dark quebraria o contraste do texto.      */
+  --primary-solid-rgb: 37 99 235;
+  --primary-solid-hover-rgb: 29 78 216;
+
+  --accent-rgb: 245 158 11;
+
+  --background: rgb(var(--background-rgb));
+  --foreground: rgb(var(--foreground-rgb));
+  --color-primary: rgb(var(--primary-rgb));
+  --color-accent: rgb(var(--accent-rgb));
 
   /* Paleta de diagramas (SVGs inline dos artigos — CLAUDE.md §9).
      accent também é a cor de anotação de screenshots (caixas/setas). */
-  --color-accent: #F59E0B;
   --color-diagram-phase-a: #DBEAFE;
   --color-diagram-phase-b: #D1FAE5;
   --color-diagram-axis: #9CA3AF;
+
+  --code-background: #0a0c10; /* = fundo do tema Shiki (src/lib/mdx.ts) */
+}
+
+/* Tema escuro. Duas portas para o mesmo conjunto de valores:
+   1. preferência do sistema (§9)  → só quando não há escolha explícita, daí o
+      :not([data-theme='light']), que deixa o usuário forçar o claro mesmo com
+      o sistema no escuro;
+   2. escolha explícita do usuário → [data-theme='dark'], que vence sempre por
+      vir depois e não estar dentro da media query. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --background-rgb: 13 17 23;
+    --surface-rgb: 22 27 34;
+    --surface-2-rgb: 28 33 40;
+    --foreground-rgb: 230 237 243;
+    --muted-rgb: 139 148 158;
+    --border-rgb: 48 54 61;
+
+    --primary-rgb: 96 165 250;
+    --primary-dark-rgb: 147 197 253;
+
+    --color-diagram-phase-a: #1E3A5F;
+    --color-diagram-phase-b: #14432F;
+    --color-diagram-axis: #7D8590;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --background-rgb: 13 17 23;
+  --surface-rgb: 22 27 34;
+  --surface-2-rgb: 28 33 40;
+  --foreground-rgb: 230 237 243;
+  --muted-rgb: 139 148 158;
+  --border-rgb: 48 54 61;
+
+  --primary-rgb: 96 165 250;
+  --primary-dark-rgb: 147 197 253;
+
+  --color-diagram-phase-a: #1E3A5F;
+  --color-diagram-phase-b: #14432F;
+  --color-diagram-axis: #7D8590;
+}
+
+/* Ícones do botão de tema. A escolha é feita em CSS, pelo mesmo data-theme que
+   o script inline aplica, para o ícone certo já vir pintado no primeiro frame
+   em vez de esperar a hidratação. Mostramos o ícone do destino: lua no claro
+   (clique → escuro), sol no escuro (clique → claro). */
+.theme-icon-light {
+  display: none;
+}
+.theme-icon-dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .theme-icon-light {
+    display: block;
+  }
+  :root:not([data-theme='light']) .theme-icon-dark {
+    display: none;
+  }
+}
+:root[data-theme='dark'] .theme-icon-light {
+  display: block;
+}
+:root[data-theme='dark'] .theme-icon-dark {
+  display: none;
 }
 
 /* ── Reset global ───────────────────────────────────────────────────────────── */
@@ -155,21 +253,21 @@ dialog.search-dialog::backdrop {
   border-left: 3px solid var(--color-primary);
   padding-left: 1em;
   margin: 0 0 0.85em;
-  color: #6B7280;
+  color: rgb(var(--muted-rgb));
   font-style: italic;
 }
 .rich-text strong {
   font-weight: 700;
 }
 .rich-text code {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgb(var(--foreground-rgb) / 0.08);
   padding: 0.1em 0.35em;
   border-radius: 4px;
   font-size: 0.85em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 .rich-text pre {
-  background: #111827;
+  background: var(--code-background);
   color: #F9FAFB;
   padding: 0.9em 1em;
   border-radius: 8px;
@@ -189,17 +287,17 @@ dialog.search-dialog::backdrop {
 }
 .rich-text th,
 .rich-text td {
-  border: 1px solid #E5E7EB;
+  border: 1px solid rgb(var(--border-rgb));
   padding: 0.5em 0.75em;
   text-align: left;
 }
 .rich-text th {
-  background: #F9FAFB;
+  background: rgb(var(--surface-2-rgb));
   font-weight: 600;
 }
 .rich-text hr {
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgb(var(--border-rgb));
   margin: 1.5em 0;
 }
 .rich-text figure {
@@ -213,13 +311,13 @@ dialog.search-dialog::backdrop {
 .rich-text figure img {
   max-width: 100%;
   height: auto;
-  border: 1px solid #E5E7EB;
+  border: 1px solid rgb(var(--border-rgb));
   border-radius: 8px;
 }
 .rich-text figcaption {
   margin-top: 0.5em;
   font-size: 0.85rem;
-  color: #6B7280;
+  color: rgb(var(--muted-rgb));
   text-align: center;
 }
 
@@ -227,5 +325,5 @@ dialog.search-dialog::backdrop {
 /* ── Scrollbar (padrão W3C) ─────────────────────────────────────────────────── */
 html {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-primary) #f1f1f1;
+  scrollbar-color: var(--color-primary) rgb(var(--surface-2-rgb));
 }

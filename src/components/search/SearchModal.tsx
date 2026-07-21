@@ -107,7 +107,7 @@ export function SearchModal() {
       >
       {/* Caixa branca — stopPropagation evita fechar ao clicar dentro */}
       <div
-        className="bg-white rounded-b-2xl w-full max-w-3xl shadow-2xl overflow-hidden"
+        className="bg-surface rounded-b-2xl w-full max-w-3xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* ── Cabeçalho com input ──────────────────────────────── */}
@@ -130,7 +130,7 @@ export function SearchModal() {
           <button
             type="button"
             onClick={closeSearch}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-foreground hover:bg-surface-2 transition-colors"
             aria-label="Fechar busca"
           >
             <X className="w-4 h-4" />
@@ -157,7 +157,7 @@ export function SearchModal() {
                           onClick={closeSearch}
                           className={[
                             'flex items-start gap-4 px-5 py-3.5 transition-colors',
-                            active ? 'bg-primary/10' : 'hover:bg-gray-50',
+                            active ? 'bg-primary/10' : 'hover:bg-surface-2',
                           ].join(' ')}
                         >
                           <span className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">

@@ -6,6 +6,7 @@ import { Search, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { site } from '@/lib/site'
 import { useSearchModal } from '@/components/search/SearchContext'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
 const navLinks = [
   { label: 'Guia',        href: '/guia/seo-tecnico-nextjs' },
@@ -20,7 +21,7 @@ export function Header() {
   const { openSearch }  = useSearchModal()
 
   return (
-    <header className="w-full bg-white border-b border-gray sticky top-0 z-9">
+    <header className="w-full bg-surface border-b border-gray sticky top-0 z-9">
       <div className="container-xl flex items-center justify-between h-16">
 
         {/* ── Logo (texto) ──────────────────────────────────────── */}
@@ -61,7 +62,7 @@ export function Header() {
         </nav>
 
         {/* ── Ações desktop ─────────────────────────────────────── */}
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-3">
           <button
             type="button"
             onClick={openSearch}
@@ -71,23 +72,30 @@ export function Header() {
             Buscar
             <Search className="w-4 h-4" strokeWidth={2} />
           </button>
+          <ThemeToggle />
         </div>
 
-        {/* ── Hambúrguer mobile ─────────────────────────────────── */}
-        <button
-          type="button"
-          className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          aria-label={open ? 'Fechar menu' : 'Abrir menu'}
-        >
-          {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* ── Ações mobile ──────────────────────────────────────── */}
+        {/* O toggle fica fora do menu sanfonado de propósito: é a ação que o
+            visitante mais quer achar rápido, e enterrá-la atrás do hambúrguer
+            derrotaria o objetivo. */}
+        <div className="flex items-center gap-1 lg:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="p-2 text-foreground hover:text-primary transition-colors"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-label={open ? 'Fechar menu' : 'Abrir menu'}
+          >
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* ── Menu mobile ───────────────────────────────────────── */}
       {open && (
-        <div className="lg:hidden border-t border-gray bg-white w-full absolute z-9 top-16">
+        <div className="lg:hidden border-t border-gray bg-surface w-full absolute z-9 top-16">
           <nav
             aria-label="Navegação mobile"
             className="container-xl flex flex-col py-5 gap-1"

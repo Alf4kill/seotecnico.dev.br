@@ -239,7 +239,30 @@ Use the standard container proportions (applied via Tailwind):
 - Mobile: 90% width below 768px, 95% below 350px
 
 Keep the design clean, fast, and content-first. No heavy JS libraries for
-presentation. Dark/light respect `prefers-color-scheme` if implemented at all.
+presentation.
+
+**Theming (light + dark).** Implemented. `prefers-color-scheme` is the default;
+an explicit choice from the header toggle is stored in `localStorage` and wins
+over the system, applied by a tiny inline script in `<head>` so the correct
+theme is painted on the first frame (no flash).
+
+- All colors come from CSS custom properties in `globals.css`. Tailwind consumes
+  the `*-rgb` channel triplets via `rgb(var(--x) / <alpha-value>)`, which is what
+  keeps opacity modifiers like `bg-primary/10` working. **Never hardcode a hex in
+  a component or in `tailwind.config.js`** — a hex is a color that cannot follow
+  the theme.
+- `primary` is the **text/link/tint** color and adapts per theme. `primary-solid`
+  is the **button surface** and does not: it always carries white text, so
+  lightening it in dark mode would break that contrast. Reach for `primary-solid`
+  only when a solid filled surface sits under white text.
+- The inline SVG diagrams consume `--foreground`, `--color-accent` and
+  `--color-diagram-*` **as colors, not channels**, so those tokens exist in both
+  forms. Never convert them to channel-only: it would break every published
+  diagram.
+- Contrast is a gate, not a preference: `tests/seo/theme.spec.ts` asserts AA
+  (≥4.5:1) in both themes, and the Shiki code theme was chosen by measuring the
+  worst-contrast token of each candidate (see `src/lib/mdx.ts`). Measure before
+  changing a color pair.
 
 **Diagram palette (inline SVGs in articles)** — CSS custom properties defined
 in `globals.css`, shared by every cluster's diagrams and screenshot
