@@ -89,6 +89,15 @@ export const searchData: SearchItem[] = [
   },
 
   {
+    id: 'artigo-inp-nextjs',
+    title: 'INP no Next.js: como diagnosticar e corrigir',
+    description: 'Por que o Lighthouse não mede INP, como coletar o dado de campo próprio com RUM e as correções por subparte no App Router',
+    href: '/blog/inp-nextjs',
+    category: 'artigo',
+    keywords: ['inp', 'interaction to next paint', 'core web vitals', 'cwv', 'tbt', 'long tasks', 'scheduler.yield', 'usetransition', 'hidratação', 'input delay', 'rum', 'web-vitals', 'fid'],
+  },
+
+  {
     id: 'artigo-sitemap-dinamico-nextjs',
     title: 'Sitemap dinâmico no Next.js com sitemap.ts e robots.ts',
     description: 'Só 2 dos 4 campos importam pro Google: derivar do conteúdo, corrigir o lastmod e o fail-safe do robots.ts',
