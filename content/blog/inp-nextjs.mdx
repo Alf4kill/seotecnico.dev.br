@@ -125,7 +125,11 @@ Do dataLayer o caminho segue: GTM lê seis Data Layer Variables `inp_*` mapeadas
 
 Uma nota sobre LGPD, já que o assunto é analytics: o site roda Consent Mode v2 em modo advanced. Com consentimento negado, o hit vira ping sem cookie — o dado de performance não vira rastreamento de usuário.
 
-{/* DADOS_GA4_INP — seção "primeiros dados de campo" preenchida antes do merge */}
+### O que o campo já mostrou (e o que ainda não)
+
+Transparência de laboratório: o pipeline de INP entrou em produção no dia da publicação deste artigo. Os primeiros eventos reais já chegaram ao GA4 com os seis parâmetros preenchidos — mas um punhado de interações não é estatística. Percentil calculado sobre meia dúzia de eventos é ruído com aparência de precisão, e este site não publica número que não sustenta.
+
+O compromisso fica registrado: quando houver uma janela de 28 dias de coleta — a mesma que o CrUX usa —, esta seção ganha os percentis reais por elemento e por subparte, com o `dateModified` do artigo atualizado de verdade. Até lá, o que este artigo entrega é o que já é verificável hoje: o código, o pipeline e o método.
 
 ## Diagnóstico: DevTools e Long Animation Frames
 
