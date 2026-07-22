@@ -279,6 +279,16 @@ dialog.search-dialog::backdrop {
   padding: 0;
   color: inherit;
 }
+/* Wrapper emitido pelo componente MDX `table` (mdx-components.tsx): dá às
+   tabelas o mesmo overflow-x que o `pre` já tem — sem ele, células com código
+   (que não quebra linha) estouram o container no mobile. */
+.rich-text .table-scroll {
+  overflow-x: auto;
+  margin: 0 0 0.85em;
+}
+.rich-text .table-scroll table {
+  margin: 0;
+}
 .rich-text table {
   width: 100%;
   border-collapse: collapse;
