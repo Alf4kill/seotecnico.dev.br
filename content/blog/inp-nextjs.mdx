@@ -1,0 +1,207 @@
+---
+title: "INP no Next.js: como diagnosticar e corrigir"
+description: "INP no Next.js: por que o Lighthouse não mede a métrica, como diagnosticar com dados de campo próprios e as correções que funcionam no App Router."
+slug: "inp-nextjs"
+primaryQuery: "inp next.js"
+lang: "pt-BR"
+datePublished: "2026-07-22"
+dateModified: "2026-07-22"
+faq:
+  - question: "INP substituiu o FID?"
+    answer: "Sim. O INP passou a ser Core Web Vital em 12 de março de 2024, no lugar do FID. O FID media apenas o input delay da primeira interação da visita; o INP considera todas as interações e o ciclo completo, até o próximo frame pintado."
+  - question: "Qual é um bom INP?"
+    answer: "No p75 de dados de campo: bom é ≤200 ms, entre 200 ms e 500 ms precisa melhorar, e acima de 500 ms é ruim. O percentil 75 significa que 75% das interações reais precisam ficar abaixo do limite."
+  - question: "Por que o Lighthouse não mostra INP?"
+    answer: "Porque o INP exige interação real de usuário real, e o Lighthouse roda em ambiente de lab sem ninguém clicando. O proxy de lab é o TBT (Total Blocking Time). O INP só existe em dado de campo — CrUX ou RUM próprio."
+  - question: "Como medir INP sem aparecer no CrUX?"
+    answer: "Com RUM próprio: a biblioteca web-vitals com onINP enviando um evento para o GA4. Sites abaixo do threshold de tráfego do CrUX não têm dado público, mas podem coletar o seu — é o que este site faz, e o código está no artigo."
+  - question: "TBT e INP são a mesma coisa?"
+    answer: "Não. Eles correlacionam, mas o TBT é métrica de lab e soma os bloqueios da main thread durante o carregamento; o INP é a latência real de interação, medida em qualquer momento da visita."
+  - question: "O que causa INP alto no Next.js?"
+    answer: "Hidratação concorrendo com a primeira interação, handlers de evento longos, re-renders síncronos caros e DOM grande no momento do paint. Cada uma dessas causas tem correção específica no App Router."
+---
+
+O INP (Interaction to Next Paint) mede o tempo entre uma interação do usuário e o próximo frame pintado na tela; um bom valor é ≤200 ms no p75 de dados de campo. No Next.js, os estouros vêm tipicamente de hidratação concorrendo com o primeiro clique e de handlers longos ocupando a main thread. E há uma armadilha específica desta métrica: **o Lighthouse não mede INP**. Quem audita só em lab está cego para ela — este artigo mostra como coletar o dado de campo próprio e o que corrigir depois.
+
+## O que é INP e por que o Lighthouse não mostra
+
+O INP substituiu o FID como Core Web Vital em 12 de março de 2024. A diferença é de escopo: o FID media apenas o *input delay* da primeira interação da visita — o tempo até o navegador começar a responder. O INP olha todas as interações da visita e mede o ciclo completo, incluindo o processamento do handler e a pintura do frame resultante. É uma métrica mais dura, e é por isso que ela pega problemas que o FID deixava passar.
+
+Os thresholds de campo, no p75:
+
+| Faixa | Valor no p75 |
+|---|---|
+| Bom | ≤200 ms |
+| Precisa melhorar | 200–500 ms |
+| Ruim | >500 ms |
+
+Agora o ponto que muda a forma de trabalhar: **não existe métrica de INP no Lighthouse.** Não é omissão da interface — é impossibilidade conceitual. O INP exige interação real de usuário real, e o Lighthouse roda um ambiente de lab onde ninguém clica em nada. O que a auditoria de lab oferece no lugar é o TBT (Total Blocking Time), um proxy: ele soma o tempo em que a main thread ficou bloqueada durante o carregamento. Correlaciona com INP, mas não é INP.
+
+O budget de Lighthouse CI deste site usa exatamente essa lógica — TBT ≤200 ms como proxy de lab, checado em todo pull request. É o melhor que o lab consegue dar, e vale a pena manter. Mas é um proxy, e proxy não substitui medição.
+
+Isso cria uma cegueira dupla para sites pequenos. Sem interação em lab, não há INP no Lighthouse. E abaixo do threshold de tráfego do CrUX, também não há INP no PageSpeed Insights nem no Search Console — que é o caso deste site hoje. A saída é uma só: medir o próprio INP em campo.
+
+## Os 3 subpartes de toda interação
+
+Antes de medir, é preciso saber o que se está medindo. Toda interação se divide em três fases, e a correção certa depende de qual delas está estourando.
+
+<figure>
+  <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Timeline de uma interação dividida em input delay, processing duration e presentation delay, do clique do usuário até o próximo frame pintado">
+    <title>As três fases do INP</title>
+    <desc>Linha do tempo horizontal do clique do usuário até o próximo frame pintado, dividida em três fases consecutivas: input delay, processing duration e presentation delay. Uma anotação indica que a main thread ocupada faz o input delay crescer.</desc>
+    <line x1="60" y1="180" x2="660" y2="180" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <line x1="60" y1="160" x2="60" y2="200" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="60" y="222" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">clique do usuário</text>
+    <line x1="660" y1="160" x2="660" y2="200" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="660" y="222" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">próximo frame pintado</text>
+    <rect x="60" y="118" width="150" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="135" y="144" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">input delay</text>
+    <rect x="210" y="118" width="300" height="42" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="360" y="144" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">processing duration</text>
+    <rect x="510" y="118" width="150" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="585" y="144" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">presentation delay</text>
+    <rect x="60" y="34" width="290" height="34" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <text x="205" y="56" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">main thread ocupada = input delay cresce</text>
+    <line x1="135" y1="68" x2="135" y2="114" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <text x="360" y="252" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">INP = soma das três fases</text>
+  </svg>
+  <figcaption>As três fases de uma interação, do clique até o frame pintado.</figcaption>
+</figure>
+
+O INP é a soma das três fases:
+
+| Fase | O que acontece | Causa típica de estouro |
+|---|---|---|
+| **Input delay** | Tempo entre o clique e o início do handler | Main thread ocupada — hidratação, script de terceiro, long task |
+| **Processing duration** | Execução do handler e do re-render | Handler longo, re-render síncrono caro, layout forçado |
+| **Presentation delay** | Tempo até o navegador pintar o frame | DOM grande, estilos caros, lista longa sem virtualização |
+
+Essa divisão não é acadêmica: ela é o que a attribution do `web-vitals` reporta, e é o que permite corrigir a causa certa em vez de chutar.
+
+## Como este site mede o próprio INP
+
+Sem CrUX, a alternativa é RUM próprio. O código abaixo é o que está em produção em `src/lib/rum.ts` agora — importando de `web-vitals/attribution` (v5) e mandando um evento único `web_vitals` para o dataLayer, via um helper tipado.
+
+```ts
+// src/lib/rum.ts
+export function reportINP(metric: INPMetricWithAttribution): void {
+  const { attribution } = metric
+  pushEvent({
+    event: 'web_vitals',
+    metric_name: 'INP',
+    metric_id: metric.id,
+    metric_value: Math.round(metric.value),
+    metric_rating: metric.rating,
+    // interactionTarget vazio = elemento removido do DOM após a interação
+    inp_element: (attribution.interactionTarget || '(unknown)').slice(0, MAX_SELECTOR_LENGTH),
+    inp_interaction_type: attribution.interactionType,
+    inp_load_state: attribution.loadState,
+    inp_input_delay: Math.round(attribution.inputDelay),
+    inp_processing_duration: Math.round(attribution.processingDuration),
+    inp_presentation_delay: Math.round(attribution.presentationDelay),
+  })
+}
+```
+
+A inicialização é trivial, com guarda para SSR e para chamada dupla:
+
+```ts
+// src/lib/rum.ts
+export function initRum(): void {
+  if (started || typeof window === 'undefined') return
+  started = true
+  onLCP(reportLCP)
+  onINP(reportINP)
+}
+```
+
+Três detalhes desse código que não são óbvios e que custaram tempo:
+
+- **`MAX_SELECTOR_LENGTH = 100`.** O GA4 trunca parâmetros de evento em 100 caracteres. Sem o `slice`, seletores longos chegam cortados de forma silenciosa no relatório — melhor cortar de propósito e saber disso.
+- **`interactionTarget` pode vir vazio.** Quando o elemento sai do DOM depois da interação (um modal que fecha, um item de lista que some), a attribution não consegue mais resolver o seletor. Daí o fallback `'(unknown)'` — sem ele, o breakdown por elemento fica com buracos.
+- **O INP reporta de novo.** Quando a página volta de `hidden`, a biblioteca pode emitir um valor pior com o **mesmo `metric_id`**. Qualquer análise que some ou conte eventos vai inflar o número. A leitura correta é o **máximo por `metric_id`**.
+
+Do dataLayer o caminho segue: GTM lê seis Data Layer Variables `inp_*` mapeadas na tag, e o GA4 recebe três dimensões custom (elemento, tipo de interação, load state) e três métricas custom em milissegundos, event-scoped. O pipeline está live em produção desde 22/07/2026.
+
+Uma nota sobre LGPD, já que o assunto é analytics: o site roda Consent Mode v2 em modo advanced. Com consentimento negado, o hit vira ping sem cookie — o dado de performance não vira rastreamento de usuário.
+
+### O que o campo já mostrou (e o que ainda não)
+
+Transparência de laboratório: o pipeline de INP entrou em produção no dia da publicação deste artigo. Os primeiros eventos reais já chegaram ao GA4 com os seis parâmetros preenchidos — mas um punhado de interações não é estatística. Percentil calculado sobre meia dúzia de eventos é ruído com aparência de precisão, e este site não publica número que não sustenta.
+
+O compromisso fica registrado: quando houver uma janela de 28 dias de coleta — a mesma que o CrUX usa —, esta seção ganha os percentis reais por elemento e por subparte, com o `dateModified` do artigo atualizado de verdade. Até lá, o que este artigo entrega é o que já é verificável hoje: o código, o pipeline e o método.
+
+## Diagnóstico: DevTools e Long Animation Frames
+
+O RUM diz *que* o INP está alto e *em qual elemento*. Para saber *por quê*, o caminho é o Performance panel do DevTools: grave uma sessão, interaja com o elemento que o RUM apontou e procure as long tasks em volta da interação.
+
+O que torna esse diagnóstico muito mais direto hoje é a Long Animation Frames API (`long-animation-frame`), disponível em Chrome e Edge. É ela que a attribution do `web-vitals` usa para apontar qual script foi o culpado por segurar o frame — em vez de "alguma coisa bloqueou a main thread", você recebe o script.
+
+Combinação que funciona bem: o campo dá o elemento e a fase; o Performance panel dá o script e a stack. Sem o primeiro, você otimiza o que não dói.
+
+## Catálogo de correções no Next.js
+
+Ordenado da correção mais barata para a mais cara.
+
+### 1. Menos JavaScript hidratando
+
+A correção com melhor relação custo-benefício no App Router é estrutural: Server Components por padrão, `'use client'` só na folha da árvore. Cada componente que hidrata é main thread ocupada no pior momento possível — durante o carregamento, que é justamente quando o usuário faz a primeira interação.
+
+Para ilhas pesadas abaixo da dobra, `next/dynamic` adia o custo. Nota honesta: este site ainda não precisou de dynamic import — o bundle é pequeno o suficiente para não justificar. Digo isso porque a alternativa seria fingir uma otimização que não existe aqui.
+
+### 2. Quebrar long tasks com `scheduler.yield()`
+
+Um handler que roda 300 ms segura o frame por 300 ms. A solução é ceder a main thread no meio do trabalho — pintar o feedback visual primeiro, fazer o resto depois.
+
+```ts
+// utils/yield-to-main.ts
+export function yieldToMain(): Promise<void> {
+  if (typeof globalThis.scheduler?.yield === 'function') {
+    return globalThis.scheduler.yield()
+  }
+  return new Promise((resolve) => setTimeout(resolve, 0))
+}
+```
+
+O fallback não é opcional. O `scheduler.yield()` está disponível em Chrome 129 e Edge 129 (set/2024) e Firefox 142 (ago/2025), e segue sem suporte no Safari (verificado em 22/07/2026) — ou seja, não é Baseline. Em Safari o `setTimeout(0)` cede a thread do mesmo jeito; o que se perde é a continuação priorizada.
+
+### 3. `useTransition` e `useDeferredValue`
+
+Quando o problema é o re-render (processing duration), o React 19 oferece a marcação de urgência: `useTransition` para envolver a atualização cara e `useDeferredValue` para adiar um valor derivado. O input continua respondendo enquanto a lista pesada recalcula.
+
+### 4. Evitar layout síncrono forçado
+
+O padrão que causa isso é ler layout (`offsetHeight`, `getBoundingClientRect`), escrever no DOM e ler de novo no mesmo handler — cada leitura depois de uma escrita força o navegador a recalcular tudo. A correção é agrupar: todas as leituras primeiro, todas as escritas depois.
+
+### 5. Presentation delay: DOM e estilos
+
+Se a attribution aponta `inp_presentation_delay` alto, o handler já terminou e o gargalo é pintar. Aí o alvo é o tamanho do DOM e o custo dos estilos: virtualizar listas longas, e `content-visibility` em blocos fora da viewport onde couber.
+
+### 6. Terceiros competem pela mesma thread
+
+Todo script de tag e analytics disputa a main thread com a sua UI — inclusive o GTM que alimenta a medição descrita acima. Vale ser honesto sobre isso: o pipeline de RUM deste site tem custo. Para medir esse custo, grave o Performance panel duas vezes, uma com o request do GTM bloqueado e outra sem, e compare as long tasks.
+
+### 7. Input delay quase nunca é o problema em si
+
+Se `inp_input_delay` está alto, o handler nem começou — a main thread estava ocupada com outra coisa. É sintoma dos itens 1 e 2, não uma categoria separada. O campo `inp_load_state` costuma entregar o caso mais comum: interação durante a hidratação.
+
+## O que NÃO fazer
+
+A tentação óbvia é remover interatividade para pontuar melhor. Tirar o filtro que o usuário usa, cortar o JavaScript que faz o produto funcionar, atrasar o carregamento de coisas que a pessoa precisa. Isso melhora o número e piora o site.
+
+O INP existe para medir a sensação de resposta, não para ser vencido. Um site sem interação tem INP perfeito e serventia zero.
+
+## Como verificar
+
+Depois de aplicar qualquer correção acima:
+
+1. **No GA4**, monte uma Exploration com `metric_name = INP`, agregando pelo **máximo por `metric_id`** (não pela soma — ver a armadilha do reporte duplo acima), com breakdown por `inp_element` e pelas três subpartes. Compare a janela antes e depois do deploy.
+2. **No DevTools**, repita a gravação do Performance panel na mesma interação e confira se a long task que você atacou saiu do rastro.
+3. **No Lighthouse**, o que vai se mover é o **TBT**, não o INP — use como sinal indireto e não confunda um com o outro.
+4. **No CrUX**, se e quando o site cruzar o threshold de tráfego, lembre que a janela é de 28 dias: dado de campo demora a refletir a correção.
+
+O ponto de ordem é sempre o mesmo: correção sem medição de campo é chute com sintaxe bonita.
+
+---
+
+Este artigo é o caminho 6 do [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs). Se o problema for de carregamento e não de interação, o ponto de partida é [como melhorar o LCP no Next.js](/blog/melhorar-lcp-nextjs) — foi lá, aliás, que este pipeline de RUM nasceu. E para validar o FAQPage deste próprio artigo, o [gerador de JSON-LD](/ferramentas/gerador-json-ld) resolve.
