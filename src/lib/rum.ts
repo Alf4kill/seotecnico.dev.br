@@ -6,12 +6,16 @@
 // no dataLayer acontece sempre; o disparo da tag e o uso de cookies são
 // controlados pelo Consent Mode v2, como todo o resto do pipeline.
 //
-// Só LCP por enquanto — o site está abaixo do threshold do CrUX, então este
-// é o único dado de campo que existe. INP/CLS entram depois sob o mesmo
-// nome de evento.
+// LCP + INP — o site está abaixo do threshold do CrUX, então este é o único
+// dado de campo que existe. CLS entra depois sob o mesmo nome de evento.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { onLCP, type LCPMetricWithAttribution } from 'web-vitals/attribution'
+import {
+  onINP,
+  onLCP,
+  type INPMetricWithAttribution,
+  type LCPMetricWithAttribution,
+} from 'web-vitals/attribution'
 import { pushEvent } from './analytics'
 
 // GA4 trunca valores de parâmetro em 100 caracteres — corta aqui para o
@@ -34,15 +38,36 @@ export function reportLCP(metric: LCPMetricWithAttribution): void {
   })
 }
 
+export function reportINP(metric: INPMetricWithAttribution): void {
+  const { attribution } = metric
+  pushEvent({
+    event: 'web_vitals',
+    metric_name: 'INP',
+    metric_id: metric.id,
+    metric_value: Math.round(metric.value),
+    metric_rating: metric.rating,
+    // interactionTarget vazio = elemento removido do DOM após a interação
+    inp_element: (attribution.interactionTarget || '(unknown)').slice(0, MAX_SELECTOR_LENGTH),
+    inp_interaction_type: attribution.interactionType,
+    inp_load_state: attribution.loadState,
+    inp_input_delay: Math.round(attribution.inputDelay),
+    inp_processing_duration: Math.round(attribution.processingDuration),
+    inp_presentation_delay: Math.round(attribution.presentationDelay),
+  })
+}
+
 let started = false
 
 /**
  * Registra os observers de Web Vitals uma única vez por page load real.
- * O LCP só existe no carregamento inicial (não em soft navigations), então
+ * As métricas valem para o page load inteiro (não por soft navigation), então
  * chamadas repetidas — re-mounts, StrictMode — não devem re-registrar.
+ * O INP pode reportar mais de uma vez (valor pior após a página voltar de
+ * hidden), sempre com o mesmo metric_id — a análise no GA4 usa o máximo por id.
  */
 export function initRum(): void {
   if (started || typeof window === 'undefined') return
   started = true
   onLCP(reportLCP)
+  onINP(reportINP)
 }

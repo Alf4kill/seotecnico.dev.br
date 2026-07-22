@@ -31,6 +31,19 @@ export type AnalyticsEvent =
       lcp_load_duration: number
       lcp_render_delay: number
     }
+  | {
+      event: 'web_vitals'
+      metric_name: 'INP'
+      metric_id: string
+      metric_value: number
+      metric_rating: 'good' | 'needs-improvement' | 'poor'
+      inp_element: string
+      inp_interaction_type: 'pointer' | 'keyboard'
+      inp_load_state: 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete'
+      inp_input_delay: number
+      inp_processing_duration: number
+      inp_presentation_delay: number
+    }
 
 export function pushEvent(e: AnalyticsEvent): void {
   if (typeof window === 'undefined') return
