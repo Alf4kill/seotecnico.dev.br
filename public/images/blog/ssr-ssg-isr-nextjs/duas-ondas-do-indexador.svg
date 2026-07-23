@@ -1,0 +1,33 @@
+<svg viewBox="0 0 720 280" width="720" height="280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="As duas ondas do indexador: o crawl do HTML indexa imediatamente, e a renderização de JavaScript entra numa fila posterior sem prazo garantido" font-family="Arial, Helvetica, sans-serif">
+  <title>As duas ondas do indexador</title>
+  <desc>Duas trilhas paralelas numa linha do tempo. A trilha superior, do crawl, vai do request ao HTML, ao parse e à indexação imediata. A trilha inferior, deslocada à direita e ligada por uma seta tracejada, mostra a fila de renderização, a execução de JavaScript e a indexação posterior do conteúdo renderizado.</desc>
+  <rect x="0" y="0" width="720" height="280" fill="#ffffff"/>
+  <line x1="40" y1="250" x2="690" y2="250" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="365" y="270" text-anchor="middle" font-size="12" fill="#9CA3AF">tempo — a lacuna não tem duração garantida</text>
+
+  <text x="40" y="34" font-size="13" font-weight="500" fill="#111827">onda 1 — crawl</text>
+  <rect x="40" y="44" width="120" height="42" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="100" y="70" text-anchor="middle" font-size="12" fill="#111827">request</text>
+  <rect x="160" y="44" width="120" height="42" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="220" y="70" text-anchor="middle" font-size="12" fill="#111827">HTML</text>
+  <rect x="280" y="44" width="120" height="42" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="340" y="70" text-anchor="middle" font-size="12" fill="#111827">parse + links</text>
+  <rect x="400" y="44" width="140" height="42" rx="8" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="470" y="70" text-anchor="middle" font-size="12" fill="#111827">indexação</text>
+
+  <line x1="470" y1="86" x2="470" y2="130" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="470" y1="130" x2="300" y2="130" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="300" y1="130" x2="300" y2="156" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="490" y="126" font-size="12" fill="#111827">espera na fila</text>
+
+  <text x="40" y="150" font-size="13" font-weight="500" fill="#111827">onda 2 — renderização</text>
+  <rect x="240" y="156" width="140" height="42" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="310" y="182" text-anchor="middle" font-size="12" fill="#111827">fila de render</text>
+  <rect x="380" y="156" width="140" height="42" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="450" y="182" text-anchor="middle" font-size="12" fill="#111827">executa o JS</text>
+  <rect x="520" y="156" width="160" height="42" rx="8" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="600" y="182" text-anchor="middle" font-size="12" fill="#111827">indexa o renderizado</text>
+
+  <rect x="240" y="206" width="440" height="30" rx="8" fill="#ffffff" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="460" y="226" text-anchor="middle" font-size="12" fill="#111827">conteúdo que só existe aqui entra depois — ou não entra</text>
+</svg>
