@@ -1,0 +1,357 @@
+---
+title: "next/image e SEO: o que o componente não resolve"
+description: "next/image cuida de performance, não de indexação. Alt, sitemap de imagens, o ponto cego do background-image e quando gastar o preload (ex-priority)."
+slug: "next-image-seo"
+primaryQuery: "next/image seo"
+lang: "pt-BR"
+datePublished: "2026-07-22"
+dateModified: "2026-07-22"
+faq:
+  - question: "next/image melhora o SEO?"
+    answer: "Melhora a performance de imagem — formato moderno, srcset, dimensões reservadas contra CLS — e performance é fator de experiência de página. Mas ele não melhora a indexação da imagem em nada: alt, contexto textual em volta, nome de arquivo e presença no sitemap continuam sendo responsabilidade sua, e o componente não escreve nenhum deles por você."
+  - question: "Imagem decorativa precisa de alt?"
+    answer: "Precisa do atributo alt vazio. Isso sinaliza a leitores de tela e crawlers que a imagem é decorativa e deve ser ignorada. Omitir o atributo é erro (o leitor de tela pode anunciar o nome do arquivo), e escrever um alt descritivo numa duplicata decorativa duplica ruído — a descrição pertence à imagem de conteúdo, não à sua cópia de fundo."
+  - question: "Quando usar preload (o antigo priority) no next/image?"
+    answer: "Só quando a imagem é o elemento LCP da página — e no máximo uma por página. A partir do Next.js 16 a prop priority foi deprecada em favor de preload, e a documentação recomenda loading eager ou fetchPriority high para a maioria dos casos. Marcar várias imagens como prioritárias anula o efeito: priorização funciona por contraste."
+  - question: "next/image funciona com background-image do CSS?"
+    answer: "Não. O componente renderiza uma tag img; imagem declarada em CSS fica fora do pipeline dele — sem otimização de formato, sem srcset, invisível para o preload scanner do browser e invisível para o Google Imagens, que não indexa imagem carregada via CSS. Se a imagem é conteúdo, ela precisa ser uma tag img."
+  - question: "Preciso de sitemap de imagens?"
+    answer: "Precisa se houver imagens que o Google não descobriria sozinho ou que você quer explicitamente associar às páginas — o campo images das entradas do sitemap é o canal oficial para isso. Neste site, é o mecanismo que dá presença no Google Imagens às cópias raster dos diagramas, já que a versão inline em SVG não é tratada como recurso de imagem."
+  - question: "SVG ou PNG para diagramas em artigo?"
+    answer: "SVG inline, se o diagrama ensina algo: os rótulos em elementos text são rastreáveis pelo Google e citáveis por LLMs, o SVG segue o tema claro/escuro via token CSS e não custa request extra. PNG/WebP fica para screenshots e fotos, onde raster não perde nada. A ressalva: SVG inline não entra no Google Imagens — se esse canal importa, exporte uma cópia raster e declare no sitemap."
+---
+
+O `next/image` resolve o lado de performance da imagem — formato moderno,
+`srcset`, dimensões reservadas contra CLS — mas **não resolve nada de
+indexação**: alt, contexto textual em volta, nome de arquivo e presença no
+sitemap continuam por sua conta, e o componente é cego para imagem declarada
+em CSS. A SERP inteira trata "SEO de imagem" como sinônimo de "performance
+de imagem"; este artigo é sobre a metade que o componente não toca — que é
+justamente a metade que decide se a imagem existe para o índice.
+
+## O que o next/image entrega de graça
+
+O consenso, em um parágrafo: o componente serve o formato mais leve que o
+browser aceita, gera o `srcset` para cada densidade e viewport, reserva o
+espaço da imagem no layout (com `width`/`height` obrigatórios) e aplica lazy
+loading por padrão. A configuração deste site cobre AVIF e WebP com os
+breakpoints ajustados ao layout:
+
+```ts
+// next.config.ts
+  // ── Otimização de imagens ──────────────────────────────────────────────────
+  images: {
+    // Formatos modernos em ordem de preferência (avif < webp < original)
+    formats: ['image/avif', 'image/webp'],
+
+    // Breakpoints para srcset responsivo
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes:  [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+```
+
+O resultado prático desse arranjo aparece no baseline de 2026-07-20 deste
+site: **CLS 0.000 nas 10 páginas**. Com dimensões explícitas em toda imagem,
+o deslocamento de layout causado por imagem simplesmente não existe. Isso é
+o que o componente compra. Agora, o que ele não compra.
+
+## O que ele não entrega (e ninguém avisa)
+
+O `next/image` não escreve alt, não coloca a imagem no sitemap, não dá nome
+semântico ao arquivo, não cria contexto textual em volta da imagem — e não
+enxerga `background-image` de CSS. Nenhum desses itens é detalhe: são
+exatamente os sinais que o Google usa para entender e indexar uma imagem. O
+componente otimiza a **entrega** do arquivo; a **indexação** do que o
+arquivo mostra é outra disciplina, e ela não vem no pacote.
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="O que o next/image cobre: a metade de performance está resolvida, a metade de indexação continua sendo responsabilidade do desenvolvedor">
+    <title>O que o next/image cobre</title>
+    <desc>Um retângulo dividido em duas regiões. À esquerda, a região de performance, preenchida, lista formato moderno, srcset, lazy loading e dimensões reservadas. À direita, a região de indexação, vazia e com contorno tracejado, lista alt, contexto textual, nome de arquivo e sitemap de imagens.</desc>
+    <text x="360" y="26" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">SEO de imagem tem duas metades</text>
+
+    <rect x="40" y="46" width="310" height="200" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="195" y="76" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">performance</text>
+    <text x="195" y="102" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">resolvido pelo componente</text>
+    <text x="195" y="136" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">formato moderno (AVIF/WebP)</text>
+    <text x="195" y="162" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">srcset por viewport e densidade</text>
+    <text x="195" y="188" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">lazy loading por padrão</text>
+    <text x="195" y="214" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">dimensões reservadas (CLS)</text>
+
+    <rect x="370" y="46" width="310" height="200" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" strokeDasharray="6 5" />
+    <text x="525" y="76" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">indexação</text>
+    <text x="525" y="102" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">continua com você</text>
+    <text x="525" y="136" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">alt descritivo, no idioma da página</text>
+    <text x="525" y="162" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">contexto textual em volta</text>
+    <text x="525" y="188" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">nome de arquivo semântico</text>
+    <text x="525" y="214" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">presença no sitemap de imagens</text>
+
+    <text x="360" y="278" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">trocar img por Image resolve a coluna da esquerda — e só ela</text>
+  </svg>
+  <figcaption>O componente otimiza a entrega do arquivo; a indexação do que ele mostra continua sendo trabalho manual.</figcaption>
+</figure>
+
+O espelho do diagrama:
+
+| Resolvido pelo componente | Sua responsabilidade |
+| --- | --- |
+| formato moderno (AVIF/WebP) | `alt` descritivo, no idioma da página |
+| `srcset` por viewport e densidade | contexto textual em volta da imagem |
+| lazy loading por padrão | nome de arquivo semântico |
+| dimensões reservadas (CLS) | presença no sitemap de imagens |
+
+## Alt: a única parte de indexação de imagem que é 100% sua
+
+O `alt` é obrigatório no componente — o TypeScript reclama se faltar — mas
+obrigatório não é sinônimo de bom. Alt bom descreve o que a imagem mostra
+para quem não a vê, sem keyword stuffing: "Relatório do Search Console com o
+status 'Rastreada, mas não indexada' em destaque", não "seo nextjs search
+console indexação".
+
+### Decorativa leva alt vazio, não alt bonito
+
+Imagem decorativa — fundo, ornamento, duplicata visual — leva um `alt`
+vazio. O atributo presente e vazio diz a leitores de tela e crawlers:
+ignore. A seção do caso real, no fim do artigo, mostra o componente deste
+site em que isso importa na prática: a cópia borrada de fundo leva `alt`
+vazio e `aria-hidden`, e a descrição mora só na imagem de conteúdo.
+
+### Alt no idioma da página
+
+Regra deste repositório, não opinião: alt em pt-BR nas páginas pt-BR. O alt
+participa da relevância textual da página — um alt em inglês num artigo em
+português é um sinal dissonante, além de inútil para o leitor de tela do
+público real da página.
+
+## sizes: o atributo que decide qual arquivo o usuário baixa
+
+O `srcset` dá as opções; o `sizes` diz ao browser qual escolher **antes** do
+layout existir. Sem ele, imagens responsivas assumem que a imagem ocupa 100vw
+— e um card de 400px baixa o arquivo de 1080. O formato é uma media query
+por regra de layout:
+
+```tsx
+<Image
+  src="/images/blog/exemplo/diagrama.webp"
+  alt="…"
+  width={1200}
+  height={675}
+  sizes="(max-width: 768px) 100vw, 720px"
+/>
+```
+
+Lido de trás pra frente: em telas grandes a imagem renderiza a 720px, então
+baixe a variante mais próxima disso; abaixo de 768px ela ocupa a viewport
+inteira. Errar o `sizes` não quebra nada visível — só desperdiça bytes
+silenciosamente, e é por isso que quase ninguém corrige.
+
+## preload: uma bala, e por que este site não gastou nenhuma
+
+Aqui a SERP em pt-BR está quase toda desatualizada, então vale marcar a
+versão: **a partir do Next.js 16, a prop `priority` foi deprecada em favor
+de `preload`** — a tipagem do componente marca `priority` como deprecated e
+aponta para a nova prop. A documentação recomenda, para a maioria dos casos,
+`loading="eager"` ou `fetchPriority="high"` em vez do preload completo. O
+efeito do `preload` é o pacote todo: desliga o lazy, emite
+`<link rel="preload">` no head e sinaliza prioridade alta de fetch.
+
+A regra de uso não mudou com o nome: **uma bala por página**, gasta apenas
+no elemento LCP quando ele é uma imagem. Priorização funciona por contraste
+— marcar três imagens como prioritárias é dizer ao browser que nada é
+prioritário.
+
+E a razão de este site não ter gastado nenhuma: **o LCP daqui é texto**, em
+todas as páginas medidas. Não há hero image; as imagens de conteúdo ficam
+abaixo da dobra e devem permanecer lazy. O comentário no override de MDX
+deste repositório existe para ninguém "otimizar" isso por engano:
+
+```tsx
+// src/components/mdx/mdx-components.tsx
+// ─────────────────────────────────────────────────────────────────────────────
+// Componentes disponíveis dentro dos arquivos MDX de /content.
+//
+// `Image` (next/image) é a forma sancionada de embutir imagens em artigos:
+// exige width/height explícitos (sem CLS) e serve formato otimizado (§6).
+// Imagens de conteúdo ficam abaixo da dobra — nunca usar `preload` aqui.
+// ─────────────────────────────────────────────────────────────────────────────
+```
+
+Não vou fingir um antes/depois de hero image que este site não tem. Se o seu
+LCP **é** uma imagem, o [guia de melhoria de LCP](/blog/melhorar-lcp-nextjs)
+cobre o mecanismo completo — descoberta, prioridade e o custo de cada
+milissegundo de atraso.
+
+## O ponto cego: background-image em CSS
+
+O `next/image` renderiza `<img>`. Imagem declarada em CSS
+(`background-image`) fica fora de tudo: fora do pipeline de otimização, fora
+do `srcset`, invisível para o preload scanner do browser — e invisível para
+o Google Imagens, que não indexa imagem carregada via CSS. Se a imagem é
+conteúdo (produto, capa, diagrama), ela precisa ser uma tag `<img>` no HTML.
+
+O estrago que o `background-image` faz especificamente no LCP — descoberta
+tardia, o scanner que não a enxerga — está detalhado no [catálogo de
+antipadrões de LCP](/blog/lcp-alto-next-js); aqui fica só o veredito de
+indexação: para o Google Imagens, imagem de CSS não existe.
+
+## Imagens no sitemap: o campo que quase ninguém preenche
+
+O protocolo de sitemap aceita, por URL, uma lista de imagens associadas — e
+o `sitemap.ts` do App Router expõe isso como o campo `images` de cada
+entrada. É o canal oficial para o Google descobrir imagens que ele não
+encontraria pelo HTML, e o que este site usa para dar presença no Google
+Imagens aos diagramas dos artigos:
+
+```ts
+// src/app/sitemap.ts
+// Ativos de imagem por artigo, declarados no image sitemap (diagramas
+// exportados de /public — os "ativos de link" do cluster).
+const postImages: Record<string, string[]> = {
+  'melhorar-lcp-nextjs': ['/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp'],
+  'lcp-alto-next-js': ['/images/blog/lcp-alto-next-js/preload-scanner-visivel-invisivel.webp'],
+  // …um ativo por artigo
+}
+
+const postPages: MetadataRoute.Sitemap = posts.map(({ frontmatter }) => ({
+  url: `${base}/blog/${frontmatter.slug}`,
+  lastModified: toDate(frontmatter.dateModified),
+  changeFrequency: 'monthly',
+  priority: 0.7,
+  images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
+}))
+```
+
+Por que os diagramas precisam desse canal é o assunto da próxima seção.
+
+## Diagrama deve ser SVG inline, não imagem
+
+A decisão de arquitetura de conteúdo deste site que nenhum guia de
+`next/image` discute: **diagrama que ensina não é `<Image>` — é `<svg>`
+inline no MDX.**
+
+### Texto dentro do SVG é rastreável e citável
+
+Todos os rótulos dos diagramas deste site são elementos `<text>` de verdade
+dentro do SVG. O Google lê esse texto como parte da página; um LLM que
+processa o HTML lê "preload scanner → não enxerga background-image" direto
+do markup. Um PNG com os mesmos rótulos é uma caixa preta — o conteúdo do
+diagrama simplesmente não existe como texto. Num site que disputa citação em
+respostas geradas por IA, essa diferença é o jogo inteiro.
+
+O trade-off declarado: SVG inline **não** é tratado como recurso de imagem
+pelo Google Imagens. Por isso cada artigo exporta seu diagrama principal
+como uma cópia raster em `public/images/blog/`, cuja única função é
+alimentar o campo `images` do sitemap — o inline serve humano e LLM; a cópia
+raster serve o canal de imagem.
+
+### O SVG segue o tema; o PNG não
+
+Os diagramas usam cor exclusivamente via token CSS (`--foreground`,
+`--color-accent`, `--color-diagram-*`). No tema escuro, o diagrama inteiro
+acompanha — texto, eixos, preenchimentos. Um PNG exportado do tema claro
+fica com fundo branco estourado no dark mode, ou exige duas exportações e
+um `<picture>` com media query. O SVG inline resolve isso de graça.
+
+## Um caso real: duas Image e um download
+
+O componente `BlurFillImage` deste site renderiza a mesma imagem duas vezes:
+uma cópia borrada ao fundo com `object-cover` (preenche o container) e a
+imagem inteira à frente com `object-contain`. O código real:
+
+```tsx
+// src/components/ui/BlurFillImage.tsx
+export function BlurFillImage({
+  src,
+  alt,
+  title,
+  sizes,
+  preload,
+  className,
+}: BlurFillImageProps) {
+  return (
+    <>
+      {/* Fundo borrado — preenche o frame */}
+      <Image
+        src={src}
+        alt=""
+        aria-hidden
+        fill
+        sizes={sizes}
+        preload={preload}
+        className="scale-150 object-cover blur-2xl"
+      />
+      {/* Imagem real — inteira, sem corte */}
+      <Image
+        src={src}
+        alt={alt}
+        title={title || alt || undefined}
+        fill
+        sizes={sizes}
+        preload={preload}
+        className={`object-contain${className ? ` ${className}` : ''}`}
+      />
+    </>
+  )
+}
+```
+
+Dois pontos de SEO nesse componente. Primeiro, o custo de rede: as duas
+`<Image>` compartilham o mesmo `src` e as mesmas dimensões de layout, então
+a variante resolvida pelo pipeline é idêntica — **o browser baixa uma vez e
+reaproveita**. Duas tags, um request. Segundo, a acessibilidade que também é
+indexação: a cópia de fundo leva `alt` vazio e `aria-hidden`, porque ela
+é decoração; a descrição mora na imagem da frente. É a regra do alt vazio
+aplicada, e não teoria.
+
+<figure>
+  <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Um mesmo src renderizado em duas tags Image resolve a mesma variante e gera um único request de rede">
+    <title>Um src, duas tags, um download</title>
+    <desc>Uma caixa com o src da imagem se divide em duas tags Image, uma de fundo borrado e uma de imagem inteira. As duas convergem para um único nó que representa um request de rede, porque a variante resolvida é idêntica.</desc>
+    <rect x="40" y="102" width="150" height="56" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="115" y="126" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">um src</text>
+    <text x="115" y="146" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">mesmo sizes</text>
+
+    <line x1="190" y1="118" x2="270" y2="72" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <line x1="190" y1="142" x2="270" y2="188" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+
+    <rect x="270" y="46" width="190" height="52" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="365" y="68" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">Image de fundo, borrada</text>
+    <text x="365" y="88" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">alt vazio + aria-hidden</text>
+
+    <rect x="270" y="162" width="190" height="52" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="365" y="184" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">Image de conteúdo</text>
+    <text x="365" y="204" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">alt descritivo</text>
+
+    <line x1="460" y1="72" x2="540" y2="118" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <line x1="460" y1="188" x2="540" y2="142" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+
+    <rect x="540" y="102" width="140" height="56" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="610" y="126" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">1 request</text>
+    <text x="610" y="146" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">variante idêntica</text>
+
+    <text x="360" y="244" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">duas tags, um download — o efeito visual de duplicata não duplica o custo</text>
+  </svg>
+  <figcaption>Mesmo src e mesmo sizes resolvem a mesma variante: o browser baixa uma vez.</figcaption>
+</figure>
+
+Em texto: o mesmo `src` com a mesma variante resolvida gera um único request
+de rede, que o browser reutiliza para as duas renderizações — o efeito
+visual de duplicata não duplica o custo.
+
+## Como verificar
+
+Fechando o loop, como manda o [guia de SEO técnico para
+Next.js](/guia/seo-tecnico-nextjs):
+
+1. **DevTools → Network, filtro Img.** Confira o formato servido (AVIF/WebP,
+   não o original), e no caso de duplicatas como o `BlurFillImage`, que o
+   mesmo `src` gerou um request só.
+2. **View-source.** O `alt` está no HTML da primeira resposta, descritivo e
+   no idioma da página? As decorativas estão com o atributo vazio?
+3. **Sitemap.** Abra o `/sitemap.xml` de produção e confirme que as entradas
+   carregam o campo de imagens com URLs absolutas dos arquivos raster.
+4. **Lighthouse.** As auditorias de imagem (formato, dimensionamento, lazy)
+   passam? E o CLS segue em 0 com as dimensões explícitas?
+5. **JSON-LD dos artigos.** Se as páginas declaram `image` no schema de
+   `Article`, valide o bloco — o [gerador de
+   JSON-LD](/ferramentas/gerador-json-ld) produz o formato usado neste site.
