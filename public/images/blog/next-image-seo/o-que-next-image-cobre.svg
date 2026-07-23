@@ -1,0 +1,24 @@
+<svg viewBox="0 0 720 300" width="720" height="300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="O que o next/image cobre: a metade de performance está resolvida, a metade de indexação continua sendo responsabilidade do desenvolvedor" font-family="Arial, Helvetica, sans-serif">
+  <title>O que o next/image cobre</title>
+  <desc>Um retângulo dividido em duas regiões. À esquerda, a região de performance, preenchida, lista formato moderno, srcset, lazy loading e dimensões reservadas. À direita, a região de indexação, vazia e com contorno tracejado, lista alt, contexto textual, nome de arquivo e sitemap de imagens.</desc>
+  <rect x="0" y="0" width="720" height="300" fill="#ffffff"/>
+  <text x="360" y="26" text-anchor="middle" font-size="14" font-weight="500" fill="#111827">SEO de imagem tem duas metades</text>
+
+  <rect x="40" y="46" width="310" height="200" rx="8" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="195" y="76" text-anchor="middle" font-size="14" font-weight="500" fill="#111827">performance</text>
+  <text x="195" y="102" text-anchor="middle" font-size="12" fill="#111827">resolvido pelo componente</text>
+  <text x="195" y="136" text-anchor="middle" font-size="12" fill="#111827">formato moderno (AVIF/WebP)</text>
+  <text x="195" y="162" text-anchor="middle" font-size="12" fill="#111827">srcset por viewport e densidade</text>
+  <text x="195" y="188" text-anchor="middle" font-size="12" fill="#111827">lazy loading por padrão</text>
+  <text x="195" y="214" text-anchor="middle" font-size="12" fill="#111827">dimensões reservadas (CLS)</text>
+
+  <rect x="370" y="46" width="310" height="200" rx="8" fill="#ffffff" stroke="#F59E0B" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="525" y="76" text-anchor="middle" font-size="14" font-weight="500" fill="#111827">indexação</text>
+  <text x="525" y="102" text-anchor="middle" font-size="12" fill="#111827">continua com você</text>
+  <text x="525" y="136" text-anchor="middle" font-size="12" fill="#111827">alt descritivo, no idioma da página</text>
+  <text x="525" y="162" text-anchor="middle" font-size="12" fill="#111827">contexto textual em volta</text>
+  <text x="525" y="188" text-anchor="middle" font-size="12" fill="#111827">nome de arquivo semântico</text>
+  <text x="525" y="214" text-anchor="middle" font-size="12" fill="#111827">presença no sitemap de imagens</text>
+
+  <text x="360" y="278" text-anchor="middle" font-size="13" fill="#111827">trocar img por Image resolve a coluna da esquerda — e só ela</text>
+</svg>
