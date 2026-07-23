@@ -1,0 +1,390 @@
+---
+title: "SSR, SSG e ISR no Next.js: o que o Googlebot enxerga"
+description: "SSR, SSG ou ISR no Next.js: qual estratégia o Googlebot indexa sem risco, por que CSR é a única perigosa e como provar qual a sua rota usa."
+slug: "ssr-ssg-isr-nextjs"
+primaryQuery: "ssr ssg isr next.js"
+lang: "pt-BR"
+datePublished: "2026-07-22"
+dateModified: "2026-07-22"
+faq:
+  - question: "O Google indexa site em React ou CSR?"
+    answer: "Indexa, mas com uma ressalva importante: conteúdo que só existe depois da execução do JavaScript entra numa fila de renderização separada, que o Google processa quando há recursos disponíveis — pode levar segundos ou bem mais, sem prazo garantido. O HTML inicial vazio também é o que a maioria dos outros crawlers (incluindo os de buscadores com IA) enxerga, porque eles não executam JavaScript."
+  - question: "SSR rankeia melhor que SSG?"
+    answer: "Não. Para indexação, SSR e SSG são equivalentes: nos dois casos o conteúdo completo chega no HTML da primeira resposta, que é o que o Googlebot indexa sem depender da fila de renderização. A diferença entre eles é operacional — TTFB (o SSG servido de CDN responde mais rápido) e frescor do dado — não visibilidade."
+  - question: "ISR prejudica o SEO?"
+    answer: "Não em indexação: o ISR entrega HTML completo na primeira resposta, como o SSG. O custo é de frescor — entre revalidações, o Googlebot pode receber uma versão defasada da página, e a primeira visita após a expiração ainda recebe a versão antiga enquanto a nova é gerada em background. Para conteúdo que muda com frequência e precisa refletir rápido no índice, isso é um trade-off a considerar."
+  - question: "Como sei se minha página é estática ou dinâmica no Next.js?"
+    answer: "Três provas: a saída do next build imprime um símbolo por rota indicando a estratégia (confira a legenda impressa no rodapé do próprio build, porque ela muda entre versões); um curl na URL de produção mostra se o conteúdo está no HTML da primeira resposta; e a Inspeção de URL do Search Console mostra o HTML que o Google testou de fato."
+  - question: "use client faz a página virar CSR?"
+    answer: "Não — esse é um dos mal-entendidos mais comuns do App Router. Componentes client também são pré-renderizados no servidor e chegam como HTML na primeira resposta; a diretiva controla onde o código hidrata e roda interatividade, não se o HTML inicial vem vazio. CSR de verdade é conteúdo que só nasce no browser, tipicamente atrás de um fetch em useEffect."
+  - question: "Qual estratégia usar para um blog?"
+    answer: "SSG. Conteúdo editorial é conhecido no build, não muda por request e se beneficia do TTFB de arquivo estático servido de CDN. É o padrão do App Router quando a rota não usa APIs dinâmicas, e é o que este site usa em 100% das páginas — com generateStaticParams derivando os slugs do próprio conteúdo."
+---
+
+Para o Googlebot, o que importa não é a sigla — é o que vem no HTML da
+**primeira resposta**. SSG e SSR entregam o conteúdo completo já nesse HTML e
+são equivalentes para indexação; ISR entrega HTML completo, possivelmente
+defasado entre revalidações; CSR entrega um HTML vazio que depende de uma
+segunda passada de renderização — e é a única das quatro que cria risco real
+de indexação. Este artigo desloca a comparação de "qual é mais rápida" para
+"o que o indexador recebe", e termina com o que quase nenhum guia ensina:
+como **provar** qual estratégia cada rota sua está usando de verdade.
+
+## As quatro estratégias em uma frase cada
+
+- **SSG (static generation):** o HTML é montado uma vez, no build, e servido
+  pronto de CDN. É o padrão do App Router quando a rota não usa APIs
+  dinâmicas.
+- **ISR (incremental static regeneration):** SSG com prazo de validade — o
+  HTML estático é regerado em background depois de um intervalo de
+  revalidação.
+- **SSR (server-side rendering):** o HTML é montado a cada request, no
+  servidor, com o dado daquele momento.
+- **CSR (client-side rendering):** o servidor manda um esqueleto e o
+  conteúdo é montado no browser, por JavaScript, depois do load.
+
+Repare no critério da lista: **quando o HTML ganha conteúdo**. É o único
+eixo que importa para o resto do artigo.
+
+## O que o Googlebot realmente faz com o seu HTML
+
+A referência aqui é a documentação de JavaScript SEO do Google Search
+Central — não achismo de SERP. O processo tem duas filas.
+
+### As duas ondas: crawl e render
+
+Na primeira passada, o Googlebot faz o request HTTP, checa o robots.txt,
+recebe o HTML e o processa: extrai os links dos `href`, alimenta a fila de
+crawl e indexa o que está ali. Se o seu conteúdo está nesse HTML, o trabalho
+essencial acabou aqui.
+
+Toda página com status 200 também entra numa **fila de renderização**. A doc
+do Google é explícita sobre o tempo: a página pode ficar nessa fila alguns
+segundos, mas **pode demorar mais** — e não há prazo publicado nem
+garantido. Quando os recursos do Google permitem, um Chromium headless
+renderiza a página, executa o JavaScript, e o HTML renderizado é usado para
+(re)indexar e para descobrir links que só existem pós-execução.
+
+<figure>
+  <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="As duas ondas do indexador: o crawl do HTML indexa imediatamente, e a renderização de JavaScript entra numa fila posterior sem prazo garantido">
+    <title>As duas ondas do indexador</title>
+    <desc>Duas trilhas paralelas numa linha do tempo. A trilha superior, do crawl, vai do request ao HTML, ao parse e à indexação imediata. A trilha inferior, deslocada à direita e ligada por uma seta tracejada, mostra a fila de renderização, a execução de JavaScript e a indexação posterior do conteúdo renderizado.</desc>
+    <line x1="40" y1="250" x2="690" y2="250" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="365" y="270" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">tempo — a lacuna não tem duração garantida</text>
+
+    <text x="40" y="34" fontSize="13" fill="var(--foreground, #111827)">onda 1 — crawl</text>
+    <rect x="40" y="44" width="120" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="100" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">request</text>
+    <rect x="160" y="44" width="120" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="220" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">HTML</text>
+    <rect x="280" y="44" width="120" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="340" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">parse + links</text>
+    <rect x="400" y="44" width="140" height="42" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="470" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">indexação</text>
+
+    <line x1="470" y1="86" x2="470" y2="130" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <line x1="470" y1="130" x2="300" y2="130" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <line x1="300" y1="130" x2="300" y2="156" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="490" y="126" fontSize="12" fill="var(--foreground, #111827)">espera na fila</text>
+
+    <text x="40" y="150" fontSize="13" fill="var(--foreground, #111827)">onda 2 — renderização</text>
+    <rect x="240" y="156" width="140" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="310" y="182" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">fila de render</text>
+    <rect x="380" y="156" width="140" height="42" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="450" y="182" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">executa o JS</text>
+    <rect x="520" y="156" width="160" height="42" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="600" y="182" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">indexa o renderizado</text>
+
+    <rect x="240" y="206" width="440" height="30" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <text x="460" y="226" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">conteúdo que só existe aqui entra depois — ou não entra</text>
+  </svg>
+  <figcaption>O que está no HTML da primeira resposta é indexado na onda 1; o resto espera a fila de renderização.</figcaption>
+</figure>
+
+O espelho do diagrama:
+
+| Onda | O que enxerga |
+| --- | --- |
+| 1 — crawl do HTML | Tudo que veio na primeira resposta do servidor: texto, links, meta tags. Indexação imediata. |
+| 2 — renderização (fila) | O que só existe depois de executar JavaScript. Entra quando houver recurso — sem prazo garantido. |
+
+### Por que "o Google executa JavaScript" não é o fim da conversa
+
+É verdade que o Google renderiza JavaScript — e é a defesa padrão de quem
+constrói SPA. Mas a frase esconde três coisas. Primeiro, a renderização é
+**adiada e sem SLA**: conteúdo crítico ficar pendurado numa fila de
+capacidade variável é um risco que HTML pronto não corre. Segundo, a
+renderização pode **falhar parcialmente** — script bloqueado, erro de
+runtime, timeout de API — e o que não renderizou não existe para o índice.
+Terceiro, e cada vez mais relevante: **o Googlebot é praticamente o único
+crawler que renderiza**. Crawlers de outros buscadores e os de sistemas de
+busca com IA leem o HTML da primeira resposta e param ali. Num site que
+disputa citação em resposta gerada, conteúdo que só existe pós-hidratação é
+conteúdo invisível para metade dos leitores-máquina.
+
+## SSG: o padrão do App Router (e o padrão certo pra conteúdo)
+
+No App Router, uma rota sem APIs dinâmicas (`cookies()`, `headers()`,
+`searchParams`) é estática por padrão. Para rotas dinâmicas como
+`/blog/[slug]`, o `generateStaticParams()` enumera os caminhos no build.
+
+Neste site, os slugs são derivados do próprio conteúdo — o pipeline lê o
+filesystem em build, e é essa a razão física de a rota ser estática:
+
+```tsx
+// src/app/blog/[slug]/page.tsx
+// Somente slugs existentes em /content/blog são gerados; o resto é 404.
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return getAllPosts().map(({ frontmatter }) => ({ slug: frontmatter.slug }))
+}
+```
+
+```ts
+// src/lib/content.ts
+/** All blog posts, newest first. Returns [] while content/blog is empty. */
+export function getAllPosts(): Post[] {
+  const dir = path.join(CONTENT_DIR, 'blog')
+  if (!fs.existsSync(dir)) return []
+
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.mdx'))
+    .map((f) => readMdxFile(path.join(dir, f)))
+    .sort((a, b) =>
+      b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
+    )
+}
+```
+
+O `dynamicParams = false` fecha a porta: slug que não existe no conteúdo é
+404 no build, não uma tentativa de render em runtime. E os subprodutos de
+SEO seguem a mesma lógica — o [sitemap derivado do
+conteúdo](/blog/sitemap-dinamico-nextjs) e o feed RSS são rotas estáticas
+geradas no mesmo build, então página, sitemap e feed nunca contam histórias
+diferentes.
+
+## SSR: quando o dado não pode esperar o build
+
+SSR resolve um problema específico: o dado muda por request ou depende de
+quem pede (preço em tempo real, conteúdo por sessão). O HTML continua
+chegando completo na primeira resposta — e é isso que importa para o
+indexador.
+
+### SSR não indexa melhor que SSG — indexa igual, mais devagar
+
+Vale dizer com todas as letras, porque a SERP trata SSR como "o modo SEO" do
+Next.js: **para indexação, SSR e SSG são equivalentes**. O Googlebot recebe
+o mesmo tipo de artefato — HTML com conteúdo — nos dois casos. As
+diferenças são operacionais: SSR paga o custo de montar a página a cada
+request (TTFB maior, um servidor que precisa estar de pé e aguentar o
+crawler) em troca de frescor absoluto. Se o dado da página não muda entre
+deploys, SSR é pagar aluguel por um imóvel que você podia ter comprado no
+build.
+
+## ISR: estático com prazo de validade
+
+Uma ressalva de honestidade antes: **este site não usa ISR em produção** —
+é 100% estático, e não tenho medição própria de ISR para mostrar. O que
+segue é análise de mecanismo, não experiência de campo.
+
+ISR é SSG com `revalidate`: o HTML estático é servido normalmente e, passado
+o intervalo, a próxima visita dispara a regeração em background. Para o
+Googlebot, o contrato é o mesmo do SSG — HTML completo na primeira resposta,
+indexação sem fila de renderização.
+
+### O custo em SEO: a primeira visita depois da revalidação
+
+O trade-off é de frescor. Entre revalidações, qualquer visitante — incluindo
+o Googlebot — pode receber uma versão defasada. E o modelo
+stale-while-revalidate significa que a primeira visita **depois** da
+expiração ainda recebe a versão antiga, enquanto a nova é montada em
+background. Para um blog, irrelevante. Para uma página cujo conteúdo
+precisa refletir rápido no índice (preço, estoque, notícia corrigida), é um
+atraso estrutural que você aceitou ao escolher a estratégia — eu usaria ISR
+exatamente onde o dado muda com frequência conhecida e a defasagem de um
+intervalo é tolerável.
+
+## CSR: a única que realmente arrisca a indexação
+
+CSR é o HTML esqueleto: a primeira resposta traz um `<div>` vazio e um
+bundle de JavaScript, e o conteúdo nasce no browser. Todo o peso da
+indexação cai na segunda onda — a fila de renderização, sem prazo, sujeita a
+falha de execução — e nos crawlers que não renderizam, o conteúdo
+simplesmente não existe.
+
+<figure>
+  <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparação de quando o HTML ganha conteúdo em SSG, ISR, SSR e CSR">
+    <title>Onde o HTML é montado em cada estratégia</title>
+    <desc>Quatro colunas comparando SSG, ISR, SSR e CSR pelo momento em que o HTML ganha conteúdo: no build, no build mais revalidação, a cada request e no browser. As três primeiras entregam conteúdo completo na primeira resposta; a quarta é marcada como risco.</desc>
+    <text x="360" y="26" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">quando o HTML ganha conteúdo</text>
+
+    <rect x="30" y="46" width="150" height="96" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="105" y="72" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">SSG</text>
+    <text x="105" y="98" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">no build</text>
+    <text x="105" y="122" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">completo</text>
+
+    <rect x="190" y="46" width="150" height="96" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="265" y="72" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">ISR</text>
+    <text x="265" y="98" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">build + revalidação</text>
+    <text x="265" y="122" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">completo, pode defasar</text>
+
+    <rect x="350" y="46" width="150" height="96" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="425" y="72" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">SSR</text>
+    <text x="425" y="98" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">a cada request</text>
+    <text x="425" y="122" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">completo</text>
+
+    <rect x="510" y="46" width="150" height="96" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="585" y="72" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">CSR</text>
+    <text x="585" y="98" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">no browser</text>
+    <text x="585" y="122" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">esqueleto vazio</text>
+
+    <line x1="30" y1="166" x2="500" y2="166" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="265" y="188" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">indexado na onda 1</text>
+    <line x1="510" y1="166" x2="660" y2="166" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="585" y="188" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">depende da onda 2</text>
+
+    <text x="360" y="226" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">a sigla não decide a indexação — o momento em que o HTML ganha conteúdo decide</text>
+  </svg>
+  <figcaption>Três das quatro estratégias entregam conteúdo completo na primeira resposta.</figcaption>
+</figure>
+
+O espelho do diagrama:
+
+| Estratégia | Quando o HTML é montado | O que o Googlebot recebe na primeira resposta |
+| --- | --- | --- |
+| SSG | no build | conteúdo completo |
+| ISR | no build + revalidação | conteúdo completo (possivelmente defasado) |
+| SSR | a cada request | conteúdo completo |
+| CSR | no browser | esqueleto vazio — o conteúdo depende da fila de renderização |
+
+## Como este site é renderizado (e por que TTFB deu 0ms)
+
+Este site é o laboratório dos próprios artigos, então: todas as rotas de
+página são estáticas, geradas em build a partir do conteúdo em disco — a
+única exceção do site inteiro é a rota que gera a imagem Open Graph de cada
+post, renderizada sob demanda, e que nenhum crawler precisa indexar. Uma
+decisão de performance que só faz sentido nesse cenário está no config:
+
+```ts
+// next.config.ts
+  // ── CSS inline (LCP) ───────────────────────────────────────────────────────
+  // O CSS do site é pequeno (~22KB brutos / ~5KB comprimidos); inlinado no
+  // <head> elimina o único request render-blocking apontado pelo PSI, ao custo
+  // de perder o cache do .css entre páginas — troca favorável neste tamanho.
+  experimental: {
+    inlineCss: true,
+  },
+```
+
+Dois números reais desse arranjo:
+
+- No PSI mobile de 2026-07-18 em produção, a subparte **TTFB do LCP marcou
+  0ms** — a assinatura de HTML estático servido da borda. É um número que
+  SSR, por definição, não entrega, porque sempre há um servidor montando a
+  página entre o request e o primeiro byte. O papel do TTFB dentro do LCP
+  está destrinchado no [guia de melhoria de LCP](/blog/melhorar-lcp-nextjs).
+- No baseline de 2026-07-20, as 10 URLs do site estavam indexáveis, com
+  status 200, exatamente um `<h1>` cada, JSON-LD válido em todas, zero
+  páginas órfãs e profundidade máxima de 2 cliques.
+
+## Como provar qual estratégia sua rota usa
+
+A parte que falta nos guias. Três provas, da mais barata para a mais
+definitiva.
+
+### O mapa de símbolos do next build
+
+Ao fim de todo `next build`, o Next imprime a lista de rotas com um símbolo
+por rota indicando como cada uma foi gerada — e uma legenda logo abaixo
+explicando cada símbolo. **Leia a legenda do seu próprio build**, não a de
+um tutorial: ela mudou entre versões do Next e o símbolo que era "estático"
+numa versão pode ter outro glifo na sua. A saída real deste site, no
+Next.js 16.2.6:
+
+```
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /blog
+├ ● /blog/[slug]
+│ ├ /blog/gtm-nextjs
+│ ├ /blog/inp-nextjs
+│ ├ /blog/metadata-api-nextjs
+│ └ [+7 more paths]
+├ ƒ /blog/-/opengraph-image
+├ ○ /busca
+├ ○ /feed.xml
+├ ○ /ferramentas
+├ ○ /ferramentas/gerador-json-ld
+├ ○ /guia/seo-tecnico-nextjs
+├ ○ /icon.svg
+├ ○ /opengraph-image
+├ ○ /politica-de-privacidade
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /sobre
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+Três símbolos, três estratégias — e repare que a legenda distingue `○` de
+`●`: as duas são estáticas, mas o `●` marca as rotas que precisaram de
+`generateStaticParams()` para enumerar os caminhos. Os artigos do blog são
+essas.
+
+E aqui vale a honestidade de quem escreve sobre o próprio site: **eu
+esperava não ver nenhum `ƒ` nesta lista.** A rota
+`/blog/-/opengraph-image` — a imagem Open Graph gerada por post — aparece
+como dinâmica, porque ela é a única rota com parâmetro que não declara
+`generateStaticParams()`. Não é um problema de indexação (nenhum crawler
+precisa indexar a imagem de card, e ela é servida com cache), mas é
+exatamente o tipo de coisa que só a leitura da própria saída de build
+revela. É por isso que esta é a primeira das três provas.
+
+Se uma rota que você esperava estática aparece como dinâmica, o build acabou
+de te contar que alguma API dinâmica vazou para ela — ou que faltou enumerar
+os caminhos — antes de qualquer crawler descobrir.
+
+### curl vs. DOM renderizado
+
+O build diz a intenção; o `curl` diz o fato. Peça a URL de produção sem
+executar JavaScript:
+
+```bash
+curl -s https://seotecnico.dev.br/blog/ssr-ssg-isr-nextjs | grep -o "<h1[^>]*>[^<]*</h1>"
+```
+
+Se o `<h1>` — e o texto do artigo, e os links internos — estão nessa
+resposta, o Googlebot os indexa na primeira onda. Depois compare com o DOM
+renderizado (DevTools → Elements): o que existe no DOM mas **não** existe no
+`curl` é exatamente o conteúdo pendurado na fila de renderização.
+
+### Inspeção de URL no Search Console: o HTML testado
+
+A prova definitiva, porque vem do próprio Google: Search Console → Inspeção
+de URL → "Ver página testada". Ali está o HTML que o Google efetivamente
+obteve ao testar a página. Confira se o conteúdo crítico está presente — e
+aproveite a inspeção para validar o JSON-LD da rota, que também precisa
+estar no HTML da primeira resposta; se você ainda monta o bloco na mão, o
+[gerador de JSON-LD](/ferramentas/gerador-json-ld) produz o formato que este
+site usa.
+
+## O erro mais comum: o componente que só existe depois da hidratação
+
+O padrão que derruba páginas Next.js bem-intencionadas não é "escolhi SSR em
+vez de SSG" — é o componente que busca o próprio conteúdo num `useEffect`.
+A rota é tecnicamente estática, o build sorri, mas o parágrafo importante
+nasce no browser: CSR de contrabando dentro de uma página "SSG".
+
+A prova empírica de que este site não carrega esse contrabando está no
+baseline de 2026-07-20: nas 10 páginas, **LCP = FCP** — o maior elemento
+visível pinta junto com o primeiro, porque nada de conteúdo aparece depois
+da hidratação. Quando LCP e FCP divergem muito num site de conteúdo, essa é
+uma pista de que algo importante está nascendo tarde — e o que nasce tarde
+para o usuário, nasce tarde (ou nunca) para o indexador. Como sempre no
+[guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs): a estratégia
+de renderização você declara no código, mas quem confirma é a medição.

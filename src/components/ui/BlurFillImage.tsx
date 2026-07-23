@@ -7,7 +7,8 @@ type BlurFillImageProps = {
   title?: string
   /** Repassado para os dois `next/image` (mesma variante = 1 download). */
   sizes?: string
-  priority?: boolean
+  /** `preload` do next/image (v16 — sucessor da prop `priority`, deprecada). */
+  preload?: boolean
   /** Classe extra na imagem em primeiro plano (ex.: hover scale). */
   className?: string
 }
@@ -27,7 +28,7 @@ export function BlurFillImage({
   alt,
   title,
   sizes,
-  priority,
+  preload,
   className,
 }: BlurFillImageProps) {
   return (
@@ -39,7 +40,7 @@ export function BlurFillImage({
         aria-hidden
         fill
         sizes={sizes}
-        priority={priority}
+        preload={preload}
         className="scale-150 object-cover blur-2xl"
       />
       {/* Imagem real — inteira, sem corte */}
@@ -49,7 +50,7 @@ export function BlurFillImage({
         title={title || alt || undefined}
         fill
         sizes={sizes}
-        priority={priority}
+        preload={preload}
         className={`object-contain${className ? ` ${className}` : ''}`}
       />
     </>
