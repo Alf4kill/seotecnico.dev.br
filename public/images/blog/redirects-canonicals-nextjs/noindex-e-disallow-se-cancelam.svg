@@ -1,0 +1,26 @@
+<svg viewBox="0 0 720 290" width="720" height="290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparação entre usar apenas noindex, que remove a página do índice, e combinar noindex com Disallow, que impede a leitura da meta e mantém a URL elegível" font-family="Arial, Helvetica, sans-serif">
+  <title>Como noindex e Disallow se cancelam</title>
+  <desc>Duas trilhas. Na primeira, apenas com noindex, o Googlebot busca a URL, lê a meta e remove a página do índice. Na segunda, com noindex e Disallow juntos, o Googlebot é bloqueado antes de buscar a URL, nunca lê a meta, e a URL continua elegível a aparecer como resultado só de URL.</desc>
+  <rect x="0" y="0" width="720" height="290" fill="#ffffff"/>
+  <text x="40" y="34" font-size="13" font-weight="500" fill="#111827">só noindex</text>
+  <rect x="40" y="46" width="140" height="46" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="110" y="74" text-anchor="middle" font-size="12" fill="#111827">Googlebot busca</text>
+  <line x1="180" y1="69" x2="215" y2="69" stroke="#9CA3AF" stroke-width="1.5"/>
+  <rect x="215" y="46" width="140" height="46" rx="8" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="285" y="74" text-anchor="middle" font-size="12" fill="#111827">lê a meta</text>
+  <line x1="355" y1="69" x2="390" y2="69" stroke="#9CA3AF" stroke-width="1.5"/>
+  <rect x="390" y="46" width="180" height="46" rx="8" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <text x="480" y="74" text-anchor="middle" font-size="12" fill="#111827">removida do índice</text>
+
+  <text x="40" y="158" font-size="13" font-weight="500" fill="#111827">noindex + Disallow</text>
+  <rect x="40" y="170" width="140" height="46" rx="8" fill="#ffffff" stroke="#F59E0B" stroke-width="2"/>
+  <text x="110" y="198" text-anchor="middle" font-size="12" fill="#111827">bloqueado no robots</text>
+  <line x1="180" y1="193" x2="215" y2="193" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="215" y="170" width="140" height="46" rx="8" fill="#ffffff" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="285" y="198" text-anchor="middle" font-size="12" fill="#111827">nunca lê a meta</text>
+  <line x1="355" y1="193" x2="390" y2="193" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="390" y="170" width="180" height="46" rx="8" fill="#ffffff" stroke="#F59E0B" stroke-width="2"/>
+  <text x="480" y="198" text-anchor="middle" font-size="12" fill="#111827">segue elegível, só a URL</text>
+
+  <text x="360" y="262" text-anchor="middle" font-size="13" fill="#111827">para o noindex funcionar, a URL precisa ser rastreável</text>
+</svg>

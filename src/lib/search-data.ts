@@ -106,6 +106,51 @@ export const searchData: SearchItem[] = [
     keywords: ['sitemap', 'sitemap.ts', 'robots.ts', 'robots.txt', 'sitemap dinâmico', 'lastmod', 'priority', 'changefreq', 'noindex', 'disallow', 'image sitemap', 'generatesitemaps', 'indexação'],
   },
 
+  {
+    id: 'artigo-metadata-api-nextjs',
+    title: 'Metadata API do Next.js: canonical e o merge que não existe',
+    description: 'Por que openGraph e alternates são substituídos e não mesclados, e o helper único que resolve',
+    href: '/blog/metadata-api-nextjs',
+    category: 'artigo',
+    keywords: ['metadata api', 'generatemetadata', 'canonical', 'open graph', 'og:image', 'og:url', 'metadatabase', 'opengraph-image', 'next/head', 'merge raso', 'alternates'],
+  },
+
+  {
+    id: 'artigo-ssr-ssg-isr-nextjs',
+    title: 'SSR, SSG e ISR no Next.js: o que o Googlebot enxerga',
+    description: 'Por que CSR é a única estratégia arriscada e como provar qual delas a sua rota usa',
+    href: '/blog/ssr-ssg-isr-nextjs',
+    category: 'artigo',
+    keywords: ['ssr', 'ssg', 'isr', 'csr', 'renderização', 'googlebot', 'fila de renderização', 'generatestaticparams', 'dynamicparams', 'javascript seo', 'hidratação', 'use client'],
+  },
+
+  {
+    id: 'artigo-next-image-seo',
+    title: 'next/image e SEO: o que o componente não resolve',
+    description: 'Alt, sitemap de imagens, o ponto cego do background-image e quando gastar o preload',
+    href: '/blog/next-image-seo',
+    category: 'artigo',
+    keywords: ['next/image', 'imagem', 'alt', 'sizes', 'preload', 'priority', 'srcset', 'avif', 'webp', 'cls', 'sitemap de imagens', 'background-image', 'svg inline', 'google imagens'],
+  },
+
+  {
+    id: 'artigo-redirects-canonicals-nextjs',
+    title: 'Redirects e canonicals no Next.js: config ou middleware',
+    description: 'Redirect, canonical ou noindex: qual instrumento para cada problema, e o erro de noindex com Disallow',
+    href: '/blog/redirects-canonicals-nextjs',
+    category: 'artigo',
+    keywords: ['redirect', 'redirects', '301', '308', 'canonical', 'middleware', 'next.config', 'noindex', 'disallow', 'trailing slash', 'conteúdo duplicado', 'permanentredirect'],
+  },
+
+  {
+    id: 'artigo-gtm-nextjs',
+    title: 'GTM no Next.js: pageview de SPA sem contar duas vezes',
+    description: 'History Change, a duplicação com o Enhanced Measurement e Consent Mode v2 com default negado',
+    href: '/blog/gtm-nextjs',
+    category: 'artigo',
+    keywords: ['gtm', 'google tag manager', 'ga4', 'analytics', 'pageview', 'spa', 'history change', 'enhanced measurement', 'consent mode', 'lgpd', 'datalayer', 'cookieless', 'element visibility'],
+  },
+
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
   {
     id: 'gerador-json-ld',

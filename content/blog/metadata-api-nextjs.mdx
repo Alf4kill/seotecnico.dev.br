@@ -1,0 +1,555 @@
+---
+title: "Metadata API do Next.js: canonical e o merge que não existe"
+description: "Metadata API no App Router: como o objeto openGraph é substituído e não mesclado, o que isso quebra no Open Graph e o helper que resolve."
+slug: "metadata-api-nextjs"
+primaryQuery: "metadata api next.js"
+lang: "pt-BR"
+datePublished: "2026-07-22"
+dateModified: "2026-07-22"
+faq:
+  - question: "O openGraph do layout é herdado pela página?"
+    answer: "Não, se a página definir qualquer campo dentro de openGraph. O merge da Metadata API é raso: quando a página declara o próprio objeto openGraph, o objeto inteiro do layout pai é descartado — inclusive og:locale, og:site_name e og:image. A herança só acontece quando a página não declara openGraph nenhum. Comportamento verificado no Next.js 16.2.6 e documentado na referência oficial do generateMetadata."
+  - question: "Preciso de metadataBase?"
+    answer: "Sim, se você usa caminhos relativos em canonical ou em imagens Open Graph. O metadataBase é a URL base que transforma todo caminho relativo da Metadata API em URL absoluta — e Open Graph exige URL absoluta. Defina uma vez no root layout e use caminhos relativos em todo o resto."
+  - question: "Como faço canonical auto-referente no App Router?"
+    answer: "Defina alternates.canonical com o caminho da própria rota na metadata de cada página — com metadataBase no root layout, o caminho pode ser relativo. O ponto crítico é fazer isso via um helper único, porque alternates também é substituído (não mesclado) entre layout e página, e um canonical definido só no layout desaparece em qualquer rota que customize alternates."
+  - question: "O opengraph-image.tsx vale para as rotas filhas?"
+    answer: "No Next.js 16.2.6, não: o arquivo aplica a imagem ao segmento onde está, sem cascatear para rotas aninhadas. Além disso, se a página do mesmo segmento definir openGraph.images na config, a config vence e o arquivo é ignorado. Como o comportamento já variou entre versões, confira na sua: view-source numa rota filha e procure a tag og:image."
+  - question: "Uso metadata ou generateMetadata?"
+    answer: "Use o objeto metadata estático quando todos os valores são conhecidos sem depender da rota. Use generateMetadata quando o valor vem de params ou de dados carregados — como o frontmatter de um post em /blog/[slug]. Os dois passam pelo mesmo pipeline de merge raso, então a armadilha do openGraph substituído vale igual para ambos."
+  - question: "Por que meu card do LinkedIn ou WhatsApp sai em branco?"
+    answer: "Quase sempre é og:image ausente na página compartilhada, e a causa mais comum no App Router é o merge raso: a página customizou algum campo de openGraph e, sem perceber, apagou a imagem herdada do layout. Verifique com view-source se a rota emite og:image com URL absoluta, e revalide o cache do scraper na ferramenta de debug da própria plataforma."
+---
+
+A Metadata API é o mecanismo do App Router para emitir `<title>`, meta
+description, canonical e Open Graph: um objeto `metadata` exportado da rota
+(estático) ou uma função `generateMetadata()` (dinâmico) — o `next/head` não
+existe mais aqui. O que os tutoriais não contam é que a herança entre layout
+e página é um **merge raso**: se a página define qualquer campo dentro de
+`openGraph`, o objeto inteiro do layout pai é descartado, silenciosamente. É
+por isso que o seu card no WhatsApp sai em branco mesmo com `og:image`
+configurado "no site todo". Neste artigo eu mostro os dois comportamentos que
+quebraram o Open Graph deste site em produção, e o helper que passou a
+impedir que isso volte a acontecer.
+
+## O que a Metadata API substitui (e por que next/head não funciona mais)
+
+No Pages Router, meta tags eram JSX: você importava `next/head` e escrevia
+`<meta>` na mão, em qualquer componente. No App Router isso acabou. O `<head>`
+é montado pelo framework a partir de dados — o objeto `metadata` — e o
+`next/head` simplesmente não é suportado dentro de `app/`.
+
+A mudança é melhor do que parece: metadado virou dado estruturado, com tipo
+(`Metadata` do próprio Next), avaliado por rota e verificável em build. Todo
+o [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) parte dessa
+premissa: o que é dado dá para derivar, validar e testar.
+
+O problema é que a mesma mudança criou uma semântica de herança que quase
+ninguém leu até o fim — e ela não funciona como cascata de CSS.
+
+## Objeto estático vs generateMetadata: quando cada um
+
+A regra que eu uso é uma só: **`generateMetadata()` apenas quando o valor
+depende da rota**. Se o metadado é conhecido sem olhar `params` — home,
+página de ferramentas, listagem do blog — é objeto estático:
+
+```ts
+// app/ferramentas/page.tsx
+export const metadata: Metadata = {
+  title: "Ferramentas de SEO técnico",
+  description: "…",
+};
+```
+
+Se o valor vem de `params` ou de conteúdo carregado — o caso clássico é o
+frontmatter de um post em `/blog/[slug]` — é função:
+
+```ts
+// app/blog/[slug]/page.tsx
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const post = getPost(params.slug);
+  return buildMetadata({ title: post.title, /* … */ });
+}
+```
+
+Neste site, a rota de post usa exatamente esse formato — o
+`generateMetadata` real está em `src/app/blog/[slug]/page.tsx` e aparece
+completo na seção do helper. O importante agora: **os dois caminhos passam
+pelo mesmo pipeline de merge**. Nada do que vem a seguir muda entre estático
+e dinâmico.
+
+## metadataBase: a peça que torna todo caminho relativo absoluto
+
+Open Graph exige URL absoluta. Canonical, na prática, também. O
+`metadataBase` é a URL base, definida uma vez no root layout, que o Next usa
+para resolver todo caminho relativo da Metadata API:
+
+```ts
+// app/layout.tsx
+export const metadata: Metadata = {
+  metadataBase: new URL("https://seotecnico.dev.br"),
+  // …
+};
+```
+
+Com isso, `alternates.canonical: "/blog/meu-post"` vira
+`https://seotecnico.dev.br/blog/meu-post` no HTML emitido. Sem
+`metadataBase`, caminhos relativos não resolvem para o domínio de produção —
+e um `og:image` relativo é inútil para o scraper do WhatsApp ou do LinkedIn,
+que não tem contexto de base.
+
+## Canonical auto-referente em toda página
+
+A regra deste site é que **toda rota indexável emite canonical apontando para
+si mesma** — é um dos sinais de canonicalização que precisam contar a mesma
+história que o [sitemap derivado do conteúdo](/blog/sitemap-dinamico-nextjs).
+No App Router, o campo é `alternates.canonical`:
+
+```ts
+export const metadata: Metadata = {
+  alternates: { canonical: "/blog/meu-post" },
+};
+```
+
+Parece simples demais para dar errado. E é aqui que entra o detalhe que
+justifica o artigo: `alternates`, como `openGraph`, **não é mesclado entre
+layout e página**. Um canonical estratégico definido no layout desaparece na
+primeira rota que declarar o próprio `alternates` — junto com qualquer outra
+coisa que morasse ali.
+
+## O merge que não existe
+
+A documentação oficial do `generateMetadata` descreve o comportamento com
+precisão: os objetos de metadata dos segmentos de uma rota são mesclados de
+forma **rasa**, e campos aninhados como `openGraph` e `robots` definidos num
+segmento anterior são **sobrescritos por inteiro** pelo último segmento que
+os definir. Está documentado — mas nenhum tutorial de "SEO no Next.js" que
+eu encontrei na SERP em pt-BR menciona a consequência prática.
+
+### openGraph: definir um campo apaga o resto
+
+A consequência prática é esta. Root layout com o conjunto completo:
+
+```ts
+// app/layout.tsx
+export const metadata: Metadata = {
+  openGraph: {
+    siteName: "SEO Técnico",
+    locale: "pt_BR",
+    type: "website",
+    images: ["/og-default.png"],
+  },
+};
+```
+
+Página que só quer trocar o título do card:
+
+```ts
+// app/guia/page.tsx
+export const metadata: Metadata = {
+  openGraph: { title: "Guia de SEO técnico para Next.js" },
+};
+```
+
+Resultado emitido na página: `og:title` — **e nada mais**. Sem
+`og:site_name`, sem `og:locale`, sem `og:image`. O objeto do layout foi
+substituído, não estendido. Verificado empiricamente neste site no Next.js
+16.2.6; se você estiver em outra versão, confira antes de assumir — mas o
+comportamento é o documentado desde o início do App Router.
+
+<figure>
+  <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparação entre a herança esperada e a herança real do objeto openGraph entre root layout e página">
+    <title>Herança esperada vs. herança real do openGraph</title>
+    <desc>Duas colunas. À esquerda, a expectativa: o root layout com quatro chaves de openGraph mais uma chave definida na página resultariam em cinco chaves emitidas. À direita, o comportamento real: apenas a chave definida na página é emitida, e as quatro herdadas são descartadas.</desc>
+    <text x="180" y="26" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">o que você espera</text>
+    <text x="540" y="26" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">o que acontece</text>
+
+    <rect x="60" y="44" width="240" height="72" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="180" y="66" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">root layout: openGraph</text>
+    <text x="180" y="86" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">siteName · locale · type · images</text>
+    <text x="180" y="106" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">4 chaves</text>
+
+    <rect x="420" y="44" width="240" height="72" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="540" y="66" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">root layout: openGraph</text>
+    <text x="540" y="86" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">siteName · locale · type · images</text>
+    <text x="540" y="106" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">descartado por inteiro</text>
+    <line x1="440" y1="80" x2="640" y2="80" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+
+    <line x1="180" y1="116" x2="180" y2="146" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <line x1="540" y1="116" x2="540" y2="146" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+
+    <rect x="60" y="146" width="240" height="52" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="180" y="168" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">página: openGraph</text>
+    <text x="180" y="188" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">title · 1 chave</text>
+
+    <rect x="420" y="146" width="240" height="52" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="540" y="168" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">página: openGraph</text>
+    <text x="540" y="188" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">title · 1 chave</text>
+
+    <line x1="180" y1="198" x2="180" y2="234" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <line x1="540" y1="198" x2="540" y2="234" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+
+    <rect x="60" y="234" width="240" height="56" fill="none" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="180" y="258" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">emitido: 5 chaves</text>
+    <text x="180" y="278" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">título novo, resto herdado</text>
+
+    <rect x="420" y="234" width="240" height="56" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <text x="540" y="258" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">emitido: 1 chave</text>
+    <text x="540" y="278" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">só og:title</text>
+
+    <text x="360" y="316" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">merge raso: o último segmento que define openGraph substitui o objeto inteiro</text>
+  </svg>
+  <figcaption>A herança do openGraph não é cascata: definir um campo na página descarta o objeto do layout.</figcaption>
+</figure>
+
+O espelho do diagrama, no caso real deste site:
+
+| Tag | Esperado (herdado do root) | Emitido de fato |
+| --- | --- | --- |
+| `og:url` | URL da própria página | URL da home, em toda subpágina |
+| `og:locale` | `pt_BR` | ausente na página do guia |
+| `og:site_name` | `SEO Técnico` | ausente na página do guia |
+
+### alternates: o mesmo comportamento, e por que o feed RSS some
+
+`alternates` segue a mesma regra. E ele guarda mais coisa do que parece: além
+do canonical, é em `alternates.types` que vive o autodiscovery do feed RSS
+(`application/rss+xml`). Se o autodiscovery está declarado no root layout e
+uma página define `alternates: { canonical: "…" }`, essa página **perde a
+tag do feed** — sem warning, sem erro de build, sem nada.
+
+Foi por isso que, neste site, o autodiscovery do RSS foi movido para dentro
+do helper de metadados (a seção do helper mostra onde): é o único lugar que
+garante que ele é reemitido em toda rota, já que confiar na herança do layout
+é confiar numa herança que não existe.
+
+### O caso real: og:url apontando para a home em todo o site
+
+Em 2026-07-14, uma revisão externa da produção deste site apontou sete
+achados. Três deles — `og:image` ausente no site inteiro, `og:url` apontando
+para a home em toda subpágina, e a página do guia sem `og:locale` e
+`og:site_name` — tinham **a mesma causa raiz**: eu tinha tratado a herança
+como cascata.
+
+O `og:url` é o caso mais didático. Ele estava definido uma única vez, no
+`openGraph` do root layout, apontando para a home. Nas rotas que não
+customizavam `openGraph`, o objeto do root era herdado por inteiro — ou
+seja, toda subpágina anunciava a home como sua URL canônica de card. Nas
+rotas que customizavam `openGraph`, acontecia o oposto: o objeto do root era
+descartado e a página perdia locale, site_name e imagem. Os dois sintomas,
+opostos na aparência, eram o mesmo comportamento.
+
+A correção não foi "adicionar os campos que faltavam" página a página — foi
+arquitetural, e é a tese deste artigo: **metadado por página não pode ser
+montado ad hoc**. O comentário que hoje existe no root layout deste site,
+explicando por que `openGraph.url` deliberadamente **não** está lá, é a
+cicatriz desse bug preservada no código:
+
+```ts
+// src/app/layout.tsx
+  // Sem `url` aqui: og:url é sempre definido por página via buildMetadata
+  // (um url estático no root era herdado e apontava toda subpágina à home).
+  openGraph: {
+    type: 'website',
+    locale: site.locale,
+    siteName: site.name,
+  },
+```
+
+O histórico completo dos sete achados está documentado em
+`docs/seo-metadata-hardening.md` do repositório.
+
+## Imagem OG: file convention e config não conversam
+
+O App Router tem um segundo caminho para imagem Open Graph: a file
+convention. Um `opengraph-image.tsx` (ou `.png`) ao lado do `page.tsx` gera
+e emite a tag `og:image` daquele segmento. Dois comportamentos, ambos
+verificados neste site no Next.js 16.2.6, merecem atenção — e como esse
+comportamento já variou entre versões do Next, vale conferir na sua com um
+view-source antes de assumir.
+
+### opengraph-image.tsx não cascateia
+
+No 16.2.6, o arquivo aplica a imagem ao **segmento onde está** — ele não
+desceu para as rotas aninhadas como um layout desce. Um
+`app/opengraph-image.tsx` não garantiu `og:image` em `/blog/meu-post`; para
+a rota de post ter imagem, o segmento `app/blog/[slug]/` precisou do próprio
+`opengraph-image.tsx`. Se você contava com "coloco um arquivo no root e o
+site inteiro tem card", confira o HTML emitido nas rotas profundas.
+
+### Config de página vence o arquivo irmão
+
+Quando o mesmo segmento tem `opengraph-image.tsx` **e** a página define
+`openGraph.images` na config, a config vence e o arquivo é ignorado. Neste
+site isso importava porque o helper sempre emite o conjunto completo de
+`openGraph` — o que, sem cuidado, suprimiria a imagem por rota gerada pelo
+arquivo do segmento. A solução foi uma flag explícita no helper
+(`fileOgImage: true`): quando ligada, o helper **omite** `openGraph.images`
+da config para deixar o arquivo irmão do segmento vencer, com o hash de
+cache que a file convention gera.
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ordem de precedência da imagem Open Graph entre config da página, arquivo do mesmo segmento e arquivo do segmento pai">
+    <title>Precedência da imagem Open Graph</title>
+    <desc>Três níveis em ordem de prioridade decrescente: openGraph.images definido na config da página vence; na ausência dele vale o opengraph-image do próprio segmento; o arquivo de um segmento pai não se aplica às rotas filhas.</desc>
+    <text x="360" y="26" textAnchor="middle" fontSize="14" fill="var(--foreground, #111827)">quem define a tag og:image da rota</text>
+
+    <rect x="150" y="46" width="420" height="54" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="360" y="70" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">1. openGraph.images na config da página</text>
+    <text x="360" y="90" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">vence tudo, inclusive o arquivo irmão</text>
+
+    <line x1="360" y1="100" x2="360" y2="134" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="392" y="122" fontSize="12" fill="var(--foreground, #111827)">se ausente</text>
+
+    <rect x="150" y="134" width="420" height="54" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="360" y="158" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">2. opengraph-image do mesmo segmento</text>
+    <text x="360" y="178" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">file convention, com hash de cache</text>
+
+    <line x1="360" y1="188" x2="360" y2="222" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+
+    <rect x="150" y="222" width="420" height="54" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="360" y="246" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">3. opengraph-image do segmento pai</text>
+    <text x="360" y="266" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">não cascateia — não vale para a rota filha</text>
+  </svg>
+  <figcaption>A imagem OG do segmento pai não desce para as rotas filhas, e a config da página vence o arquivo irmão.</figcaption>
+</figure>
+
+Em texto, a ordem de precedência é: `openGraph.images` definido na config da
+página vence tudo; na ausência dele, vale o `opengraph-image.tsx` do próprio
+segmento; e o arquivo de um segmento pai **não** se aplica às rotas filhas.
+
+## A solução: um helper único de metadados
+
+Se `openGraph` e `alternates` são substituídos por inteiro, a única
+arquitetura segura é: **nenhuma rota monta metadado na mão; toda rota chama
+um helper que sempre emite o conjunto completo.** É o oposto do que os
+tutoriais ensinam (espalhar `export const metadata` parcial por rota), e é a
+mesma filosofia que este site já aplica ao [JSON-LD derivado do
+frontmatter](/blog/json-ld-nextjs): uma fonte, um formato, zero montagem
+ad hoc.
+
+O contrato do helper — o cabeçalho real do arquivo, com o motivo de ele
+existir e a assinatura de entrada:
+
+```ts
+// src/lib/metadata.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// buildMetadata — helper único de metadados por página (CLAUDE.md §6).
+//
+// Motivo de existir: no Metadata API do Next.js, quando uma página define seu
+// próprio objeto `openGraph`, ele SUBSTITUI o do root layout por inteiro (não
+// há merge profundo). Foi assim que /guia perdeu og:url/og:locale/og:site_name
+// e as demais páginas herdaram og:url apontando para a home. Toda página deve
+// montar seus metadados por aqui — nunca escrever `openGraph` à mão.
+//
+// Limites de title (≤60, já com o sufixo do template) e description (≤155)
+// são validados aqui e estouram no build — mesma política de /lib/content.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TITLE_MAX = 60
+const DESCRIPTION_MAX = 155
+
+export interface BuildMetadataInput {
+  /** Título da página. Com `absoluteTitle`, ignora o template "%s | SEO Técnico". */
+  title: string
+  description: string
+  /** Caminho canônico da rota, começando com '/' (ex.: '/blog/meu-post'). */
+  path: string
+  absoluteTitle?: boolean
+  /** Presente ⇒ og:type article com published/modified time (datas do frontmatter). */
+  article?: {
+    publishedTime: string
+    modifiedTime: string
+  }
+  /** Para rotas utilitárias (ex.: /busca) que não devem ser indexadas. */
+  noindex?: boolean
+  /**
+   * true ⇒ o segmento tem seu próprio opengraph-image.tsx: o helper não emite
+   * og:image e deixa a file convention preencher (com hash de cache). Config
+   * de página tem prioridade sobre o arquivo do segmento — por isso o padrão
+   * da marca precisa ser suprimido aqui, e não "sobreposto" lá.
+   */
+  fileOgImage?: boolean
+}
+```
+
+E o corpo, onde cada decisão do artigo vira uma linha de código:
+
+```ts
+// src/lib/metadata.ts (continuação)
+export function buildMetadata(input: BuildMetadataInput): Metadata {
+  const { title, description, path, absoluteTitle, article, noindex, fileOgImage } = input
+
+  if (!path.startsWith('/')) {
+    throw new Error(`buildMetadata: path deve começar com '/' (recebido: "${path}")`)
+  }
+
+  const renderedTitle = absoluteTitle ? title : `${title} | ${site.name}`
+  if (renderedTitle.length > TITLE_MAX) {
+    throw new Error(
+      `buildMetadata: title renderizado com ${renderedTitle.length} chars (máx ${TITLE_MAX}) em "${path}": "${renderedTitle}"`
+    )
+  }
+  if (description.length > DESCRIPTION_MAX) {
+    throw new Error(
+      `buildMetadata: description com ${description.length} chars (máx ${DESCRIPTION_MAX}) em "${path}"`
+    )
+  }
+
+  return {
+    title: absoluteTitle ? { absolute: title } : title,
+    description,
+    alternates: {
+      canonical: path,
+      // Autodiscovery do feed em toda página. Precisa estar aqui (e não no
+      // root layout) porque `alternates` da página substitui o herdado.
+      types: {
+        'application/rss+xml': [{ url: '/feed.xml', title: site.name }],
+      },
+    },
+    // og:title/og:description/twitter:* são preenchidos pelo Next.js a partir
+    // de title/description — aqui só entra o que a herança não cobre.
+    openGraph: {
+      url: absoluteUrl(path),
+      siteName: site.name,
+      locale: site.locale,
+      // og:image padrão da marca (rota de app/opengraph-image.tsx). Precisa
+      // estar aqui: como este objeto substitui o openGraph herdado, a imagem
+      // do root layout NÃO cascateia para as subpáginas.
+      ...(fileOgImage
+        ? {}
+        : {
+            images: [
+              {
+                url: '/opengraph-image',
+                width: OG_SIZE.width,
+                height: OG_SIZE.height,
+                alt: OG_BRAND_ALT,
+              },
+            ],
+          }),
+      ...(article
+        ? {
+            type: 'article',
+            publishedTime: article.publishedTime,
+            modifiedTime: article.modifiedTime,
+          }
+        : { type: 'website' }),
+    },
+    ...(noindex ? { robots: { index: false, follow: true } } : {}),
+  }
+}
+```
+
+E o uso real na rota de post, onde o frontmatter alimenta o helper:
+
+```ts
+// src/app/blog/[slug]/page.tsx
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const post = getPostBySlug(slug)
+  if (!post) return {}
+
+  const { frontmatter } = post
+  return buildMetadata({
+    title: frontmatter.title,
+    absoluteTitle: true,
+    description: frontmatter.description,
+    path: `/blog/${frontmatter.slug}`,
+    article: {
+      publishedTime: frontmatter.datePublished,
+      modifiedTime: frontmatter.dateModified,
+    },
+    fileOgImage: true,
+  })
+}
+```
+
+O contrato do helper é o que importa, mais do que a implementação: toda
+chamada emite title, description, canonical auto-referente, o objeto
+`openGraph` **completo** (locale, site_name, type, url casado com o
+canonical) e o `alternates` completo (canonical + autodiscovery do RSS em
+`types`). Uma rota não tem como emitir um `openGraph` pela metade, porque
+nenhuma rota escreve `openGraph` — todas recebem o conjunto pronto.
+
+Detalhe que vale registrar: o token de verificação do Search Console
+(`verification.google`) entra pelo root layout via variável de ambiente,
+nunca hardcoded — chave de configuração não é conteúdo.
+
+## Validar em build, não em produção
+
+O incidente de 2026-07-14 foi descoberto por uma revisão externa — ou seja,
+tarde. A resposta foi mover a validação para o único lugar onde ela não
+depende de disciplina: o build.
+
+Neste site, o schema de frontmatter valida title e description com limites
+que **lançam exceção**, não warning:
+
+```ts
+// src/lib/content.ts
+const TITLE_MAX = 60
+const DESCRIPTION_MAX = 155
+
+function parseFrontmatter(data: Record<string, unknown>, file: string): PostFrontmatter {
+  const required = [
+    'title',
+    'description',
+    'slug',
+    'datePublished',
+    'dateModified',
+    'primaryQuery',
+    'lang',
+  ] as const
+
+  for (const field of required) {
+    if (!data[field]) {
+      throw new Error(`[content] "${file}": missing required frontmatter field "${field}"`)
+    }
+  }
+
+  const title = String(data.title)
+  const description = String(data.description)
+
+  if (title.length > TITLE_MAX) {
+    throw new Error(
+      `[content] "${file}": title has ${title.length} chars (max ${TITLE_MAX})`
+    )
+  }
+  if (description.length > DESCRIPTION_MAX) {
+    throw new Error(
+      `[content] "${file}": description has ${description.length} chars (max ${DESCRIPTION_MAX})`
+    )
+  }
+  // …
+}
+```
+
+Um title de 61 caracteres não gera um deploy com title truncado na SERP —
+gera um build vermelho. É a materialização de uma regra que eu repito no
+[guia](/guia/seo-tecnico-nextjs): o CI é o único revisor que não esquece.
+Junto com as assertions de Playwright que conferem canonical, `og:url` e a
+contagem de H1 por página, o metadado deixou de ser algo que se confere no
+olho depois do deploy.
+
+## Como verificar que está correto
+
+Fechar o loop, como sempre, com verificação — nesta ordem:
+
+1. **View-source numa subpágina, não na home.** A home quase sempre está
+   certa; o merge raso quebra as rotas internas. Procure `og:url` (tem que
+   ser a URL da própria página), `og:locale`, `og:site_name` e `og:image`
+   com URL absoluta.
+2. **Compare duas rotas: uma que customiza `openGraph` e uma que não.** Se o
+   conjunto de tags emitido for diferente entre elas, você tem montagem ad
+   hoc em algum lugar — e o helper tem um furo.
+3. **Debugger da plataforma.** O scraper do LinkedIn e o do Facebook mantêm
+   cache; depois de corrigir, force o re-scrape na ferramenta de inspeção de
+   cada um antes de concluir que "não funcionou".
+4. **Rich Results Test para o JSON-LD** que sai do mesmo frontmatter — se
+   você ainda monta o bloco na mão, o [gerador de
+   JSON-LD](/ferramentas/gerador-json-ld) deste site produz o formato que eu
+   uso em produção.
+5. **Trave no CI.** Um teste que abre cada rota e confere canonical
+   auto-referente + `og:url` casado custa minutos para escrever e elimina a
+   classe inteira de regressão. Foi a diferença entre descobrir o bug por
+   revisão externa e nunca mais reintroduzi-lo.
