@@ -37,7 +37,7 @@ export function PageHero({ titulo, subtitulo, breadcrumb, imagem }: PageHeroProp
             src={imagem}
             alt=""
             fill
-            priority
+            preload
             sizes="100vw"
             className="object-cover"
           />
