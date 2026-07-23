@@ -17,6 +17,11 @@ const toDate = (d: string) => new Date(`${d}T00:00:00`)
 const postImages: Record<string, string[]> = {
   'melhorar-lcp-nextjs': ['/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp'],
   'lcp-alto-next-js': ['/images/blog/lcp-alto-next-js/preload-scanner-visivel-invisivel.webp'],
+  'metadata-api-nextjs': ['/images/blog/metadata-api-nextjs/heranca-opengraph-esperada-vs-real.webp'],
+  'ssr-ssg-isr-nextjs': ['/images/blog/ssr-ssg-isr-nextjs/duas-ondas-do-indexador.webp'],
+  'next-image-seo': ['/images/blog/next-image-seo/o-que-next-image-cobre.webp'],
+  'redirects-canonicals-nextjs': ['/images/blog/redirects-canonicals-nextjs/noindex-e-disallow-se-cancelam.webp'],
+  'gtm-nextjs': ['/images/blog/gtm-nextjs/pageview-contado-duas-vezes.webp'],
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
