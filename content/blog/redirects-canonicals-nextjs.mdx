@@ -1,0 +1,324 @@
+---
+title: "Redirects e canonicals no Next.js: config ou middleware"
+description: "Redirect 301, canonical ou noindex: qual usar em cada caso no Next.js, next.config vs middleware, e o erro de noindex com Disallow juntos."
+slug: "redirects-canonicals-nextjs"
+primaryQuery: "redirects next.js"
+lang: "pt-BR"
+datePublished: "2026-07-22"
+dateModified: "2026-07-22"
+faq:
+  - question: "permanent true no Next.js é 301 ou 308?"
+    answer: "É 308. A diferença para o 301 é que o 308 obriga o cliente a preservar o método HTTP do request original (um POST continua POST). Para SEO dá no mesmo: o Google trata ambos como redirect permanente e consolida os sinais na URL de destino — para páginas acessadas via GET, a distinção é irrelevante na prática."
+  - question: "Redirect no next.config ou no middleware?"
+    answer: "Se a regra é conhecida no build — URL antiga para URL nova, um mapeamento fixo — é redirects() no next.config: avaliado antes do roteamento, sem custo por request. O middleware roda em toda request e só se justifica quando a decisão depende de algo que só existe em runtime: cookie, header, geografia. Regra estática em middleware é pagar caro pelo lugar errado."
+  - question: "Canonical resolve conteúdo duplicado?"
+    answer: "Ajuda, mas é uma dica, não uma ordem: o Google pode ignorar um canonical se outros sinais contarem outra história — sitemap listando a URL alternativa, links internos apontando para ela, conteúdo divergente. Quando os sinais se contradizem, o Google escolhe sozinho, e a escolha aparece no Search Console como página duplicada com canônico escolhido pelo Google."
+  - question: "Posso usar noindex e Disallow juntos?"
+    answer: "Não — eles se anulam. Uma URL bloqueada no robots.txt nunca é rastreada, então a meta noindex dela nunca é lida, e a página segue elegível a aparecer como resultado só de URL. Este site cometeu exatamente esse erro na página de busca interna, detectou no baseline de 2026-07-20 e corrigiu removendo o Disallow: quem deve remover do índice é o noindex, e para ser lido ele precisa ser rastreável."
+  - question: "Redirect prejudica o SEO?"
+    answer: "Um redirect permanente, não: o Google consolida os sinais no destino, e a alegação de que se perde uma porcentagem fixa de autoridade por salto é folclore sem confirmação oficial. O que prejudica são cadeias e loops — cada salto adiciona latência e consome rastreamento, e cadeias longas podem não ser seguidas até o fim. Redirecione sempre direto para a URL final."
+  - question: "URL com ou sem barra no final?"
+    answer: "As duas funcionam; o problema é servir as duas ao mesmo tempo como páginas distintas, porque cada par vira conteúdo duplicado. Escolha uma forma, configure o framework para redirecionar a outra, e mantenha sitemap, links internos e canonicals consistentes com a escolha — no Next.js, o comportamento é controlado pela opção trailingSlash do next.config."
+---
+
+`next.config.ts` e middleware fazem a mesma coisa por caminhos diferentes: o
+`redirects()` do config é estático, avaliado antes do roteamento e sem custo
+por request; o middleware roda em **cada** request e é o único que consegue
+decidir com base em cookie, header ou geografia. A regra prática: **se a
+regra é conhecida no build, ela não tem o que fazer no middleware.** Mas a
+pergunta anterior a essa é mais importante — e é a que quase ninguém faz:
+esse problema pede mesmo um redirect, ou pede um canonical, ou um `noindex`?
+Quase todo status de "página duplicada" no Search Console nasce da escolha
+do instrumento errado.
+
+## Três instrumentos, três problemas
+
+A tabela de decisão que organiza o artigo inteiro:
+
+| A situação | O instrumento | O que ele diz ao Google |
+| --- | --- | --- |
+| A URL antiga deve deixar de existir | redirect permanente (301/308) | "isto mudou de endereço — transfira tudo para lá" |
+| As duas URLs existem, mas uma consolida os sinais | canonical | "indexe aquela; esta é uma variante" |
+| A página existe para o usuário, não para o índice | `noindex` | "rastreie se quiser, mas não indexe" |
+| As duas URLs existem e são conteúdos distintos | nada | não há problema a resolver |
+
+Errar essa escolha não dá erro — dá sintoma meses depois, no relatório de
+indexação. O resto do artigo percorre cada instrumento e termina no caso em
+que dois deles, combinados, se anulam — medido neste site.
+
+## redirects() no next.config: o caminho padrão
+
+Quando a regra é conhecida no build — a migração de slug, a URL legada, o
+caminho renomeado — o lugar dela é o array `redirects()` do config. O
+formato (ilustrativo; a razão de não haver um exemplo de produção aqui vem
+já na próxima frase):
+
+```ts
+// next.config.ts — exemplo ilustrativo, não código deste site
+async redirects() {
+  return [
+    { source: "/blog/slug-antigo", destination: "/blog/slug-novo", permanent: true },
+  ];
+}
+```
+
+E a transparência que este site deve ao leitor: o array `redirects()` de
+produção daqui está **vazio** — existe só o comentário de exemplo em
+`next.config.ts`. Não por descuido: o site nasceu em 2026-07 já com a
+estrutura atual de URLs, e **redirect é dívida de histórico, não boa prática
+por si**. Quem não tem URL legada não tem o que redirecionar — e cada
+redirect que você não precisa criar é uma cadeia que nunca vai existir.
+
+### permanent: true é 308, não 301 — e por que dá no mesmo
+
+O `permanent: true` emite HTTP **308**, não 301. A diferença técnica: o 308
+obriga o cliente a preservar o método do request (POST segue POST), enquanto
+o 301 permite rebaixar para GET. Para SEO, é indiferente — o Google trata
+ambos como redirect permanente e consolida os sinais no destino. Se alguma
+ferramenta de auditoria reclamar que "não é 301", ela está desatualizada,
+não o seu site.
+
+### source, destination e o casamento de caminho
+
+O `source` aceita parâmetros (`/blog/:slug`) e o `destination` os
+reutiliza — o que permite migrar uma estrutura inteira numa regra. O ponto
+de atenção é a ordem e a sobreposição: regras genéricas demais capturam
+caminhos que não deviam, e a primeira regra que casa, vence. Toda regra nova
+merece um teste de caminho real antes do deploy — a seção de verificação
+mostra como.
+
+## Middleware: quando a regra só existe em runtime
+
+O middleware intercepta toda request antes do roteamento e pode responder
+com um redirect. É a ferramenta certa para exatamente um tipo de caso: **a
+decisão que depende de informação que só existe na request** — um cookie de
+sessão, um header, um país de origem. Um exemplo hipotético (este site não
+tem middleware — nenhuma linha):
+
+```ts
+// middleware.ts — exemplo hipotético, este site não usa middleware
+import { NextResponse, type NextRequest } from "next/server";
+
+export function middleware(request: NextRequest) {
+  if (request.cookies.has("beta-optin")) {
+    return NextResponse.redirect(new URL("/beta", request.url));
+  }
+}
+```
+
+### O custo: ele roda em toda request
+
+Cada request do site — página, asset que passe pelo matcher, crawler —
+executa o middleware. É latência somada na frente de tudo, inclusive na
+frente do Googlebot. Esse custo se justifica quando a lógica é
+verdadeiramente dinâmica; para regra estática, é desperdício puro.
+
+### Redirect em middleware não é para URL que você já conhece
+
+Vale repetir como regra de revisão de código: se o `source` e o
+`destination` são conhecidos antes do deploy, a regra pertence ao config. Um
+mapeamento fixo dentro do middleware entrega o mesmo resultado pagando
+execução por request — e espalha a lógica de redirect por dois lugares, que
+é como cadeias acidentais nascem.
+
+## redirect() e permanentRedirect() dentro do componente
+
+A terceira via: as funções `redirect()` e `permanentRedirect()` de
+`next/navigation`, chamadas dentro do próprio componente ou de um Server
+Action. O caso de uso legítimo é a decisão que depende do **dado da rota**:
+o slug consultado existe, mas o conteúdo mudou de endereço; o produto saiu
+de linha e a página aponta para o sucessor. A decisão nasce onde o dado
+está — no componente que acabou de carregá-lo — e não teria como viver num
+config estático.
+
+## Canonical: uma dica forte, não uma ordem
+
+O canonical inverte a hierarquia dos instrumentos anteriores: redirect é uma
+**ordem** que o Google não pode ignorar — o conteúdo da URL antiga
+literalmente não é mais servido; canonical é uma **dica** que o Google
+pondera junto com os outros sinais.
+
+### Auto-referente em toda página
+
+A implementação deste site é o lado maduro deste artigo: toda rota indexável
+emite canonical apontando para si mesma, com o `og:url` casado, via um
+helper único de metadados:
+
+```ts
+// src/lib/metadata.ts
+  return {
+    title: absoluteTitle ? { absolute: title } : title,
+    description,
+    alternates: {
+      canonical: path,
+      // Autodiscovery do feed em toda página. Precisa estar aqui (e não no
+      // root layout) porque `alternates` da página substitui o herdado.
+      types: {
+        'application/rss+xml': [{ url: '/feed.xml', title: site.name }],
+      },
+    },
+    openGraph: {
+      url: absoluteUrl(path),
+      siteName: site.name,
+      locale: site.locale,
+      // …
+    },
+    ...(noindex ? { robots: { index: false, follow: true } } : {}),
+  }
+```
+
+A mecânica completa desse helper — e o incidente que o motivou — está no
+[artigo da Metadata API](/blog/metadata-api-nextjs).
+Aqui o canonical importa pelo ângulo do **conflito**: o que acontece quando
+ele discorda dos outros sinais.
+
+### O que acontece quando os sinais se contradizem
+
+O Google lê o canonical ao lado do sitemap, dos links internos, dos
+redirects e da similaridade de conteúdo. Quando o canonical aponta para A, o
+[sitemap lista B](/blog/sitemap-dinamico-nextjs) e os links internos vão
+para C, o Google desempata sozinho — e o resultado aparece no Search Console
+como "Página duplicada, o Google escolheu um canônico diferente". Esse
+status quase nunca é um bug do Google: é o site contando três histórias.
+Neste projeto, canonical e sitemap saem do mesmo pipeline de conteúdo
+justamente para que contar histórias diferentes seja impossível por
+construção.
+
+## Quando é noindex, e não redirect
+
+O terceiro instrumento cobre a página que **deve existir para o usuário e
+não deve existir no índice**: busca interna, páginas de confirmação, áreas
+utilitárias. Redirecionar seria quebrar a função da página; canonical seria
+mentira (ela não é variante de ninguém). No App Router, o `noindex` sai do
+mesmo helper de metadados deste site, como opção explícita:
+
+```ts
+// src/lib/metadata.ts
+export interface BuildMetadataInput {
+  // …
+  /** Para rotas utilitárias (ex.: /busca) que não devem ser indexadas. */
+  noindex?: boolean
+}
+
+// e, na montagem do objeto Metadata:
+...(noindex ? { robots: { index: false, follow: true } } : {})
+```
+
+Repare no `follow: true`: a página não deve ser indexada, mas os links dela
+continuam valendo para descoberta. `noindex` não precisa vir acompanhado de
+`nofollow` — são decisões separadas.
+
+E é exatamente essa página — a busca interna — que protagoniza o caso real.
+
+## Instrumentos que se cancelam: um caso real deste site
+
+No baseline de 2026-07-20, a auditoria deste site encontrou a página
+`/busca` com `noindex` na meta **e** `Disallow` no robots.txt ao mesmo
+tempo. Parece cinto e suspensório; é um anulando o outro.
+
+A mecânica: o robots.txt é consultado **antes** do rastreamento. URL
+bloqueada não é rastreada; URL não rastreada nunca tem a meta `noindex`
+lida; e uma URL bloqueada-mas-conhecida (por links, por histórico) segue
+**elegível a aparecer como resultado só de URL**, sem snippet. O
+instrumento que removeria a página do índice estava trancado do lado de
+dentro da porta que o outro instrumento fechou.
+
+<figure>
+  <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparação entre usar apenas noindex, que remove a página do índice, e combinar noindex com Disallow, que impede a leitura da meta e mantém a URL elegível">
+    <title>Como noindex e Disallow se cancelam</title>
+    <desc>Duas trilhas. Na primeira, apenas com noindex, o Googlebot busca a URL, lê a meta e remove a página do índice. Na segunda, com noindex e Disallow juntos, o Googlebot é bloqueado antes de buscar a URL, nunca lê a meta, e a URL continua elegível a aparecer como resultado só de URL.</desc>
+    <text x="40" y="34" fontSize="13" fill="var(--foreground, #111827)">só noindex</text>
+    <rect x="40" y="46" width="140" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="110" y="74" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">Googlebot busca</text>
+    <line x1="180" y1="69" x2="215" y2="69" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <rect x="215" y="46" width="140" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="285" y="74" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">lê a meta</text>
+    <line x1="355" y1="69" x2="390" y2="69" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <rect x="390" y="46" width="180" height="46" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="480" y="74" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">removida do índice</text>
+
+    <text x="40" y="158" fontSize="13" fill="var(--foreground, #111827)">noindex + Disallow</text>
+    <rect x="40" y="170" width="140" height="46" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="110" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">bloqueado no robots</text>
+    <line x1="180" y1="193" x2="215" y2="193" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <rect x="215" y="170" width="140" height="46" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="285" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">nunca lê a meta</text>
+    <line x1="355" y1="193" x2="390" y2="193" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <rect x="390" y="170" width="180" height="46" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="480" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">segue elegível, só a URL</text>
+
+    <text x="360" y="262" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">para o noindex funcionar, a URL precisa ser rastreável</text>
+  </svg>
+  <figcaption>Bloquear no robots.txt impede a leitura do próprio noindex — as duas diretivas se cancelam.</figcaption>
+</figure>
+
+Em texto: com só `noindex`, o Googlebot rastreia a página, lê a meta e a
+remove do índice. Com `noindex` mais `Disallow`, o Googlebot é barrado antes
+de ler qualquer coisa — e a URL continua elegível a ser exibida.
+
+A correção, feita no mesmo dia: **remover o `Disallow`** e deixar o
+`noindex` trabalhar — quem remove do índice é ele, e para isso precisa ser
+lido. O `robots.ts` de produção ficou assim, com o motivo registrado no
+próprio código:
+
+```ts
+// src/app/robots.ts
+export default function robots(): MetadataRoute.Robots {
+  if (!indexable) {
+    return { rules: [{ userAgent: '*', disallow: '/' }] }
+  }
+
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        // /busca NÃO entra aqui: a página já é noindex, e um Disallow impediria
+        // o Googlebot de rastreá-la — logo, de ler o próprio noindex. As duas
+        // diretivas se cancelam. Ver /blog/sitemap-dinamico-nextjs.
+        disallow: ['/api/'],
+      },
+    ],
+    sitemap: `${site.url}/sitemap.xml`,
+  }
+}
+```
+
+E o fechamento com medição, registrado em `docs/experiment-log.md`: o
+recrawl de produção confirmou **11 URLs, 0 erros, 0 avisos**. Hipótese,
+correção, verificação — o ciclo completo, com datas.
+
+## Trailing slash: escolha uma forma e seja consistente
+
+`/blog/meu-post` e `/blog/meu-post/` são URLs diferentes; servir as duas
+como páginas é criar um duplicado por rota. A regra tem três partes:
+escolha uma forma; garanta que a outra **redireciona** (não canonicaliza —
+redirect, para nem existir como página); e mantenha sitemap, links internos
+e canonicals unânimes na forma escolhida. No Next.js, a opção
+`trailingSlash` do config controla o comportamento — este site fica no
+default (sem barra final), e a consistência dos três sinais é o que o teste
+de CI confere.
+
+## Como verificar: cadeia de redirect, status real e o canônico escolhido
+
+1. **O status real, sem browser:** `curl -sI https://exemplo.com.br/url-antiga`
+   e leia `HTTP/2 308` (ou 301) e o header `location`. Browsers escondem
+   cadeias; o `curl` mostra um salto por vez.
+2. **A cadeia inteira:** `curl -sIL` segue os redirects — se aparecer mais
+   de um salto até o 200 final, você tem uma cadeia para achatar: a regra
+   deve apontar direto para o destino final.
+3. **O canônico segundo o Google:** Search Console → Inspeção de URL → o
+   campo do canônico declarado pelo usuário contra o escolhido pelo Google.
+   Divergência ali é o sintoma de sinais contraditórios — confira canonical,
+   sitemap e links internos até os três concordarem.
+4. **O caso noindex:** para uma página que deve sair do índice, confirme as
+   duas metades: a meta `noindex` presente no HTML **e** a URL rastreável
+   (fora do robots.txt). Uma sem a outra não funciona — este site tem a
+   cicatriz para provar.
+5. **O JSON-LD da página de destino:** depois de consolidar URLs, o
+   `@id`/`url` do schema precisa apontar para a URL canônica final — o
+   [gerador de JSON-LD](/ferramentas/gerador-json-ld) emite o formato usado
+   neste site. E como sempre no [guia de SEO técnico para
+   Next.js](/guia/seo-tecnico-nextjs): a regra que importa vira teste no CI,
+   porque instrumento de indexação sem verificação é promessa, não
+   engenharia.
