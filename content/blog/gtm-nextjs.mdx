@@ -1,0 +1,392 @@
+---
+title: "GTM no Next.js: pageview de SPA sem contar duas vezes"
+description: "GTM em Next.js App Router: por que o All Pages não basta, o gatilho History Change, a duplicação com o Enhanced Measurement e Consent Mode v2."
+slug: "gtm-nextjs"
+primaryQuery: "gtm next.js"
+lang: "pt-BR"
+datePublished: "2026-07-22"
+dateModified: "2026-07-22"
+faq:
+  - question: "Por que o pageview não dispara nas navegações do Next.js?"
+    answer: "Porque as navegações de um app Next.js são history.pushState — a página não recarrega, então o evento de page load que alimenta o gatilho All Pages do GTM só acontece uma vez, no primeiro acesso. As navegações seguintes precisam de um gatilho próprio: o History Change, que escuta as mudanças na History API."
+  - question: "Uso o History Change do GTM ou o Enhanced Measurement do GA4?"
+    answer: "Um só — nunca os dois. Os dois mecanismos escutam os mesmos eventos de histórico, e ligados juntos cada navegação vira dois page_view. Este site usa o History Change do GTM e mantém a opção de histórico do Enhanced Measurement desligada, porque no GTM a lógica fica versionada e visível no container; a escolha inversa também funciona, desde que seja uma escolha."
+  - question: "Onde colocar o script do GTM no App Router?"
+    answer: "O container via componente GoogleTagManager do @next/third-parties, e — se você usa Consent Mode — o script que define o consent default precisa vir antes do container carregar, como script beforeInteractive. A ordem é o ponto crítico: default de consentimento definido depois do container é dado que já vazou antes da escolha do usuário."
+  - question: "Consent Mode v2 é obrigatório pela LGPD?"
+    answer: "Não é isso que a LGPD diz — ela exige base legal para o tratamento e uma escolha real do titular, sem citar nenhum produto do Google. O Consent Mode v2 é o mecanismo do Google para as tags respeitarem essa escolha. Este site o usa com default negado por ser a forma verificável de honrar o consentimento nas tags — o que descrevo aqui é essa implementação, não aconselhamento jurídico."
+  - question: "O que acontece com os dados enquanto o consentimento está negado?"
+    answer: "No modo avançado do Consent Mode, as tags carregam mas não gravam cookies: o GA4 envia pings sem identificador (cookieless), sinalizados no request com gcs=G100. Neste site isso foi verificado inspecionando os requests /g/collect reais: com recusa, nenhum cookie _ga é criado e só os pings cookieless saem; com aceite, os hits passam a G101."
+  - question: "Por que meu gatilho de visibilidade só funciona na primeira página?"
+    answer: "Porque numa navegação SPA o DOM é substituído sem page load, e o gatilho de Element Visibility não re-arma sozinho. A correção é ligar a opção Observe DOM changes no próprio gatilho — sem ela, um evento como fim de leitura dispara no primeiro artigo da sessão e nunca mais."
+---
+
+Num app Next.js, o gatilho **All Pages** do GTM só dispara no primeiro
+carregamento — as navegações seguintes são `history.pushState` e não
+recarregam a página. A correção é o gatilho **History Change**; e a decisão
+que quase todo mundo erra é ativá-lo no GTM **e** deixar o Enhanced
+Measurement do GA4 escutando os mesmos eventos, contando cada pageview duas
+vezes. Este artigo documenta a implementação completa deste site — pageview
+único por navegação, Consent Mode v2 com default negado e validação nos
+requests reais — porque o problema nunca foi fazer o evento disparar: é
+fazê-lo disparar **uma vez só**, e só depois do consentimento.
+
+## Por que o All Pages para de disparar depois da primeira página
+
+O gatilho All Pages do GTM é, por baixo, o evento de page view clássico:
+dispara quando o container carrega junto com a página. Num site tradicional,
+toda navegação é um page load novo, o container recarrega, o gatilho
+dispara. Num app Next.js, o container carrega **uma vez**; dali em diante o
+router troca o conteúdo via History API, sem load. Resultado: o GA4 registra
+a entrada na primeira página e fica cego para o resto da sessão — a taxa de
+"rejeição" despenca de mentira e as páginas internas somem do relatório.
+
+## Instalar o GTM no App Router
+
+### @next/third-parties e por que não é um script na mão
+
+O caminho sancionado é o componente `GoogleTagManager` do pacote
+`@next/third-parties`, que injeta o container com a estratégia de
+carregamento correta para o App Router — sem `<script>` colado na mão no
+layout, sem snippet copiado do painel. O layout real deste site, na ordem em
+que as peças entram:
+
+```tsx
+// src/app/layout.tsx
+// Consent Mode v2 — default "denied" ANTES de qualquer tag do Google carregar.
+// O banner (ConsentBanner) atualiza analytics_storage após a escolha do
+// usuário; ad_* permanecem negados (o site não veicula anúncios).
+const consentDefaultScript = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  wait_for_update: 500
+});
+`
+```
+
+```tsx
+// src/app/layout.tsx (no corpo do RootLayout)
+      <body className="flex min-h-screen flex-col font-sans antialiased">
+        <Script
+          id="consent-default"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: consentDefaultScript }}
+        />
+        <SearchProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <SearchModal />
+        </SearchProvider>
+        <ConsentBanner />
+        <WebVitalsReporter />
+        {site.gtmId && <GoogleTagManager gtmId={site.gtmId} />}
+      </body>
+```
+
+### A ordem importa: consent antes do container
+
+Repare na estrutura do trecho acima: o script que define o **consent
+default** roda `beforeInteractive`, e o container vem depois, no fim do
+body. Essa ordem não é estética — o default de consentimento precisa existir
+**antes** de qualquer tag acordar. A seção de Consent Mode detalha o que
+acontece quando essa ordem inverte.
+
+## History Change: o gatilho que resolve o pageview de SPA
+
+No container (rótulos da UI em inglês, como este projeto o configura): um
+gatilho do tipo **History Change**, e a tag de evento GA4 `page_view`
+disparada por ele, com o caminho e o título vindos das variáveis built-in
+(`{{Page Path}}`, `{{Page Title}}`). O gatilho escuta as mudanças na History
+API — exatamente o que o router do Next.js faz a cada navegação — e cobre o
+que o All Pages não vê.
+
+O detalhe que evita um bug clássico: a tag de configuração do GA4 deve ter o
+page view automático do load inicial **ou** o History Change cobrindo o
+load, nunca a soma cega dos dois. Neste site, a receita completa do
+container — tags, gatilhos, variáveis e a decisão de cobertura do load
+inicial — está documentada em `docs/measurement-plan.md`, e o container
+implementa o plano, não o contrário.
+
+## A duplicação que ninguém percebe
+
+Aqui está o núcleo do artigo, porque é a parte que nenhum tutorial de
+"History Change em 5 minutos" menciona: o GA4 tem o próprio mecanismo de
+pageview de SPA. No Enhanced Measurement, a opção de page views baseada em
+eventos de histórico do browser faz o mesmo trabalho do gatilho History
+Change — e as duas coisas ligadas juntas contam **cada navegação duas
+vezes**.
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Numa sessão de quatro páginas, o gatilho History Change do GTM e o Enhanced Measurement do GA4 ligados juntos produzem oito pageviews em vez de quatro">
+    <title>Onde o pageview nasce (e onde nasce duas vezes)</title>
+    <desc>Linha do tempo de uma sessão com um carregamento inicial e três navegações SPA. Duas trilhas paralelas, uma do gatilho History Change do GTM e outra do Enhanced Measurement do GA4, marcam os mesmos quatro pontos. Uma chave abaixo indica o total de oito pageviews para quatro navegações.</desc>
+    <line x1="60" y1="230" x2="680" y2="230" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="100" y="252" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">load</text>
+    <text x="250" y="252" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">nav 1</text>
+    <text x="400" y="252" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">nav 2</text>
+    <text x="550" y="252" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">nav 3</text>
+
+    <text x="60" y="46" fontSize="13" fill="var(--foreground, #111827)">GTM — History Change</text>
+    <rect x="76" y="58" width="48" height="30" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <rect x="226" y="58" width="48" height="30" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <rect x="376" y="58" width="48" height="30" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <rect x="526" y="58" width="48" height="30" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+
+    <text x="60" y="124" fontSize="13" fill="var(--foreground, #111827)">GA4 — Enhanced Measurement</text>
+    <rect x="76" y="136" width="48" height="30" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <rect x="226" y="136" width="48" height="30" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <rect x="376" y="136" width="48" height="30" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <rect x="526" y="136" width="48" height="30" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+
+    <line x1="100" y1="88" x2="100" y2="226" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="4 4" />
+    <line x1="250" y1="88" x2="250" y2="226" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="4 4" />
+    <line x1="400" y1="88" x2="400" y2="226" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="4 4" />
+    <line x1="550" y1="88" x2="550" y2="226" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="4 4" />
+
+    <rect x="60" y="182" width="600" height="30" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="360" y="202" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">os dois ligados = 8 pageviews para 4 navegações</text>
+
+    <text x="360" y="286" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">uma fonte por métrica: escolha o GTM ou o Enhanced Measurement, nunca os dois</text>
+  </svg>
+  <figcaption>Os dois mecanismos escutam os mesmos eventos de histórico — ligados juntos, dobram a contagem.</figcaption>
+</figure>
+
+O espelho do diagrama:
+
+| Mecanismo ativo | Pageviews numa sessão de 4 páginas |
+| --- | --- |
+| Só um (GTM **ou** Enhanced Measurement) | 4 |
+| Os dois juntos | 8 — cada navegação contada em dobro |
+
+### GTM ou Enhanced Measurement: escolha um
+
+Os dois funcionam; o erro é não escolher. Este site escolheu o **GTM** como
+fonte única de pageview, por uma razão de engenharia: no GTM a lógica fica
+versionada e visível no container — dá para auditar quando e por que cada
+evento dispara. O Enhanced Measurement é uma caixa de opções no painel do
+GA4, fácil de alguém religar sem perceber a consequência. A escolha inversa
+(Enhanced Measurement ligado, nenhum gatilho de histórico no GTM) é
+igualmente válida; o que não é válido é a soma.
+
+### O mesmo raciocínio vale para scroll e outbound
+
+A duplicação não é exclusiva do pageview. "Scrolls" e "Outbound clicks" do
+Enhanced Measurement também ficam **desligados** neste site, pela mesma
+razão: os equivalentes (`scroll_depth`, cliques de saída) são medidos via
+GTM, onde os limiares e as condições estão documentados no plano de medição.
+Uma fonte por métrica — qualquer métrica.
+
+## Consent Mode v2 e LGPD: negado por padrão
+
+A postura deste site: **nenhum cookie de analytics antes de consentimento
+explícito**. O Consent Mode v2 é o mecanismo que faz as tags do Google
+respeitarem essa escolha — e a implementação tem três armadilhas, todas
+verificadas aqui em produção.
+
+Uma nota de escopo antes: a LGPD não exige "Consent Mode" — exige base legal
+e escolha real do titular. O que descrevo é como este site implementou essa
+escolha nas tags do Google; não é aconselhamento jurídico.
+
+### O default precisa ir antes do container carregar
+
+A sequência correta é rígida: primeiro o comando de consent default (tudo
+negado), depois o container, depois — só se e quando o usuário aceitar — o
+consent update. Se o default é definido depois de o container carregar, as
+tags acordam sem instrução e operam como se tudo fosse permitido: o dado
+vazou antes de o banner aparecer.
+
+<figure>
+  <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ordem de carregamento do Consent Mode: default negado, container do GTM, tags em modo cookieless e, por fim, o update com a escolha do usuário">
+    <title>Ordem de carregamento do consent</title>
+    <desc>Quatro blocos em sequência: o consent default com tudo negado, o carregamento do container do GTM, as tags operando em modo cookieless e o consent update depois da escolha do usuário. O primeiro bloco está destacado com a observação de que invertê-lo significa vazar dado.</desc>
+    <rect x="30" y="70" width="150" height="60" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="2" />
+    <text x="105" y="94" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">1. consent default</text>
+    <text x="105" y="114" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">tudo negado</text>
+
+    <line x1="180" y1="100" x2="210" y2="100" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+
+    <rect x="210" y="70" width="150" height="60" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="285" y="94" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">2. container GTM</text>
+    <text x="285" y="114" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">carrega</text>
+
+    <line x1="360" y1="100" x2="390" y2="100" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+
+    <rect x="390" y="70" width="150" height="60" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="465" y="94" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">3. tags disparam</text>
+    <text x="465" y="114" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">cookieless — gcs G100</text>
+
+    <line x1="540" y1="100" x2="570" y2="100" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+
+    <rect x="570" y="70" width="120" height="60" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="630" y="94" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">4. update</text>
+    <text x="630" y="114" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">escolha do usuário</text>
+
+    <line x1="105" y1="130" x2="105" y2="160" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <text x="105" y="182" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">se isto vier depois,</text>
+    <text x="105" y="202" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">já vazou</text>
+
+    <text x="420" y="202" textAnchor="middle" fontSize="13" fill="var(--foreground, #111827)">a ordem é o mecanismo — não é detalhe de implementação</text>
+  </svg>
+  <figcaption>O default negado precisa existir antes de qualquer tag do Google acordar.</figcaption>
+</figure>
+
+Em texto, a ordem é:
+
+1. `consent default` com tudo negado — como script `beforeInteractive`;
+2. o container do GTM carrega;
+3. as tags operam em modo cookieless (pings sem identificador);
+4. o usuário escolhe no banner → `consent update` com a escolha real.
+
+### A armadilha do arguments
+
+O bug silencioso clássico do Consent Mode: os comandos de consent precisam
+chegar ao `dataLayer` como o objeto `arguments` da função, **não** como um
+array. Na prática, isso obriga a função `gtag` a ser uma *function
+declaration* — uma arrow function não tem `arguments` próprio, o push até
+acontece, mas o consent nunca atualiza, e nada dá erro. O código real deste
+site carrega o comentário e o `eslint-disable` que explicam a exceção:
+
+```ts
+// src/lib/analytics.ts
+/**
+ * Empurra um comando gtag('consent', ...) para o dataLayer.
+ * IMPORTANTE: os comandos de consent precisam ser enviados como objeto
+ * `arguments` (não array) — por isso a function declaration, não arrow.
+ */
+function gtag(...args: unknown[]): void {
+  void args // parâmetros tipados para os call sites; o GTM lê `arguments`
+  window.dataLayer = window.dataLayer ?? []
+  // eslint-disable-next-line prefer-rest-params
+  window.dataLayer.push(arguments)
+}
+
+/** Aplica a escolha do usuário (banner ou escolha salva de visita anterior). */
+export function applyConsent(choice: ConsentChoice): void {
+  if (typeof window === 'undefined') return
+  gtag('consent', 'update', { analytics_storage: choice })
+}
+```
+
+### O que é um ping cookieless
+
+No modo avançado do Consent Mode, negar consentimento não silencia as tags:
+elas enviam pings **sem cookies e sem identificador de usuário**, que o
+Google usa para modelagem agregada. A validação deste site, em 2026-07-13,
+foi feita inspecionando os requests `/g/collect` reais — não confiando no
+modo preview: com o default negado, o estado aparece no `dataLayer` inicial
+e **nenhum cookie `_ga` é criado**; os pings saem com `gcs=G100`. Após
+"Aceitar", os hits passam a `gcs=G101`. Após "Recusar", segue G100,
+cookieless. O `page_view` foi confirmado disparando no load **e** na
+navegação SPA, com os parâmetros de URL e título corretos em cada hit.
+
+## dataLayer tipado: nenhum push solto em componente
+
+A regra de arquitetura deste site: **nenhum** `window.dataLayer.push` solto
+em componente. Existe uma union type com os eventos permitidos e uma única
+função `pushEvent()` — um evento que não está no tipo não compila:
+
+```ts
+// src/lib/analytics.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Typed dataLayer helper — the ONLY way custom events are pushed on this site.
+// Never call window.dataLayer.push directly from components (CLAUDE.md §7.2).
+//
+// Every event here MUST be documented in /docs/measurement-plan.md BEFORE
+// being implemented.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Custom events documented in docs/measurement-plan.md */
+export type AnalyticsEvent =
+  | { event: 'tool_generate_jsonld'; schema_type: string }
+  | { event: 'tool_validate_meta'; issues_found: number }
+  | { event: 'tool_check_cwv'; lcp_bucket: 'good' | 'needs-improvement' | 'poor' | 'no-data' }
+  | { event: 'article_read'; article_slug: string }
+  | { event: 'outbound_click'; link_domain: string }
+  // …os eventos de web_vitals (LCP e INP) seguem no mesmo union
+
+export function pushEvent(e: AnalyticsEvent): void {
+  if (typeof window === 'undefined') return
+  window.dataLayer = window.dataLayer ?? []
+  window.dataLayer.push(e)
+}
+```
+
+O TypeScript vira a linha de defesa contra o analytics de "deixa eu só medir
+essa coisinha aqui": se o evento não foi documentado e tipado, ele não
+existe. O RUM próprio do site segue o mesmo caminho — os eventos
+`web_vitals` que alimentam a [análise de INP](/blog/inp-nextjs) passam pelo
+mesmo helper, com o mesmo contrato. É a filosofia que se repete neste
+projeto, do [gerador de JSON-LD](/ferramentas/gerador-json-ld) ao sitemap:
+uma fonte tipada, zero montagem ad hoc.
+
+## Gatilhos de DOM em SPA: re-armar depois da navegação
+
+O evento `article_read` deste site dispara quando o leitor chega ao fim do
+artigo — um gatilho de **Element Visibility** apontado para um `id` estável:
+
+```tsx
+// src/app/blog/[slug]/page.tsx
+        {/* id estável: alvo do trigger de element visibility do evento
+            `article_read` no GTM (docs/measurement-plan.md). */}
+        <footer id="article-end" className="mt-10 border-t border-gray pt-4">
+          <p className="text-xs text-muted">
+            © {frontmatter.dateModified.slice(0, 4)} {site.author.name}. Todos
+            os direitos reservados. Citações curtas com atribuição e link para
+            o artigo original são bem-vindas.
+          </p>
+        </footer>
+```
+
+O detalhe que a SERP quase nunca menciona: numa navegação SPA o DOM é
+substituído sem page load, e o gatilho de visibilidade **não re-arma
+sozinho**. Sem a opção **Observe DOM changes** ligada no gatilho, o
+`article_read` funciona no primeiro artigo da sessão — e nunca mais. Com ela
+ligada, o GTM observa as mutações do DOM e re-arma o gatilho quando o
+`#article-end` do próximo artigo aparece.
+
+## Documentar antes de implementar
+
+A regra que amarra tudo: **nenhum evento é implementado antes de estar
+documentado** em `docs/measurement-plan.md` — a tabela de eventos com nome,
+parâmetros, gatilho e propósito, a receita de configuração do container e o
+checklist de validação. O plano é a fonte; o container e o helper tipado são
+a implementação. Quando os três divergem, o plano ganha e o resto é bug. Sem
+isso, seis meses depois ninguém sabe por que existe um gatilho chamado
+"scroll 75 old v2" e todo mundo tem medo de apagá-lo.
+
+É a mesma disciplina que o [guia de SEO técnico para
+Next.js](/guia/seo-tecnico-nextjs) aplica ao resto da stack: o que importa
+vira artefato versionado — schema derivado do frontmatter, sitemap derivado
+do conteúdo, evento derivado de um plano escrito antes do código.
+
+## Como validar: Tag Assistant, DebugView e o hit real
+
+Três camadas, em ordem crescente de confiança:
+
+1. **Tag Assistant (preview do GTM).** Confirme a sequência: no load
+   inicial, o consent default aparece **antes** do container; nas navegações
+   SPA, o History Change dispara uma vez por rota — e nenhuma tag dispara em
+   dobro.
+2. **DebugView do GA4.** Confira os eventos chegando com os parâmetros do
+   plano de medição, navegação a navegação.
+3. **Os requests reais.** A camada que não mente: DevTools → Network, filtro
+   `collect`. Um `page_view` por navegação, o parâmetro `gcs` condizente com
+   o estado de consentimento, e — no cenário de recusa — nenhum cookie
+   `_ga` em Application → Cookies. Foi assim que a implementação deste site
+   foi validada, e é o único método que testa o que o usuário real
+   experimenta.
+
+Uma observação prática honesta, que descobri validando este site: gatilhos
+baseados em `IntersectionObserver` e `requestAnimationFrame` (como
+`article_read` e `scroll_depth`) **não são exercitáveis em aba headless ou
+oculta** — browsers suspendem esse trabalho em abas que não estão visíveis.
+A validação desses eventos precisou ser manual, no Tag Assistant, com a aba
+em primeiro plano. Se o seu script de QA automatizado diz que o evento de
+scroll "não funciona", talvez ele só esteja rodando numa aba que nunca ficou
+visível.

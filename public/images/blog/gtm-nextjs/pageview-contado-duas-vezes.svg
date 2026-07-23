@@ -1,0 +1,32 @@
+<svg viewBox="0 0 720 300" width="720" height="300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Numa sessão de quatro páginas, o gatilho History Change do GTM e o Enhanced Measurement do GA4 ligados juntos produzem oito pageviews em vez de quatro" font-family="Arial, Helvetica, sans-serif">
+  <title>Onde o pageview nasce (e onde nasce duas vezes)</title>
+  <desc>Linha do tempo de uma sessão com um carregamento inicial e três navegações SPA. Duas trilhas paralelas, uma do gatilho History Change do GTM e outra do Enhanced Measurement do GA4, marcam os mesmos quatro pontos. Uma chave abaixo indica o total de oito pageviews para quatro navegações.</desc>
+  <rect x="0" y="0" width="720" height="300" fill="#ffffff"/>
+  <line x1="60" y1="230" x2="680" y2="230" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="100" y="252" text-anchor="middle" font-size="12" fill="#9CA3AF">load</text>
+  <text x="250" y="252" text-anchor="middle" font-size="12" fill="#9CA3AF">nav 1</text>
+  <text x="400" y="252" text-anchor="middle" font-size="12" fill="#9CA3AF">nav 2</text>
+  <text x="550" y="252" text-anchor="middle" font-size="12" fill="#9CA3AF">nav 3</text>
+
+  <text x="60" y="46" font-size="13" font-weight="500" fill="#111827">GTM — History Change</text>
+  <rect x="76" y="58" width="48" height="30" rx="6" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <rect x="226" y="58" width="48" height="30" rx="6" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <rect x="376" y="58" width="48" height="30" rx="6" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+  <rect x="526" y="58" width="48" height="30" rx="6" fill="#DBEAFE" stroke="#9CA3AF" stroke-width="0.5"/>
+
+  <text x="60" y="124" font-size="13" font-weight="500" fill="#111827">GA4 — Enhanced Measurement</text>
+  <rect x="76" y="136" width="48" height="30" rx="6" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <rect x="226" y="136" width="48" height="30" rx="6" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <rect x="376" y="136" width="48" height="30" rx="6" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+  <rect x="526" y="136" width="48" height="30" rx="6" fill="#D1FAE5" stroke="#9CA3AF" stroke-width="0.5"/>
+
+  <line x1="100" y1="88" x2="100" y2="226" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="250" y1="88" x2="250" y2="226" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="400" y1="88" x2="400" y2="226" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="550" y1="88" x2="550" y2="226" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <rect x="60" y="182" width="600" height="30" rx="8" fill="#ffffff" stroke="#F59E0B" stroke-width="2"/>
+  <text x="360" y="202" text-anchor="middle" font-size="13" fill="#111827">os dois ligados = 8 pageviews para 4 navegações</text>
+
+  <text x="360" y="286" text-anchor="middle" font-size="13" fill="#111827">uma fonte por métrica: escolha o GTM ou o Enhanced Measurement, nunca os dois</text>
+</svg>
