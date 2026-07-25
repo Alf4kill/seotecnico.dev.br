@@ -8,6 +8,7 @@ import { mdxComponents } from '@/components/mdx/mdx-components'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
 import { AuthorByline } from '@/components/ui/AuthorByline'
+import { ArticleTldr } from '@/components/ui/ArticleTldr'
 import { site } from '@/lib/site'
 
 interface PageProps {
@@ -49,7 +50,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <>
-      <ArticleJsonLd frontmatter={frontmatter} />
+      <ArticleJsonLd
+        frontmatter={frontmatter}
+        imagePath={`/blog/${frontmatter.slug}/opengraph-image`}
+      />
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', path: '/' },
@@ -78,6 +82,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               </>
             )}
           </p>
+          {frontmatter.tldr && <ArticleTldr>{frontmatter.tldr}</ArticleTldr>}
         </header>
 
         <div className="rich-text mt-8">
