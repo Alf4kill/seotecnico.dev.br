@@ -3,40 +3,328 @@ title: 'Guia de SEO técnico para Next.js (App Router)'
 description: 'O que é SEO técnico no Next.js e como implementar: metadados, JSON-LD, sitemaps, Core Web Vitals, hreflang e renderização — com código real.'
 slug: seo-tecnico-nextjs
 datePublished: '2026-07-12'
-dateModified: '2026-07-22'
+dateModified: '2026-07-24'
 primaryQuery: 'seo técnico next.js'
 lang: pt-BR
+faq:
+  - question: 'O que é SEO técnico no Next.js?'
+    answer: >-
+      É o conjunto de implementações feitas no código — metadados, dados
+      estruturados, sitemaps, estratégia de renderização e performance — que
+      permite ao Google rastrear, indexar e rankear um site em Next.js.
+      Diferente do SEO de conteúdo, ele é resolvido no repositório: Metadata
+      API, sitemap.ts, robots.ts, JSON-LD em Server Components e Core Web
+      Vitals. No App Router, quase tudo isso é nativo do framework e não
+      depende de biblioteca externa.
+  - question: 'Next.js é bom para SEO?'
+    answer: >-
+      É, desde que a rota entregue o conteúdo no HTML da primeira resposta. O
+      App Router gera páginas estáticas por padrão, tem Metadata API, sitemap
+      e robots nativos, e o next/image resolve boa parte dos Core Web Vitals.
+      O risco não está no framework e sim no uso: rotas que só montam o
+      conteúdo no navegador, depois da hidratação, dependem da segunda onda de
+      renderização do Googlebot, que é enfileirada.
+  - question: 'Preciso de SSR para o Google indexar meu site Next.js?'
+    answer: >-
+      Não. Para indexação, SSG e SSR são equivalentes: as duas entregam o
+      conteúdo completo já no HTML da primeira resposta, que é o único critério
+      que importa para o indexador. SSG é inclusive o padrão do App Router e a
+      escolha certa para conteúdo. Use SSR quando o dado não puder esperar o
+      build, não para agradar o Googlebot.
+  - question: 'O que muda no SEO técnico entre o App Router e o Pages Router?'
+    answer: >-
+      A principal mudança é o next/head deixar de existir dentro de app/. As
+      meta tags passam a ser dados, declarados no objeto metadata ou na função
+      generateMetadata, e o framework monta o head a partir deles. Sitemap e
+      robots viram arquivos de código (app/sitemap.ts e app/robots.ts), e o
+      JSON-LD passa a ser renderizado em Server Components, saindo pronto no
+      HTML inicial.
+  - question: 'Quais Core Web Vitals importam num site Next.js?'
+    answer: >-
+      LCP, INP e CLS. O LCP é onde o Next.js mais ajuda e mais engana: o
+      next/image resolve o arquivo, mas não resolve um hero declarado em CSS
+      nem um render delay criado por animação. O CLS costuma ser resolvido
+      pelas dimensões obrigatórias do next/image. O INP é o mais difícil,
+      porque o Lighthouse não o mede — só existe em dado de campo.
+  - question: 'Dá para fazer SEO técnico no Next.js sem plugin?'
+    answer: >-
+      Dá, e é o caminho recomendado no App Router. Metadados, sitemap, robots,
+      imagens Open Graph e JSON-LD são todos nativos do framework ou HTML
+      comum. Não existe equivalente de plugin de CMS aqui, e nem é preciso: o
+      que substitui o plugin é um helper único de metadados no seu próprio
+      código, mais testes que impeçam a regressão.
 ---
 
-**SEO técnico para Next.js** é o conjunto de implementações no código — metadados,
-dados estruturados, sitemaps, renderização e performance — que permite ao Google
-rastrear, indexar e rankear um site feito com App Router. Diferente do SEO de
-conteúdo, ele é resolvido no repositório: `Metadata API`, `sitemap.ts`,
-`robots.ts`, JSON-LD e Core Web Vitals. Este guia mostra como implementar cada
-peça, com código real e resultados medidos neste próprio site.
+**SEO técnico para Next.js** é o conjunto de implementações no código —
+metadados, dados estruturados, sitemaps, renderização e performance — que
+permite ao Google rastrear, indexar e rankear um site feito com App Router.
+Diferente do SEO de conteúdo, ele é resolvido no repositório: `Metadata API`,
+`sitemap.ts`, `robots.ts`, JSON-LD e Core Web Vitals. Este guia percorre cada
+peça na ordem em que ela aparece num projeto real, com o código e as medições
+deste próprio site.
 
-## O que este guia vai cobrir
+## O que o App Router mudou
 
-> **Guia em expansão.** Este é o mapa do conteúdo em produção. Cada tópico
-> abaixo vira um capítulo com artigo aprofundado, código e medições reais.
-> Nove dos dez já estão publicados; o capítulo de hreflang sai quando a
-> versão em inglês deste site estiver no ar — aqui nada é publicado antes de
-> estar implementado e medido.
+A diferença que organiza todo o resto: no App Router, meta tag deixou de ser
+JSX e virou **dado**. O `next/head` não é suportado dentro de `app/`; o
+`<head>` é montado pelo framework a partir de um objeto `metadata` exportado
+pela rota, ou de uma função `generateMetadata()` quando o valor depende de
+`params`. Sitemap e robots seguiram o mesmo caminho — deixaram de ser arquivos
+estáticos em `public/` e viraram código em `app/sitemap.ts` e `app/robots.ts`.
 
-1. **Metadata API do Next.js** — [canonical, Open Graph e o merge raso que quebra a herança entre layout e página](/blog/metadata-api-nextjs)
-2. **JSON-LD no App Router** — [como implementar JSON-LD no Next.js derivando o schema do frontmatter](/blog/json-ld-nextjs)
-3. **sitemap.ts e robots.ts** — [sitemap dinâmico derivado do conteúdo e robots.ts como fail-safe de indexação](/blog/sitemap-dinamico-nextjs)
-4. **SSR vs SSG vs ISR** — [o que o Googlebot enxerga em cada estratégia de renderização](/blog/ssr-ssg-isr-nextjs)
-5. **Core Web Vitals: LCP** — [como melhorar o LCP no Next.js pelas 4 subpartes](/blog/melhorar-lcp-nextjs) e [os erros que impedem o LCP de melhorar](/blog/lcp-alto-next-js)
-6. **INP no Next.js** — [como diagnosticar e corrigir interatividade com dado de campo próprio](/blog/inp-nextjs)
-7. **next/image e SEO** — [o que o componente resolve de performance e o que ele não resolve de indexação](/blog/next-image-seo)
-8. **Hreflang no Next.js** — site bilíngue passo a passo
-9. **Redirects e canonicals** — [redirect, canonical ou noindex: qual instrumento para cada problema](/blog/redirects-canonicals-nextjs)
-10. **GTM em SPA/Next.js** — [pageview de SPA com History Change, sem contar duas vezes](/blog/gtm-nextjs)
+Isso é uma boa notícia e uma armadilha ao mesmo tempo. A boa notícia é que
+tudo passa a ser derivável do conteúdo: publicar um arquivo MDX pode ser o
+único passo necessário para a página entrar no sitemap, ganhar JSON-LD e ser
+coberta por testes. A armadilha é que o comportamento de herança desses
+objetos entre layout e página não é o que a intuição sugere — e é onde
+começam os problemas mais caros.
 
-## Por que confiar neste guia
+## Metadados: canonical, Open Graph e o merge que não existe
 
-Este site é um laboratório vivo: cada técnica documentada aqui está
-implementada neste próprio domínio e medida com Google Search Console, CrUX e
-experimentos antes/depois. Nenhuma recomendação entra no guia sem ter sido
-testada de verdade.
+Toda página precisa de `<title>` único, meta description, e canonical
+auto-referente. No App Router isso sai da Metadata API. O detalhe que quebra
+sites em produção é que a herança entre layout e página é um **merge raso**:
+se a página declara qualquer campo dentro de `openGraph`, o objeto inteiro do
+layout pai é descartado — silenciosamente, incluindo `og:image`,
+`og:site_name` e `og:locale`. O mesmo vale para `alternates`, o que faz um
+canonical definido só no layout desaparecer em qualquer rota que customize
+alternates.
+
+Foi exatamente assim que o Open Graph deste site quebrou, em julho de 2026. A
+correção não é lembrar de repetir os campos em cada página — é remover a
+possibilidade de esquecer: um helper único de metadados por onde toda rota
+passa, que monta `openGraph` inteiro toda vez e valida os limites de tamanho
+no build. Título acima de 60 caracteres ou description acima de 155 derrubam
+o build, não a SERP.
+
+Vale conferir também o `metadataBase` (é ele que transforma caminho relativo
+em URL absoluta, obrigatório para Open Graph) e o comportamento do
+`opengraph-image.tsx`, que no Next.js 16.2.6 **não cascateia** para rotas
+aninhadas.
+
+→ [Metadata API do Next.js: canonical e o merge que não existe](/blog/metadata-api-nextjs)
+
+## Sitemap e robots derivados do conteúdo
+
+`app/sitemap.ts` exporta uma função que devolve um array de URLs — e a versão
+que vale a pena escrever é a que **deriva esse array do conteúdo**, não a que
+lista rotas à mão. Uma lista manual desatualiza no primeiro artigo publicado.
+
+Dos quatro campos que o Next.js aceita por entrada, só dois interessam ao
+Google: `url` e `lastModified`. A documentação oficial afirma que `priority` e
+`changeFrequency` são ignorados. E `lastmod` só é usado quando for consistente
+e verificável — um `new Date()` a cada build produz uma data que nunca
+corresponde a uma mudança real, o que ensina o Google a ignorar o campo. A
+regra que sobra: emita `lastmod` só quando ele for derivável do conteúdo.
+
+`app/robots.ts` é o par disso, e o padrão certo dele é **não indexar**: um
+ambiente de preview que herda o robots de produção é um acidente comum. Uma
+última armadilha, que este site cometeu e mediu: `noindex` e `Disallow` **não
+se somam**. Uma URL bloqueada no robots.txt nunca é rastreada, então o
+`noindex` dela nunca é lido — os dois instrumentos se cancelam.
+
+→ [Sitemap dinâmico no Next.js com sitemap.ts e robots.ts](/blog/sitemap-dinamico-nextjs)
+
+## Redirects, canonicals e noindex: escolher o instrumento
+
+Antes de decidir entre `redirects()` no `next.config` e middleware, existe uma
+pergunta anterior que quase ninguém faz: esse problema pede mesmo um redirect?
+
+São três instrumentos para três problemas diferentes. Redirect permanente
+(301/308) quando a URL antiga deve deixar de existir. Canonical quando as duas
+URLs existem mas uma consolida os sinais — e ele é uma dica forte, não uma
+ordem. `noindex` quando a página existe para o usuário e não para o índice.
+Quando são conteúdos distintos, não há problema a resolver. Errar essa escolha
+não gera erro nenhum no build: gera sintoma meses depois, no relatório de
+indexação do Search Console.
+
+Resolvida a escolha, a implementação é simples: o `redirects()` do config é
+estático, avaliado antes do roteamento e sem custo por request; o middleware
+roda em **cada** request e é o único capaz de decidir com base em cookie,
+header ou geografia. Se a regra já é conhecida no build, ela não tem o que
+fazer no middleware.
+
+→ [Redirects e canonicals no Next.js: config ou middleware](/blog/redirects-canonicals-nextjs)
+
+## JSON-LD no App Router
+
+Dados estruturados no App Router não precisam de biblioteca: um
+`<script type="application/ld+json">` renderizado num Server Component sai
+pronto no HTML inicial, que é exatamente onde o Googlebot quer encontrá-lo.
+
+A decisão de arquitetura é **onde** cada schema vive, e a regra prática é
+renderizá-lo no nível em que os dados que o alimentam realmente existem.
+Schema que muda por rota — `Article`, `BreadcrumbList` — vai no `page.tsx`.
+Schema estável para o site inteiro — `WebSite`, `Organization` — pode ficar no
+layout. Vários blocos na mesma página são lidos sem problema; o que não pode é
+o mesmo tipo se contradizer entre blocos.
+
+O ganho real vem de derivar o schema do frontmatter em vez de escrevê-lo à
+mão: o `Article` de cada artigo deste site nasce dos mesmos campos que geram o
+`<title>` e o sitemap, então não existe estado em que os dois discordem. Sobre
+`FAQPage`: o Google parou de exibir o rich result em 7 de maio de 2026 e
+removeu a documentação em 15 de junho de 2026, mas o tipo continua válido no
+schema.org — mantê-lo custa quase nada quando ele nasce da mesma fonte do FAQ
+visível.
+
+Para montar um schema avulso rapidamente, este site tem um
+[gerador de JSON-LD](/ferramentas/gerador-json-ld) que devolve tanto o objeto
+quanto o componente Next.js pronto.
+
+→ [Como implementar JSON-LD no Next.js (App Router)](/blog/json-ld-nextjs)
+
+## Hreflang e site bilíngue
+
+Capítulo ainda não publicado. O hreflang deste site entra junto com a versão
+em inglês, que está em implementação — e o artigo sai depois dela, com o
+código real, e não antes. Aqui nada é publicado antes de estar implementado e
+medido.
+
+## Renderização: o que o Googlebot realmente recebe
+
+Para o indexador, a sigla não importa — importa o que vem no HTML da
+**primeira resposta**.
+
+Por esse critério, SSG e SSR são equivalentes: as duas entregam o conteúdo
+completo já nesse HTML. ISR também entrega HTML completo, possivelmente
+defasado entre revalidações. CSR entrega um esqueleto e depende de uma segunda
+passada de renderização do Googlebot — que é enfileirada — e é a única das
+quatro que cria risco real de indexação.
+
+Isso desloca a pergunta de "qual é mais rápida" para "o que o indexador
+recebe", e leva a uma conclusão desconfortável para quem usa `useEffect` com
+liberdade: o componente que só existe depois da hidratação é o erro de SEO
+mais comum em Next.js. Não porque o Google não execute JavaScript — ele
+executa — mas porque essa execução é uma fila, e você não controla a posição
+nela.
+
+O corolário prático é que você deveria conseguir **provar** qual estratégia
+cada rota sua usa, em vez de supor. A tabela de rotas do `next build` mostra
+isso com um símbolo por rota.
+
+→ [SSR, SSG e ISR no Next.js: o que o Googlebot enxerga](/blog/ssr-ssg-isr-nextjs)
+
+## LCP: diagnosticar antes de otimizar
+
+O erro que faz times perderem semanas em LCP é otimizar antes de saber onde o
+tempo está. O LCP se divide em quatro subpartes — **TTFB**, **resource load
+delay**, **resource load duration** e **element render delay** — e cada uma
+tem correções diferentes. Otimizar a subparte errada não muda nada.
+
+Descoberto o gargalo, os movimentos que resolvem a maioria dos casos são
+poucos: garantir que o elemento LCP está no HTML inicial (Server Component),
+usar `preload` no `next/image` apenas na imagem LCP — o Next.js 16 depreciou o
+`priority` em favor dele — e carregar fontes com `next/font`.
+
+Há também o caso oposto, mais frustrante: o LCP que **não melhora** depois de
+você já ter trocado tudo por `next/image`. Aí o culpado costuma ser um padrão
+que esconde o recurso do preload scanner (um `background-image` em CSS, um
+hero atrás de `"use client"`), um render delay que você mesmo criou com uma
+animação de fade-in ou um snippet anti-flicker de teste A/B, ou preload demais
+competindo por banda com o próprio elemento que deveria acelerar.
+
+→ [Como melhorar o LCP no Next.js pelas 4 subpartes](/blog/melhorar-lcp-nextjs)
+→ [LCP alto no Next.js: os erros que impedem de melhorar](/blog/lcp-alto-next-js)
+
+## INP: a métrica que o Lighthouse não mede
+
+O INP (Interaction to Next Paint) mede o tempo entre uma interação e o próximo
+frame pintado; bom é ≤200 ms no p75 de campo. Ele substituiu o FID em março de
+2024, e a diferença é de escopo — o FID media só o atraso inicial da primeira
+interação, o INP olha todas elas e mede o ciclo completo.
+
+E aqui está a particularidade que muda a forma de trabalhar: **não existe INP
+no Lighthouse**. Não é omissão de interface, é impossibilidade conceitual —
+INP exige interação real de usuário real, e o lab não tem ninguém clicando. O
+que a auditoria de lab oferece é o TBT (Total Blocking Time), um proxy que
+correlaciona mas não substitui.
+
+Para um site pequeno isso vira cegueira dupla: sem interação em lab não há INP
+no Lighthouse, e abaixo do limiar de tráfego do CrUX também não há INP no
+PageSpeed Insights nem no Search Console. A saída é medir o próprio campo com
+RUM — a biblioteca `web-vitals` com `onINP` enviando evento ao GA4. É o que
+este site faz, com atribuição por subparte.
+
+→ [INP no Next.js: como diagnosticar e corrigir](/blog/inp-nextjs)
+
+## Imagens: performance resolvida, indexação não
+
+O `next/image` entrega formato moderno, `srcset` por viewport, lazy loading e
+dimensões reservadas contra CLS. No baseline deste site isso aparece como
+**CLS 0.000 nas 10 páginas** medidas — com dimensões explícitas, deslocamento
+por imagem simplesmente não existe.
+
+O que ele **não** entrega é indexação. `alt`, contexto textual em volta, nome
+de arquivo e presença no sitemap continuam por sua conta, e o componente é
+completamente cego para imagem declarada em CSS. A SERP inteira trata "SEO de
+imagem" como sinônimo de "performance de imagem"; a outra metade é a que
+decide se a imagem existe para o índice.
+
+Dois pontos que costumam passar batido: o atributo `sizes` é quem decide qual
+arquivo do `srcset` o usuário realmente baixa — errá-lo anula boa parte do
+ganho —, e diagramas explicativos rendem mais como **SVG inline** do que como
+raster, porque os rótulos em `<text>` são rastreáveis e citáveis. A ressalva é
+que SVG inline não entra no Google Imagens; se esse canal importa, exporte uma
+cópia raster e declare no sitemap de imagens.
+
+→ [next/image e SEO: o que o componente não resolve](/blog/next-image-seo)
+
+## Medição: GTM e GA4 numa SPA
+
+Otimização sem medição é palpite, e medir SPA tem uma armadilha específica: o
+gatilho **All Pages** do GTM só dispara no primeiro carregamento. As
+navegações seguintes são `history.pushState` e não recarregam a página, então
+o GA4 registra a entrada e fica cego para o resto da sessão.
+
+A correção é o gatilho **History Change** — e a decisão que quase todo mundo
+erra é ativá-lo no GTM **e** deixar o Enhanced Measurement do GA4 escutando os
+mesmos eventos, contando cada pageview duas vezes. O problema nunca foi fazer
+o evento disparar; é fazê-lo disparar uma vez só.
+
+Some a isso o Consent Mode v2 com default negado, exigência prática para LGPD,
+e o resultado é uma implementação que precisa ser validada nos requests reais
+— não só no preview do GTM.
+
+→ [GTM no Next.js: pageview de SPA sem contar duas vezes](/blog/gtm-nextjs)
+
+## O que este site mediu
+
+Este guia não é teórico: cada técnica acima está implementada neste domínio, e
+os números abaixo saíram dele.
+
+O caso mais completo é o da home. O elemento LCP dela é um parágrafo de texto,
+e o diagnóstico pelas quatro subpartes apontou **element render delay** — não
+o peso de imagem que todo mundo assume. Duas mudanças resolveram: inline do
+CSS (~22 KB crus, ~5 KB comprimidos — era a única requisição render-blocking
+do site) e a fonte Inter passando de `display: swap` para `display: optional`
+sem preload, saindo do caminho crítico.
+
+Resultado no PageSpeed Insights mobile, em produção, medido em 18/07/2026:
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Performance | 78 | **100** |
+| LCP | 4,9 s | **0,9 s** |
+| Element render delay | 1.280 ms | **530 ms** |
+| CLS | 0 | 0 |
+
+Dois dias depois, o baseline completo das 10 URLs ficou em LCP 1,0–1,2 s, CLS
+0,000, TBT 80–148 ms, zero páginas órfãs e profundidade máxima de 2 cliques.
+
+Vale registrar o que ainda **não** está medido: o domínio está abaixo do
+limiar de tráfego do CrUX, então não há dado de campo público. Os números
+acima são de laboratório e de RUM próprio. O veredito de campo fica em aberto
+— e aparecerá aqui quando existir, não antes.
+
+## Como este guia é mantido
+
+Nove dos dez capítulos estão publicados; o de hreflang sai quando a versão em
+inglês estiver no ar. Cada capítulo é um artigo com código real e medição
+própria, e este guia é o mapa que os conecta.
+
+O que impede o conteúdo de envelhecer errado é o mesmo CI que protege o
+código: uma suíte Playwright verifica, em toda rota, `<h1>` único, limites de
+título e description, canonical auto-referente e JSON-LD que faz parse — e
+orçamentos de Lighthouse bloqueiam o merge se LCP, CLS ou TBT regredirem.
+Quando uma técnica descrita aqui deixa de valer, o teste quebra antes do
+leitor perceber.
