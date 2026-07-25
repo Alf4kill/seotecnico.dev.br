@@ -54,7 +54,11 @@ function stableId(value: string): number {
 
 const DAY_MS = 86_400_000
 
-async function reportCrawlerHit(crawler: AiCrawler, pathname: string): Promise<void> {
+async function reportCrawlerHit(
+  crawler: AiCrawler,
+  pathname: string,
+  href: string
+): Promise<void> {
   const url = sinkUrl()
   if (!url) return
 
@@ -83,6 +87,12 @@ async function reportCrawlerHit(crawler: AiCrawler, pathname: string): Promise<v
             // consulta que flagra violação da política.
             bot_policy: isAllowed(crawler) ? 'allowed' : 'disallowed',
             page_path: pathname,
+            // `page_location` é o parâmetro que alimenta as dimensões nativas
+            // de página do GA4 (Pages and screens, Landing page). Sem ele, os
+            // relatórios padrão desta propriedade ficariam vazios e tudo teria
+            // de ser lido por custom dimension. É a URL pública do próprio
+            // site — não carrega nada além do que o crawler já pediu.
+            page_location: href,
             session_id: `${id}${Math.floor(Date.now() / DAY_MS)}`,
             // Sem isto o GA4 trata o evento como sem engajamento e ele some
             // dos relatórios padrão.
@@ -102,7 +112,11 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     // encerrada assim que a resposta sai, matando a promise no meio.
     // `.catch` obrigatório — telemetria nunca pode derrubar um request.
     event.waitUntil(
-      reportCrawlerHit(crawler, request.nextUrl.pathname).catch(() => {})
+      reportCrawlerHit(
+        crawler,
+        request.nextUrl.pathname,
+        request.nextUrl.href
+      ).catch(() => {})
     )
   }
 

@@ -31,7 +31,17 @@
 
 | Event name | Description | Trigger | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
-| `ai_crawler_hit` | An AI crawler requested a page or a discovery endpoint. Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `proxy.ts` at the edge, when the request `User-Agent` matches a known agent | `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `page_path`, `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (phase 2, IP-range check) | no | documented — implementation in progress |
+| `ai_crawler_hit` | An AI crawler requested a page or a discovery endpoint. Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `proxy.ts` at the edge, when the request `User-Agent` matches a known agent | `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `page_path`, `page_location` (feeds GA4's native page dimensions, so the standard reports work without custom definitions), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (phase 2, IP-range check) | no | documented — implementation in progress |
+
+To query the crawler property beyond Realtime, register the event-scoped
+custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy` and
+`page_path` (Admin → Custom definitions). `page_location` needs no
+registration — GA4 reads it into the built-in page dimensions.
+
+**The query that matters:** filter `bot_policy = disallowed` and exclude
+`page_path = /robots.txt`. A disallowed agent fetching robots.txt is
+compliant — that is how it learns it is disallowed. The same agent fetching an
+article afterwards is a robots.txt violation, dated and first-party.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
