@@ -31,7 +31,7 @@
 
 | Event name | Description | Trigger | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
-| `ai_crawler_hit` | An AI crawler requested a page or a discovery endpoint. Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `proxy.ts` at the edge, when the request `User-Agent` matches a known agent | `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `page_path`, `page_location` (feeds GA4's native page dimensions, so the standard reports work without custom definitions), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (phase 2, IP-range check) | no | documented — implementation in progress |
+| `ai_crawler_hit` | An AI crawler requested a page or a discovery endpoint. Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `proxy.ts` at the edge, when the request `User-Agent` matches a known agent | `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `page_path`, `page_location` (feeds GA4's native page dimensions, so the standard reports work without custom definitions), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (phase 2, IP-range check) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day. Four synthetic hits (`curl` with real vendor UA strings) produced exactly four `ai_crawler_hit` events in the crawler property's Realtime report, carrying all 8 parameter keys; `bot_name` resolved to the four distinct agents sent — `ClaudeBot`, `GPTBot`, `OAI-SearchBot`, `PerplexityBot`, one each. Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
 
 To query the crawler property beyond Realtime, register the event-scoped
 custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy` and
@@ -42,6 +42,16 @@ registration — GA4 reads it into the built-in page dimensions.
 `page_path = /robots.txt`. A disallowed agent fetching robots.txt is
 compliant — that is how it learns it is disallowed. The same agent fetching an
 article afterwards is a robots.txt violation, dated and first-party.
+
+> **The first four events in this property are synthetic — do not read them as
+> findings.** They were sent by hand on 2026-07-25 to validate the pipeline:
+> `GPTBot` → `/blog/inp-nextjs`, `OAI-SearchBot` → `/blog/inp-nextjs`,
+> `PerplexityBot` → `/llms.txt`, `ClaudeBot` → `/robots.txt`. Two of them carry
+> `bot_policy = disallowed`, and the `GPTBot` one matches the violation query
+> above exactly. Any violation analysis must start after 2026-07-25, or exclude
+> these four by timestamp. The `PerplexityBot` → `/llms.txt` hit likewise does
+> **not** count against the 90-day llms.txt prediction in the experiment log —
+> that prediction is about unprompted fetches by real agents.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
@@ -140,6 +150,9 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [ ] Confirm the same hits in GA4 Admin → DebugView on the live domain (`debug_mode`)
 - [ ] Each tool event appears in DebugView with its parameters (when tools ship)
 - [ ] Key events marked in GA4 Admin → Events (after first real events arrive)
+- [x] `ai_crawler_hit` arrives in the **crawler** property with its parameters (2026-07-25, Realtime, 4/4 synthetic hits, `bot_name` split across the 4 agents sent). Not DebugView: the hit is server-side from `proxy.ts`, so there is no browser to attach `debug_mode` to — Realtime is the equivalent ground truth for a Measurement Protocol event
+- [ ] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` (until then the parameters exist only in Realtime)
+- [ ] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand)
 
 > Note: local debugging on 2026-07-13 sent a handful of real `page_view` hits to
 > `G-59LQZ6LR72` from `localhost`. Recommend defining internal/dev traffic

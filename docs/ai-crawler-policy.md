@@ -1,6 +1,6 @@
 # Record — AI crawler policy: allow retrieval, block training
 
-> Status: **adopted** · 2026-07-25 · scope: [`src/lib/ai-crawlers.ts`](../src/lib/ai-crawlers.ts),
+> Status: **adopted and live in production** · 2026-07-25 (PR #31) · scope: [`src/lib/ai-crawlers.ts`](../src/lib/ai-crawlers.ts),
 > [`src/app/robots.ts`](../src/app/robots.ts), [`proxy.ts`](../proxy.ts)
 > Companion to [`measurement-plan.md`](measurement-plan.md) (the `ai_crawler_hit`
 > event) and [`experiment-log.md`](experiment-log.md).
@@ -118,6 +118,11 @@ Question 2 is the one worth publishing. A training bot hitting an article after
 this policy went live is a dated, first-party observation of a robots.txt
 violation — original data, which is what CLAUDE.md §5.2 asks every article to
 carry.
+
+The pipeline was proven working on 2026-07-25 with four hand-sent hits (see
+[`measurement-plan.md`](measurement-plan.md)), so both questions are now
+answerable — but neither is answered yet. Every event recorded so far is
+synthetic. The clock on real data starts here.
 
 ---
 
