@@ -6,6 +6,11 @@ datePublished: '2026-07-19'
 dateModified: '2026-07-19'
 primaryQuery: 'json-ld next.js'
 lang: pt-BR
+tldr: >-
+  Renderize uma tag <script type="application/ld+json"> dentro de um Server
+  Component, com o objeto passado por JSON.stringify. Não vai em next/head nem
+  precisa de next/script. O ganho real vem de derivar o schema do frontmatter e
+  travá-lo por teste, em vez de escrever à mão.
 faq:
   - question: 'JSON-LD deve ficar no page ou no layout do App Router?'
     answer: >-

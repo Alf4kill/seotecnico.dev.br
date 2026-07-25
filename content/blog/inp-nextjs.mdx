@@ -4,6 +4,11 @@ description: "INP no Next.js: por que o Lighthouse não mede a métrica, como di
 slug: "inp-nextjs"
 primaryQuery: "inp next.js"
 lang: "pt-BR"
+tldr: >-
+  O INP mede o tempo entre a interação do usuário e o próximo frame pintado;
+  bom é ≤200 ms no p75 de campo. O Lighthouse não mede INP — roda sem
+  interação real e só oferece o TBT como proxy. Abaixo do limiar de tráfego do
+  CrUX, a única saída é instrumentar RUM próprio.
 datePublished: "2026-07-22"
 dateModified: "2026-07-22"
 faq:
