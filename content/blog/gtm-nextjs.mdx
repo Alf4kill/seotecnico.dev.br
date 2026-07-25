@@ -4,6 +4,11 @@ description: "GTM em Next.js App Router: por que o All Pages não basta, o gatil
 slug: "gtm-nextjs"
 primaryQuery: "gtm next.js"
 lang: "pt-BR"
+tldr: >-
+  O gatilho All Pages do GTM só dispara no primeiro carregamento: navegação de
+  SPA é history.pushState e não recarrega a página. A correção é o gatilho
+  History Change — mas ative ele ou o Enhanced Measurement do GA4, nunca os
+  dois, ou cada pageview é contado duas vezes.
 datePublished: "2026-07-22"
 dateModified: "2026-07-22"
 faq:

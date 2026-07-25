@@ -23,6 +23,16 @@ export interface PostFrontmatter {
   primaryQuery: string
   lang: 'pt-BR' | 'en'
   translationOf?: string
+  /**
+   * Resposta direta ao `primaryQuery`, em 1–2 frases. Renderizada no topo do
+   * artigo e emitida como `Article.abstract` no JSON-LD.
+   *
+   * Por que é campo e não parágrafo: a regra do primeiro parágrafo (CLAUDE.md
+   * §10) já existe, mas em prosa — nada nela é extraível por máquina. Como
+   * campo, a resposta vira dado: validada no build, citável no schema e igual
+   * nas duas leituras (humana e de máquina).
+   */
+  tldr?: string
   faq?: FaqItem[]
 }
 
@@ -35,6 +45,8 @@ const CONTENT_DIR = path.join(process.cwd(), 'content')
 
 const TITLE_MAX = 60
 const DESCRIPTION_MAX = 155
+// Um TL;DR que vira meio artigo deixa de ser resposta e deixa de ser citável.
+const TLDR_MAX = 300
 
 function parseFrontmatter(data: Record<string, unknown>, file: string): PostFrontmatter {
   const required = [
@@ -70,6 +82,13 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
     throw new Error(`[content] "${file}": lang must be "pt-BR" or "en"`)
   }
 
+  const tldr = data.tldr ? String(data.tldr).trim() : undefined
+  if (tldr && tldr.length > TLDR_MAX) {
+    throw new Error(
+      `[content] "${file}": tldr has ${tldr.length} chars (max ${TLDR_MAX})`
+    )
+  }
+
   return {
     title,
     description,
@@ -79,6 +98,7 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
     primaryQuery: String(data.primaryQuery),
     lang: data.lang,
     translationOf: data.translationOf ? String(data.translationOf) : undefined,
+    tldr,
     faq: Array.isArray(data.faq) ? (data.faq as FaqItem[]) : undefined,
   }
 }

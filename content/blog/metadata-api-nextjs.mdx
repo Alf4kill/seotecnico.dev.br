@@ -4,6 +4,11 @@ description: "Metadata API no App Router: como o objeto openGraph é substituíd
 slug: "metadata-api-nextjs"
 primaryQuery: "metadata api next.js"
 lang: "pt-BR"
+tldr: >-
+  A herança entre layout e página na Metadata API é um merge raso: se a página
+  define qualquer campo dentro de openGraph, o objeto inteiro do layout pai é
+  descartado em silêncio — inclusive og:image, og:url e og:locale. O mesmo vale
+  para alternates, e é assim que o canonical some.
 datePublished: "2026-07-22"
 dateModified: "2026-07-22"
 faq:

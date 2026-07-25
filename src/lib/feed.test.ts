@@ -48,6 +48,21 @@ describe('buildFeedXml', () => {
     expect(xml).toContain('<lastBuildDate>Tue, 14 Jul 2026 00:00:00 GMT</lastBuildDate>')
   })
 
+  it('carries authorship and subject on every item', () => {
+    const xml = buildFeedXml([makePost()])
+    expect(xml).toContain('xmlns:dc="http://purl.org/dc/elements/1.1/"')
+    expect(xml).toContain(`<dc:creator>${site.author.name}</dc:creator>`)
+    expect(xml).toContain('<category>json-ld next.js</category>')
+  })
+
+  it('prefers the tldr over the description — the feed carries the answer, not the SERP hook', () => {
+    const answer = 'Renderize um script application/ld+json num Server Component.'
+    expect(buildFeedXml([makePost({ tldr: answer })])).toContain(`<description>${answer}</description>`)
+    expect(buildFeedXml([makePost()])).toContain(
+      '<description>Guia prático de dados estruturados.</description>'
+    )
+  })
+
   it('escapes markup in titles and descriptions', () => {
     const xml = buildFeedXml([
       makePost({ title: 'SSR & SSG: <script> no Googlebot', description: 'A "dupla" do Next.' }),
