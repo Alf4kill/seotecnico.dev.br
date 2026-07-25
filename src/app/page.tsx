@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, BookOpen, Wrench, FlaskConical } from 'lucide-react'
-import { WebSiteJsonLd, PersonJsonLd } from '@/components/seo/JsonLd'
+import { WebSiteJsonLd, PersonJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
@@ -44,6 +44,7 @@ export default function HomePage() {
   return (
     <>
       <WebSiteJsonLd />
+      <OrganizationJsonLd />
       <PersonJsonLd />
 
       {/* ── Hero ──────────────────────────────────────────────── */}

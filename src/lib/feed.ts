@@ -28,12 +28,18 @@ export function buildFeedXml(posts: Post[]): string {
   const items = posts
     .map(({ frontmatter }) => {
       const url = absoluteUrl(`/blog/${frontmatter.slug}`)
+      // dc:creator e category viajam com o item: quem consome o feed (leitor,
+      // agregador ou agente) leva a autoria e o assunto junto, sem precisar
+      // buscar a página. `description` usa o tldr quando existe — é a resposta
+      // direta, não a chamada de SERP.
       return `    <item>
       <title>${escapeXml(frontmatter.title)}</title>
       <link>${url}</link>
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${toRfc822(frontmatter.datePublished)}</pubDate>
-      <description>${escapeXml(frontmatter.description)}</description>
+      <dc:creator>${escapeXml(site.author.name)}</dc:creator>
+      <category>${escapeXml(frontmatter.primaryQuery)}</category>
+      <description>${escapeXml(frontmatter.tldr ?? frontmatter.description)}</description>
     </item>`
     })
     .join('\n')
@@ -42,7 +48,7 @@ export function buildFeedXml(posts: Post[]): string {
   const lastBuildDate = posts.length > 0 ? `\n    <lastBuildDate>${toRfc822(posts[0].frontmatter.datePublished)}</lastBuildDate>` : ''
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${escapeXml(site.name)}</title>
     <link>${absoluteUrl('/')}</link>
