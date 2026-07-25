@@ -4,6 +4,11 @@ description: "Redirect 301, canonical ou noindex: qual usar em cada caso no Next
 slug: "redirects-canonicals-nextjs"
 primaryQuery: "redirects next.js"
 lang: "pt-BR"
+tldr: >-
+  Antes de escolher entre next.config e middleware, escolha o instrumento:
+  redirect move, canonical consolida, noindex remove do índice. Se a regra é
+  conhecida no build, ela fica no redirects() do config; middleware só quando a
+  decisão depende de cookie, header ou geografia.
 datePublished: "2026-07-22"
 dateModified: "2026-07-22"
 faq:

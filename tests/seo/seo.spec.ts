@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import sitemap from '../../src/app/sitemap'
 import { getAllPosts, getGuide } from '../../src/lib/content'
 import { site } from '../../src/lib/site'
+import { ALLOWED_AI_CRAWLERS, DISALLOWED_AI_CRAWLERS } from '../../src/lib/ai-crawlers'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEO regression suite (CLAUDE.md §8). For every route, asserts:
@@ -39,7 +40,7 @@ const faqTypes = (frontmatter?: { faq?: unknown[] }) =>
 
 /** JSON-LD @type values each route must emit (CLAUDE.md §6). */
 function expectedJsonLdTypes(path: string): string[] {
-  if (path === '/') return ['WebSite', 'Person']
+  if (path === '/') return ['WebSite', 'Organization', 'Person']
   if (path === '/sobre') return ['Person', 'BreadcrumbList']
   if (path.startsWith('/ferramentas/')) return ['SoftwareApplication', 'BreadcrumbList']
   // The guide reads its own frontmatter for the same reason /blog/ does: this
@@ -188,6 +189,69 @@ test('robots.txt responds', async ({ request }) => {
   const response = await request.get('/robots.txt')
   expect(response.status()).toBe(200)
   expect(await response.text()).toContain('User-Agent')
+})
+
+/**
+ * Groups keyed by user agent, exactly as a crawler reads robots.txt: the most
+ * specific group naming the agent wins and `*` is ignored entirely.
+ */
+function parseRobotsGroups(txt: string): Map<string, string[]> {
+  const groups = new Map<string, string[]>()
+  let current: string[] | undefined
+
+  for (const line of txt.split('\n')) {
+    const [rawKey, ...rest] = line.split(':')
+    const key = rawKey.trim().toLowerCase()
+    const value = rest.join(':').trim()
+    if (key === 'user-agent') {
+      current = []
+      groups.set(value.toLowerCase(), current)
+    } else if (current && value) {
+      current.push(`${key}: ${value}`)
+    }
+  }
+  return groups
+}
+
+test('robots.txt declares the AI crawler policy per agent', async ({ request }) => {
+  // Only meaningful on an indexable build; otherwise robots.txt is the
+  // fail-safe `* / Disallow: /` and carries no named group at all.
+  test.skip(process.env.SITE_INDEXABLE !== 'true', 'requires an indexable build')
+
+  const groups = parseRobotsGroups(await (await request.get('/robots.txt')).text())
+
+  for (const crawler of DISALLOWED_AI_CRAWLERS) {
+    const rules = groups.get(crawler.token.toLowerCase())
+    expect(rules, `${crawler.token} must have its own group`).toBeDefined()
+    expect(rules, `${crawler.token} (training) must be disallowed`).toContain('disallow: /')
+  }
+
+  for (const crawler of ALLOWED_AI_CRAWLERS) {
+    const rules = groups.get(crawler.token.toLowerCase())
+    expect(rules, `${crawler.token} must have its own group`).toBeDefined()
+    expect(rules, `${crawler.token} (retrieval) must be allowed`).toContain('allow: /')
+    // A named group REPLACES the `*` group — it does not inherit from it. Every
+    // allowed agent must therefore repeat the site-wide disallow for itself, or
+    // /api/ silently ends up open to exactly the agents we just named.
+    expect(rules, `${crawler.token} must repeat Disallow: /api/`).toContain('disallow: /api/')
+    expect(rules, `${crawler.token} must not be blocked outright`).not.toContain('disallow: /')
+  }
+})
+
+test('llms.txt lists every published URL', async ({ request }) => {
+  const response = await request.get('/llms.txt')
+  expect(response.status()).toBe(200)
+  expect(response.headers()['content-type']).toContain('text/plain')
+
+  const txt = await response.text()
+  expect(txt.startsWith('# ')).toBe(true)
+
+  // Same source as the sitemap, so the two can never disagree about what
+  // is published — that equivalence is the reason the file is generated.
+  for (const { url } of sitemap()) {
+    if (!url.includes('/blog/') && !url.includes('/guia/')) continue
+    expect(txt, `llms.txt must list ${url}`).toContain(url)
+  }
 })
 
 test('feed.xml is valid XML', async ({ request }) => {

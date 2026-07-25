@@ -6,6 +6,7 @@ import { mdxComponents } from '@/components/mdx/mdx-components'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
 import { AuthorByline } from '@/components/ui/AuthorByline'
+import { ArticleTldr } from '@/components/ui/ArticleTldr'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
@@ -50,6 +51,7 @@ export default function GuiaPage() {
               {new Date(`${frontmatter.dateModified}T00:00:00`).toLocaleDateString('pt-BR')}
             </time>
           </p>
+          {frontmatter.tldr && <ArticleTldr>{frontmatter.tldr}</ArticleTldr>}
         </header>
 
         <div className="rich-text mt-8">
