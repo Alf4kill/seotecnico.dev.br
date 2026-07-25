@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import sitemap from '../../src/app/sitemap'
-import { getAllPosts } from '../../src/lib/content'
+import { getAllPosts, getGuide } from '../../src/lib/content'
 import { site } from '../../src/lib/site'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -31,19 +31,28 @@ const routes = [...sitemapPaths, ...noindexPaths]
 const postsBySlug = new Map(
   getAllPosts().map((post) => [post.frontmatter.slug, post.frontmatter])
 )
+const guideFrontmatter = getGuide().frontmatter
+
+/** `FAQPage` is expected whenever the source frontmatter declares a `faq` array. */
+const faqTypes = (frontmatter?: { faq?: unknown[] }) =>
+  frontmatter?.faq?.length ? ['FAQPage'] : []
 
 /** JSON-LD @type values each route must emit (CLAUDE.md §6). */
 function expectedJsonLdTypes(path: string): string[] {
   if (path === '/') return ['WebSite', 'Person']
   if (path === '/sobre') return ['Person', 'BreadcrumbList']
   if (path.startsWith('/ferramentas/')) return ['SoftwareApplication', 'BreadcrumbList']
-  if (path.startsWith('/guia/')) return ['Article', 'BreadcrumbList']
+  // The guide reads its own frontmatter for the same reason /blog/ does: this
+  // branch used to be a hardcoded pair, so a pillar with `faq` that failed to
+  // render FaqSection would have passed silently.
+  if (path.startsWith('/guia/')) {
+    return ['Article', 'BreadcrumbList', ...faqTypes(guideFrontmatter)]
+  }
   if (path.startsWith('/blog/')) {
-    const frontmatter = postsBySlug.get(path.slice('/blog/'.length))
     return [
       'Article',
       'BreadcrumbList',
-      ...(frontmatter?.faq?.length ? ['FAQPage'] : []),
+      ...faqTypes(postsBySlug.get(path.slice('/blog/'.length))),
     ]
   }
   if (noindexPaths.includes(path)) return []
