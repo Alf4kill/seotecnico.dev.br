@@ -7,6 +7,7 @@ import { mdxOptions } from '@/lib/mdx'
 import { mdxComponents } from '@/components/mdx/mdx-components'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
+import { AuthorByline } from '@/components/ui/AuthorByline'
 import { site } from '@/lib/site'
 
 interface PageProps {
@@ -63,7 +64,8 @@ export default async function BlogPostPage({ params }: PageProps) {
             {frontmatter.title}
           </h1>
           <p className="mt-3 text-sm text-muted">
-            Publicado em{' '}
+            <AuthorByline />
+            {' · '}Publicado em{' '}
             <time dateTime={frontmatter.datePublished}>
               {new Date(`${frontmatter.datePublished}T00:00:00`).toLocaleDateString('pt-BR')}
             </time>
