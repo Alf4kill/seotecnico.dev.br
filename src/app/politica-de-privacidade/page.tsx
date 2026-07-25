@@ -53,6 +53,23 @@ export default function PoliticaDePrivacidadePage() {
           </li>
         </ul>
 
+        <h2>Contagem de rastreadores automatizados</h2>
+        <p>
+          O site também conta visitas de <strong>rastreadores automatizados de
+          IA</strong> (como os da OpenAI, Anthropic, Perplexity e Google), para
+          medir se e como esses agentes leem o conteúdo publicado. Dessa
+          contagem são registrados apenas <strong>o nome do rastreador e o
+          caminho da página</strong> — nenhum endereço IP, nenhum cabeçalho de
+          requisição e nenhum dado pessoal, em uma propriedade de análise
+          separada da usada para visitantes humanos.
+        </p>
+        <p>
+          Programas automatizados não são titulares de dados, então essa
+          contagem não trata dado pessoal e não depende do banner de
+          consentimento. Está descrita aqui porque um site cuja proposta é
+          medição transparente deve dizer tudo o que mede.
+        </p>
+
         <h2>Sua escolha</h2>
         <p>
           Você pode aceitar ou recusar a medição de audiência no banner de
