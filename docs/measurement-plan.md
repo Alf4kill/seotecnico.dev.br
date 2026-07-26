@@ -31,12 +31,32 @@
 
 | Event name | Description | Trigger | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
-| `ai_crawler_hit` | An AI crawler requested a page or a discovery endpoint. Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `proxy.ts` at the edge, when the request `User-Agent` matches a known agent | `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `page_path`, `page_location` (feeds GA4's native page dimensions, so the standard reports work without custom definitions), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (phase 2, IP-range check) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day. Four synthetic hits (`curl` with real vendor UA strings) produced exactly four `ai_crawler_hit` events in the crawler property's Realtime report, carrying all 8 parameter keys; `bot_name` resolved to the four distinct agents sent — `ClaudeBot`, `GPTBot`, `OAI-SearchBot`, `PerplexityBot`, one each. Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
+| `ai_crawler_hit` | A client requested a page or a discovery endpoint. Originally AI-UA-only; scope expanded for the detection experiment ([`detection-experiment.md`](detection-experiment.md)). Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `src/proxy.ts` (Node runtime), for **every request the matcher passes** — documents, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/feed.xml`, the lab traps. `ua_class` separates the buckets | For declared agents: `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (`verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent`). For every hit: `page_path`, `page_location` (feeds GA4's native page dimensions), `ua_class` (`declared-ai` / `browser-like` / `unknown`), `has_sec_fetch` (`true`/`false`), `req_conditional` (`true`/`false`), `net_id` (salted truncated /24 or /48 hash, monthly salt). On the traps: `is_trap` (`true`), `trap_channel` (`robots` / `llms`) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day (four synthetic hits in Realtime, all 8 original parameter keys, `bot_name` split across the 4 agents sent). **Expanded 2026-07-25** — detection experiment: all-requests scope, verification verdicts and the 6 new parameters; see [`detection-experiment.md`](detection-experiment.md). Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
 
 To query the crawler property beyond Realtime, register the event-scoped
-custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy` and
-`page_path` (Admin → Custom definitions). `page_location` needs no
-registration — GA4 reads it into the built-in page dimensions.
+custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`,
+`page_path`, `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`,
+`net_id`, `is_trap` and `trap_channel` (Admin → Custom definitions).
+`page_location` needs no registration — GA4 reads it into the built-in page
+dimensions.
+
+Scope and privacy notes for the expansion (full rationale in
+[`detection-experiment.md`](detection-experiment.md)):
+
+- **Human traffic now appears in this property** as `ua_class = browser-like`,
+  anonymously: no cookie, no IP, no UA — only the path, derived boolean
+  signals, and `net_id`. That is what makes the two-pipeline delta (server-side
+  requests vs JS pageviews) computable at all.
+- **`net_id` is correlation, not identification**: a truncated hash of the /24
+  (v4) or /48 (v6), salted with `SHA-256(NET_ID_SALT_SECRET + "YYYY-MM")` — the
+  salt rotates monthly with zero storage, so the identifier cannot accumulate.
+  Without the env var the parameter is simply omitted (same fail-safe shape as
+  the sink URL). `/politica-de-privacidade` describes this in plain language.
+- **Verification never runs for browser-shaped traffic.** CIDR-feed fetches,
+  reverse DNS and signature checks are gated on `ua_class = declared-ai` or the
+  presence of signature headers.
+- **`resp_status` is deferred**: the proxy runs before the response exists, so
+  a status parameter cannot be populated truthfully yet.
 
 **The query that matters:** filter `bot_policy = disallowed` and exclude
 `page_path = /robots.txt`. A disallowed agent fetching robots.txt is
@@ -151,7 +171,8 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [ ] Each tool event appears in DebugView with its parameters (when tools ship)
 - [ ] Key events marked in GA4 Admin → Events (after first real events arrive)
 - [x] `ai_crawler_hit` arrives in the **crawler** property with its parameters (2026-07-25, Realtime, 4/4 synthetic hits, `bot_name` split across the 4 agents sent). Not DebugView: the hit is server-side from `proxy.ts`, so there is no browser to attach `debug_mode` to — Realtime is the equivalent ground truth for a Measurement Protocol event
-- [ ] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` (until then the parameters exist only in Realtime)
+- [ ] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (until then the parameters exist only in Realtime)
+- [ ] `NET_ID_SALT_SECRET` set in Vercel production env (and optionally `LAB_TRAP_DELAY_MS`) — without it `net_id` is omitted and H1's correlation is blind
 - [ ] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand)
 
 > Note: local debugging on 2026-07-13 sent a handful of real `page_view` hits to
