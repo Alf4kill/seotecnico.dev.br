@@ -33,6 +33,12 @@
 
   --accent-rgb: 245 158 11;
 
+  /* Status do validador de meta tags (e futuros usos semânticos). Medidos
+     sobre --surface em cada tema: 5.02 / 6.47 / 5.02 :1 no claro. */
+  --success-rgb: 21 128 61;
+  --danger-rgb: 185 28 28;
+  --warning-rgb: 180 83 9;
+
   --background: rgb(var(--background-rgb));
   --foreground: rgb(var(--foreground-rgb));
   --color-primary: rgb(var(--primary-rgb));
@@ -67,6 +73,11 @@
     --primary-rgb: 96 165 250;
     --primary-dark-rgb: 147 197 253;
 
+    /* Status sobre --surface escuro: 6.81 / 5.16 / 6.85 :1. */
+    --success-rgb: 63 185 80;
+    --danger-rgb: 248 81 73;
+    --warning-rgb: 210 153 34;
+
     --color-diagram-phase-a: #1E3A5F;
     --color-diagram-phase-b: #14432F;
     --color-diagram-axis: #7D8590;
@@ -85,6 +96,11 @@
 
   --primary-rgb: 96 165 250;
   --primary-dark-rgb: 147 197 253;
+
+  /* Status sobre --surface escuro: 6.81 / 5.16 / 6.85 :1. */
+  --success-rgb: 63 185 80;
+  --danger-rgb: 248 81 73;
+  --warning-rgb: 210 153 34;
 
   --color-diagram-phase-a: #1E3A5F;
   --color-diagram-phase-b: #14432F;

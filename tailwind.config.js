@@ -46,6 +46,11 @@ module.exports = {
         accent: {
           DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
         },
+        // Status semânticos (validador de meta tags). Pares medidos sobre
+        // --surface nos dois temas — valores e razões em globals.css.
+        success: "rgb(var(--success-rgb) / <alpha-value>)",
+        danger: "rgb(var(--danger-rgb) / <alpha-value>)",
+        warning: "rgb(var(--warning-rgb) / <alpha-value>)",
       },
       fontFamily: {
         sans: [
