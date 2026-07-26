@@ -543,7 +543,10 @@ Fechar o loop, como sempre, com verificação — nesta ordem:
 1. **View-source numa subpágina, não na home.** A home quase sempre está
    certa; o merge raso quebra as rotas internas. Procure `og:url` (tem que
    ser a URL da própria página), `og:locale`, `og:site_name` e `og:image`
-   com URL absoluta.
+   com URL absoluta. Se preferir não garimpar HTML cru, o [validador de meta
+   tags](/ferramentas/validador-meta-tags) deste site lê essa mesma resposta
+   e devolve title, description, canonical e Open Graph com o veredito de
+   cada um — é o passo 1 automatizado, incluindo os limites de 60 e 155.
 2. **Compare duas rotas: uma que customiza `openGraph` e uma que não.** Se o
    conjunto de tags emitido for diferente entre elas, você tem montagem ad
    hoc em algum lugar — e o helper tem um furo.

@@ -368,6 +368,12 @@ resposta, o Googlebot os indexa na primeira onda. Depois compare com o DOM
 renderizado (DevTools → Elements): o que existe no DOM mas **não** existe no
 `curl` é exatamente o conteúdo pendurado na fila de renderização.
 
+O [validador de meta tags](/ferramentas/validador-meta-tags) deste site faz
+essa leitura pelo mesmo lado da comparação: ele lê a resposta do servidor,
+não o DOM. Uma tag que só existe depois da hidratação simplesmente não
+aparece no relatório — e isso não é limitação da ferramenta, é o diagnóstico
+que este artigo inteiro descreve.
+
 ### Inspeção de URL no Search Console: o HTML testado
 
 A prova definitiva, porque vem do próprio Google: Search Console → Inspeção
