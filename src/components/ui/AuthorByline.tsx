@@ -10,10 +10,10 @@ import { site } from '@/lib/site'
 // leituras: a página do autor é onde a entidade do schema tem corpo.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function AuthorByline() {
+export function AuthorByline({ lang = 'pt-BR' }: { lang?: 'pt-BR' | 'en' }) {
   return (
     <span>
-      Por{' '}
+      {lang === 'en' ? 'By' : 'Por'}{' '}
       <Link href="/sobre" rel="author" className="text-primary hover:underline">
         {site.author.name}
       </Link>

@@ -66,13 +66,24 @@ function expectedCanonical(path: string): string {
   return path === '/' ? siteBase : `${siteBase}${path}`
 }
 
-/** All <link rel="alternate" hreflang> tags in a raw HTML document. */
+/**
+ * All <link rel="alternate" hreflang> tags in a raw HTML document.
+ *
+ * Case-INSENSITIVE on purpose. Next.js serialises the attribute as `hrefLang`
+ * (camelCase) in the HTML it serves, while the browser's DOM reports it
+ * lowercased — so a case-sensitive matcher passes when reading a live page and
+ * finds nothing when reading the same page over HTTP. Attribute names are
+ * case-insensitive per the HTML spec, so the markup is valid and Google reads
+ * it; only naive tooling is fooled. This helper reads both.
+ *
+ * The RSS `rel="alternate"` link is excluded by requiring `hreflang`.
+ */
 function extractHreflangLinks(html: string): { hreflang: string; href: string }[] {
-  return (html.match(/<link\b[^>]*>/g) ?? [])
-    .filter((tag) => tag.includes('rel="alternate"') && tag.includes('hreflang='))
+  return (html.match(/<link\b[^>]*>/gi) ?? [])
+    .filter((tag) => /rel="alternate"/i.test(tag) && /\bhreflang=/i.test(tag))
     .map((tag) => ({
-      hreflang: /hreflang="([^"]*)"/.exec(tag)?.[1] ?? '',
-      href: /href="([^"]*)"/.exec(tag)?.[1] ?? '',
+      hreflang: /\bhreflang="([^"]*)"/i.exec(tag)?.[1] ?? '',
+      href: /\bhref="([^"]*)"/i.exec(tag)?.[1] ?? '',
     }))
 }
 

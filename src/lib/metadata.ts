@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { site } from '@/lib/site'
+import { languageAlternatePaths } from '@/lib/hreflang'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildMetadata — helper único de metadados por página (CLAUDE.md §6).
@@ -38,6 +39,12 @@ export interface BuildMetadataInput {
   /** Para rotas utilitárias (ex.: /busca) que não devem ser indexadas. */
   noindex?: boolean
   /**
+   * `og:locale` da página. Só as rotas em inglês passam este campo; o padrão é
+   * o locale do site (§10, português-primeiro). Existe porque uma página em
+   * inglês herdando `pt_BR` contradiz o próprio hreflang que ela emite.
+   */
+  locale?: string
+  /**
    * true ⇒ o segmento tem seu próprio opengraph-image.tsx: o helper não emite
    * og:image e deixa a file convention preencher (com hash de cache). Config
    * de página tem prioridade sobre o arquivo do segmento — por isso o padrão
@@ -53,7 +60,7 @@ export function absoluteUrl(path: string): string {
 }
 
 export function buildMetadata(input: BuildMetadataInput): Metadata {
-  const { title, description, path, absoluteTitle, article, noindex, fileOgImage } = input
+  const { title, description, path, absoluteTitle, article, noindex, fileOgImage, locale } = input
 
   if (!path.startsWith('/')) {
     throw new Error(`buildMetadata: path deve começar com '/' (recebido: "${path}")`)
@@ -71,11 +78,26 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
     )
   }
 
+  // hreflang derivado do caminho, nunca declarado à mão na página: é assim que
+  // a reciprocidade fica garantida por construção (ver lib/hreflang.ts). Rotas
+  // sem tradução não emitem nada — um cluster de um item só é ruído.
+  const languagePaths = languageAlternatePaths(path)
+
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: {
       canonical: path,
+      ...(languagePaths
+        ? {
+            languages: Object.fromEntries(
+              Object.entries(languagePaths).map(([lang, target]) => [
+                lang,
+                absoluteUrl(target),
+              ])
+            ),
+          }
+        : {}),
       // Autodiscovery do feed em toda página. Precisa estar aqui (e não no
       // root layout) porque `alternates` da página substitui o herdado.
       types: {
@@ -87,7 +109,7 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
     openGraph: {
       url: absoluteUrl(path),
       siteName: site.name,
-      locale: site.locale,
+      locale: locale ?? site.locale,
       // og:image padrão da marca (rota de app/opengraph-image.tsx). Precisa
       // estar aqui: como este objeto substitui o openGraph herdado, a imagem
       // do root layout NÃO cascateia para as subpáginas.

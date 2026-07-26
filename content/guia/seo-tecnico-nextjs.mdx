@@ -3,7 +3,7 @@ title: 'Guia de SEO técnico para Next.js (App Router)'
 description: 'O que é SEO técnico no Next.js e como implementar: metadados, JSON-LD, sitemaps, Core Web Vitals, hreflang e renderização — com código real.'
 slug: seo-tecnico-nextjs
 datePublished: '2026-07-12'
-dateModified: '2026-07-24'
+dateModified: '2026-07-26'
 primaryQuery: 'seo técnico next.js'
 lang: pt-BR
 tldr: >-
@@ -185,10 +185,42 @@ quanto o componente Next.js pronto.
 
 ## Hreflang e site bilíngue
 
-Capítulo ainda não publicado. O hreflang deste site entra junto com a versão
-em inglês, que está em implementação — e o artigo sai depois dela, com o
-código real, e não antes. Aqui nada é publicado antes de estar implementado e
-medido.
+Esta página tem uma [versão em inglês](/en/guide/technical-seo-nextjs), e as
+duas se declaram uma à outra. É o próprio exemplo do capítulo.
+
+Três regras carregam quase todo o hreflang. **Reciprocidade**: se A declara B
+como alternativa, B tem que declarar A de volta, ou o Google descarta o
+cluster — falha silenciosa, sem erro em lugar nenhum. **Auto-referência**: cada
+página se lista entre as alternativas, o que é justamente o que torna o mesmo
+bloco de tags válido dos dois lados. **`x-default`**: a versão servida a quem
+não casa com nenhum idioma declarado; num site português-primeiro, ela aponta
+para o original em português, não para a tradução.
+
+No App Router as tags saem de `alternates.languages`, na Metadata API, e o
+detalhe de implementação que importa é **onde** esse objeto é montado.
+Declarar o par à mão em cada página é o que quebra a reciprocidade no primeiro
+refactor — alguém renomeia uma rota e só um dos lados fica sabendo. Neste site
+os pares vivem num módulo único, os dois lados de um par são gerados do mesmo
+objeto, e um teste confere a reciprocidade no HTML servido, não no código
+fonte. É a diferença entre hreflang que funciona e hreflang que só existe.
+
+Uma pegadinha encontrada ao escrever esse teste, e que vale para qualquer um
+que audite hreflang por script: o Next.js serializa o atributo como
+`hrefLang`, em camelCase, no HTML que ele serve. É válido — nomes de atributo
+em HTML são case-insensitive, o browser lê como `hreflang` e o Google também.
+Mas quem lê a resposta HTTP crua com um regex sensível a maiúsculas não
+encontra nada e conclui que o site não tem hreflang. Foi exatamente o que
+aconteceu aqui: a checagem via DOM passava e a mesma checagem via HTTP
+retornava vazio.
+
+Duas decisões que valem ser ditas, porque não são óbvias. A URL da página em
+inglês carrega a query em inglês — é `/en/guide/technical-seo-nextjs`, não um
+espelho do caminho em português —, já que a URL faz parte do que a página diz
+ser. E o `<html lang>` continua `pt-BR` nas duas: o header e o rodapé em volta
+do artigo estão realmente em português, então virar o documento inteiro para
+`en` rotularia errado essa moldura. Quem carrega `lang="en"` é a subárvore que
+está de fato em inglês. Para o Google dá no mesmo — ele ignora o atributo e
+detecta idioma pelo conteúdo —, mas não dá no mesmo para tecnologia assistiva.
 
 ## Renderização: o que o Googlebot realmente recebe
 
@@ -328,13 +360,15 @@ acima são de laboratório e de RUM próprio. O veredito de campo fica em aberto
 
 ## Como este guia é mantido
 
-Nove dos dez capítulos estão publicados; o de hreflang sai quando a versão em
-inglês estiver no ar. Cada capítulo é um artigo com código real e medição
-própria, e este guia é o mapa que os conecta.
+Os dez capítulos já têm implementação neste domínio; o de hreflang foi o
+último a chegar, e chegou sendo construído, não descrito. Cada capítulo vira um
+artigo com código real e medição própria — o de hreflang sai a partir da
+implementação acima —, e este guia é o mapa que os conecta.
 
 O que impede o conteúdo de envelhecer errado é o mesmo CI que protege o
 código: uma suíte Playwright verifica, em toda rota, `<h1>` único, limites de
-título e description, canonical auto-referente e JSON-LD que faz parse — e
+título e description, canonical auto-referente, JSON-LD que faz parse — e,
+desde que a versão em inglês existe, hreflang recíproco nos dois sentidos. Os
 orçamentos de Lighthouse bloqueiam o merge se LCP, CLS ou TBT regredirem.
 Quando uma técnica descrita aqui deixa de valer, o teste quebra antes do
 leitor perceber.

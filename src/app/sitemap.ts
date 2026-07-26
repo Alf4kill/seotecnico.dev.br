@@ -27,11 +27,12 @@ const postImages: Record<string, string[]> = {
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = site.url.replace(/\/$/, '')
   const guide = getGuide()
+  const guideEn = getGuide('en')
   const posts = getAllPosts()
 
   // Conteúdo mais recente do site (guia + posts): a home e o índice do blog
   // mudam quando qualquer conteúdo listado neles muda.
-  const newestContent = [guide.frontmatter.dateModified]
+  const newestContent = [guide.frontmatter.dateModified, guideEn.frontmatter.dateModified]
     .concat(posts.map((p) => p.frontmatter.dateModified))
     .sort()
     .at(-1) as string
@@ -43,6 +44,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     { url: base, lastModified: toDate(newestContent), changeFrequency: 'weekly', priority: 1 },
     { url: `${base}/guia/seo-tecnico-nextjs`, lastModified: toDate(guide.frontmatter.dateModified), changeFrequency: 'weekly', priority: 0.9 },
+    // Par de hreflang da pilar. As tags de alternância vão no <head> das duas
+    // páginas (lib/hreflang.ts); aqui a URL entra pelo mesmo motivo que
+    // qualquer outra: para ser descoberta e para a suíte Playwright cobri-la.
+    { url: `${base}/en/guide/technical-seo-nextjs`, lastModified: toDate(guideEn.frontmatter.dateModified), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/blog`, lastModified: newestPost ? toDate(newestPost) : undefined, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/ferramentas`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/ferramentas/gerador-json-ld`, changeFrequency: 'monthly', priority: 0.8 },
