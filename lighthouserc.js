@@ -38,6 +38,7 @@ const paths = [
   '/ferramentas',
   '/ferramentas/gerador-json-ld',
   '/ferramentas/validador-meta-tags',
+  '/en/guide/technical-seo-nextjs',
   '/sobre',
   '/politica-de-privacidade',
 ]
