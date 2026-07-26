@@ -107,6 +107,11 @@ em URL absoluta, obrigatório para Open Graph) e o comportamento do
 `opengraph-image.tsx`, que no Next.js 16.2.6 **não cascateia** para rotas
 aninhadas.
 
+Para auditar uma rota já publicada pela régua desta seção, este site tem um
+[validador de meta tags](/ferramentas/validador-meta-tags): ele lê o HTML que
+o servidor responde e classifica title, description, canonical, robots, H1 e
+Open Graph — as mesmas checagens que o CI daqui impõe a cada deploy.
+
 → [Metadata API do Next.js: canonical e o merge que não existe](/blog/metadata-api-nextjs)
 
 ## Sitemap e robots derivados do conteúdo
