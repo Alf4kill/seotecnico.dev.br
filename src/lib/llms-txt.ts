@@ -52,7 +52,7 @@ function postLine(post: Post): string {
   return linkLine(`/blog/${slug}`, title, description)
 }
 
-export function buildLlmsTxt(guide: Post, posts: Post[]): string {
+export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post): string {
   const sections = [
     `# ${site.name}`,
     '',
@@ -62,6 +62,18 @@ export function buildLlmsTxt(guide: Post, posts: Post[]): string {
     '',
     linkLine('/guia/seo-tecnico-nextjs', guide.frontmatter.title, guide.frontmatter.description),
     '',
+    // Seção própria, e não uma linha solta no bloco em português: um extrator
+    // que só quer a versão em inglês precisa saber que ela é TRADUÇÃO, não
+    // conteúdo adicional — declarar isso aqui é o equivalente textual do
+    // hreflang que as duas páginas emitem no <head>.
+    ...(guideEn
+      ? [
+          '## English version',
+          '',
+          `- [${guideEn.frontmatter.title}](${absoluteUrl('/en/guide/technical-seo-nextjs')}): ${guideEn.frontmatter.description} English translation of the pillar guide above; the chapter articles remain in Portuguese.`,
+          '',
+        ]
+      : []),
     '## Artigos',
     '',
     ...posts.map(postLine),
