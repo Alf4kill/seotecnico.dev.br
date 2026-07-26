@@ -56,6 +56,19 @@ describe('parseCidr / inCidr', () => {
     expect(inCidr('2001:db8::1', parseCidr('192.168.1.0/24')!)).toBe(false)
   })
 
+  it('reads the IPv4-mapped mixed form as the address it denotes', () => {
+    // `::ffff:a.b.c.d` (RFC 4291 §2.2.3) é como um socket dual stack reporta um
+    // par v4. Antes de ser tratada, a forma virava null e escapava de toda
+    // comparação de faixa.
+    expect(ipToBigInt('::ffff:127.0.0.1')?.value).toBe(ipToBigInt('::ffff:7f00:1')?.value)
+    expect(ipToBigInt('::ffff:127.0.0.1')?.size).toBe(128)
+    expect(inCidr('::ffff:10.0.0.1', parseCidr('::ffff:0:0/96')!)).toBe(true)
+    expect(inCidr('::ffff:8.8.8.8', parseCidr('fc00::/7')!)).toBe(false)
+    // Ainda é v6: não casa com uma faixa v4, nem inventa um endereço inválido.
+    expect(inCidr('::ffff:10.0.0.1', parseCidr('10.0.0.0/8')!)).toBe(false)
+    expect(ipToBigInt('::ffff:999.0.0.1')).toBeNull()
+  })
+
   it('rejects malformed input instead of guessing', () => {
     expect(parseCidr('999.1.1.1/24')).toBeNull()
     expect(parseCidr('10.0.0.0/33')).toBeNull()
