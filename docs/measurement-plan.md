@@ -72,6 +72,20 @@ article afterwards is a robots.txt violation, dated and first-party.
 > these four by timestamp. The `PerplexityBot` → `/llms.txt` hit likewise does
 > **not** count against the 90-day llms.txt prediction in the experiment log —
 > that prediction is about unprompted fetches by real agents.
+>
+> **Three more synthetic hits on 2026-07-25 (22:09, 22:11, 22:12 UTC−3)**,
+> sent by the owner right after the detection-experiment deploy (PR #33) to
+> validate the verification layer end-to-end, per
+> [`detection-experiment.md`](detection-experiment.md) §10. All three returned
+> `200` and produced events with the expected verdicts:
+> `GPTBot` → `/blog/inp-nextjs` came back **`impersonated`** (a residential IP
+> claiming GPTBot — the correct verdict for the curl itself);
+> `CCBot` → `/blog/inp-nextjs` came back **`unverifiable`** (no published feed
+> — and NOT impersonated, the distinction the experiment depends on);
+> `GPTBot` → the robots trap came back `impersonated` with **2.65s total
+> response time**, confirming `LAB_TRAP_DELAY_MS` is applied on that path.
+> Exclude all three from every H1–H6 window by timestamp, exactly like the
+> four above. In particular the trap hit does **not** count toward H1.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
@@ -171,8 +185,8 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [ ] Each tool event appears in DebugView with its parameters (when tools ship)
 - [ ] Key events marked in GA4 Admin → Events (after first real events arrive)
 - [x] `ai_crawler_hit` arrives in the **crawler** property with its parameters (2026-07-25, Realtime, 4/4 synthetic hits, `bot_name` split across the 4 agents sent). Not DebugView: the hit is server-side from `proxy.ts`, so there is no browser to attach `debug_mode` to — Realtime is the equivalent ground truth for a Measurement Protocol event
-- [ ] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (until then the parameters exist only in Realtime)
-- [ ] `NET_ID_SALT_SECRET` set in Vercel production env (and optionally `LAB_TRAP_DELAY_MS`) — without it `net_id` is omitted and H1's correlation is blind
+- [x] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (owner, 2026-07-25, before the PR #33 deploy)
+- [x] `NET_ID_SALT_SECRET` set in Vercel production env, `LAB_TRAP_DELAY_MS` active (confirmed by the 2.65s trap response, 2026-07-25) — without the salt, `net_id` is omitted and H1's correlation is blind
 - [ ] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand)
 
 > Note: local debugging on 2026-07-13 sent a handful of real `page_view` hits to
