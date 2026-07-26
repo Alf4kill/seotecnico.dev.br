@@ -1,6 +1,8 @@
 # Record — Crawler detection: behavioural classification, not accusation
 
-> Status: **shipping** · designed 2026-07-25 · scope: [`src/lib/ai-crawlers.ts`](../src/lib/ai-crawlers.ts),
+> Status: **live** · designed and shipped 2026-07-25 (PR #33), verification
+> validated end-to-end post-deploy the same day (3 synthetic hits, see
+> [`measurement-plan.md`](measurement-plan.md)) · scope: [`src/lib/ai-crawlers.ts`](../src/lib/ai-crawlers.ts),
 > [`src/lib/crawler-verification.ts`](../src/lib/crawler-verification.ts) (new),
 > [`src/lib/net-id.ts`](../src/lib/net-id.ts) (new),
 > [`src/lib/lab-traps.ts`](../src/lib/lab-traps.ts) (new),
