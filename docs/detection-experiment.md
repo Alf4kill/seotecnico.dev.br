@@ -418,8 +418,10 @@ small.
 
 `crawler-verification.ts` requires the **Node runtime**, not Edge: WebCrypto
 Ed25519 (Web Bot Auth), `node:dns/promises` (FCrDNS) and `Buffer` are unavailable
-in the Vercel Edge Runtime. The proxy therefore declares `runtime: 'nodejs'` in
-its config (stable since Next 15.5). If this were forgotten the failure would be
+in the Vercel Edge Runtime. In Next.js 16 the Proxy file **always runs on
+Node.js** — declaring `runtime` in its config is a build error — so the
+requirement is satisfied by construction. It stays on the record because if
+this file ever moves back to an Edge middleware, the failure would be
 invisible — "no signature ever verifies" — the same class of silent failure as
 the User-Agent forwarding trap already documented in
 [`measurement-plan.md`](measurement-plan.md).
