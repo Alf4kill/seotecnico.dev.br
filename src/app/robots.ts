@@ -1,8 +1,14 @@
 import type { MetadataRoute } from 'next'
 import { site, indexable } from '@/lib/site'
 import { ALLOWED_AI_CRAWLERS, DISALLOWED_AI_CRAWLERS } from '@/lib/ai-crawlers'
+import { TRAP_ROBOTS_PATH } from '@/lib/lab-traps'
 
-const DISALLOWED_PATHS = ['/api/']
+// O trap de robots (docs/detection-experiment.md §4) existe APENAS nesta
+// linha de Disallow: fora do sitemap, fora do llms.txt, sem link de lugar
+// nenhum. Quem chega lá parseou este arquivo e escolheu buscar o que ele
+// proíbe. O trap de llms.txt (TRAP_LLMS_PATH) fica fora daqui de propósito —
+// listá-lo contaminaria a atribuição de canal.
+const DISALLOWED_PATHS = ['/api/', TRAP_ROBOTS_PATH]
 
 export default function robots(): MetadataRoute.Robots {
   if (!indexable) {
