@@ -11,10 +11,19 @@
 // respondendo a pergunta por extenso.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function ArticleTldr({ children }: { children: string }) {
+export function ArticleTldr({
+  children,
+  lang = 'pt-BR',
+}: {
+  children: string
+  lang?: 'pt-BR' | 'en'
+}) {
   return (
     <p className="mt-6 border-l-4 border-primary bg-surface-2 px-5 py-4 text-base leading-7 text-foreground">
-      <strong className="font-semibold">Resposta curta:</strong> {children}
+      <strong className="font-semibold">
+        {lang === 'en' ? 'Short answer:' : 'Resposta curta:'}
+      </strong>{' '}
+      {children}
     </p>
   )
 }

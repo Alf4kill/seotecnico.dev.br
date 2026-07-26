@@ -7,6 +7,7 @@ import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
 import { AuthorByline } from '@/components/ui/AuthorByline'
 import { ArticleTldr } from '@/components/ui/ArticleTldr'
+import { LanguageSwitch } from '@/components/ui/LanguageSwitch'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
@@ -41,6 +42,9 @@ export default function GuiaPage() {
 
       <article className="container max-w-3xl py-12 lg:py-16">
         <header>
+          <div className="mb-6">
+            <LanguageSwitch path={CANONICAL_PATH} />
+          </div>
           <h1 className="font-bold text-foreground text-3xl leading-tight md:text-4xl">
             {frontmatter.title}
           </h1>

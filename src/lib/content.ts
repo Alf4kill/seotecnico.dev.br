@@ -130,7 +130,17 @@ export function getPostBySlug(slug: string): Post | undefined {
   return getAllPosts().find((p) => p.frontmatter.slug === slug)
 }
 
-/** The pillar guide (content/guia/seo-tecnico-nextjs.mdx). */
-export function getGuide(): Post {
-  return readMdxFile(path.join(CONTENT_DIR, 'guia', 'seo-tecnico-nextjs.mdx'))
+// The pillar exists in two languages. Their files mirror their routes rather
+// than sitting side by side, because the English slug differs from the
+// Portuguese one on purpose (an English page carries its query in its URL).
+// The pairing itself lives in lib/hreflang.ts; `translationOf` in the English
+// frontmatter is what a unit test checks that mapping against.
+const GUIDE_FILES: Record<'pt-BR' | 'en', string[]> = {
+  'pt-BR': ['guia', 'seo-tecnico-nextjs.mdx'],
+  en: ['en', 'guide', 'technical-seo-nextjs.mdx'],
+}
+
+/** The pillar guide. Defaults to pt-BR, the original. */
+export function getGuide(lang: 'pt-BR' | 'en' = 'pt-BR'): Post {
+  return readMdxFile(path.join(CONTENT_DIR, ...GUIDE_FILES[lang]))
 }
