@@ -1,6 +1,7 @@
 import type { Post } from '@/lib/content'
 import { absoluteUrl } from '@/lib/metadata'
 import { site } from '@/lib/site'
+import { TRAP_LLMS_PATH } from '@/lib/lab-traps'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /llms.txt — índice do site em markdown, no formato proposto por llmstxt.org.
@@ -66,6 +67,18 @@ export function buildLlmsTxt(guide: Post, posts: Post[]): string {
     '## Sobre',
     '',
     ...ABOUT_LINKS.map((a) => linkLine(a.path, a.title, a.description)),
+    '',
+    '## Lab',
+    '',
+    // Sonda de canal (docs/detection-experiment.md §4): esta URL existe SÓ
+    // aqui — um acesso a ela prova que o cliente parseia llms.txt e segue os
+    // links. Rótulo honesto de propósito: nada neste domínio engana ninguém,
+    // inclusive a isca.
+    linkLine(
+      TRAP_LLMS_PATH,
+      'Sonda de leitura do llms.txt',
+      'Página de laboratório que mede se agentes de IA seguem links deste arquivo. Não indexada; o conteúdo explica o experimento.'
+    ),
     '',
     '## Licença e citação',
     '',

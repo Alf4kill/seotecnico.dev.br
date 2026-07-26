@@ -53,21 +53,36 @@ export default function PoliticaDePrivacidadePage() {
           </li>
         </ul>
 
-        <h2>Contagem de rastreadores automatizados</h2>
+        <h2>Telemetria de requisições e rastreadores automatizados</h2>
         <p>
-          O site também conta visitas de <strong>rastreadores automatizados de
-          IA</strong> (como os da OpenAI, Anthropic, Perplexity e Google), para
-          medir se e como esses agentes leem o conteúdo publicado. Dessa
-          contagem são registrados apenas <strong>o nome do rastreador e o
-          caminho da página</strong> — nenhum endereço IP, nenhum cabeçalho de
-          requisição e nenhum dado pessoal, em uma propriedade de análise
-          separada da usada para visitantes humanos.
+          O servidor conta, de forma <strong>anônima</strong>, as requisições de
+          página que recebe — para medir se e como <strong>rastreadores
+          automatizados de IA</strong> (como os da OpenAI, Anthropic, Perplexity
+          e Google) leem o conteúdo publicado, e para distinguir tráfego
+          automatizado de tráfego humano. Dessa contagem são registrados apenas{' '}
+          <strong>o caminho da página, o nome do rastreador quando ele se
+          identifica, e sinais técnicos derivados</strong> (por exemplo, se a
+          requisição tem o formato de um navegador real). Nenhum endereço IP,
+          nenhum cabeçalho bruto e nenhum dado pessoal é armazenado, e tudo vai
+          para uma propriedade de análise separada da usada para visitantes
+          humanos.
         </p>
         <p>
-          Programas automatizados não são titulares de dados, então essa
-          contagem não trata dado pessoal e não depende do banner de
-          consentimento. Está descrita aqui porque um site cuja proposta é
-          medição transparente deve dizer tudo o que mede.
+          Para correlacionar requisições da mesma rede sem identificar ninguém,
+          é registrado um <strong>código de rede truncado e embaralhado</strong>{' '}
+          (um hash com sal da sub-rede, não do endereço completo), cujo sal
+          muda todo mês — o que impede que o código se acumule como um
+          identificador durável. Quando uma requisição alega ser de um
+          rastreador conhecido, o endereço IP é comparado <strong>na hora, em
+          memória</strong>, com as faixas de rede publicadas pelo próprio
+          fornecedor, apenas para verificar a alegação; o que se registra é o
+          veredito, nunca o endereço.
+        </p>
+        <p>
+          Essa contagem é agregada e anônima, não identifica você
+          individualmente e não depende do banner de consentimento. Está
+          descrita aqui porque um site cuja proposta é medição transparente
+          deve dizer tudo o que mede.
         </p>
 
         <h2>Sua escolha</h2>
