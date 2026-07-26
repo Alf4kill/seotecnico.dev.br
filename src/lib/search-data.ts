@@ -143,6 +143,15 @@ export const searchData: SearchItem[] = [
   },
 
   {
+    id: 'artigo-hreflang-nextjs',
+    title: 'Hreflang no Next.js: site bilíngue no App Router',
+    description: 'Reciprocidade, x-default, o atributo em camelCase que engana auditoria e o teste que confere a volta no HTML servido',
+    href: '/blog/hreflang-nextjs',
+    category: 'artigo',
+    keywords: ['hreflang', 'bilíngue', 'multilíngue', 'idioma', 'x-default', 'alternates', 'languages', 'i18n', 'internacionalização', 'html lang', 'root layout', 'route group', 'reciprocidade'],
+  },
+
+  {
     id: 'artigo-gtm-nextjs',
     title: 'GTM no Next.js: pageview de SPA sem contar duas vezes',
     description: 'History Change, a duplicação com o Enhanced Measurement e Consent Mode v2 com default negado',
