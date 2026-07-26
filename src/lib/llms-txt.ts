@@ -26,6 +26,12 @@ const TOOL_LINKS = [
     description:
       'Gera Article, FAQPage, BreadcrumbList, Person e Organization válidos, com saída pronta para colar num Server Component do Next.js.',
   },
+  {
+    path: '/ferramentas/validador-meta-tags',
+    title: 'Validador de meta tags',
+    description:
+      'Valida title, description, canonical, robots, H1 e Open Graph de qualquer URL, lendo o HTML do servidor — a mesma régua que este site impõe em CI.',
+  },
 ] as const
 
 const ABOUT_LINKS = [
