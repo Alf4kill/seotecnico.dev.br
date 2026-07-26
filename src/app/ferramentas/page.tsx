@@ -23,6 +23,7 @@ const ferramentas = [
     nome: 'Validador de meta tags',
     descricao:
       'Cole uma URL e veja title, description, canonical e Open Graph como o Google enxerga — com alertas de problemas.',
+    href: '/ferramentas/validador-meta-tags',
   },
   {
     icon: Gauge,
@@ -48,8 +49,8 @@ export default function FerramentasPage() {
       <p className="mt-4 max-w-2xl text-muted text-base leading-7">
         Ferramentas de SEO técnico gratuitas, feitas para desenvolvedores:
         sem login, sem armazenar dados e com o código aberto no GitHub. O
-        gerador de JSON-LD já está no ar; as outras duas estão em
-        desenvolvimento.
+        gerador de JSON-LD e o validador de meta tags já estão no ar; o
+        checador de Core Web Vitals está em desenvolvimento.
       </p>
 
       <div className="mt-10 grid gap-6 md:grid-cols-3">

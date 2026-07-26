@@ -122,6 +122,18 @@ export interface Cidr {
 
 export function ipToBigInt(ip: string): { value: bigint; size: 32 | 128 } | null {
   if (ip.includes(':')) {
+    // Forma mista do IPv6 (RFC 4291 §2.2.3): os 32 bits finais escritos em
+    // decimal pontuado, como `::ffff:127.0.0.1` — que é como um socket dual
+    // stack costuma reportar um par v4. Sem esta normalização o grupo `127.0.0.1`
+    // reprova no teste hexadecimal e o endereço inteiro vira null: um
+    // `::ffff:10.0.0.1` passaria por não-privado em qualquer chamador.
+    const embedded = /:((?:\d{1,3}\.){3}\d{1,3})$/.exec(ip)
+    if (embedded) {
+      const v4 = ipToBigInt(embedded[1])
+      if (!v4) return null
+      const hex = v4.value.toString(16).padStart(8, '0')
+      ip = `${ip.slice(0, embedded.index)}:${hex.slice(0, 4)}:${hex.slice(4)}`
+    }
     const parts = expandIpv6(ip)
     if (!parts) return null
     let v = 0n
