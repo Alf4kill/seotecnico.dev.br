@@ -15,14 +15,20 @@ type FaqSectionProps = {
   items: FaqItem[]
   /** Título (h2) da seção. */
   titulo?: string
+  /** Idioma do conteúdo — marca a subárvore quando difere do documento. */
+  lang?: 'pt-BR' | 'en'
 }
 
-export function FaqSection({ items, titulo = 'Perguntas frequentes' }: FaqSectionProps) {
+export function FaqSection({ items, titulo = 'Perguntas frequentes', lang }: FaqSectionProps) {
   // Primeiro item aberto por padrão (espelha o design).
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section className="bg-surface-2 py-12 md:py-16 lg:py-20" aria-labelledby="faq-titulo">
+    <section
+      lang={lang}
+      className="bg-surface-2 py-12 md:py-16 lg:py-20"
+      aria-labelledby="faq-titulo"
+    >
       <div className="container">
 
         <h2
