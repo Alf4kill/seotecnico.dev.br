@@ -36,8 +36,12 @@ export const config = {
   // Ficam de fora os estáticos, onde um hit não diz nada sobre leitura — e é o
   // matcher que limita o volume de eventos, já que agora tudo que passa vira
   // evento.
+  // `api/` fora do matcher: são chamadas internas das ferramentas (fetch do
+  // próprio client component), não leitura de conteúdo — contá-las poluiria o
+  // volume guard de docs/detection-experiment.md §9.1. Crawler em /api/ segue
+  // coberto pelo Disallow no robots.txt.
   matcher: [
-    '/((?!_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+    '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
   ],
 }
 
