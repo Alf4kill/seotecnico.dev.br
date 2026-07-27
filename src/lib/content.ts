@@ -33,6 +33,16 @@ export interface PostFrontmatter {
    * nas duas leituras (humana e de máquina).
    */
   tldr?: string
+  /**
+   * Sinônimos e abreviações que devem encontrar esta página na busca DO SITE
+   * ("cwv" para Core Web Vitals, "schema" para JSON-LD). Não é meta keywords —
+   * nada disto vai para o HTML, e o Google não vê.
+   *
+   * Mora no frontmatter, e não numa tabela em /lib, porque é a única forma de
+   * publicar um artigo sem precisar lembrar de um segundo arquivo: o índice de
+   * busca é derivado daqui (lib/search-index.ts).
+   */
+  keywords?: string[]
   faq?: FaqItem[]
 }
 
@@ -89,6 +99,18 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
     )
   }
 
+  // Uma string solta em `keywords` (esquecer o hífen do YAML) viraria um array
+  // de caracteres na busca, e ninguém notaria: o artigo continuaria achável
+  // pelo título. Falhar no build é mais barato que um índice sujo.
+  if (data.keywords !== undefined) {
+    if (!Array.isArray(data.keywords)) {
+      throw new Error(`[content] "${file}": keywords must be a YAML list`)
+    }
+    if (data.keywords.some((k) => typeof k !== 'string' || k.trim() === '')) {
+      throw new Error(`[content] "${file}": every keyword must be a non-empty string`)
+    }
+  }
+
   return {
     title,
     description,
@@ -99,6 +121,9 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
     lang: data.lang,
     translationOf: data.translationOf ? String(data.translationOf) : undefined,
     tldr,
+    keywords: Array.isArray(data.keywords)
+      ? (data.keywords as string[]).map((k) => k.trim())
+      : undefined,
     faq: Array.isArray(data.faq) ? (data.faq as FaqItem[]) : undefined,
   }
 }

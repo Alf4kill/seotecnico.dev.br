@@ -5,12 +5,20 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Fuse from 'fuse.js'
 import { Search, X, ArrowRight } from 'lucide-react'
-import { searchData, fuseOptions, categoryLabel } from '@/lib/search-data'
+import { fuseOptions, categoryLabel, type SearchItem } from '@/lib/search-data'
 import { useSearchModal } from './SearchContext'
 
 const MAX_MODAL_RESULTS = 6
 
-export function SearchModal() {
+interface SearchModalProps {
+  /**
+   * Índice montado no servidor (lib/search-index.ts). Chega por prop porque a
+   * derivação lê /content com `fs`, o que não existe no cliente.
+   */
+  items: SearchItem[]
+}
+
+export function SearchModal({ items }: SearchModalProps) {
   const { isOpen, closeSearch }         = useSearchModal()
   const router                          = useRouter()
   const dialogRef                       = useRef<HTMLDialogElement>(null)
@@ -20,7 +28,7 @@ export function SearchModal() {
   const [activeIndex, setActiveIndex]   = useState(-1)
 
   // Instância única do Fuse (não recriada a cada render)
-  const fuse = useMemo(() => new Fuse(searchData, fuseOptions), [])
+  const fuse = useMemo(() => new Fuse(items, fuseOptions), [items])
 
   // Resultados com debounce de 150ms
   const results = useMemo(() => {

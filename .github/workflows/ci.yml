@@ -34,8 +34,11 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
-      - name: Unit tests
-        run: npm test
+      # Coverage thresholds live in vitest.config.ts and are a floor, not a
+      # target: the run fails if the covered share of /lib and the API route
+      # drops below what was already measured.
+      - name: Unit tests + coverage floor
+        run: npm run test:coverage
 
       - name: Production build
         run: npm run build

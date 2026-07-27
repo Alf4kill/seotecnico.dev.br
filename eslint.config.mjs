@@ -18,6 +18,9 @@ const eslintConfig = defineConfig([
     // generated code — the gate still passes in CI (`.claude/` is gitignored),
     // so the only effect is that the gate becomes unrunnable locally.
     ".claude/**",
+    // Relatório HTML do vitest --coverage: gerado, gitignored, e com um
+    // eslint-disable inútil que vira warning a cada rodada.
+    "coverage/**",
   ]),
 ]);
 
