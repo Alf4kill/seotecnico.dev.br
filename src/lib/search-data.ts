@@ -1,10 +1,16 @@
 import type { IFuseOptions } from 'fuse.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Search data — fonte única de verdade do índice de busca.
-// Contém as páginas do site, o guia e as ferramentas.
-// TODO: derivar entradas de artigos automaticamente de getAllPosts() quando os
-// primeiros artigos forem publicados.
+// Search data — a parte do índice que NÃO tem de onde ser derivada.
+//
+// Artigos e as duas versões da pilar são montados a partir do frontmatter em
+// lib/search-index.ts. O que sobrou aqui são rotas sem conteúdo em /content:
+// páginas institucionais e ferramentas. Ferramenta ainda não lançada aparece
+// de propósito, apontando para o índice — quem procura "checador de cwv"
+// merece saber que ele está a caminho.
+//
+// Este arquivo é importado por client component (SearchModal, BuscaResults):
+// nada aqui pode tocar `fs`. É por isso que a montagem mora em outro módulo.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SearchCategory = 'pagina' | 'artigo' | 'ferramenta'
@@ -19,7 +25,7 @@ export interface SearchItem {
   keywords?:   string[]
 }
 
-export const searchData: SearchItem[] = [
+export const STATIC_SEARCH_ITEMS: SearchItem[] = [
   // ── Páginas ─────────────────────────────────────────────────────────────
   {
     id: 'home',
@@ -27,26 +33,6 @@ export const searchData: SearchItem[] = [
     description: 'SEO Técnico — guias e ferramentas de SEO para Next.js',
     href: '/',
     category: 'pagina',
-  },
-  {
-    id: 'guia-seo-tecnico-nextjs',
-    title: 'Guia de SEO técnico para Next.js',
-    description: 'Guia completo: metadados, JSON-LD, sitemaps, Core Web Vitals e mais',
-    href: '/guia/seo-tecnico-nextjs',
-    category: 'pagina',
-    keywords: ['guia', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals'],
-  },
-  {
-    // A pilar em inglês. A moldura do site (header, busca, footer) é a mesma em
-    // /en, então quem chega lá busca nesta caixa — e até aqui não achava nada
-    // no próprio idioma. Palavras-chave nos dois idiomas: em inglês para quem
-    // já está em /en, em português para quem procura "versão em inglês".
-    id: 'guia-technical-seo-nextjs-en',
-    title: 'Technical SEO for Next.js: the App Router guide',
-    description: 'The pillar guide in English: metadata, JSON-LD, sitemaps, Core Web Vitals and rendering',
-    href: '/en/guide/technical-seo-nextjs',
-    category: 'pagina',
-    keywords: ['english', 'inglês', 'technical seo', 'guide', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals', 'rendering', 'hreflang'],
   },
   {
     id: 'blog',
@@ -71,105 +57,6 @@ export const searchData: SearchItem[] = [
     href: '/sobre',
     category: 'pagina',
     keywords: ['autor', 'contato', 'projeto'],
-  },
-
-  // ── Artigos ─────────────────────────────────────────────────────────────
-  {
-    id: 'artigo-melhorar-lcp-nextjs',
-    title: 'Como melhorar o LCP no Next.js: guia pelas 4 subpartes',
-    description: 'Diagnóstico pelas 4 subpartes, preload no next/image (v16), next/font e verificação no PSI',
-    href: '/blog/melhorar-lcp-nextjs',
-    category: 'artigo',
-    keywords: ['lcp', 'core web vitals', 'cwv', 'performance', 'preload', 'next/image', 'next/font', 'ttfb', 'render delay'],
-  },
-  {
-    id: 'artigo-lcp-alto-next-js',
-    title: 'LCP alto no Next.js: os erros que impedem de melhorar',
-    description: 'Background-image invisível ao scanner, render delay auto-infligido e preload pela culatra',
-    href: '/blog/lcp-alto-next-js',
-    category: 'artigo',
-    keywords: ['lcp alto', 'lcp', 'preload scanner', 'background-image', 'use client', 'render delay', 'fade-in', 'anti-flicker', '@import', 'preload', 'skeleton', 'hidratação'],
-  },
-
-  {
-    id: 'artigo-json-ld-nextjs',
-    title: 'Como implementar JSON-LD no Next.js (App Router)',
-    description: 'Onde cada schema vive no App Router, como derivá-lo do frontmatter e como travá-lo por teste',
-    href: '/blog/json-ld-nextjs',
-    category: 'artigo',
-    keywords: ['json-ld', 'dados estruturados', 'schema.org', 'app router', 'faqpage', 'breadcrumblist', 'article', 'rich results', 'server component', 'dangerouslySetInnerHTML'],
-  },
-
-  {
-    id: 'artigo-inp-nextjs',
-    title: 'INP no Next.js: como diagnosticar e corrigir',
-    description: 'Por que o Lighthouse não mede INP, como coletar o dado de campo próprio com RUM e as correções por subparte no App Router',
-    href: '/blog/inp-nextjs',
-    category: 'artigo',
-    keywords: ['inp', 'interaction to next paint', 'core web vitals', 'cwv', 'tbt', 'long tasks', 'scheduler.yield', 'usetransition', 'hidratação', 'input delay', 'rum', 'web-vitals', 'fid'],
-  },
-
-  {
-    id: 'artigo-sitemap-dinamico-nextjs',
-    title: 'Sitemap dinâmico no Next.js com sitemap.ts e robots.ts',
-    description: 'Só 2 dos 4 campos importam pro Google: derivar do conteúdo, corrigir o lastmod e o fail-safe do robots.ts',
-    href: '/blog/sitemap-dinamico-nextjs',
-    category: 'artigo',
-    keywords: ['sitemap', 'sitemap.ts', 'robots.ts', 'robots.txt', 'sitemap dinâmico', 'lastmod', 'priority', 'changefreq', 'noindex', 'disallow', 'image sitemap', 'generatesitemaps', 'indexação'],
-  },
-
-  {
-    id: 'artigo-metadata-api-nextjs',
-    title: 'Metadata API do Next.js: canonical e o merge que não existe',
-    description: 'Por que openGraph e alternates são substituídos e não mesclados, e o helper único que resolve',
-    href: '/blog/metadata-api-nextjs',
-    category: 'artigo',
-    keywords: ['metadata api', 'generatemetadata', 'canonical', 'open graph', 'og:image', 'og:url', 'metadatabase', 'opengraph-image', 'next/head', 'merge raso', 'alternates'],
-  },
-
-  {
-    id: 'artigo-ssr-ssg-isr-nextjs',
-    title: 'SSR, SSG e ISR no Next.js: o que o Googlebot enxerga',
-    description: 'Por que CSR é a única estratégia arriscada e como provar qual delas a sua rota usa',
-    href: '/blog/ssr-ssg-isr-nextjs',
-    category: 'artigo',
-    keywords: ['ssr', 'ssg', 'isr', 'csr', 'renderização', 'googlebot', 'fila de renderização', 'generatestaticparams', 'dynamicparams', 'javascript seo', 'hidratação', 'use client'],
-  },
-
-  {
-    id: 'artigo-next-image-seo',
-    title: 'next/image e SEO: o que o componente não resolve',
-    description: 'Alt, sitemap de imagens, o ponto cego do background-image e quando gastar o preload',
-    href: '/blog/next-image-seo',
-    category: 'artigo',
-    keywords: ['next/image', 'imagem', 'alt', 'sizes', 'preload', 'priority', 'srcset', 'avif', 'webp', 'cls', 'sitemap de imagens', 'background-image', 'svg inline', 'google imagens'],
-  },
-
-  {
-    id: 'artigo-redirects-canonicals-nextjs',
-    title: 'Redirects e canonicals no Next.js: config ou middleware',
-    description: 'Redirect, canonical ou noindex: qual instrumento para cada problema, e o erro de noindex com Disallow',
-    href: '/blog/redirects-canonicals-nextjs',
-    category: 'artigo',
-    keywords: ['redirect', 'redirects', '301', '308', 'canonical', 'middleware', 'next.config', 'noindex', 'disallow', 'trailing slash', 'conteúdo duplicado', 'permanentredirect'],
-  },
-
-  {
-    id: 'artigo-hreflang-nextjs',
-    title: 'Hreflang no Next.js: site bilíngue no App Router',
-    description: 'Reciprocidade, x-default, o atributo em camelCase que engana auditoria e o teste que confere a volta no HTML servido',
-    href: '/blog/hreflang-nextjs',
-    category: 'artigo',
-    keywords: ['hreflang', 'bilíngue', 'multilíngue', 'idioma', 'x-default', 'alternates', 'languages', 'i18n', 'internacionalização', 'html lang', 'root layout', 'route group', 'reciprocidade'],
-  },
-
-  {
-    id: 'artigo-gtm-nextjs',
-    title: 'GTM no Next.js: pageview de SPA sem contar duas vezes',
-    description: 'History Change, a duplicação com o Enhanced Measurement e Consent Mode v2 com default negado',
-    href: '/blog/gtm-nextjs',
-    category: 'artigo',
-    keywords: ['gtm', 'google tag manager', 'ga4', 'analytics', 'pageview', 'spa', 'history change', 'enhanced measurement', 'consent mode', 'lgpd', 'datalayer', 'cookieless', 'element visibility'],
   },
 
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
