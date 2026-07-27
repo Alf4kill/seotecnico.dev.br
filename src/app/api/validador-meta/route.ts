@@ -7,6 +7,7 @@ import {
   parseTargetUrl,
   runChecks,
 } from '@/lib/meta-validator'
+import { clientKey, createFixedWindow } from '@/lib/rate-limit'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Backend do validador de meta tags: busca a URL server-side (CORS impede o
@@ -26,7 +27,7 @@ import {
 //     responde 302 para 169.254.169.254 atravessava tudo;
 //   - orçamento único de 8s para a cadeia inteira (não por salto) e teto de
 //     saltos, resposta lida até 500 KB e descartada além disso;
-//   - limite de requisições por IP, em memória (ver `rateLimited`);
+//   - limite de requisições por chamador, em memória (lib/rate-limit.ts);
 //   - só text/html; User-Agent honesto e identificável, como manda a cultura
 //     da casa (quem mede crawler alheio não navega anônimo).
 //
@@ -40,42 +41,10 @@ const MAX_REDIRECTS = 5
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 const USER_AGENT = 'SEOTecnicoValidador/1.0 (+https://seotecnico.dev.br/ferramentas/validador-meta-tags)'
 
-// Janela fixa por IP. É um endpoint público e sem login que busca até 500 KB de
-// uma URL escolhida por quem chama — sem teto, serve de proxy de saída para
-// qualquer um.
-//
-// O estado é do processo, não compartilhado: na Vercel cada instância tem o seu
-// Map, então o limite real é POR INSTÂNCIA e escala com o fan-out. É proteção
-// contra o abuso trivial (um script em laço), não contra um atacante
-// distribuído — para esse último o teto de verdade é o da própria plataforma.
-// Um limitador exato exigiria armazenamento compartilhado, que §13 do CLAUDE.md
-// mantém fora do projeto. Nada aqui é logado nem sobrevive à janela.
-const RATE_LIMIT_WINDOW_MS = 60_000
-const RATE_LIMIT_MAX = 10
-const RATE_LIMIT_MAX_KEYS = 5_000
-
-const requestWindows = new Map<string, { count: number; resetAt: number }>()
-
-function rateLimited(request: NextRequest): boolean {
-  const key = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown'
-  const now = Date.now()
-  const current = requestWindows.get(key)
-
-  if (!current || now >= current.resetAt) {
-    // Varre expirados só quando o Map cresce: uma instância de vida longa não
-    // deve acumular chave de quem passou por aqui uma vez.
-    if (requestWindows.size >= RATE_LIMIT_MAX_KEYS) {
-      for (const [k, window] of requestWindows) {
-        if (now >= window.resetAt) requestWindows.delete(k)
-      }
-    }
-    requestWindows.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return false
-  }
-
-  current.count += 1
-  return current.count > RATE_LIMIT_MAX
-}
+// Janela fixa por chamador. É um endpoint público e sem login que busca até
+// 500 KB de uma URL escolhida por quem chama — sem teto, serve de proxy de
+// saída para qualquer um. Limites e suas limitações em lib/rate-limit.ts.
+const perCaller = createFixedWindow({ windowMs: 60_000, max: 10 })
 
 async function resolvesOnlyPublic(hostname: string): Promise<boolean> {
   try {
@@ -174,7 +143,7 @@ async function fetchGuarded(start: URL, signal: AbortSignal): Promise<FetchOutco
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (rateLimited(request)) {
+  if (perCaller.hit(clientKey(request))) {
     return badRequest('Muitas validações seguidas. Espere um minuto e tente de novo.', 429)
   }
 

@@ -268,6 +268,12 @@ hero atrás de `"use client"`), um render delay que você mesmo criou com uma
 animação de fade-in ou um snippet anti-flicker de teste A/B, ou preload demais
 competindo por banda com o próprio elemento que deveria acelerar.
 
+Antes de qualquer diagnóstico, vale saber de onde você está partindo no
+**campo**: o [checador de Core Web Vitals](/ferramentas/checador-cwv) consulta
+o p75 real da sua origem no CrUX. Se ela ainda não estiver no conjunto de
+dados — o caso da maioria dos sites —, isso também é informação: significa que
+o caminho é RUM próprio, como este site faz.
+
 → [Como melhorar o LCP no Next.js pelas 4 subpartes](/blog/melhorar-lcp-nextjs)
 → [LCP alto no Next.js: os erros que impedem de melhorar](/blog/lcp-alto-next-js)
 

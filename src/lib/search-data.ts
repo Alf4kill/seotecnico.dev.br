@@ -79,10 +79,10 @@ export const STATIC_SEARCH_ITEMS: SearchItem[] = [
   {
     id: 'checador-cwv',
     title: 'Checador de Core Web Vitals',
-    description: 'Consulte LCP, CLS e INP reais de qualquer site via CrUX (em breve)',
-    href: '/ferramentas',
+    description: 'Consulte LCP, INP e CLS reais de qualquer site pelo Chrome UX Report, com a distribuição das visitas',
+    href: '/ferramentas/checador-cwv',
     category: 'ferramenta',
-    keywords: ['cwv', 'lcp', 'cls', 'inp', 'performance', 'crux'],
+    keywords: ['cwv', 'lcp', 'cls', 'inp', 'performance', 'crux', 'core web vitals', 'campo', 'field data', 'p75', 'chrome ux report', 'ttfb', 'fcp'],
   },
 ]
 
