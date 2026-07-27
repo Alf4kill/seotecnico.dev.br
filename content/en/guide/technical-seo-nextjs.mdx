@@ -279,6 +279,12 @@ created yourself with a fade-in animation or an A/B-test anti-flicker snippet,
 or too much preloading competing for bandwidth with the very element it was
 supposed to speed up.
 
+Before diagnosing anything, it helps to know where you stand in the **field**:
+the [Core Web Vitals checker](/ferramentas/checador-cwv) queries your origin's
+real p75 in CrUX. If the origin isn't in the dataset yet — the case for most
+sites — that is information too: it means your only route is your own RUM, as
+this site does.
+
 → Full chapters, in Portuguese: [Como melhorar o LCP no Next.js pelas 4 subpartes](/blog/melhorar-lcp-nextjs) · [LCP alto no Next.js: os erros que impedem de melhorar](/blog/lcp-alto-next-js)
 
 ## INP: the metric Lighthouse does not measure
