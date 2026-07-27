@@ -37,6 +37,18 @@ export const searchData: SearchItem[] = [
     keywords: ['guia', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals'],
   },
   {
+    // A pilar em inglês. A moldura do site (header, busca, footer) é a mesma em
+    // /en, então quem chega lá busca nesta caixa — e até aqui não achava nada
+    // no próprio idioma. Palavras-chave nos dois idiomas: em inglês para quem
+    // já está em /en, em português para quem procura "versão em inglês".
+    id: 'guia-technical-seo-nextjs-en',
+    title: 'Technical SEO for Next.js: the App Router guide',
+    description: 'The pillar guide in English: metadata, JSON-LD, sitemaps, Core Web Vitals and rendering',
+    href: '/en/guide/technical-seo-nextjs',
+    category: 'pagina',
+    keywords: ['english', 'inglês', 'technical seo', 'guide', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals', 'rendering', 'hreflang'],
+  },
+  {
     id: 'blog',
     title: 'Blog',
     description: 'Artigos práticos de SEO técnico para desenvolvedores Next.js',
@@ -172,10 +184,10 @@ export const searchData: SearchItem[] = [
   {
     id: 'validador-meta-tags',
     title: 'Validador de meta tags',
-    description: 'Valide title, description, canonical e Open Graph de qualquer URL (em breve)',
-    href: '/ferramentas',
+    description: 'Valide title, description, canonical e Open Graph de qualquer URL, com preview de SERP',
+    href: '/ferramentas/validador-meta-tags',
     category: 'ferramenta',
-    keywords: ['title', 'description', 'open graph', 'canonical'],
+    keywords: ['title', 'description', 'open graph', 'canonical', 'meta tags', 'serp', 'preview', 'validador', 'og:image', 'twitter card', 'h1'],
   },
   {
     id: 'checador-cwv',
