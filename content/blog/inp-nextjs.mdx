@@ -204,7 +204,7 @@ Depois de aplicar qualquer correção acima:
 1. **No GA4**, monte uma Exploration com `metric_name = INP`, agregando pelo **máximo por `metric_id`** (não pela soma — ver a armadilha do reporte duplo acima), com breakdown por `inp_element` e pelas três subpartes. Compare a janela antes e depois do deploy.
 2. **No DevTools**, repita a gravação do Performance panel na mesma interação e confira se a long task que você atacou saiu do rastro.
 3. **No Lighthouse**, o que vai se mover é o **TBT**, não o INP — use como sinal indireto e não confunda um com o outro.
-4. **No CrUX**, se e quando o site cruzar o threshold de tráfego, lembre que a janela é de 28 dias: dado de campo demora a refletir a correção.
+4. **No CrUX**, se e quando o site cruzar o threshold de tráfego, lembre que a janela é de 28 dias: dado de campo demora a refletir a correção. Para saber se o seu domínio já entrou — e qual é o INP de campo dele, se entrou —, consulte o [checador de Core Web Vitals](/ferramentas/checador-cwv).
 
 O ponto de ordem é sempre o mesmo: correção sem medição de campo é chute com sintaxe bonita.
 

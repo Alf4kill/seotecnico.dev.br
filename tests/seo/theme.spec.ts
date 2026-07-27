@@ -135,13 +135,14 @@ test.describe('tema escuro', () => {
       await page.emulateMedia({ colorScheme: theme })
       await page.goto('/ferramentas')
 
-      // Um alvo por papel de cor, incluindo o par que já reprovou antes: o selo
-      // "Em breve", texto sobre um tint de 10% (achado (3) da baseline).
+      // Um alvo por papel de cor. O selo aqui é o "Disponível": desde que a
+      // terceira ferramenta entrou no ar não existe mais nenhum "Em breve"
+      // nesta página, e o alvo antigo (`span.bg-primary/10`) deixou de existir.
       const targets: Record<string, string> = {
         h1: 'h1',
         corpo: 'main p',
         secundario: '.text-muted',
-        selo: 'span.bg-primary\\/10',
+        selo: 'span.bg-primary-solid',
       }
 
       for (const [role, selector] of Object.entries(targets)) {
@@ -151,6 +152,20 @@ test.describe('tema escuro', () => {
         const ratio = await contrastOf(page, selector)
         expect(ratio, `${role} no tema ${theme}`).toBeGreaterThanOrEqual(4.5)
       }
+
+      // O par que já reprovou uma vez — texto sobre um tint de 10% (achado (3)
+      // da baseline de 2026-07-20) — só sobrevive no chip de categoria da
+      // busca. O alvo mudou de lugar, a regra não: tint continua sendo o fundo
+      // mais fácil de errar, porque a cor "parece" a mesma e não é.
+      await page.getByRole('button', { name: 'Abrir busca' }).click()
+      await page.getByLabel('Campo de busca').fill('json')
+      const chip = 'span.bg-primary\\/10'
+      await expect(page.locator(chip).first()).toBeVisible()
+
+      expect(
+        await contrastOf(page, chip),
+        `chip de categoria da busca no tema ${theme}`
+      ).toBeGreaterThanOrEqual(4.5)
     })
   }
 

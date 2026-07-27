@@ -113,4 +113,40 @@ test.describe('key events das ferramentas', () => {
     const serialized = JSON.stringify(await dataLayerEvents(page))
     expect(serialized).not.toContain('exemplo.dev')
   })
+
+  test('tool_check_cwv reports the LCP bucket, including no-data', async ({ page }) => {
+    await page.goto('/ferramentas/checador-cwv')
+    await dismissConsent(page)
+
+    // Origem fora do conjunto de dados: é o resultado mais comum da ferramenta
+    // e o que mais interessa medir, então precisa gerar evento como qualquer
+    // outro — e não um erro.
+    await page.route('**/api/checador-cwv**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          origin: 'https://exemplo.dev',
+          formFactor: 'PHONE',
+          period: { firstDate: '', lastDate: '' },
+          metrics: [],
+          lcpBucket: 'no-data',
+          inDataset: false,
+        }),
+      })
+    )
+
+    await page.getByRole('textbox').first().fill('exemplo.dev')
+    await page.getByRole('button', { name: /Consultar/ }).click()
+
+    await expect
+      .poll(async () => (await dataLayerEvents(page)).find((e) => e.event === 'tool_check_cwv'))
+      .toMatchObject({ lcp_bucket: 'no-data' })
+
+    // "Sem dados" é resposta, não falha: o leitor tem de entender por quê.
+    await expect(page.getByText(/ainda não está no conjunto de dados/i)).toBeVisible()
+
+    const serialized = JSON.stringify(await dataLayerEvents(page))
+    expect(serialized).not.toContain('exemplo.dev')
+  })
 })

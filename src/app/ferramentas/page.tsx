@@ -29,7 +29,8 @@ const ferramentas = [
     icon: Gauge,
     nome: 'Checador de Core Web Vitals',
     descricao:
-      'Consulte LCP, CLS e INP reais de qualquer domínio usando os dados públicos do Chrome UX Report (CrUX).',
+      'Consulte LCP, INP e CLS reais de qualquer domínio usando os dados públicos do Chrome UX Report (CrUX).',
+    href: '/ferramentas/checador-cwv',
   },
 ]
 
@@ -49,8 +50,8 @@ export default function FerramentasPage() {
       <p className="mt-4 max-w-2xl text-muted text-base leading-7">
         Ferramentas de SEO técnico gratuitas, feitas para desenvolvedores:
         sem login, sem armazenar dados e com o código aberto no GitHub. O
-        gerador de JSON-LD e o validador de meta tags já estão no ar; o
-        checador de Core Web Vitals está em desenvolvimento.
+        gerador de JSON-LD, o validador de meta tags e o checador de Core Web
+        Vitals estão no ar.
       </p>
 
       <div className="mt-10 grid gap-6 md:grid-cols-3">
