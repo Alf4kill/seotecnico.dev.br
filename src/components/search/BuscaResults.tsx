@@ -5,14 +5,21 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Fuse from 'fuse.js'
 import { Search } from 'lucide-react'
-import { searchData, fuseOptions, categoryLabel, type SearchCategory } from '@/lib/search-data'
+import {
+  fuseOptions,
+  categoryLabel,
+  type SearchCategory,
+  type SearchItem,
+} from '@/lib/search-data'
 
 interface BuscaResultsProps {
   /** Query inicial vinda do Server Component (searchParams.q) */
   initialQuery: string
+  /** Índice montado no servidor (lib/search-index.ts), pelo mesmo motivo do modal. */
+  items: SearchItem[]
 }
 
-export function BuscaResults({ initialQuery }: BuscaResultsProps) {
+export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -28,7 +35,7 @@ export function BuscaResults({ initialQuery }: BuscaResultsProps) {
     setQuery(urlQuery)
   }
 
-  const fuse    = useMemo(() => new Fuse(searchData, fuseOptions), [])
+  const fuse    = useMemo(() => new Fuse(items, fuseOptions), [items])
   const results = useMemo(() => {
     if (query.length < 2) return []
     return fuse.search(query)
@@ -77,13 +84,13 @@ export function BuscaResults({ initialQuery }: BuscaResultsProps) {
       {query.length >= 2 ? (
         results.length > 0 ? (
           <div className="flex flex-col gap-10">
-            {Array.from(grouped.entries()).map(([cat, items]) => (
+            {Array.from(grouped.entries()).map(([cat, hits]) => (
               <section key={cat}>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-primary mb-4">
                   {categoryLabel[cat]}s
                 </h2>
                 <ul className="flex flex-col gap-2">
-                  {items.map(({ item }) => (
+                  {hits.map(({ item }) => (
                     <li key={item.id}>
                       <Link
                         href={item.href}

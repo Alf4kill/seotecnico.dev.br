@@ -9,6 +9,7 @@ import { ThemeScript } from '@/components/layout/ThemeScript'
 import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter'
 import { SearchProvider } from '@/components/search/SearchContext'
 import { SearchModal } from '@/components/search/SearchModal'
+import { buildSearchIndex } from '@/lib/search-index'
 import { site, indexable } from '@/lib/site'
 import './globals.css'
 
@@ -83,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
-          <SearchModal />
+          <SearchModal items={buildSearchIndex()} />
         </SearchProvider>
         <ConsentBanner />
         <WebVitalsReporter />
