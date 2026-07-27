@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { BuscaResults } from '@/components/search/BuscaResults'
 import { buildMetadata } from '@/lib/metadata'
+import { buildSearchIndex } from '@/lib/search-index'
 
 export const metadata = buildMetadata({
   title: 'Busca',
@@ -16,7 +17,7 @@ export default function BuscaPage() {
     <section className="container py-12 lg:py-16">
       <h1 className="font-bold text-foreground text-3xl md:text-4xl">Busca</h1>
       <Suspense>
-        <BuscaResults initialQuery="" />
+        <BuscaResults initialQuery="" items={buildSearchIndex()} />
       </Suspense>
     </section>
   )

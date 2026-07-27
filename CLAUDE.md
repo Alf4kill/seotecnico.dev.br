@@ -295,12 +295,18 @@ dateModified:
 primaryQuery:   # the ONE query this page targets
 lang: pt-BR | en
 translationOf:  # slug of hreflang pair, optional
+keywords:       # optional list → synonyms for the SITE's search index only
 faq:            # optional array → renders FAQPage JSON-LD
 ```
 
 - First paragraph must directly answer `primaryQuery` (AEO pattern).
 - Every article: ≥1 code sample or original measurement, internal links to
   pillar + ≥1 tool, descriptive anchor text (never "clique aqui").
+- `keywords` is **not** meta keywords: nothing reaches the HTML and Google
+  never sees it. It feeds the on-site search only, so a reader typing "cwv"
+  finds the Core Web Vitals article. It lives in frontmatter because the search
+  index is derived from content (`lib/search-index.ts`) — publishing an article
+  must never require editing a second file. Aim for ≥3 synonyms/abbreviations.
 
 ---
 
