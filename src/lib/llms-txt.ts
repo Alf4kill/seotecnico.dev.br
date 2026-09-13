@@ -71,6 +71,8 @@ export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post): string
           '## English version',
           '',
           `- [${guideEn.frontmatter.title}](${absoluteUrl('/en/guide/technical-seo-nextjs')}): ${guideEn.frontmatter.description} English translation of the pillar guide above; the chapter articles remain in Portuguese.`,
+          `- [${site.name} — English home](${absoluteUrl('/en')}): What this lab is, what has been measured so far, and where the evidence lives.`,
+          `- [About ${site.author.name}](${absoluteUrl('/en/about')}): Who builds this site and how the work is done — hypothesis first, SEO as a merge gate, own field data.`,
           '',
         ]
       : []),

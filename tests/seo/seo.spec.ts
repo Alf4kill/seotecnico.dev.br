@@ -43,8 +43,9 @@ const faqTypes = (frontmatter?: { faq?: unknown[] }) =>
 
 /** JSON-LD @type values each route must emit (CLAUDE.md §6). */
 function expectedJsonLdTypes(path: string): string[] {
-  if (path === '/') return ['WebSite', 'Organization', 'Person']
-  if (path === '/sobre') return ['Person', 'BreadcrumbList']
+  // Both homes and both about pages: same entity graph in either language.
+  if (path === '/' || path === '/en') return ['WebSite', 'Organization', 'Person']
+  if (path === '/sobre' || path === '/en/about') return ['Person', 'BreadcrumbList']
   if (path.startsWith('/en/guide/')) {
     return ['Article', 'BreadcrumbList', ...faqTypes(guideEnFrontmatter)]
   }
@@ -325,6 +326,12 @@ test('an unmatched English URL offers a way back to the English home', async ({ 
   const response = await page.goto('/en/este-caminho-nao-existe')
   expect(response?.status()).toBe(404)
   await expect(page.locator('main a[href="/en"]')).toBeVisible()
+})
+
+test('/en/guide redirects permanently to the English guide', async ({ request }) => {
+  const response = await request.get('/en/guide', { maxRedirects: 0 })
+  expect(response.status()).toBe(308)
+  expect(response.headers()['location']).toBe('/en/guide/technical-seo-nextjs')
 })
 
 test('feed.xml is valid XML', async ({ request }) => {

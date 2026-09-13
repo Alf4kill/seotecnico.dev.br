@@ -20,6 +20,9 @@ export const site = {
   description:
     'Laboratório vivo de SEO técnico para desenvolvedores Next.js: guias práticos, ferramentas gratuitas e experimentos medidos com dados reais.',
   locale: 'pt_BR',
+  // O repositório é parte do portfólio (§14: público por design) — as páginas
+  // em inglês apontam para ele como a prova verificável do que descrevem.
+  repository: 'https://github.com/Alf4kill/seotecnico.dev.br',
 
   // ── Analytics / Tracking ────────────────────────────────────────────────────
   gtmId: parseGtmId(process.env.NEXT_PUBLIC_GTM_ID),
