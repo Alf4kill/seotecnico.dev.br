@@ -106,7 +106,7 @@ this project does not have.
 | Signal | What it indicates | Weight |
 |---|---|---|
 | `Sec-Fetch-Dest` / `Sec-Fetch-Mode` absent on a browser-claiming UA | Not a real browser navigation | **Strong.** Best cheap tell for a spoofed-browser scraper |
-| No `/_next/static/*` fetches from the same network in the window | Document-only client | Strong |
+| ~~No `/_next/static/*` fetches from the same network in the window~~ | Document-only client | **Not observable** — the proxy matcher excludes static assets, so the proxy never sees these fetches. Listed from the original design until 2026-09-13; the pageview join (§2.1) is the observable form of the same idea |
 | `Accept: */*` instead of the browser's `text/html,...` string | Non-browser HTTP client | Moderate |
 | `Accept-Language` absent | Non-browser HTTP client | Moderate |
 | Request to `/robots.txt` | Near-pure bot signal; humans essentially never fetch it | Strong, and doubles as a **timestamped network anchor** (§4) |
@@ -145,9 +145,16 @@ axis is a score.
 | Tier | Definition |
 |---|---|
 | `confirmed` | UA matches a known agent in `classifyAiCrawler()`, **or** the robots trap was hit |
-| `high` | Three independent signals agree: no `Sec-Fetch-*`, no subresource fetches from `net_id` in the window, no matching pageview in the human property |
+| `high` | Three independent signals agree: `has_sec_fetch = false`; no matching pageview in the human property (path/day join, §2.1); the same `net_id` fetched `/robots.txt` or `/sitemap.xml` in the same calendar month |
 | `medium` | Two of the three |
 | `low` | Browser-shaped on all three |
+
+> **Changed on 2026-09-13, before any tier was computed.** The original `high`
+> required "no subresource fetches from `net_id`", which the proxy can never see
+> (§2.2), so the tier was unreachable as written. The replacement uses only
+> parameters already collected. Signal 3 has a known false positive, a human
+> sharing a /24 with a crawler, and is reported with that caveat. H3 uses this
+> definition. See the 2026-09-13 row in [`experiment-log.md`](experiment-log.md).
 
 ### 3.2 Axis B — training-purpose likelihood
 
@@ -282,11 +289,15 @@ Three independent paths, strongest first. Implemented in
 2. **Vendor-published IP ranges** — the client IP inside a CIDR from the vendor's
    machine-readable feed. Verdict `verified-ip`. Feeds are published by OpenAI
    (GPTBot, OAI-SearchBot, ChatGPT-User), Perplexity (PerplexityBot,
-   Perplexity-User), Microsoft (Bingbot) and Apple (Applebot).
+   Perplexity-User), Microsoft (Bingbot), Apple (Applebot), and, added
+   2026-09-13, Anthropic and Common Crawl (CCBot). Anthropic publishes one
+   combined list for ClaudeBot, Claude-SearchBot and Claude-User, so
+   `verified-ip` proves "Anthropic", not which of the three.
 3. **Forward-confirmed reverse DNS** — PTR of the client IP ends in the vendor's
    documented suffix **and** the A/AAAA of that hostname resolves back to the
    same IP. Verdict `verified-rdns`. Documented suffixes: `*.search.msn.com`
-   (Bingbot), `*.applebot.apple.com` (Applebot).
+   (Bingbot), `*.applebot.apple.com` (Applebot), `*.crawl.commoncrawl.org`
+   (CCBot, added 2026-09-13).
 
 Two classes need naming because they are findings, not failures:
 
@@ -295,12 +306,13 @@ Two classes need naming because they are findings, not failures:
   carries them as a UA. A request claiming one is therefore fake **by
   construction**: verdict `impersonated`, evidence `token-only agent never
   fetches`. This is the cheapest sharp verdict in the whole module.
-- **Unverifiable vendors.** Anthropic (ClaudeBot, Claude-SearchBot, Claude-User),
-  Common Crawl (CCBot), ByteDance (Bytespider) and Meta (meta-externalagent)
-  publish neither ranges, nor rDNS suffixes, nor signatures. Traffic claiming
+- **Unverifiable vendors.** ByteDance (Bytespider) and Meta (meta-externalagent)
+  publish neither ranges, nor rDNS suffixes, nor signatures. (Anthropic and
+  Common Crawl were in this list until 2026-09-13; both publish now. Events
+  recorded as `unverifiable` before that date keep that verdict.) Traffic claiming
   them is `unverifiable` — **never** `impersonated`, because there is no positive
   source to have failed against. "This vendor cannot be verified by anyone" is
-  itself a publishable finding.
+  itself a publishable finding, and a dated one: vendors leave this list.
 
 `impersonated` is only reachable when at least one positive source existed and
 the request failed it — and rDNS is tried as a fallback before the verdict, so a
@@ -484,7 +496,8 @@ Verification verdicts, against production:
 curl -s -A "GPTBot/1.3" https://seotecnico.dev.br/blog/inp-nextjs -o /dev/null -w '%{http_code}\n'
 
 # A vendor with no published feed → unverifiable, never "impersonated"
-curl -s -A "CCBot/2.0" https://seotecnico.dev.br/blog/inp-nextjs -o /dev/null -w '%{http_code}\n'
+# (CCBot served this example until 2026-09-13; Common Crawl publishes ranges now)
+curl -s -A "Bytespider" https://seotecnico.dev.br/blog/inp-nextjs -o /dev/null -w '%{http_code}\n'
 ```
 
 Both produce `ai_crawler_hit` events. **Both are synthetic** and must be excluded
