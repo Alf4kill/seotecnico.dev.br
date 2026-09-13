@@ -11,7 +11,7 @@ tldr: >-
   completo, possivelmente defasado entre revalidações; CSR entrega HTML vazio e
   é a única estratégia com risco real de indexação.
 datePublished: "2026-07-22"
-dateModified: "2026-07-22"
+dateModified: "2026-09-13"
 faq:
   - question: "O Google indexa site em React ou CSR?"
     answer: "Indexa, mas com uma ressalva importante: conteúdo que só existe depois da execução do JavaScript entra numa fila de renderização separada, que o Google processa quando há recursos disponíveis — pode levar segundos ou bem mais, sem prazo garantido. O HTML inicial vazio também é o que a maioria dos outros crawlers (incluindo os de buscadores com IA) enxerga, porque eles não executam JavaScript."
@@ -138,7 +138,7 @@ Neste site, os slugs são derivados do próprio conteúdo — o pipeline lê o
 filesystem em build, e é essa a razão física de a rota ser estática:
 
 ```tsx
-// src/app/blog/[slug]/page.tsx
+// src/app/(pt)/blog/[slug]/page.tsx
 // Somente slugs existentes em /content/blog são gerados; o resto é 404.
 export const dynamicParams = false
 
@@ -350,6 +350,13 @@ como dinâmica, porque ela é a única rota com parâmetro que não declara
 precisa indexar a imagem de card, e ela é servida com cache), mas é
 exatamente o tipo de coisa que só a leitura da própria saída de build
 revela. É por isso que esta é a primeira das três provas.
+
+**Atualização (setembro de 2026):** a leitura do build virou correção. A rota
+do card passou a declarar `generateStaticParams()` e `dynamicParams = false`,
+as mesmas duas declarações da rota do artigo, e no build atual (Next.js
+16.2.12) aparece como `● /blog/-/opengraph-image`, com um caminho
+pré-renderizado por post. Os `ƒ` que continuam na lista são rotas que precisam
+responder a cada requisição, como as APIs das ferramentas.
 
 Se uma rota que você esperava estática aparece como dinâmica, o build acabou
 de te contar que alguma API dinâmica vazou para ela — ou que faltou enumerar

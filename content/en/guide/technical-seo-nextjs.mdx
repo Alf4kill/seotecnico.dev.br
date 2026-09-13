@@ -3,7 +3,7 @@ title: 'Technical SEO for Next.js: the App Router guide'
 description: 'What technical SEO means in Next.js and how to implement it: metadata, JSON-LD, sitemaps, Core Web Vitals, hreflang and rendering — with real code.'
 slug: technical-seo-nextjs
 datePublished: '2026-07-26'
-dateModified: '2026-07-26'
+dateModified: '2026-09-13'
 primaryQuery: 'technical seo next.js'
 keywords: ['english', 'inglês', 'technical seo', 'guide', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals', 'rendering', 'hreflang']
 lang: en
@@ -222,13 +222,13 @@ empty.
 Two decisions worth stating, because they are not obvious. The URL of an
 English page carries its query in English — this one is `/en/guide/technical-seo-nextjs`,
 not a mirror of the Portuguese path — since the URL is part of what the page
-is about. And `<html lang>` stays `pt-BR` here on purpose: the navigation and
-the footer around this article really are in Portuguese, so flipping the whole
-document to `en` would mislabel them. The English subtree carries its own
-`lang="en"` instead, which is the accurate markup. Google ignores the attribute
-for language detection either way — it reads the content — but assistive
-technology does not, and it is the honest description of a page whose chrome
-and body speak different languages.
+is about. And `<html lang>` follows each page's language: `en` here, `pt-BR` on
+the Portuguese original. The site has one root layout per language, in route
+groups, so the navigation, footer and cookie banner around this guide are in
+English too. The first version of this page lived inside the Portuguese frame,
+and only the article carried `lang="en"`, because only the article was in
+English. Google ignores the attribute for language detection either way — it
+reads the content — but assistive technology does not.
 
 The dedicated chapter followed this implementation rather than preceding it.
 Nothing here is published before it is implemented and measured.

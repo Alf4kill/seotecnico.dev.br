@@ -11,7 +11,7 @@ tldr: >-
   sem B declarar A, o Google descarta o cluster inteiro — sem erro, sem aviso,
   sem sintoma. Por isso o par precisa nascer de uma fonte única.
 datePublished: "2026-07-26"
-dateModified: "2026-07-26"
+dateModified: "2026-09-13"
 faq:
   - question: "Como implementar hreflang no Next.js App Router?"
     answer: "Pelo campo alternates.languages da Metadata API, que o framework converte em tags link rel=alternate no head. O objeto mapeia código de idioma para URL absoluta e precisa incluir a própria página entre as alternativas, além de um x-default. O que não se deve fazer é declarar esse objeto à mão em cada página: o par tem que nascer de uma fonte única, ou a reciprocidade quebra no primeiro rename de rota."
@@ -244,6 +244,25 @@ O impacto em SEO disso é nulo, e vale dizer com todas as letras: o Google
 **ignora** o atributo `lang` para detectar idioma — ele lê o conteúdo. Quem
 não ignora é a tecnologia assistiva, e é por ela que a marcação precisa estar
 certa. Quando `/en` tiver moldura própria, a opção 1 passa a valer o preço.
+
+**Atualização (setembro de 2026):** `/en` ganhou moldura própria (home, página
+sobre, header, rodapé e banner de consentimento em inglês), e o site migrou
+para a opção 1. O `<html lang>` agora acompanha o hreflang de cada página, e a
+suíte de SEO exige isso em toda rota que tem par. O carregamento completo ao
+trocar de idioma se confirmou, e a migração cobrou mais três coisas:
+
+- **Um 404 sem layout comum.** Com dois root layouts, a página de URL
+  inexistente não tem um layout de onde herdar. A saída foi
+  `global-not-found.tsx`, que no Next.js 16 ainda depende de
+  `experimental.globalNotFound`.
+- **Prefetch desperdiçado.** Um `<Link>` para uma rota do outro grupo é
+  pré-carregado como qualquer outro, mas a navegação recarrega a página inteira
+  e descarta o que foi buscado. Os links que cruzam idiomas, como o seletor de
+  idioma, passaram a usar `prefetch={false}`.
+- **Imagens OG com URL nova.** Dentro de um route group, as imagens de
+  metadados por file convention ganham um hash na URL, e toda URL escrita à mão
+  aponta para 404. O caso está no [artigo sobre a Metadata API do
+  Next.js](/blog/metadata-api-nextjs).
 
 ## A URL da versão traduzida
 
