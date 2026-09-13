@@ -81,7 +81,9 @@ article afterwards is a robots.txt violation, dated and first-party.
 > `GPTBot` → `/blog/inp-nextjs` came back **`impersonated`** (a residential IP
 > claiming GPTBot — the correct verdict for the curl itself);
 > `CCBot` → `/blog/inp-nextjs` came back **`unverifiable`** (no published feed
-> — and NOT impersonated, the distinction the experiment depends on);
+> at the time — and NOT impersonated, the distinction the experiment depends on;
+> Common Crawl has published ranges since, and the verifier uses them from
+> 2026-09-13, so the same curl would now come back `impersonated`);
 > `GPTBot` → the robots trap came back `impersonated` with **2.65s total
 > response time**, confirming `LAB_TRAP_DELAY_MS` is applied on that path.
 > Exclude all three from every H1–H6 window by timestamp, exactly like the

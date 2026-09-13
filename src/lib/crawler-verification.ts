@@ -77,6 +77,11 @@ const defaultDeps: VerifyDeps = {
  * shape, which every vendor below adopted). Only agents listed here can ever
  * reach `verified-ip`.
  */
+// Anthropic publica UMA lista para os três agentes (linkada da página de
+// crawlers deles, datada 2026-04-07). `verified-ip` para ClaudeBot prova
+// "veio da Anthropic", não qual dos três agentes — a lista não distingue.
+const ANTHROPIC_FEED = 'https://claude.com/crawling/bots.json'
+
 const RANGE_FEEDS: Record<string, string> = {
   GPTBot: 'https://openai.com/gptbot.json',
   'OAI-SearchBot': 'https://openai.com/searchbot.json',
@@ -85,6 +90,10 @@ const RANGE_FEEDS: Record<string, string> = {
   'Perplexity-User': 'https://www.perplexity.ai/perplexity-user.json',
   Bingbot: 'https://www.bing.com/toolbox/bingbot.json',
   Applebot: 'https://search.developer.apple.com/applebot.json',
+  ClaudeBot: ANTHROPIC_FEED,
+  'Claude-SearchBot': ANTHROPIC_FEED,
+  'Claude-User': ANTHROPIC_FEED,
+  CCBot: 'https://index.commoncrawl.org/ccbot.json',
 }
 
 /**
@@ -96,6 +105,7 @@ const RANGE_FEEDS: Record<string, string> = {
 const RDNS_SUFFIXES: Record<string, readonly string[]> = {
   Bingbot: ['.search.msn.com'],
   Applebot: ['.applebot.apple.com'],
+  CCBot: ['.crawl.commoncrawl.org'],
 }
 
 /**
@@ -105,10 +115,12 @@ const RDNS_SUFFIXES: Record<string, readonly string[]> = {
  */
 const TOKEN_ONLY = new Set(['Google-Extended', 'Applebot-Extended'])
 
-// Everything else classifyAiCrawler() knows — Anthropic (ClaudeBot,
-// Claude-SearchBot, Claude-User), Common Crawl (CCBot), ByteDance
-// (Bytespider), Meta (meta-externalagent) — publishes no ranges, no rDNS
-// suffix and no signatures, and falls through to `unverifiable`.
+// Everything else classifyAiCrawler() knows — ByteDance (Bytespider), Meta
+// (meta-externalagent) — publishes no ranges, no rDNS suffix and no
+// signatures, and falls through to `unverifiable`. Anthropic and Common Crawl
+// were here until 2026-09-13, when both were found publishing (see the
+// experiment log); this list shrinks as vendors publish, so re-check it
+// before any write-up (docs/detection-experiment.md §7, rule 7).
 
 /* ------------------------------------------------------------------ *
  * 2. CIDR matching (v4 + v6 via BigInt — one code path, no branches)
@@ -212,7 +224,9 @@ async function getRanges(agent: string, deps: VerifyDeps): Promise<Cidr[] | null
   const url = RANGE_FEEDS[agent]
   if (!url) return null
 
-  const cached = rangeCache.get(agent)
+  // Indexado pela URL, não pelo agente: os três agentes da Anthropic
+  // compartilham a mesma lista, e um fetch por TTL basta para todos.
+  const cached = rangeCache.get(url)
   if (cached && deps.now() - cached.fetchedAt < RANGE_TTL_MS) return cached.cidrs
 
   try {
@@ -226,7 +240,7 @@ async function getRanges(agent: string, deps: VerifyDeps): Promise<Cidr[] | null
       .map(parseCidr)
       .filter((c): c is Cidr => c !== null)
 
-    rangeCache.set(agent, { cidrs, fetchedAt: deps.now() })
+    rangeCache.set(url, { cidrs, fetchedAt: deps.now() })
     return cidrs
   } catch {
     // Never fail the request because a vendor feed is down. Serve stale,
