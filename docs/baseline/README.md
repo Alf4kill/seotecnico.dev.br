@@ -66,10 +66,17 @@ npm run build && npm start &
 node scripts/baseline-crawl.mjs --base http://localhost:3000 --out /tmp/local
 ```
 
+## Captures taken so far
+
+| Date | Crawl | Lighthouse | Search Console | CrUX | Notes |
+|---|---|---|---|---|---|
+| [`2026-07-20`](2026-07-20/) | ✅ | ✅ | ❌ never filled | ❌ never filled | Phase 2 baseline. The two owner-run halves were left as `_pending_` templates and never captured, so the project had no "before" row for O1/O2. |
+| [`2026-09-11`](2026-09-11/) | ✅ | ✅ | ⚠️ partial | ⚠️ partial | First real GSC capture, 56 days after the first article. Sitemaps, Enhancements and Links still missing; CrUX confirmed still absent from the dataset. Source for the 14 verdicts resolved in the experiment log on that date. |
+
 ## When to capture
 
-- **Now (2026-07-20):** the Phase 2 baseline — the reference point for every
-  Phase 3 experiment.
+- **Phase 2 baseline (2026-07-20):** the reference point for every Phase 3
+  experiment — captured for the automated halves only.
 - Before and after any deliberate SEO change big enough to earn an
   experiment-log row (schema changes, IA changes, performance work).
 - Monthly, as the running time series that feeds `experimento.py`.
@@ -89,3 +96,17 @@ rules to the crawled HTML. Severities:
 A baseline that reports zero findings on a site this young usually means the
 crawler is not looking hard enough. The 2026-07-20 capture found two; both are
 recorded in the experiment log with their fixes.
+
+The 2026-09-11 capture reported **zero** findings — and that caution turned out
+to be the right one to apply to it. The same session found two real defects by
+hand that this crawler does not look for, because both live outside the sitemap:
+
+- the 404 template emits **two conflicting `robots` meta tags** (`noindex` from
+  the route, then `index, follow` from the root layout). Google takes the most
+  restrictive, and the page is a 404 anyway, so nothing is at risk — but it is a
+  defect, and neither this crawler nor the Playwright suite covers the 404 route.
+- `/en` and `/en/guide` return **404**. They are path segments with no page, so
+  any external link to `/en` is a dead end.
+
+Both are worth adding to the crawler's off-sitemap checks rather than relying on
+someone repeating the manual pass.
