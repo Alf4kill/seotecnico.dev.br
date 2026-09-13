@@ -18,7 +18,11 @@ import { TRAP_LLMS_PATH } from '@/lib/lab-traps'
 // que não exista estado em que o índice discorde do que está publicado.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Páginas sem frontmatter (mesma lista fixa que app/sitemap.ts carrega). */
+/**
+ * Páginas sem frontmatter (mesma lista fixa que app/sitemap.ts carrega).
+ * llms-txt.test.ts compara com os diretórios de src/app/(pt)/ferramentas: a
+ * Ferramenta 3 ficou meses fora daqui porque nada conferia.
+ */
 const TOOL_LINKS = [
   {
     path: '/ferramentas/gerador-json-ld',
@@ -31,6 +35,12 @@ const TOOL_LINKS = [
     title: 'Validador de meta tags',
     description:
       'Valida title, description, canonical, robots, H1 e Open Graph de qualquer URL, lendo o HTML do servidor — a mesma régua que este site impõe em CI.',
+  },
+  {
+    path: '/ferramentas/checador-cwv',
+    title: 'Checador de Core Web Vitals',
+    description:
+      'Consulta LCP, INP e CLS de campo de qualquer origem pelo Chrome UX Report: o p75 de visitas reais nos últimos 28 dias, com a distribuição.',
   },
 ] as const
 
