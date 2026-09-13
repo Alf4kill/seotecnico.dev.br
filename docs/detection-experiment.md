@@ -286,6 +286,15 @@ Three independent paths, strongest first. Implemented in
    signature against a key served from the agent's own
    `/.well-known/http-message-signatures-directory`. Cryptographic; does not
    depend on the UA at all. Verdict `verified-signature`.
+   **What it proves:** the request was signed by whoever controls the domain the
+   client names in `Signature-Agent` — anyone can publish keys on their own
+   domain. The identity is that domain, so it is recorded as `bot_signer`
+   (§9.1); a `verified-signature` without its signer says nothing about who.
+   Both header forms are accepted: the Dictionary of draft -05 (2026-03-02,
+   `Signature-Agent: agent1="https://…"`, covered as
+   `"signature-agent";key="agent1"`, the form Google uses) and the older
+   sf-string form. Until 2026-09-13 only the older form verified, and the
+   signer was not recorded (see the experiment log).
 2. **Vendor-published IP ranges** — the client IP inside a CIDR from the vendor's
    machine-readable feed. Verdict `verified-ip`. Feeds are published by OpenAI
    (GPTBot, OAI-SearchBot, ChatGPT-User), Perplexity (PerplexityBot,
@@ -413,10 +422,21 @@ dimension in the crawler property or it stays invisible outside Realtime.
 (documents, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/feed.xml`, the traps) —
 not only declared AI UAs. `ua_class` is what keeps the buckets separable.
 
+**Excluded since 2026-09-13: Next.js RSC requests.** A real browser prefetches
+every visible link with `rsc: 1` / `next-router-prefetch` requests that do not
+accept `text/html`, and navigates client-side the same way. They are not
+document fetches, but until 2026-09-13 they reached the proxy and were counted as
+`ua_class: unknown` — human browsing inside the non-browser bucket. The matcher
+now skips any request carrying either header. For data recorded before that
+date, the non-browser bucket is `has_sec_fetch = false`, never
+`ua_class = unknown`. A crawler could send `rsc: 1` to stay out of the count;
+that trade is accepted, because no crawler needs the RSC payload.
+
 | Parameter | Values | Why |
 |---|---|---|
 | `ua_class` | `declared-ai` / `browser-like` / `unknown` | H3 — counts the population the current policy cannot address |
 | `bot_verified` | `verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent` | Gates every attribution. Only computed for `declared-ai` or signed requests |
+| `bot_signer` | hostname from `Signature-Agent` (e.g. `chatgpt.com`) | The identity a `verified-signature` proves (§5). Sent only with that verdict. Added 2026-09-13 |
 | `req_conditional` | `true` / `false` | H4 |
 | `has_sec_fetch` | `true` / `false` | Axis A |
 | `net_id` | salted truncated /24 (v4) or /48 (v6) hash, monthly salt | Correlation without identification (§2.3) |
