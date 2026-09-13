@@ -11,7 +11,7 @@ tldr: >-
   conhecida no build, ela fica no redirects() do config; middleware só quando a
   decisão depende de cookie, header ou geografia.
 datePublished: "2026-07-22"
-dateModified: "2026-07-22"
+dateModified: "2026-09-13"
 faq:
   - question: "permanent true no Next.js é 301 ou 308?"
     answer: "É 308. A diferença para o 301 é que o 308 obriga o cliente a preservar o método HTTP do request original (um POST continua POST). Para SEO dá no mesmo: o Google trata ambos como redirect permanente e consolida os sinais na URL de destino — para páginas acessadas via GET, a distinção é irrelevante na prática."
@@ -157,6 +157,7 @@ helper único de metadados:
     description,
     alternates: {
       canonical: path,
+      // … hreflang, quando a rota tem tradução
       // Autodiscovery do feed em toda página. Precisa estar aqui (e não no
       // root layout) porque `alternates` da página substitui o herdado.
       types: {
@@ -166,10 +167,13 @@ helper único de metadados:
     openGraph: {
       url: absoluteUrl(path),
       siteName: site.name,
-      locale: site.locale,
+      locale: og.locale,
       // …
     },
-    ...(noindex ? { robots: { index: false, follow: true } } : {}),
+    robots: {
+      index: indexable && !noindex,
+      follow: indexable,
+    },
   }
 ```
 
@@ -207,12 +211,17 @@ export interface BuildMetadataInput {
 }
 
 // e, na montagem do objeto Metadata:
-...(noindex ? { robots: { index: false, follow: true } } : {})
+robots: {
+  index: indexable && !noindex,
+  follow: indexable,
+},
 ```
 
-Repare no `follow: true`: a página não deve ser indexada, mas os links dela
-continuam valendo para descoberta. `noindex` não precisa vir acompanhado de
-`nofollow` — são decisões separadas.
+Repare que `noindex` só mexe em `index`. Em produção, `follow` continua
+`true`: a página não deve ser indexada, mas os links dela continuam valendo
+para descoberta. `noindex` não precisa vir acompanhado de `nofollow` — são
+decisões separadas. O `indexable` é o fail-safe do site: fora de produção, as
+duas diretivas ficam negadas em todas as páginas.
 
 E é exatamente essa página — a busca interna — que protagoniza o caso real.
 
@@ -265,10 +274,11 @@ de ler qualquer coisa — e a URL continua elegível a ser exibida.
 A correção, feita no mesmo dia: **remover o `Disallow`** e deixar o
 `noindex` trabalhar — quem remove do índice é ele, e para isso precisa ser
 lido. O `robots.ts` de produção ficou assim, com o motivo registrado no
-próprio código:
+próprio código (é a versão de julho de 2026; depois o arquivo ganhou grupos
+por agente de IA, e o grupo `*` continua com o mesmo comentário):
 
 ```ts
-// src/app/robots.ts
+// src/app/robots.ts (julho de 2026)
 export default function robots(): MetadataRoute.Robots {
   if (!indexable) {
     return { rules: [{ userAgent: '*', disallow: '/' }] }
