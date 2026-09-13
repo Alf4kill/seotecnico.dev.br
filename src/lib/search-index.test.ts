@@ -19,9 +19,9 @@ const index = buildSearchIndex()
 const byCategory = (category: SearchItem['category']) =>
   index.filter((item) => item.category === category)
 
-/** Diretórios sob src/app/ferramentas = ferramentas que realmente foram ao ar. */
+/** Diretórios sob src/app/(pt)/ferramentas = ferramentas que realmente foram ao ar. */
 function shippedToolRoutes(): string[] {
-  const dir = path.join(process.cwd(), 'src', 'app', 'ferramentas')
+  const dir = path.join(process.cwd(), 'src', 'app', '(pt)', 'ferramentas')
   return fs
     .readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

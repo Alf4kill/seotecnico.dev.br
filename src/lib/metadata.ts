@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { site } from '@/lib/site'
-import { languageAlternatePaths } from '@/lib/hreflang'
+import { site, indexable } from '@/lib/site'
+import { languageAlternatePaths, type Lang } from '@/lib/hreflang'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildMetadata — helper único de metadados por página (CLAUDE.md §6).
@@ -19,10 +19,23 @@ const TITLE_MAX = 60
 const DESCRIPTION_MAX = 155
 
 // Dimensões/tipo/alt das imagens OG — consumidos pelas rotas opengraph-image
-// e pelo fallback de og:image abaixo (fonte única, módulo sem JSX).
+// e pelo og:image abaixo (fonte única, módulo sem JSX).
 export const OG_SIZE = { width: 1200, height: 630 }
 export const OG_CONTENT_TYPE = 'image/png'
 export const OG_BRAND_ALT = `${site.name} — SEO técnico para desenvolvedores Next.js`
+export const OG_BRAND_ALT_EN = `${site.name} — technical SEO for Next.js developers`
+
+/**
+ * O que muda no Open Graph de uma página conforme o idioma dela. Uma página em
+ * inglês herdando `og:locale pt_BR` e o card da marca escrito em português
+ * contradiz o próprio hreflang que ela emite — daí as três coisas andarem
+ * juntas, derivadas de um único `lang`, em vez de três opções independentes que
+ * alguém pode esquecer de passar.
+ */
+const OG_BY_LANG: Record<Lang, { locale: string; image: string; alt: string }> = {
+  'pt-BR': { locale: site.locale, image: '/opengraph-image', alt: OG_BRAND_ALT },
+  en: { locale: 'en_US', image: '/en/opengraph-image', alt: OG_BRAND_ALT_EN },
+}
 
 export interface BuildMetadataInput {
   /** Título da página. Com `absoluteTitle`, ignora o template "%s | SEO Técnico". */
@@ -39,18 +52,18 @@ export interface BuildMetadataInput {
   /** Para rotas utilitárias (ex.: /busca) que não devem ser indexadas. */
   noindex?: boolean
   /**
-   * `og:locale` da página. Só as rotas em inglês passam este campo; o padrão é
-   * o locale do site (§10, português-primeiro). Existe porque uma página em
-   * inglês herdando `pt_BR` contradiz o próprio hreflang que ela emite.
+   * Idioma da página. Só as rotas em inglês passam este campo; o padrão é o do
+   * site (§10, português-primeiro). Define `og:locale` e o card OG da marca.
    */
-  locale?: string
+  lang?: Lang
   /**
-   * true ⇒ o segmento tem seu próprio opengraph-image.tsx: o helper não emite
-   * og:image e deixa a file convention preencher (com hash de cache). Config
-   * de página tem prioridade sobre o arquivo do segmento — por isso o padrão
-   * da marca precisa ser suprimido aqui, e não "sobreposto" lá.
+   * Card OG próprio da página (ex.: /blog/<slug>/opengraph-image), no lugar do
+   * card da marca do idioma. As imagens são route handlers, não a file
+   * convention — dentro de route groups a convenção ganha hash na URL (ver
+   * app/(pt)/opengraph-image/route.tsx) —, então nada injeta og:image sozinho:
+   * toda página o recebe daqui.
    */
-  fileOgImage?: boolean
+  ogImage?: { path: string; alt: string }
 }
 
 /** URL absoluta de um caminho do site; a home fica sem barra final. */
@@ -59,8 +72,44 @@ export function absoluteUrl(path: string): string {
   return path === '/' ? base : `${base}${path}`
 }
 
+/**
+ * Metadados de um root layout. Há um por idioma (ver RootShell) e os dois têm
+ * de concordar em tudo menos no locale, então saem da mesma função.
+ *
+ * `robots` NÃO mora aqui, de propósito. Metadado de layout é herdado por tudo
+ * que renderiza dentro dele — inclusive a UI de not-found, à qual o Next.js
+ * acrescenta o próprio `noindex`. Com o `index, follow` vindo do layout, todo
+ * 404 servia DUAS metas robots conflitantes (defeito (2) do baseline de
+ * 2026-07-20). Emitido por página em `buildMetadata`, ele só existe onde há uma
+ * página de verdade, e o 404 fica com uma única diretiva.
+ */
+export function rootMetadata(lang: Lang): Metadata {
+  return {
+    metadataBase: new URL(site.url),
+    title: {
+      template: `%s | ${site.name}`,
+      default: site.name,
+    },
+    description: site.description,
+    // Sem `url` aqui: og:url é sempre definido por página via buildMetadata
+    // (um url estático no root era herdado e apontava toda subpágina à home).
+    openGraph: {
+      type: 'website',
+      locale: OG_BY_LANG[lang].locale,
+      siteName: site.name,
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    },
+  }
+}
+
 export function buildMetadata(input: BuildMetadataInput): Metadata {
-  const { title, description, path, absoluteTitle, article, noindex, fileOgImage, locale } = input
+  const { title, description, path, absoluteTitle, article, noindex, ogImage } = input
+  const og = OG_BY_LANG[input.lang ?? 'pt-BR']
 
   if (!path.startsWith('/')) {
     throw new Error(`buildMetadata: path deve começar com '/' (recebido: "${path}")`)
@@ -109,22 +158,19 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
     openGraph: {
       url: absoluteUrl(path),
       siteName: site.name,
-      locale: locale ?? site.locale,
-      // og:image padrão da marca (rota de app/opengraph-image.tsx). Precisa
-      // estar aqui: como este objeto substitui o openGraph herdado, a imagem
-      // do root layout NÃO cascateia para as subpáginas.
-      ...(fileOgImage
-        ? {}
-        : {
-            images: [
-              {
-                url: '/opengraph-image',
-                width: OG_SIZE.width,
-                height: OG_SIZE.height,
-                alt: OG_BRAND_ALT,
-              },
-            ],
-          }),
+      locale: og.locale,
+      // og:image: o card da página, ou o da marca no idioma dela. Precisa estar
+      // aqui: como este objeto substitui o openGraph herdado, nenhuma imagem
+      // cascateia do layout para as subpáginas.
+      images: [
+        {
+          url: ogImage?.path ?? og.image,
+          width: OG_SIZE.width,
+          height: OG_SIZE.height,
+          type: OG_CONTENT_TYPE,
+          alt: ogImage?.alt ?? og.alt,
+        },
+      ],
       ...(article
         ? {
             type: 'article',
@@ -133,6 +179,11 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
           }
         : { type: 'website' }),
     },
-    ...(noindex ? { robots: { index: false, follow: true } } : {}),
+    // Fail-safe de indexação (site.ts): fora de produção, noindex em tudo. Ver
+    // `rootMetadata` sobre por que isto é por página e não do layout.
+    robots: {
+      index: indexable && !noindex,
+      follow: indexable,
+    },
   }
 }
