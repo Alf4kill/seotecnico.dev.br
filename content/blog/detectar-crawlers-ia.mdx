@@ -1,0 +1,436 @@
+---
+title: "Como saber se a IA usa seu conteúdo: método e honeypot"
+description: "Um site real medindo crawlers de IA: honeypot no robots.txt, verificação de identidade por IP, DNS e assinatura, e o que é impossível saber."
+slug: "detectar-crawlers-ia"
+primaryQuery: "como saber se a ia usa meu conteudo"
+keywords: ['crawler de ia', 'bots de ia', 'gptbot', 'claudebot', 'user agent', 'robots.txt', 'honeypot', 'web bot auth', 'verificação de bot', 'tráfego de bots', 'scraping', 'llms.txt']
+lang: "pt-BR"
+tldr: >-
+  Provar que a IA não usa seu conteúdo é impossível. Dá para medir três coisas
+  com os próprios logs: quais agentes buscam suas páginas, se a identidade que
+  eles alegam é verdadeira (IP, DNS reverso, assinatura) e se respeitam o
+  robots.txt (honeypot). Este site mede as três e publica os números.
+datePublished: "2026-09-13"
+dateModified: "2026-09-13"
+faq:
+  - question: "O user agent identifica um crawler de IA?"
+    answer: "Não. O user agent é uma alegação: qualquer cliente pode enviar GPTBot no cabeçalho. Identidade só existe quando a requisição passa numa fonte publicada pelo fornecedor — faixa de IP, DNS reverso confirmado ou assinatura Web Bot Auth. Sem isso, o certo é dizer que a requisição alega ser aquele agente."
+  - question: "O que é um honeypot de robots.txt?"
+    answer: "É uma URL que só existe numa linha Disallow do robots.txt: não está no sitemap, não tem link em lugar nenhum. O único jeito de chegar nela é ler o robots.txt e buscar justamente o que ele proíbe. Um acesso é, por construção, desrespeito deliberado — e ainda assim não diz quem foi."
+  - question: "O robots.txt impede que a IA treine com meu conteúdo?"
+    answer: "Não garante. O robots.txt é um pedido voluntário: agentes que se declaram costumam respeitar, mas nada impede um cliente de ignorar o arquivo, e cópias do seu texto em outros sites nunca passam por ele. O que dá para fazer é medir quem respeita."
+  - question: "Dá para saber se meu texto já entrou num modelo de IA?"
+    answer: "Não pela negativa. Crawlers sem identificação, cópias em outros sites e bases de dados já publicadas ficam fora do alcance de qualquer servidor. Ausência de evidência de uso não é evidência de que o conteúdo não foi usado."
+  - question: "Por que tanto tráfego automatizado não se identifica?"
+    answer: "Porque se identificar só ajuda quem quer ser reconhecido: buscadores, prévias de link e ferramentas de SEO se declaram. Quem teme bloqueio, limite de requisições ou cobrança tem incentivo para parecer um navegador comum."
+---
+
+Não existe como provar que a IA **não** usa seu conteúdo. O que existe são três
+coisas mensuráveis com os logs do próprio servidor: **quais agentes buscam
+suas páginas**, **se a identidade que eles alegam é verdadeira** e **se
+respeitam o robots.txt**. Este site mede as três em produção desde julho de
+2026, com um honeypot no robots.txt, verificação de identidade por faixa de
+IP, DNS reverso e assinatura criptográfica, e uma telemetria que separa
+navegador de cliente automatizado. Este artigo mostra o método, o código, os
+primeiros 28 dias de números — e três defeitos que a primeira leitura
+encontrou no próprio instrumento.
+
+## O que dá para medir e o que não dá
+
+A pergunta "a IA usa meu conteúdo?" são quatro perguntas diferentes, e só
+parte delas tem resposta num servidor web:
+
+| Pergunta | Tem resposta? | Com o quê |
+|---|---|---|
+| Esta requisição veio de um cliente automatizado? | **Sim**, com boa confiança | Formato dos cabeçalhos e a comparação com as visitas que executam JavaScript |
+| Qual agente fez a requisição? | **Em parte** | Faixas de IP publicadas, DNS reverso e assinatura Web Bot Auth — e só para fornecedores que publicam alguma dessas três |
+| Foi para treinar um modelo? | **Não** | Só o fornecedor sabe. O máximo é citar a documentação dele sobre o propósito do agente |
+| O robots.txt autorizava? | **Sim**, exatamente | O que o arquivo dizia para aquele agente no momento da requisição |
+
+A assimetria organiza todo o resto. **Autorização é um fato** que o site
+controla. **Propósito é uma citação**, nunca uma inferência. E **ausência não
+se prova**: um crawler que não se identifica, uma cópia do seu artigo em outro
+domínio ou uma base de dados já publicada ficam fora do alcance de qualquer
+servidor. Qualquer texto que prometa "descobrir se a IA treinou com o seu
+site" está vendendo a quarta resposta, que não existe.
+
+## User agent é alegação, não identidade
+
+O cabeçalho `User-Agent` é texto que o cliente escolhe. Um `curl` com
+`-A "GPTBot"` envia exatamente o mesmo cabeçalho que o GPTBot de verdade. Por isso a
+telemetria deste site trata o user agent como **alegação** e só fala em
+identidade quando a requisição passa numa fonte publicada pelo próprio
+fornecedor. São três, da mais forte para a mais fraca:
+
+1. **Assinatura Web Bot Auth** (HTTP Message Signatures, RFC 9421). O cliente
+   assina a requisição com uma chave Ed25519 publicada no domínio que ele
+   declara no cabeçalho `Signature-Agent`. É criptografia, e não depende do
+   user agent. O que ela prova é precisamente isto: **quem controla aquele
+   domínio assinou** — qualquer um pode publicar chaves no próprio domínio, então
+   o domínio *é* a identidade. O Google assina parte das requisições do
+   `Google-Agent` desse jeito, em caráter experimental (documentação de
+   2026-05-04), e a especificação ainda é um Internet-Draft.
+2. **Faixas de IP publicadas.** OpenAI, Perplexity, Microsoft, Apple,
+   Anthropic e Common Crawl publicam listas em JSON dos endereços dos seus
+   crawlers. O IP da requisição dentro de uma faixa é identidade verificada.
+3. **DNS reverso confirmado.** O nome reverso do IP termina no domínio
+   documentado pelo fornecedor (`.search.msn.com` para o Bingbot,
+   `.crawl.commoncrawl.org` para o CCBot) **e** esse nome resolve de volta para
+   o mesmo IP. Sem a volta, o nome reverso é controlado por quem é dono do IP.
+
+Desse processo saem os vereditos que a telemetria registra. O tipo é este,
+copiado do código em produção:
+
+```ts
+// src/lib/crawler-verification.ts
+export type Verdict =
+  | 'verified-ip'
+  | 'verified-signature'
+  | 'verified-rdns'
+  | 'impersonated'
+  | 'unverifiable'
+  | 'unknown-agent'
+
+export interface VerificationResult {
+  agent: string | null
+  verdict: Verdict
+  /** Which published source produced the verdict, for the log record. */
+  evidence: string | null
+}
+```
+
+Dois desses vereditos são achados, não falhas, e confundi-los seria o pior
+erro possível neste tipo de medição:
+
+- **`impersonated`** só existe quando havia uma fonte para conferir e a
+  requisição falhou nela. Um IP fora das faixas da OpenAI alegando ser GPTBot
+  é uma requisição **que alega ser GPTBot e não veio da OpenAI** — nunca "o
+  GPTBot fez tal coisa".
+- **`unverifiable`** é o fornecedor que não publica nada. Bytespider
+  (ByteDance) e meta-externalagent (Meta) estão nesse grupo. Chamar esse
+  tráfego de falso seria inventar uma prova que não existe.
+
+Há ainda um atalho elegante: `Google-Extended` e `Applebot-Extended` são
+**tokens de robots.txt**, não crawlers — os fornecedores documentam que nenhuma
+requisição carrega esses nomes. Um user agent que alega ser um deles é falso
+por construção.
+
+A lista de quem publica o quê muda, e isso também é dado. A Anthropic publica
+as faixas dos seus três agentes numa lista única, linkada de uma página de
+2026-04-07; a Common Crawl publica faixas e DNS reverso. **Este site só
+incorporou as duas em 2026-09-13** — até lá, as requisições que alegavam ser
+desses agentes saíram como `unverifiable`. Uma lista de verificação envelhece
+em silêncio; conferir as fontes antes de publicar qualquer número faz parte do
+método.
+
+## O honeypot: uma URL que só existe no robots.txt
+
+O robots.txt deste site tem uma linha `Disallow` para uma rota de laboratório
+com um nome aleatório. Essa URL não está no sitemap, não aparece na busca
+interna, não tem link em página nenhuma — e não aparece neste artigo, pelo
+mesmo motivo. O único jeito de chegar nela é **ler o robots.txt e escolher
+buscar o que ele proíbe**. A lista de caminhos bloqueados é declarada assim:
+
+```ts
+// src/app/robots.ts
+// O trap de robots (docs/detection-experiment.md §4) existe APENAS nesta
+// linha de Disallow: fora do sitemap, fora do llms.txt, sem link de lugar
+// nenhum. Quem chega lá parseou este arquivo e escolheu buscar o que ele
+// proíbe. O trap de llms.txt (TRAP_LLMS_PATH) fica fora daqui de propósito —
+// listá-lo contaminaria a atribuição de canal.
+const DISALLOWED_PATHS = ['/api/', TRAP_ROBOTS_PATH]
+```
+
+Três limites precisam ser ditos junto:
+
+- **O honeypot só pega quem lê o robots.txt.** Um cliente que nunca abre o
+  arquivo nunca descobre a URL. Ele detecta desrespeito deliberado, não
+  ignorância — uma afirmação mais estreita e mais forte.
+- **Ele não identifica ninguém.** O robots.txt é o mesmo arquivo para todo
+  mundo, então criar uma URL por agente não provaria nada. A atribuição vem da
+  verificação de identidade do próprio acesso.
+- **Não é uma armadilha punitiva.** Não gera lixo, não prende o cliente num
+  labirinto de links, não tenta envenenar nada. A página explica o que é para
+  quem cair nela, e envia `noindex` no cabeçalho. É a combinação que o
+  [artigo sobre redirects e canonicals](/blog/redirects-canonicals-nextjs)
+  desaconselha em página real — `Disallow` mais `noindex` —, usada aqui de
+  propósito: quem obedece ao robots.txt nunca chega, e quem desobedece não
+  consegue indexar.
+
+Um segundo honeypot segue a mesma lógica para outro canal: uma URL que só
+existe como link dentro do `llms.txt`. Um acesso a ela prova que o cliente lê
+o `llms.txt` **e segue** os links do arquivo — a forma forte da pergunta "algum
+agente usa llms.txt?".
+
+## O delta dos dois pipelines
+
+Crawler não executa JavaScript. Então a pergunta "esta requisição é de um
+navegador?" tem uma resposta que não depende de cabeçalho nenhum: **houve uma
+visita com JavaScript correspondente?**
+
+O servidor registra toda requisição de página numa propriedade de analytics
+separada. A propriedade das visitas humanas só recebe um evento quando o
+JavaScript roda no navegador. Uma requisição de documento sem visita
+correspondente é um cliente que não executa JavaScript. A confusão óbvia —
+o visitante que recusa cookies — já estava eliminada por uma decisão anterior:
+o Consent Mode deste site é do tipo avançado, então quem recusa o banner ainda
+gera uma medição sem cookies.
+
+Por requisição, a classificação usa o que o navegador sempre manda e um
+cliente HTTP cru quase nunca manda:
+
+```ts
+// src/proxy.ts
+function classifyUa(request: NextRequest, crawler: AiCrawler | undefined): UaClass {
+  if (crawler) return 'declared-ai'
+  const hasSecFetch = request.headers.has('sec-fetch-mode')
+  const acceptsHtml = request.headers.get('accept')?.includes('text/html') ?? false
+  return hasSecFetch && acceptsHtml ? 'browser-like' : 'unknown'
+}
+```
+
+Nenhum endereço IP, cabeçalho bruto ou user agent completo sai do servidor.
+Para correlacionar requisições da mesma rede sem identificar ninguém, a
+telemetria registra um hash truncado da sub-rede, com um sal que muda todo
+mês.
+
+<figure>
+  <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fluxo de classificação de uma requisição: exclusão das requisições RSC, assinatura, user agent declarado, fontes publicadas pelo fornecedor e conferência de IP ou DNS reverso">
+    <title>Como uma requisição recebe um veredito</title>
+    <desc>Cinco perguntas em sequência. Requisições RSC do Next.js não são contadas. Uma assinatura válida gera verified-signature com o domínio do assinante. Sem user agent declarado, sobram só sinais de comportamento. Fornecedor sem fontes publicadas gera unverifiable. Com fontes, o IP na lista ou o DNS reverso confirmado gera verified-ip ou verified-rdns; caso contrário, impersonated.</desc>
+
+    <rect x="20" y="20" width="330" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="185" y="48" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">É uma requisição RSC do Next.js?</text>
+    <line x1="350" y1="43" x2="390" y2="43" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
+    <text x="370" y="36" textAnchor="middle" fontSize="11" fill="var(--foreground, #111827)">sim</text>
+    <rect x="390" y="20" width="310" height="46" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="545" y="48" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">Não é contada (navegação de navegador)</text>
+    <line x1="185" y1="66" x2="185" y2="96" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="200" y="86" fontSize="11" fill="var(--foreground, #111827)">não</text>
+
+    <rect x="20" y="96" width="330" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="185" y="124" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">Traz assinatura Web Bot Auth válida?</text>
+    <line x1="350" y1="119" x2="390" y2="119" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="370" y="112" textAnchor="middle" fontSize="11" fill="var(--foreground, #111827)">sim</text>
+    <rect x="390" y="96" width="310" height="46" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="545" y="124" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">verified-signature + domínio do assinante</text>
+    <line x1="185" y1="142" x2="185" y2="172" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="200" y="162" fontSize="11" fill="var(--foreground, #111827)">não</text>
+
+    <rect x="20" y="172" width="330" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="185" y="200" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">O user agent declara um agente conhecido?</text>
+    <line x1="350" y1="195" x2="390" y2="195" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="370" y="188" textAnchor="middle" fontSize="11" fill="var(--foreground, #111827)">não</text>
+    <rect x="390" y="172" width="310" height="46" fill="none" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <text x="545" y="200" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">Sem identidade: só sinais de comportamento</text>
+    <line x1="185" y1="218" x2="185" y2="248" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="200" y="238" fontSize="11" fill="var(--foreground, #111827)">sim</text>
+
+    <rect x="20" y="248" width="330" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="185" y="276" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">O fornecedor publica IPs ou DNS reverso?</text>
+    <line x1="350" y1="271" x2="390" y2="271" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="370" y="264" textAnchor="middle" fontSize="11" fill="var(--foreground, #111827)">não</text>
+    <rect x="390" y="248" width="310" height="46" fill="none" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <text x="545" y="276" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">unverifiable — nunca impersonated</text>
+    <line x1="185" y1="294" x2="185" y2="324" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <text x="200" y="314" fontSize="11" fill="var(--foreground, #111827)">sim</text>
+
+    <rect x="20" y="324" width="330" height="56" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="185" y="348" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">O IP está na lista publicada</text>
+    <text x="185" y="366" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">ou o DNS reverso confirma?</text>
+    <line x1="350" y1="352" x2="390" y2="352" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
+    <rect x="390" y="324" width="310" height="56" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="545" y="348" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">sim: verified-ip ou verified-rdns</text>
+    <text x="545" y="366" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">não: impersonated</text>
+  </svg>
+  <figcaption>A ordem importa: a assinatura vale mais que o user agent, e a falta de fonte publicada nunca vira acusação de falsificação.</figcaption>
+</figure>
+
+Em texto, a sequência da figura:
+
+| # | Pergunta | Se a resposta for… | Resultado |
+|---|---|---|---|
+| 1 | É uma requisição RSC do Next.js? | sim | Não é contada — é navegação de navegador |
+| 2 | Traz assinatura Web Bot Auth válida? | sim | `verified-signature`, com o domínio de quem assinou |
+| 3 | O user agent declara um agente conhecido? | não | Sem identidade; restam os sinais de comportamento |
+| 4 | O fornecedor publica IPs ou DNS reverso? | não | `unverifiable` — nunca `impersonated` |
+| 5 | O IP está na lista ou o DNS reverso confirma? | sim / não | `verified-ip` ou `verified-rdns` / `impersonated` |
+
+## Por que a maior parte do tráfego automatizado não se identifica
+
+Se identificar só compensa para quem **quer ser reconhecido**. Buscadores
+querem ser liberados no robots.txt. Os robôs que montam a prévia de um link no
+WhatsApp ou no LinkedIn se declaram para receber as tags Open Graph.
+Ferramentas de SEO publicam como verificar os próprios crawlers para não serem
+bloqueadas. Do outro lado, quem teme bloqueio, limite de requisições ou
+cobrança tem todo incentivo para parecer um navegador comum: scrapers que
+passam por proxies residenciais, navegadores sem interface controlados por
+script, varredores de vulnerabilidade — e agentes de IA que abrem páginas a
+pedido de um usuário com um user agent de navegador.
+
+O tamanho do fenômeno é grande e difícil de medir de fora. O relatório de bots
+da Imperva publicado em 2026-04-29 estima o tráfego automatizado em 53% do tráfego
+web de 2025, contra 47% humano — números de uma empresa que
+vende proteção contra bots, com as definições dela. A Cloudflare só considera
+"bot verificado" quem passa por Web Bot Auth ou validação de IP: todo o resto é,
+por definição, não verificado, diga o user agent o que disser.
+
+O caso público mais citado mostra por que é preciso cuidado ao atribuir. Em
+2025-08-04 a Cloudflare acusou a Perplexity de usar crawlers não declarados,
+com user agent de Chrome e rede trocada, para contornar bloqueios. A
+Perplexity respondeu publicamente logo depois que a Cloudflare havia confundido
+o tráfego dela com o de um serviço de navegador em nuvem de terceiros. As duas
+versões seguem em disputa, e nenhuma delas é um fato estabelecido — que é
+exatamente o ponto: sem identidade verificada, tráfego parecido com navegador
+não tem dono.
+
+## 28 dias em números
+
+A primeira leitura cobre **16/08 a 12/09 de 2026** (28 dias). Estão excluídas
+todas as requisições da rede do próprio autor em setembro — **687 eventos**,
+entre eles os testes que o laboratório fez em produção (mais sobre isso na
+próxima seção). Agosto não pôde ser filtrado do mesmo jeito, porque o
+identificador de rede muda todo mês; a navegação do autor em agosto, se houve,
+está nos números de navegador.
+
+**Agentes declarados, identidade verificada por IP:**
+
+| User agent declarado | Veredito | Requisições |
+|---|---|---|
+| OAI-SearchBot | `verified-ip` | 105 |
+| Bingbot | `verified-ip` | 57 |
+| ChatGPT-User | `verified-ip` | 15 |
+| PerplexityBot | `verified-ip` | 4 |
+
+ChatGPT-User é o agente que abre uma página quando uma pessoa pede isso dentro
+do ChatGPT. As 15 requisições (14 na home, 1 no guia em inglês) vieram de fato
+da OpenAI; quem pediu, não há como saber — inclusive se foi o próprio autor.
+
+**Agentes declarados, identidade não verificável no período:**
+
+| User agent declarado (alegação) | Veredito na época | Requisições |
+|---|---|---|
+| Claude-SearchBot | `unverifiable` | 489 |
+| ClaudeBot | `unverifiable` | 230 |
+
+Como a lista da Anthropic só entrou na verificação em 13/09, estas 719
+requisições **alegam** ser agentes da Anthropic e não podem ser atribuídas a
+ela. As 230 que alegam ser ClaudeBot — o agente de treino, bloqueado no
+robots.txt deste site — foram **todas** em `/robots.txt`. A própria Anthropic
+documenta que o ClaudeBot respeita o robots.txt; o que se observou é
+compatível com isso, e não é uma verificação.
+
+**Arquivos de descoberta:**
+
+| Arquivo | Com user agent declarado | Sem identificação | Com formato de navegador |
+|---|---|---|---|
+| `/robots.txt` | 450 | 126 | 4 |
+| `/sitemap.xml` | 372 | 20 | 1 |
+| `/llms.txt` | **0** | 5 | 0 |
+
+**Honeypots e regras:**
+
+- Acessos reais ao honeypot do robots.txt: **0**. Houve um acesso no período,
+  e ele era do próprio laboratório (próxima seção).
+- Acessos ao honeypot do llms.txt: **0** — nem das 5 requisições que baixaram o
+  arquivo.
+- Páginas proibidas buscadas por agentes de treino declarados: **0**.
+- GPTBot, CCBot, Bytespider, meta-externalagent e Applebot: **nenhuma
+  requisição** em 28 dias.
+- Requisições com assinatura Web Bot Auth válida: **64** — sem registro de quem
+  assinou, por um defeito descrito abaixo.
+
+**O número que este artigo não publica:** a proporção de tráfego sem
+identificação sobre o total. A primeira leitura mostrou que ela estava
+inflada por navegação humana (próxima seção). A contagem corrigida começa em
+2026-09-13 e sai no artigo de resultados.
+
+## O que a primeira leitura revelou: três defeitos no próprio instrumento
+
+Um laboratório que só publica o que deu certo não é laboratório. A leitura
+intermediária existia justamente para achar erro de coleta a tempo, e achou.
+
+**1. Navegação humana contada como tráfego não identificado.** Toda visita num
+navegador faz o Next.js pré-carregar os links visíveis da página com
+requisições RSC, que levam o cabeçalho `rsc: 1` e não pedem HTML. A
+classificação acima as marcava como `unknown`. A pista estava nos dados: as
+seis páginas mais "acessadas" por clientes sem identificação a partir da rede
+do autor eram exatamente os links do cabeçalho e do rodapé. Numa build local de
+produção, uma única visita a um artigo pré-carregou essas mesmas seis rotas. A
+correção tira essas requisições do proxy antes de qualquer contagem:
+
+```ts
+// src/proxy.ts
+  matcher: [
+    {
+      source:
+        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+      missing: [
+        { type: 'header', key: 'rsc' },
+        { type: 'header', key: 'next-router-prefetch' },
+      ],
+    },
+  ],
+```
+
+Para os dados anteriores à correção, a regra ficou registrada antes de
+qualquer nova leitura: o grupo "não navegador" é o das requisições **sem**
+cabeçalhos `Sec-Fetch-*`, que o navegador envia inclusive nas requisições RSC.
+
+**2. Assinatura verificada sem o nome de quem assinou.** Como uma assinatura
+Web Bot Auth prova apenas que o dono de um domínio assinou, o domínio é a
+identidade inteira. O veredito era registrado; o domínio, não. As 64
+requisições assinadas do período dizem "alguém assinou" e nada mais. Desde
+13/09 o domínio do assinante é registrado junto.
+
+**3. O formato atual do Web Bot Auth era recusado.** A versão de março de 2026
+da especificação passou o cabeçalho `Signature-Agent` para um dicionário
+(`agent1="https://…"`), que é o formato usado pelo Google. O verificador só
+aceitava o formato anterior, então uma assinatura válida no formato novo nunca
+seria verificada aqui. Corrigido também em 13/09.
+
+**E um erro de processo.** O único acesso ao honeypot do robots.txt no período
+foi um `curl` enviado pelo próprio laboratório durante uma auditoria de
+indexação, em 2026-09-11. Nenhum crawler caiu na armadilha: fomos nós. O
+acesso foi identificado, excluído junto com todo o tráfego da rede do autor, e
+virou regra: qualquer requisição de teste enviada à produção é registrada no
+plano de medição, com horário, antes do fim da sessão de trabalho.
+
+## O que este site se proíbe de publicar
+
+As regras vieram antes dos dados, e valem para este artigo e para o de
+resultados:
+
+1. Um agente só é **nomeado** como autor de um comportamento com três provas
+   juntas: identidade verificada, observação datada neste domínio e o
+   propósito declarado pelo próprio fornecedor.
+2. Tráfego que **alega** ser um agente e falha na verificação é reportado como
+   alegação — nunca sob o nome do fornecedor.
+3. Contagens, datas e definições. Não adjetivos.
+4. Toda classificação inferida é chamada de inferida, no texto e não em nota de
+   rodapé.
+5. Quando o fornecedor tem posição pública sobre o comportamento observado, ela
+   aparece ao lado da observação.
+6. Hipóteses que falharem são publicadas também.
+7. Antes de publicar qualquer caso de falsificação, a verificação é refeita
+   contra a lista do fornecedor baixada no dia, e a frase diz "fora das faixas
+   publicadas em tal data".
+
+Ignorar o robots.txt não é crime: o arquivo é um pedido voluntário. Este site
+mede quem atende ao pedido, e não faz afirmação jurídica nenhuma.
+
+## O que vem depois
+
+As hipóteses do experimento foram registradas antes dos dados, com janelas de
+90 dias que fecham por volta de 2026-10-23: se algum crawler cai no honeypot,
+se algum agente de treino verificado busca página proibida, se o tráfego sem
+identificação supera o declarado, se algum agente segue o `llms.txt`. O artigo
+de resultados publica todas — inclusive as que não se confirmarem, e com os
+números medidos pelo instrumento já corrigido.
+
+Para o lado técnico de como `robots.ts` e `sitemap.ts` são gerados neste site,
+veja o [artigo sobre sitemap e robots dinâmicos](/blog/sitemap-dinamico-nextjs);
+para o panorama completo de SEO técnico no App Router, o [guia de SEO técnico
+para Next.js](/guia/seo-tecnico-nextjs). E para conferir o que o seu próprio
+servidor responde a um crawler — robots, canonical, title e Open Graph lidos
+direto do HTML —, use o [validador de meta tags](/ferramentas/validador-meta-tags).
