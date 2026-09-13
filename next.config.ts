@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
   // de perder o cache do .css entre páginas — troca favorável neste tamanho.
   experimental: {
     inlineCss: true,
+
+    // ── 404 global (app/global-not-found.tsx) ──────────────────────────────
+    // O site tem um root layout por idioma, (pt) e (en), para que o <html lang>
+    // de cada página seja o do idioma dela. Sem um app/layout.tsx único, o
+    // Next.js não tem onde compor o 404 de URLs sem rota — este é o mecanismo
+    // documentado para esse caso. Experimental no Next 16.2: se regredir, o
+    // sintoma é um 404 sem estilo (status continua 404), coberto pelo teste
+    // de 404 da suíte Playwright.
+    globalNotFound: true,
   },
 
   // ── Otimização de imagens ──────────────────────────────────────────────────
@@ -29,7 +38,10 @@ const nextConfig: NextConfig = {
   // ── Redirects permanentes (301) ───────────────────────────────────────────
   async redirects() {
     return [
-      // Exemplo: { source: '/url-antiga', destination: '/url-nova', permanent: true },
+      // /en/guide é só um segmento de caminho, sem página: quem encurta a URL
+      // do guia inglês caía num 404. Com /en virando home, este era o último
+      // beco sem saída da camada inglesa. `permanent` ⇒ 308.
+      { source: '/en/guide', destination: '/en/guide/technical-seo-nextjs', permanent: true },
     ]
   },
 }

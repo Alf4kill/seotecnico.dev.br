@@ -37,7 +37,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       publishedTime: frontmatter.datePublished,
       modifiedTime: frontmatter.dateModified,
     },
-    fileOgImage: true,
+    ogImage: {
+      path: `/blog/${frontmatter.slug}/opengraph-image`,
+      alt: frontmatter.title,
+    },
   })
 }
 

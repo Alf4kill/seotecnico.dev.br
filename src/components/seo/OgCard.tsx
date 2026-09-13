@@ -6,8 +6,9 @@ import { site } from '@/lib/site'
 // Renderizado pelo Satori, que suporta só um subconjunto de CSS: flexbox
 // (sem grid), sem classes Tailwind — todo estilo é inline e todo elemento
 // com múltiplos filhos precisa de display:flex explícito.
-// Consumido por app/opengraph-image.tsx (marca) e
-// app/blog/[slug]/opengraph-image.tsx (por artigo).
+// Consumido pelos route handlers de card: app/(pt)/opengraph-image (marca PT),
+// app/(en)/en/opengraph-image (marca EN) e app/(pt)/blog/[slug]/opengraph-image
+// (por artigo).
 // Dimensões e alt ficam em /lib/metadata.ts (compartilhados com buildMetadata).
 // ─────────────────────────────────────────────────────────────────────────────
 

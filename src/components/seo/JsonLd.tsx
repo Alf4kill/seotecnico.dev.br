@@ -65,7 +65,10 @@ export function WebSiteJsonLd() {
     name: site.name,
     url: site.url,
     description: site.description,
-    inLanguage: 'pt-BR',
+    // Um só nó WebSite, emitido pelas duas homes (/ e /en): mesma entidade,
+    // então os dados precisam ser idênticos nas duas — daí os dois idiomas
+    // aqui, e não um por página.
+    inLanguage: ['pt-BR', 'en'],
     publisher: { '@id': ORGANIZATION_ID },
   }
   return <JsonLdScript schema={schema} />

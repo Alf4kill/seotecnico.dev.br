@@ -48,6 +48,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // páginas (lib/hreflang.ts); aqui a URL entra pelo mesmo motivo que
     // qualquer outra: para ser descoberta e para a suíte Playwright cobri-la.
     { url: `${base}/en/guide/technical-seo-nextjs`, lastModified: toDate(guideEn.frontmatter.dateModified), changeFrequency: 'weekly', priority: 0.8 },
+    // Home e "sobre" em inglês. Sem lastmod: nenhuma das duas tem frontmatter
+    // de onde derivá-lo, e um lastmod inventado é o que ensina o Google a
+    // ignorar a tag (mesma regra de /sobre e /ferramentas).
+    { url: `${base}/en`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/en/about`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/blog`, lastModified: newestPost ? toDate(newestPost) : undefined, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/ferramentas`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/ferramentas/gerador-json-ld`, changeFrequency: 'monthly', priority: 0.8 },

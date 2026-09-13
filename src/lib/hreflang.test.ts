@@ -45,6 +45,13 @@ describe('TRANSLATION_PAIRS', () => {
 })
 
 describe('pairForPath / langOfPath / counterpartPath', () => {
+  it('resolves both sides of every pair', () => {
+    expect(counterpartPath('/')).toEqual({ lang: 'en', path: '/en' })
+    expect(counterpartPath('/en')).toEqual({ lang: 'pt-BR', path: '/' })
+    expect(counterpartPath('/sobre')).toEqual({ lang: 'en', path: '/en/about' })
+    expect(counterpartPath('/en/about')).toEqual({ lang: 'pt-BR', path: '/sobre' })
+  })
+
   it('resolves both sides of the pillar pair', () => {
     expect(langOfPath('/guia/seo-tecnico-nextjs')).toBe('pt-BR')
     expect(langOfPath('/en/guide/technical-seo-nextjs')).toBe('en')
@@ -61,8 +68,14 @@ describe('pairForPath / langOfPath / counterpartPath', () => {
 
   it('returns nothing for a route without a translation', () => {
     expect(pairForPath('/blog/inp-nextjs')).toBeUndefined()
-    expect(langOfPath('/sobre')).toBeUndefined()
-    expect(counterpartPath('/')).toBeUndefined()
+    expect(langOfPath('/ferramentas')).toBeUndefined()
+    expect(counterpartPath('/politica-de-privacidade')).toBeUndefined()
+  })
+
+  it('does not treat a path PREFIX as membership', () => {
+    // /en is a pair member; /en/guide (a redirect) and /en/anything are not.
+    expect(pairForPath('/en/guide')).toBeUndefined()
+    expect(langOfPath('/en/whatever')).toBeUndefined()
   })
 })
 
@@ -83,14 +96,23 @@ describe('languageAlternatePaths', () => {
   })
 
   it('points x-default at the original language, not the translation', () => {
-    const alternates = languageAlternatePaths('/en/guide/technical-seo-nextjs')
-    expect(alternates?.['x-default']).toBe(
-      TRANSLATION_PAIRS[0].paths[X_DEFAULT_LANG]
-    )
+    for (const pair of TRANSLATION_PAIRS) {
+      expect(languageAlternatePaths(pair.paths.en)?.['x-default']).toBe(
+        pair.paths[X_DEFAULT_LANG]
+      )
+    }
+  })
+
+  it('is reciprocal for every declared pair, not just the pillar', () => {
+    for (const pair of TRANSLATION_PAIRS) {
+      expect(languageAlternatePaths(pair.paths['pt-BR'])).toEqual(
+        languageAlternatePaths(pair.paths.en)
+      )
+    }
   })
 
   it('emits nothing for an untranslated route', () => {
-    expect(languageAlternatePaths('/sobre')).toBeUndefined()
+    expect(languageAlternatePaths('/ferramentas')).toBeUndefined()
   })
 })
 
@@ -111,7 +133,16 @@ describe('buildMetadata hreflang integration', () => {
     })
   })
 
+  it('uses the bare domain for the home alternate (no trailing slash)', () => {
+    // Same rule as the canonical: `/` renders as the domain itself.
+    expect(page('/en').alternates?.languages).toEqual({
+      'pt-BR': base,
+      en: `${base}/en`,
+      'x-default': base,
+    })
+  })
+
   it('leaves untranslated routes without a languages block', () => {
-    expect(page('/sobre').alternates?.languages).toBeUndefined()
+    expect(page('/ferramentas').alternates?.languages).toBeUndefined()
   })
 })
