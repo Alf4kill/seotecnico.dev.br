@@ -99,6 +99,13 @@ article afterwards is a robots.txt violation, dated and first-party.
 > September window** (687 events between 2026-09-01 and 2026-09-12). Rule from
 > now on: any request a working session sends to production is logged in this
 > section, with its time, before the session ends.
+>
+> **2026-09-13, same network (`771704833c`), already excluded by the rule above:**
+> at 12:33:23 and 12:33:48 UTC, `curl` checks of the #43/#44 deploy — `/en` (×3),
+> `/en/about`, `/en/guide`, `/nao-existe` (×2), plus three OG image routes the
+> proxy matcher does not count. Both are before the 2026-09-13 cutoffs. The
+> Sec-Fetch and RSC header checks of the same day ran against a local
+> production build, not against production.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
