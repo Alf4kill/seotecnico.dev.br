@@ -31,12 +31,13 @@
 
 | Event name | Description | Trigger | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
-| `ai_crawler_hit` | A client requested a page or a discovery endpoint. Originally AI-UA-only; scope expanded for the detection experiment ([`detection-experiment.md`](detection-experiment.md)). Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `src/proxy.ts` (Node runtime), for **every request the matcher passes** — documents, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/feed.xml`, the lab traps. `ua_class` separates the buckets | For declared agents: `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (`verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent`). For every hit: `page_path`, `page_location` (feeds GA4's native page dimensions), `ua_class` (`declared-ai` / `browser-like` / `unknown`), `has_sec_fetch` (`true`/`false`), `req_conditional` (`true`/`false`), `net_id` (salted truncated /24 or /48 hash, monthly salt). On the traps: `is_trap` (`true`), `trap_channel` (`robots` / `llms`) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day (four synthetic hits in Realtime, all 8 original parameter keys, `bot_name` split across the 4 agents sent). **Expanded 2026-07-25** — detection experiment: all-requests scope, verification verdicts and the 6 new parameters; see [`detection-experiment.md`](detection-experiment.md). Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
+| `ai_crawler_hit` | A client requested a page or a discovery endpoint. Originally AI-UA-only; scope expanded for the detection experiment ([`detection-experiment.md`](detection-experiment.md)). Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `src/proxy.ts` (Node runtime), for **every request the matcher passes** — documents, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/feed.xml`, the lab traps. `ua_class` separates the buckets | For declared agents: `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (`verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent`), and with `verified-signature` only, `bot_signer` (the signer's hostname — the identity a signature proves). For every hit: `page_path`, `page_location` (feeds GA4's native page dimensions), `ua_class` (`declared-ai` / `browser-like` / `unknown`), `has_sec_fetch` (`true`/`false`), `req_conditional` (`true`/`false`), `net_id` (salted truncated /24 or /48 hash, monthly salt). On the traps: `is_trap` (`true`), `trap_channel` (`robots` / `llms`) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day (four synthetic hits in Realtime, all 8 original parameter keys, `bot_name` split across the 4 agents sent). **Expanded 2026-07-25** — detection experiment: all-requests scope, verification verdicts and the 6 new parameters; see [`detection-experiment.md`](detection-experiment.md). Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
 
 To query the crawler property beyond Realtime, register the event-scoped
 custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`,
 `page_path`, `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`,
-`net_id`, `is_trap` and `trap_channel` (Admin → Custom definitions).
+`net_id`, `is_trap`, `trap_channel` and — since 2026-09-13 — `bot_signer`
+(Admin → Custom definitions).
 `page_location` needs no registration — GA4 reads it into the built-in page
 dimensions.
 
@@ -88,6 +89,16 @@ article afterwards is a robots.txt violation, dated and first-party.
 > response time**, confirming `LAB_TRAP_DELAY_MS` is applied on that path.
 > Exclude all three from every H1–H6 window by timestamp, exactly like the
 > four above. In particular the trap hit does **not** count toward H1.
+>
+> **Synthetic traffic from the owner's network, 2026-09-11/12 (UTC−3).** During
+> the indexation audit Claude sent `curl` requests to production — including the
+> robots trap at 23:48:30 UTC on 2026-09-11 — and ran the baseline crawl and the
+> Lighthouse baseline. None of it was recorded here at the time, which is the
+> failure this note corrects. All of it came from the owner's network, whose
+> September `net_id` is `771704833c`: **exclude that `net_id` from every
+> September window** (687 events between 2026-09-01 and 2026-09-12). Rule from
+> now on: any request a working session sends to production is logged in this
+> section, with its time, before the session ends.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
@@ -188,6 +199,7 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [ ] Key events marked in GA4 Admin → Events (after first real events arrive)
 - [x] `ai_crawler_hit` arrives in the **crawler** property with its parameters (2026-07-25, Realtime, 4/4 synthetic hits, `bot_name` split across the 4 agents sent). Not DebugView: the hit is server-side from `proxy.ts`, so there is no browser to attach `debug_mode` to — Realtime is the equivalent ground truth for a Measurement Protocol event
 - [x] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (owner, 2026-07-25, before the PR #33 deploy)
+- [ ] Custom dimension `bot_signer` registered (owner, after the 2026-09-13 defects fix deploys) — until then the signer is sent but not queryable
 - [x] `NET_ID_SALT_SECRET` set in Vercel production env, `LAB_TRAP_DELAY_MS` active (confirmed by the 2.65s trap response, 2026-07-25) — without the salt, `net_id` is omitted and H1's correlation is blind
 - [ ] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand)
 
