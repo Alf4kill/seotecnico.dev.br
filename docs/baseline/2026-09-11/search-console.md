@@ -1,8 +1,11 @@
 # Search Console baseline — 2026-09-11
 
-> **Status: captured (partial).** Sections 2, 6 and 7 are still `_pending_` —
-> they need reports that were not part of this export. Everything else is real
-> data, exported by the owner from the domain property on 2026-09-11.
+> **Status: captured (partial).** Sections 2, 6 and 7 were **not captured**:
+> they are separate Search Console screens, not part of the Performance and
+> Coverage exports, and on 2026-09-13 the owner confirmed there are no further
+> exports from this date. They stay open rather than filled in later with
+> numbers from another day. Everything else is real data, exported by the owner
+> from the domain property on 2026-09-11.
 >
 > Property: `seotecnico.dev.br` (domain property, DNS-verified — covers every
 > subdomain and protocol).
@@ -86,14 +89,14 @@ took roughly two weeks to index — normal for a new domain.
 
 ## 2. Sitemap status
 
-_Search Console → Indexing → Sitemaps. Not included in the 2026-09-11 export._
+_Search Console → Indexing → Sitemaps. Not captured (see status)._
 
 | Field | Value |
 |---|---|
-| `sitemap.xml` submitted on | _pending_ |
-| Last read | _pending_ |
-| Status | _pending_ |
-| Discovered URLs | _pending_ |
+| `sitemap.xml` submitted on | _not captured_ |
+| Last read | _not captured_ |
+| Status | _not captured_ |
+| Discovered URLs | _not captured_ |
 
 ## 3. Performance totals
 
@@ -228,26 +231,26 @@ Two pages carry almost all the noise:
 
 ## 6. Enhancements / structured data
 
-_Search Console → Enhancements. Not included in the 2026-09-11 export._
+_Search Console → Enhancements. Not captured (see status)._
 
 Breadcrumbs is the report that matters here: FAQ rich results stopped being
 shown on 2026-05-07, so a missing FAQ report is expected, not a defect.
 
 | Report | Valid | Invalid | Warnings |
 |---|---|---|---|
-| Breadcrumbs | _pending_ | | |
-| Articles (if present) | _pending_ | | |
+| Breadcrumbs | _not captured_ | | |
+| Articles (if present) | _not captured_ | | |
 
 ## 7. Links
 
-_Search Console → Links. Not included in the 2026-09-11 export. Baseline for
+_Search Console → Links. Not captured (see status). Baseline for
 objective **O5** (the tool as a link magnet)._
 
 | Metric | Value |
 |---|---|
-| External links total | _pending_ |
-| Top linking sites | _pending_ |
-| Top linked pages | _pending_ |
+| External links total | _not captured_ |
+| Top linking sites | _not captured_ |
+| Top linked pages | _not captured_ |
 
 Working assumption until captured: **zero external links.** The tools that §5.3
 designed as link magnets have never been distributed, and their impression
