@@ -11,7 +11,7 @@ tldr: >-
   History Change — mas ative ele ou o Enhanced Measurement do GA4, nunca os
   dois, ou cada pageview é contado duas vezes.
 datePublished: "2026-07-22"
-dateModified: "2026-07-22"
+dateModified: "2026-09-13"
 faq:
   - question: "Por que o pageview não dispara nas navegações do Next.js?"
     answer: "Porque as navegações de um app Next.js são history.pushState — a página não recarrega, então o evento de page load que alimenta o gatilho All Pages do GTM só acontece uma vez, no primeiro acesso. As navegações seguintes precisam de um gatilho próprio: o History Change, que escuta as mudanças na History API."
@@ -54,11 +54,12 @@ a entrada na primeira página e fica cego para o resto da sessão — a taxa de
 O caminho sancionado é o componente `GoogleTagManager` do pacote
 `@next/third-parties`, que injeta o container com a estratégia de
 carregamento correta para o App Router — sem `<script>` colado na mão no
-layout, sem snippet copiado do painel. O layout real deste site, na ordem em
-que as peças entram:
+layout, sem snippet copiado do painel. O documento que os root layouts deste
+site compartilham (há um layout por idioma, e os dois renderizam o mesmo
+componente, `RootShell`), na ordem em que as peças entram:
 
 ```tsx
-// src/app/layout.tsx
+// src/components/layout/RootShell.tsx
 // Consent Mode v2 — default "denied" ANTES de qualquer tag do Google carregar.
 // O banner (ConsentBanner) atualiza analytics_storage após a escolha do
 // usuário; ad_* permanecem negados (o site não veicula anúncios).
@@ -76,20 +77,23 @@ gtag('consent', 'default', {
 ```
 
 ```tsx
-// src/app/layout.tsx (no corpo do RootLayout)
+// src/components/layout/RootShell.tsx (corpo do documento)
       <body className="flex min-h-screen flex-col font-sans antialiased">
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
         <Script
           id="consent-default"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: consentDefaultScript }}
         />
-        <SearchProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <SearchModal />
-        </SearchProvider>
-        <ConsentBanner />
+        {withSearch ? (
+          <SearchProvider>
+            {chrome}
+            <SearchModal items={buildSearchIndex()} />
+          </SearchProvider>
+        ) : (
+          chrome
+        )}
+        <ConsentBanner lang={lang} />
         <WebVitalsReporter />
         {site.gtmId && <GoogleTagManager gtmId={site.gtmId} />}
       </body>
@@ -337,7 +341,7 @@ O evento `article_read` deste site dispara quando o leitor chega ao fim do
 artigo — um gatilho de **Element Visibility** apontado para um `id` estável:
 
 ```tsx
-// src/app/blog/[slug]/page.tsx
+// src/app/(pt)/blog/[slug]/page.tsx
         {/* id estável: alvo do trigger de element visibility do evento
             `article_read` no GTM (docs/measurement-plan.md). */}
         <footer id="article-end" className="mt-10 border-t border-gray pt-4">

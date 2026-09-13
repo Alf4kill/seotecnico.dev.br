@@ -3,7 +3,7 @@ title: "Metadata API do Next.js: canonical e o merge que não existe"
 description: "Metadata API no App Router: como o objeto openGraph é substituído e não mesclado, o que isso quebra no Open Graph e o helper que resolve."
 slug: "metadata-api-nextjs"
 primaryQuery: "metadata api next.js"
-keywords: ['metadata api', 'generatemetadata', 'canonical', 'open graph', 'og:image', 'og:url', 'metadatabase', 'opengraph-image', 'next/head', 'merge raso', 'alternates']
+keywords: ['metadata api', 'generatemetadata', 'canonical', 'open graph', 'og:image', 'og:url', 'metadatabase', 'opengraph-image', 'next/head', 'merge raso', 'alternates', 'route group']
 lang: "pt-BR"
 tldr: >-
   A herança entre layout e página na Metadata API é um merge raso: se a página
@@ -11,7 +11,7 @@ tldr: >-
   descartado em silêncio — inclusive og:image, og:url e og:locale. O mesmo vale
   para alternates, e é assim que o canonical some.
 datePublished: "2026-07-22"
-dateModified: "2026-07-22"
+dateModified: "2026-09-13"
 faq:
   - question: "O openGraph do layout é herdado pela página?"
     answer: "Não, se a página definir qualquer campo dentro de openGraph. O merge da Metadata API é raso: quando a página declara o próprio objeto openGraph, o objeto inteiro do layout pai é descartado — inclusive og:locale, og:site_name e og:image. A herança só acontece quando a página não declara openGraph nenhum. Comportamento verificado no Next.js 16.2.6 e documentado na referência oficial do generateMetadata."
@@ -21,6 +21,8 @@ faq:
     answer: "Defina alternates.canonical com o caminho da própria rota na metadata de cada página — com metadataBase no root layout, o caminho pode ser relativo. O ponto crítico é fazer isso via um helper único, porque alternates também é substituído (não mesclado) entre layout e página, e um canonical definido só no layout desaparece em qualquer rota que customize alternates."
   - question: "O opengraph-image.tsx vale para as rotas filhas?"
     answer: "No Next.js 16.2.6, não: o arquivo aplica a imagem ao segmento onde está, sem cascatear para rotas aninhadas. Além disso, se a página do mesmo segmento definir openGraph.images na config, a config vence e o arquivo é ignorado. Como o comportamento já variou entre versões, confira na sua: view-source numa rota filha e procure a tag og:image."
+  - question: "Por que o og:image dá 404 depois de mover rotas para um route group?"
+    answer: "Porque, dentro de um route group, o Next.js acrescenta um sufixo com hash à URL das imagens de metadados geradas por file convention: app/(pt)/opengraph-image.tsx passa a ser servido em algo como /opengraph-image-35ziq1, e toda URL escrita à mão com o nome do arquivo (og:image num helper, image no JSON-LD) aponta para um 404. Verificado no Next.js 16.2.12. A saída é servir o card por um route handler (opengraph-image/route.tsx), que fica exatamente no caminho da pasta."
   - question: "Uso metadata ou generateMetadata?"
     answer: "Use o objeto metadata estático quando todos os valores são conhecidos sem depender da rota. Use generateMetadata quando o valor vem de params ou de dados carregados — como o frontmatter de um post em /blog/[slug]. Os dois passam pelo mesmo pipeline de merge raso, então a armadilha do openGraph substituído vale igual para ambos."
   - question: "Por que meu card do LinkedIn ou WhatsApp sai em branco?"
@@ -79,7 +81,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 ```
 
 Neste site, a rota de post usa exatamente esse formato — o
-`generateMetadata` real está em `src/app/blog/[slug]/page.tsx` e aparece
+`generateMetadata` real está em `src/app/(pt)/blog/[slug]/page.tsx` e aparece
 completo na seção do helper. O importante agora: **os dois caminhos passam
 pelo mesmo pipeline de merge**. Nada do que vem a seguir muda entre estático
 e dinâmico.
@@ -247,19 +249,21 @@ opostos na aparência, eram o mesmo comportamento.
 
 A correção não foi "adicionar os campos que faltavam" página a página — foi
 arquitetural, e é a tese deste artigo: **metadado por página não pode ser
-montado ad hoc**. O comentário que hoje existe no root layout deste site,
-explicando por que `openGraph.url` deliberadamente **não** está lá, é a
-cicatriz desse bug preservada no código:
+montado ad hoc**. O comentário que hoje existe nos metadados de root layout
+deste site, explicando por que `openGraph.url` deliberadamente **não** está
+lá, é a cicatriz desse bug preservada no código. Como o site tem um root
+layout por idioma, esses metadados saem de uma função, `rootMetadata(lang)`,
+que os dois layouts chamam:
 
 ```ts
-// src/app/layout.tsx
-  // Sem `url` aqui: og:url é sempre definido por página via buildMetadata
-  // (um url estático no root era herdado e apontava toda subpágina à home).
-  openGraph: {
-    type: 'website',
-    locale: site.locale,
-    siteName: site.name,
-  },
+// src/lib/metadata.ts — rootMetadata(lang)
+    // Sem `url` aqui: og:url é sempre definido por página via buildMetadata
+    // (um url estático no root era herdado e apontava toda subpágina à home).
+    openGraph: {
+      type: 'website',
+      locale: OG_BY_LANG[lang].locale,
+      siteName: site.name,
+    },
 ```
 
 O histórico completo dos sete achados está documentado em
@@ -287,12 +291,11 @@ site inteiro tem card", confira o HTML emitido nas rotas profundas.
 
 Quando o mesmo segmento tem `opengraph-image.tsx` **e** a página define
 `openGraph.images` na config, a config vence e o arquivo é ignorado. Neste
-site isso importava porque o helper sempre emite o conjunto completo de
-`openGraph` — o que, sem cuidado, suprimiria a imagem por rota gerada pelo
-arquivo do segmento. A solução foi uma flag explícita no helper
-(`fileOgImage: true`): quando ligada, o helper **omite** `openGraph.images`
-da config para deixar o arquivo irmão do segmento vencer, com o hash de
-cache que a file convention gera.
+site isso importou por meses: o helper sempre emite o conjunto completo de
+`openGraph`, o que suprimiria a imagem por post gerada pelo arquivo do
+segmento. A primeira solução foi uma flag no helper (`fileOgImage: true`) que
+omitia `openGraph.images` da config para deixar o arquivo irmão vencer. A
+flag não existe mais, e a seção logo abaixo do diagrama conta por quê.
 
 <figure>
   <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ordem de precedência da imagem Open Graph entre config da página, arquivo do mesmo segmento e arquivo do segmento pai">
@@ -323,6 +326,55 @@ cache que a file convention gera.
 Em texto, a ordem de precedência é: `openGraph.images` definido na config da
 página vence tudo; na ausência dele, vale o `opengraph-image.tsx` do próprio
 segmento; e o arquivo de um segmento pai **não** se aplica às rotas filhas.
+
+### Route group muda a URL da imagem
+
+Em setembro de 2026 este site passou a ter um root layout por idioma, com as
+rotas movidas para dois route groups, `(pt)` e `(en)` — o motivo está no
+[artigo de hreflang no Next.js](/blog/hreflang-nextjs). O build passou e toda
+a suíte de SEO continuou verde. Mesmo assim, o `og:image` padrão que o helper
+escreve (`/opengraph-image`) e a `image` do JSON-LD `Article` dos 11 artigos
+passaram a apontar para 404.
+
+A causa: dentro de um route group, o Next.js acrescenta um sufixo com hash à
+URL das imagens de metadados geradas por file convention. O card da marca, em
+`app/(pt)/opengraph-image.tsx`, passou a ser servido em
+`/opengraph-image-35ziq1`; o de cada post, em
+`/blog/<slug>/opengraph-image-18vth1`. No Next.js 16.2.12, quem monta o sufixo
+é a função `getMetadataRouteSuffix`. O nome do arquivo continua o mesmo; o que
+quebra é todo lugar que escreveu a URL à mão, contando com esse nome.
+
+A correção foi abandonar a file convention para as imagens. Cada card virou um
+route handler, que é servido exatamente no caminho da pasta, sem sufixo:
+
+```tsx
+// src/app/(pt)/opengraph-image/route.tsx
+export const dynamic = 'force-static'
+
+export function GET() {
+  return new ImageResponse(
+    (
+      <OgCard
+        badge="Laboratório de SEO técnico"
+        title="SEO técnico para desenvolvedores Next.js"
+        subtitle="Guias práticos, ferramentas gratuitas e experimentos medidos com dados reais."
+      />
+    ),
+    OG_SIZE
+  )
+}
+```
+
+Sem a file convention, nada injeta `og:image` sozinho. A flag `fileOgImage`
+perdeu o motivo de existir, e o helper passou a emitir a imagem em toda rota,
+recebendo o card do post como parâmetro. A suíte de SEO ganhou a asserção que
+faltava: em toda rota, ela baixa o `og:image` e cada imagem citada no JSON-LD e
+exige resposta 200 com `image/png`. Checar que a tag existe não basta; é
+preciso checar que a URL responde.
+
+Se você usa route groups e escreve a URL de uma imagem de metadados em
+qualquer lugar (JSON-LD, um helper, um link de compartilhamento), confira no
+build a URL servida, não o nome do arquivo.
 
 ## A solução: um helper único de metadados
 
@@ -355,6 +407,18 @@ existir e a assinatura de entrada:
 const TITLE_MAX = 60
 const DESCRIPTION_MAX = 155
 
+/**
+ * O que muda no Open Graph de uma página conforme o idioma dela. Uma página em
+ * inglês herdando `og:locale pt_BR` e o card da marca escrito em português
+ * contradiz o próprio hreflang que ela emite — daí as três coisas andarem
+ * juntas, derivadas de um único `lang`, em vez de três opções independentes que
+ * alguém pode esquecer de passar.
+ */
+const OG_BY_LANG: Record<Lang, { locale: string; image: string; alt: string }> = {
+  'pt-BR': { locale: site.locale, image: '/opengraph-image', alt: OG_BRAND_ALT },
+  en: { locale: 'en_US', image: '/en/opengraph-image', alt: OG_BRAND_ALT_EN },
+}
+
 export interface BuildMetadataInput {
   /** Título da página. Com `absoluteTitle`, ignora o template "%s | SEO Técnico". */
   title: string
@@ -370,12 +434,18 @@ export interface BuildMetadataInput {
   /** Para rotas utilitárias (ex.: /busca) que não devem ser indexadas. */
   noindex?: boolean
   /**
-   * true ⇒ o segmento tem seu próprio opengraph-image.tsx: o helper não emite
-   * og:image e deixa a file convention preencher (com hash de cache). Config
-   * de página tem prioridade sobre o arquivo do segmento — por isso o padrão
-   * da marca precisa ser suprimido aqui, e não "sobreposto" lá.
+   * Idioma da página. Só as rotas em inglês passam este campo; o padrão é o do
+   * site (§10, português-primeiro). Define `og:locale` e o card OG da marca.
    */
-  fileOgImage?: boolean
+  lang?: Lang
+  /**
+   * Card OG próprio da página (ex.: /blog/<slug>/opengraph-image), no lugar do
+   * card da marca do idioma. As imagens são route handlers, não a file
+   * convention — dentro de route groups a convenção ganha hash na URL (ver
+   * app/(pt)/opengraph-image/route.tsx) —, então nada injeta og:image sozinho:
+   * toda página o recebe daqui.
+   */
+  ogImage?: { path: string; alt: string }
 }
 ```
 
@@ -384,7 +454,8 @@ E o corpo, onde cada decisão do artigo vira uma linha de código:
 ```ts
 // src/lib/metadata.ts (continuação)
 export function buildMetadata(input: BuildMetadataInput): Metadata {
-  const { title, description, path, absoluteTitle, article, noindex, fileOgImage } = input
+  const { title, description, path, absoluteTitle, article, noindex, ogImage } = input
+  const og = OG_BY_LANG[input.lang ?? 'pt-BR']
 
   if (!path.startsWith('/')) {
     throw new Error(`buildMetadata: path deve começar com '/' (recebido: "${path}")`)
@@ -402,11 +473,26 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
     )
   }
 
+  // hreflang derivado do caminho, nunca declarado à mão na página: é assim que
+  // a reciprocidade fica garantida por construção (ver lib/hreflang.ts). Rotas
+  // sem tradução não emitem nada — um cluster de um item só é ruído.
+  const languagePaths = languageAlternatePaths(path)
+
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: {
       canonical: path,
+      ...(languagePaths
+        ? {
+            languages: Object.fromEntries(
+              Object.entries(languagePaths).map(([lang, target]) => [
+                lang,
+                absoluteUrl(target),
+              ])
+            ),
+          }
+        : {}),
       // Autodiscovery do feed em toda página. Precisa estar aqui (e não no
       // root layout) porque `alternates` da página substitui o herdado.
       types: {
@@ -418,22 +504,19 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
     openGraph: {
       url: absoluteUrl(path),
       siteName: site.name,
-      locale: site.locale,
-      // og:image padrão da marca (rota de app/opengraph-image.tsx). Precisa
-      // estar aqui: como este objeto substitui o openGraph herdado, a imagem
-      // do root layout NÃO cascateia para as subpáginas.
-      ...(fileOgImage
-        ? {}
-        : {
-            images: [
-              {
-                url: '/opengraph-image',
-                width: OG_SIZE.width,
-                height: OG_SIZE.height,
-                alt: OG_BRAND_ALT,
-              },
-            ],
-          }),
+      locale: og.locale,
+      // og:image: o card da página, ou o da marca no idioma dela. Precisa estar
+      // aqui: como este objeto substitui o openGraph herdado, nenhuma imagem
+      // cascateia do layout para as subpáginas.
+      images: [
+        {
+          url: ogImage?.path ?? og.image,
+          width: OG_SIZE.width,
+          height: OG_SIZE.height,
+          type: OG_CONTENT_TYPE,
+          alt: ogImage?.alt ?? og.alt,
+        },
+      ],
       ...(article
         ? {
             type: 'article',
@@ -442,7 +525,12 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
           }
         : { type: 'website' }),
     },
-    ...(noindex ? { robots: { index: false, follow: true } } : {}),
+    // Fail-safe de indexação (site.ts): fora de produção, noindex em tudo. Ver
+    // `rootMetadata` sobre por que isto é por página e não do layout.
+    robots: {
+      index: indexable && !noindex,
+      follow: indexable,
+    },
   }
 }
 ```
@@ -450,7 +538,7 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
 E o uso real na rota de post, onde o frontmatter alimenta o helper:
 
 ```ts
-// src/app/blog/[slug]/page.tsx
+// src/app/(pt)/blog/[slug]/page.tsx
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const post = getPostBySlug(slug)
@@ -466,16 +554,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       publishedTime: frontmatter.datePublished,
       modifiedTime: frontmatter.dateModified,
     },
-    fileOgImage: true,
+    ogImage: {
+      path: `/blog/${frontmatter.slug}/opengraph-image`,
+      alt: frontmatter.title,
+    },
   })
 }
 ```
 
 O contrato do helper é o que importa, mais do que a implementação: toda
 chamada emite title, description, canonical auto-referente, o objeto
-`openGraph` **completo** (locale, site_name, type, url casado com o
-canonical) e o `alternates` completo (canonical + autodiscovery do RSS em
-`types`). Uma rota não tem como emitir um `openGraph` pela metade, porque
+`openGraph` **completo** (locale, site_name, type, imagem e url casado com o
+canonical), o `alternates` completo (canonical, hreflang quando a rota tem
+tradução e autodiscovery do RSS em `types`) e a diretiva `robots`. Uma rota
+não tem como emitir um `openGraph` pela metade, porque
 nenhuma rota escreve `openGraph` — todas recebem o conjunto pronto.
 
 Detalhe que vale registrar: o token de verificação do Search Console

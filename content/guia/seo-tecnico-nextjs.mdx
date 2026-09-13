@@ -3,7 +3,7 @@ title: 'Guia de SEO técnico para Next.js (App Router)'
 description: 'O que é SEO técnico no Next.js e como implementar: metadados, JSON-LD, sitemaps, Core Web Vitals, hreflang e renderização — com código real.'
 slug: seo-tecnico-nextjs
 datePublished: '2026-07-12'
-dateModified: '2026-07-26'
+dateModified: '2026-09-13'
 primaryQuery: 'seo técnico next.js'
 keywords: ['guia', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals']
 lang: pt-BR
@@ -217,11 +217,13 @@ retornava vazio.
 Duas decisões que valem ser ditas, porque não são óbvias. A URL da página em
 inglês carrega a query em inglês — é `/en/guide/technical-seo-nextjs`, não um
 espelho do caminho em português —, já que a URL faz parte do que a página diz
-ser. E o `<html lang>` continua `pt-BR` nas duas: o header e o rodapé em volta
-do artigo estão realmente em português, então virar o documento inteiro para
-`en` rotularia errado essa moldura. Quem carrega `lang="en"` é a subárvore que
-está de fato em inglês. Para o Google dá no mesmo — ele ignora o atributo e
-detecta idioma pelo conteúdo —, mas não dá no mesmo para tecnologia assistiva.
+ser. E o `<html lang>` acompanha o idioma de cada página: `pt-BR` aqui, `en` na
+versão em inglês. Para isso o site tem um root layout por idioma, em route
+groups, e a versão em inglês tem header, rodapé e banner em inglês. Na primeira
+versão, a página em inglês vivia dentro da moldura em português, e só o artigo
+carregava `lang="en"`, porque só ele estava em inglês. Para o Google dá no
+mesmo — ele ignora o atributo e detecta idioma pelo conteúdo —, mas não dá no
+mesmo para tecnologia assistiva.
 
 → [Hreflang no Next.js: site bilíngue no App Router](/blog/hreflang-nextjs)
 
