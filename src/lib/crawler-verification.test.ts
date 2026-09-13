@@ -86,6 +86,8 @@ describe('parseCidr / inCidr', () => {
 
 const GPTBOT_FEED = 'https://openai.com/gptbot.json'
 const BINGBOT_FEED = 'https://www.bing.com/toolbox/bingbot.json'
+const ANTHROPIC_FEED = 'https://claude.com/crawling/bots.json'
+const CCBOT_FEED = 'https://index.commoncrawl.org/ccbot.json'
 
 interface DepsOptions {
   feeds?: Record<string, unknown>
@@ -126,7 +128,7 @@ describe('verifyCrawler — verdict matrix', () => {
   })
 
   it('NEVER reports a vendor with no published feed as impersonation', async () => {
-    for (const agent of ['CCBot', 'ClaudeBot', 'Bytespider', 'meta-externalagent']) {
+    for (const agent of ['Bytespider', 'meta-externalagent']) {
       const result = await verifyCrawler(plainRequest(), agent, '1.2.3.4', makeDeps())
       expect(result.verdict).toBe('unverifiable')
       expect(result.evidence).toBe('no published feed')
@@ -219,6 +221,37 @@ describe('verifyCrawler — verdict matrix', () => {
     const result = await verifyCrawler(plainRequest(), 'Bingbot', '40.77.167.1', deps)
     expect(result.verdict).toBe('impersonated')
     expect(result.evidence).toBe(BINGBOT_FEED)
+  })
+
+  it('verifies all three Anthropic agents against the one combined feed, fetched once', async () => {
+    const deps = makeDeps({
+      feeds: { [ANTHROPIC_FEED]: { prefixes: [{ ipv4Prefix: '216.73.216.0/22' }] } },
+    })
+    for (const agent of ['ClaudeBot', 'Claude-SearchBot', 'Claude-User']) {
+      const result = await verifyCrawler(plainRequest(), agent, '216.73.217.10', deps)
+      expect(result.verdict).toBe('verified-ip')
+      expect(result.evidence).toBe(ANTHROPIC_FEED)
+    }
+    expect(deps.feedFetches.filter((u) => u === ANTHROPIC_FEED)).toHaveLength(1)
+  })
+
+  it('reports a ClaudeBot claim outside Anthropic\'s feed as impersonated, like any other feed', async () => {
+    const deps = makeDeps({
+      feeds: { [ANTHROPIC_FEED]: { prefixes: [{ ipv4Prefix: '216.73.216.0/22' }] } },
+    })
+    const result = await verifyCrawler(plainRequest(), 'ClaudeBot', '1.2.3.4', deps)
+    expect(result.verdict).toBe('impersonated')
+  })
+
+  it('rescues a CCBot feed miss via its documented rDNS suffix', async () => {
+    const deps = makeDeps({
+      feeds: { [CCBOT_FEED]: { prefixes: [{ ipv4Prefix: '18.97.9.168/29' }] } },
+      reverse: async () => ['ec2-18-97-14-80.crawl.commoncrawl.org'],
+      lookup: async () => ['18.97.14.80'],
+    })
+    const result = await verifyCrawler(plainRequest(), 'CCBot', '18.97.14.80', deps)
+    expect(result.verdict).toBe('verified-rdns')
+    expect(result.evidence).toBe('ec2-18-97-14-80.crawl.commoncrawl.org')
   })
 
   it('caches the vendor feed and serves stale ranges when a refresh fails', async () => {
