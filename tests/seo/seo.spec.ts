@@ -10,7 +10,9 @@ import { ALLOWED_AI_CRAWLERS, DISALLOWED_AI_CRAWLERS } from '../../src/lib/ai-cr
 //   - <title> and meta description present and within length limits
 //   - self-referencing canonical
 //   - JSON-LD parses as valid JSON with the expected @type set
-//   - hreflang pairs consistent in both directions (dormant until /en exists)
+//   - hreflang pairs consistent in both directions
+//   - <html lang> agrees with the language the page declares in its own hreflang
+//   - og:image, and the image of every Article node, resolve to a PNG
 //
 // Routes are NOT hardcoded: they come from app/sitemap.ts (which itself derives
 // from getAllPosts()), so new articles are covered automatically the moment
@@ -33,6 +35,7 @@ const postsBySlug = new Map(
   getAllPosts().map((post) => [post.frontmatter.slug, post.frontmatter])
 )
 const guideFrontmatter = getGuide().frontmatter
+const guideEnFrontmatter = getGuide('en').frontmatter
 
 /** `FAQPage` is expected whenever the source frontmatter declares a `faq` array. */
 const faqTypes = (frontmatter?: { faq?: unknown[] }) =>
@@ -42,6 +45,9 @@ const faqTypes = (frontmatter?: { faq?: unknown[] }) =>
 function expectedJsonLdTypes(path: string): string[] {
   if (path === '/') return ['WebSite', 'Organization', 'Person']
   if (path === '/sobre') return ['Person', 'BreadcrumbList']
+  if (path.startsWith('/en/guide/')) {
+    return ['Article', 'BreadcrumbList', ...faqTypes(guideEnFrontmatter)]
+  }
   if (path.startsWith('/ferramentas/')) return ['SoftwareApplication', 'BreadcrumbList']
   // The guide reads its own frontmatter for the same reason /blog/ does: this
   // branch used to be a hardcoded pair, so a pillar with `faq` that failed to
@@ -126,6 +132,7 @@ for (const route of routes) {
       .locator('script[type="application/ld+json"]')
       .allTextContents()
     const foundTypes: string[] = []
+    const articleImages: string[] = []
     for (const raw of jsonLdBlocks) {
       let parsed: unknown
       try {
@@ -134,12 +141,28 @@ for (const route of routes) {
         throw new Error(`JSON-LD block on ${route} is not valid JSON:\n${raw}`)
       }
       for (const node of Array.isArray(parsed) ? parsed : [parsed]) {
-        const type = (node as { '@type'?: string })['@type']
+        const { '@type': type, image } = node as { '@type'?: string; image?: string }
         if (type) foundTypes.push(type)
+        if (type === 'Article' && typeof image === 'string') articleImages.push(image)
       }
     }
     for (const type of expectedJsonLdTypes(route)) {
       expect.soft(foundTypes, `JSON-LD @type "${type}" on ${route}`).toContain(type)
+    }
+
+    // ── Share images resolve ────────────────────────────────────────────────
+    // Moving the routes into route groups (2026-09) silently renamed every
+    // file-convention OG image to a hashed URL (/opengraph-image-35ziq1), so
+    // og:image and the Article JSON-LD `image` pointed at 404s while every other
+    // assertion in this suite stayed green. A preview card is invisible until
+    // someone shares the link — which is why it has to be checked here.
+    const ogImage = page.locator('head meta[property="og:image"]')
+    await expect(ogImage, 'exactly one og:image').toHaveCount(1)
+    for (const imageUrl of [(await ogImage.getAttribute('content')) ?? '', ...articleImages]) {
+      const imagePath = new URL(imageUrl).pathname
+      const imageResponse = await page.request.get(imagePath)
+      expect(imageResponse.status(), `share image ${imagePath} on ${route}`).toBe(200)
+      expect(imageResponse.headers()['content-type'], `share image ${imagePath}`).toContain('image/png')
     }
 
     // ── Robots: noindex only where intended ─────────────────────────────────
@@ -154,10 +177,23 @@ for (const route of routes) {
     }
 
     // ── Hreflang: pairs must be consistent in both directions ───────────────
-    // Dormant while no /en pages exist; activates automatically once a page
-    // emits <link rel="alternate" hreflang>.
+    // Activates for any page that emits <link rel="alternate" hreflang>.
     const hreflangLinks = extractHreflangLinks(await page.content())
     if (hreflangLinks.length > 0) {
+      // The page's own entry in its hreflang cluster names its language; the
+      // document must say the same. Until 2026-09 the English pages shared the
+      // Portuguese root layout and served <html lang="pt-BR"> while declaring
+      // `en` — Google ignores the attribute, but screen readers and SEO audits
+      // do not, and nothing failed.
+      const self = hreflangLinks.find(
+        (l) => l.hreflang !== 'x-default' && new URL(l.href).pathname === route
+      )
+      expect(self, `${route} must list itself in its hreflang cluster`).toBeDefined()
+      expect(
+        await page.locator('html').getAttribute('lang'),
+        `<html lang> on ${route} must match its own hreflang`
+      ).toBe(self?.hreflang)
+
       expect(
         hreflangLinks.map((l) => l.hreflang),
         `${route} declares hreflang but no x-default`
@@ -263,6 +299,32 @@ test('llms.txt lists every published URL', async ({ request }) => {
     if (!url.includes('/blog/') && !url.includes('/guia/')) continue
     expect(txt, `llms.txt must list ${url}`).toContain(url)
   }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dead ends: what a visitor or crawler gets when the URL is wrong.
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('an unmatched URL is a real 404 with exactly one robots directive', async ({ page }) => {
+  // Served by app/global-not-found.tsx (experimental.globalNotFound). If that
+  // flag regresses, this is the test that notices: the status would still be
+  // 404, but the page would lose the site chrome and its <h1>.
+  const response = await page.goto('/este-caminho-nao-existe')
+  expect(response?.status()).toBe(404)
+  await expect(page.locator('h1')).toHaveCount(1)
+  await expect(page.locator('header nav').first()).toBeVisible()
+
+  // Baseline 2026-07-20, defect 2: the root layout's `index, follow` leaked
+  // into the not-found UI next to Next.js's own `noindex`.
+  const robots = page.locator('head meta[name="robots"]')
+  await expect(robots, 'exactly one robots meta on a 404').toHaveCount(1)
+  expect(await robots.getAttribute('content')).toContain('noindex')
+})
+
+test('an unmatched English URL offers a way back to the English home', async ({ page }) => {
+  const response = await page.goto('/en/este-caminho-nao-existe')
+  expect(response?.status()).toBe(404)
+  await expect(page.locator('main a[href="/en"]')).toBeVisible()
 })
 
 test('feed.xml is valid XML', async ({ request }) => {

@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react'
 import { Moon, Sun } from 'lucide-react'
+import type { Lang } from '@/lib/hreflang'
 import { THEME_STORAGE_KEY } from './ThemeScript'
 
 type Theme = 'light' | 'dark'
@@ -32,7 +33,20 @@ function subscribe(onChange: () => void) {
   }
 }
 
-export function ThemeToggle() {
+const LABELS: Record<Lang, { toggle: string; toLight: string; toDark: string }> = {
+  'pt-BR': {
+    toggle: 'Alternar entre tema claro e escuro',
+    toLight: 'Mudar para o tema claro',
+    toDark: 'Mudar para o tema escuro',
+  },
+  en: {
+    toggle: 'Toggle light and dark theme',
+    toLight: 'Switch to light theme',
+    toDark: 'Switch to dark theme',
+  },
+}
+
+export function ThemeToggle({ lang }: { lang: Lang }) {
   // No servidor o tema do visitante é desconhecido, e chutar divergiria da
   // hidratação — daí o undefined. Ele só afeta o rótulo acessível: os ícones
   // são resolvidos em CSS (ver o comentário no JSX).
@@ -53,12 +67,9 @@ export function ThemeToggle() {
     window.dispatchEvent(new Event(THEME_EVENT))
   }
 
+  const copy = LABELS[lang]
   const label =
-    theme === undefined
-      ? 'Alternar entre tema claro e escuro'
-      : theme === 'dark'
-        ? 'Mudar para o tema claro'
-        : 'Mudar para o tema escuro'
+    theme === undefined ? copy.toggle : theme === 'dark' ? copy.toLight : copy.toDark
 
   return (
     <button

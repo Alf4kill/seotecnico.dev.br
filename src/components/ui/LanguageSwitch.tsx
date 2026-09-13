@@ -14,6 +14,13 @@ import { counterpartPath, type Lang } from '@/lib/hreflang'
 // procura, não o que está vendo. Pelo mesmo motivo o link carrega `hreflang` e
 // `lang` — sem `lang`, um leitor de tela anuncia "Português" com fonemas
 // ingleses.
+//
+// `prefetch={false}` em todo link que cruza idioma. Cada idioma tem o seu root
+// layout (ver RootShell), e o Next.js recarrega a página inteira ao navegar
+// entre root layouts — o payload RSC que o <Link> pré-carrega quando entra no
+// viewport nunca é usado. Medido no build de 2026-09-12: sem isso, /en disparava
+// prefetch de /, /blog, /ferramentas e /politica-de-privacidade. A mesma regra
+// vale para Header, Footer, ConsentBanner e o 404 bilíngue.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const LABEL: Record<Lang, { label: string; title: string }> = {
@@ -31,6 +38,7 @@ export function LanguageSwitch({ path }: { path: string }) {
     <Link
       href={counterpart.path}
       hrefLang={counterpart.lang}
+      prefetch={false}
       lang={counterpart.lang}
       title={title}
       className="inline-flex items-center gap-1.5 rounded-lg border border-gray px-3 py-1.5 text-sm text-primary transition-colors hover:bg-surface"

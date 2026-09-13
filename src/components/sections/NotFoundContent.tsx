@@ -2,13 +2,18 @@ import Link from 'next/link'
 import { ArrowRight, Home } from 'lucide-react'
 
 /**
- * Página 404 (não encontrada) — App Router.
+ * Conteúdo da página 404, compartilhado pelas duas portas por onde um 404
+ * chega:
  *
- * Renderiza dentro do layout raiz (Header + main + Footer). Traz o conteúdo
- * centralizado no visual do site: numeral 404 na cor da marca, mensagem de
- * apoio e botões de ação (voltar à home / ler o guia).
+ * - `app/(pt)/not-found.tsx` — `notFound()` chamado dentro de uma rota
+ *   portuguesa (ex.: slug de artigo inexistente). Renderiza dentro do root
+ *   layout português.
+ * - `app/global-not-found.tsx` — URL que não casa com rota nenhuma. Com um root
+ *   layout por idioma não existe layout único onde compor esse 404, e a URL
+ *   pode ser de qualquer um dos dois sites; daí a versão `bilingual`, que dá ao
+ *   leitor de /en/qualquer-coisa uma saída no idioma dele.
  */
-export default function NotFound() {
+export function NotFoundContent({ bilingual = false }: { bilingual?: boolean }) {
   return (
     <section className="container flex min-h-[55vh] flex-col items-center justify-center gap-6 py-16 text-center lg:py-24">
       <p className="font-bold leading-none text-primary text-7xl md:text-8xl lg:text-9xl">
@@ -19,7 +24,7 @@ export default function NotFound() {
         <h1 className="font-bold text-foreground text-2xl md:text-3xl lg:text-4xl">
           Página não encontrada
         </h1>
-        <p className="max-w-md text-gray-600 text-sm leading-7 lg:text-base">
+        <p className="max-w-md text-muted text-sm leading-7 lg:text-base">
           A página que você procura pode ter sido removida, teve seu endereço
           alterado ou está temporariamente indisponível.
         </p>
@@ -58,6 +63,24 @@ export default function NotFound() {
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" strokeWidth={2.5} />
         </Link>
       </div>
+
+      {bilingual && (
+        // Um único <h1> por página (§6): a versão inglesa é texto de apoio,
+        // não um segundo título.
+        <p lang="en" className="mt-4 max-w-md border-t border-gray pt-6 text-sm leading-7 text-muted">
+          Page not found. Looking for the English version of this site?{' '}
+          <Link
+            href="/en"
+            hrefLang="en"
+            prefetch={false}
+            title="SEO Técnico — English home"
+            className="font-semibold text-primary hover:text-primary-dark transition-colors"
+          >
+            Go to the English home
+          </Link>
+          .
+        </p>
+      )}
     </section>
   )
 }

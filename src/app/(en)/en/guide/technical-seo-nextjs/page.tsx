@@ -15,15 +15,10 @@ import { site } from '@/lib/site'
 // Versão em inglês da pilar (CLAUDE.md §5.1). Par de hreflang declarado em
 // lib/hreflang.ts; `buildMetadata` emite as tags a partir de lá.
 //
-// Sobre o `lang="en"` no <article> em vez de no <html>: o <html> é do root
-// layout e vale para o documento inteiro — que aqui inclui header, footer e
-// banner de consentimento, todos em português. Trocar o documento para `en`
-// rotularia errado essa moldura; marcar a subárvore que realmente está em
-// inglês é a descrição correta. Para o Google não muda nada (ele ignora o
-// atributo e detecta idioma pelo conteúdo), mas muda para tecnologia
-// assistiva. Se /en crescer a ponto de ter moldura própria, o caminho é um
-// segundo root layout via route group — ao custo de um page load inteiro na
-// troca de idioma.
+// Vive no root layout inglês — app/(en)/layout.tsx —, então o <html lang="en">,
+// o header, o footer e o banner já estão em inglês. Até 2026-09 esta página
+// morava no layout português e marcava só o <article> com `lang="en"`, porque o
+// resto do documento era português; ver RootShell sobre a mudança.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CANONICAL_PATH = '/en/guide/technical-seo-nextjs'
@@ -35,7 +30,7 @@ export function generateMetadata(): Metadata {
     absoluteTitle: true,
     description: frontmatter.description,
     path: CANONICAL_PATH,
-    locale: 'en_US',
+    lang: 'en',
     article: {
       publishedTime: frontmatter.datePublished,
       modifiedTime: frontmatter.dateModified,
@@ -48,15 +43,19 @@ export default function GuideEnPage() {
 
   return (
     <>
-      <ArticleJsonLd frontmatter={frontmatter} path={CANONICAL_PATH} />
+      <ArticleJsonLd
+        frontmatter={frontmatter}
+        path={CANONICAL_PATH}
+        imagePath="/en/opengraph-image"
+      />
       <BreadcrumbJsonLd
         items={[
-          { name: 'Home', path: '/' },
+          { name: 'Home', path: '/en' },
           { name: 'Technical SEO for Next.js', path: CANONICAL_PATH },
         ]}
       />
 
-      <article lang="en" className="container max-w-3xl py-12 lg:py-16">
+      <article className="container max-w-3xl py-12 lg:py-16">
         <header>
           <div className="mb-6">
             <LanguageSwitch path={CANONICAL_PATH} />
