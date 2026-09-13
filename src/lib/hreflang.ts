@@ -29,7 +29,11 @@ export const LANGS: readonly Lang[] = ['pt-BR', 'en'] as const
 export const X_DEFAULT_LANG: Lang = 'pt-BR'
 
 export interface TranslationPair {
-  /** Valor de `translationOf` no frontmatter — o identificador comum ao par. */
+  /**
+   * Identificador comum ao par. Para páginas de MDX é o valor de
+   * `translationOf` no frontmatter (o teste de unidade confere); para páginas
+   * sem frontmatter é só um nome estável.
+   */
   id: string
   paths: Record<Lang, string>
 }
@@ -40,6 +44,26 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
     paths: {
       'pt-BR': '/guia/seo-tecnico-nextjs',
       en: '/en/guide/technical-seo-nextjs',
+    },
+  },
+  // As homes e as páginas "sobre" não são traduções palavra por palavra — a
+  // home inglesa é a porta de entrada de quem chega pelo nome do autor, a
+  // portuguesa é a do laboratório. O Google aceita isso em hreflang: o par
+  // exige a MESMA função no outro idioma, não o mesmo texto. Declarar o par é o
+  // que faz a busca servir /en a quem procura em inglês, em vez de a home
+  // portuguesa.
+  {
+    id: 'home',
+    paths: {
+      'pt-BR': '/',
+      en: '/en',
+    },
+  },
+  {
+    id: 'about',
+    paths: {
+      'pt-BR': '/sobre',
+      en: '/en/about',
     },
   },
 ] as const

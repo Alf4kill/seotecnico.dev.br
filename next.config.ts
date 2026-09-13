@@ -38,7 +38,10 @@ const nextConfig: NextConfig = {
   // ── Redirects permanentes (301) ───────────────────────────────────────────
   async redirects() {
     return [
-      // Exemplo: { source: '/url-antiga', destination: '/url-nova', permanent: true },
+      // /en/guide é só um segmento de caminho, sem página: quem encurta a URL
+      // do guia inglês caía num 404. Com /en virando home, este era o último
+      // beco sem saída da camada inglesa. `permanent` ⇒ 308.
+      { source: '/en/guide', destination: '/en/guide/technical-seo-nextjs', permanent: true },
     ]
   },
 }
