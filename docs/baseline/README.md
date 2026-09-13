@@ -71,7 +71,7 @@ node scripts/baseline-crawl.mjs --base http://localhost:3000 --out /tmp/local
 | Date | Crawl | Lighthouse | Search Console | CrUX | Notes |
 |---|---|---|---|---|---|
 | [`2026-07-20`](2026-07-20/) | ✅ | ✅ | ❌ never filled | ❌ never filled | Phase 2 baseline. The two owner-run halves were left as `_pending_` templates and never captured, so the project had no "before" row for O1/O2. |
-| [`2026-09-11`](2026-09-11/) | ✅ | ✅ | ⚠️ partial | ⚠️ partial | First real GSC capture, 56 days after the first article. Sitemaps, Enhancements and Links still missing; CrUX confirmed still absent from the dataset. Source for the 14 verdicts resolved in the experiment log on that date. |
+| [`2026-09-11`](2026-09-11/) | ✅ | ✅ | ⚠️ partial | ⚠️ partial | First real GSC capture, 56 days after the first article. Sitemaps, Enhancements and Links not captured (owner confirmed 2026-09-13 that no further exports exist for this date); CrUX confirmed still absent from the dataset. Source for the 14 verdicts resolved in the experiment log on that date. |
 
 ## When to capture
 
