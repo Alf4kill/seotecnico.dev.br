@@ -334,6 +334,14 @@ test('/en/guide redirects permanently to the English guide', async ({ request })
   expect(response.headers()['location']).toBe('/en/guide/technical-seo-nextjs')
 })
 
+// Crawlers and browsers ask for /favicon.ico without reading <head>. The site
+// served only icon.svg, so every one of those requests was a 404 in the logs.
+test('/favicon.ico is served as an icon', async ({ request }) => {
+  const response = await request.get('/favicon.ico')
+  expect(response.status()).toBe(200)
+  expect(response.headers()['content-type']).toMatch(/image\/(x-icon|vnd\.microsoft\.icon)/)
+})
+
 test('feed.xml is valid XML', async ({ request }) => {
   const response = await request.get('/feed.xml')
   expect(response.status()).toBe(200)

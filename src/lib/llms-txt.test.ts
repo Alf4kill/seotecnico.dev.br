@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { buildLlmsTxt } from './llms-txt'
 import type { Post } from './content'
@@ -76,5 +78,19 @@ describe('buildLlmsTxt', () => {
     expect(output).toContain('## Artigos')
     expect(output).not.toContain('undefined')
     expect(output.endsWith('\n')).toBe(true)
+  })
+
+  it('lists every tool that has a route — the index must not lag behind a launch', () => {
+    const dir = path.join(process.cwd(), 'src', 'app', '(pt)', 'ferramentas')
+    const shipped = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => `https://seotecnico.dev.br/ferramentas/${entry.name}`)
+    const output = buildLlmsTxt(guide, [])
+
+    expect(shipped.length).toBeGreaterThan(0)
+    for (const url of shipped) {
+      expect(output, `${url} is live but missing from llms.txt`).toContain(`](${url})`)
+    }
   })
 })

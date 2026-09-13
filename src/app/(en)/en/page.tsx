@@ -198,23 +198,6 @@ export default function EnglishHomePage() {
             </div>
           ))}
         </dl>
-
-        {/* A franqueza é o argumento. Um laboratório que só publica o que deu
-            certo é marketing; este registra também o que ainda não aconteceu, e
-            por quê — é o que o torna verificável. */}
-        <p className="mt-8 max-w-3xl text-base leading-7 text-foreground">
-          What it has not done yet is earn traffic: four clicks in three months. The data points
-          to authority, not indexing, as the constraint — and the reasoning is in the{' '}
-          <a
-            href={EXPERIMENT_LOG}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-primary hover:text-primary-dark transition-colors"
-          >
-            experiment log
-          </a>
-          , next to every prediction that turned out wrong.
-        </p>
       </section>
 
       {/* ── O que há no site ──────────────────────────────────── */}
