@@ -276,10 +276,12 @@ fácil e editorialmente falso.
 O `robots.ts` resolve um problema diferente do `sitemap.ts`, mas os dois andam
 juntos porque é o `robots.txt` que anuncia o sitemap. A decisão de design aqui é
 que o padrão é *não* indexar, e qualquer coisa que fuja do caminho feliz de
-produção cai nesse padrão automaticamente:
+produção cai nesse padrão automaticamente (trecho da versão de julho de 2026;
+hoje o arquivo também declara grupos por agente de IA, e o fail-safe continua
+idêntico):
 
 ```ts
-// src/app/robots.ts
+// src/app/robots.ts (julho de 2026)
 export default function robots(): MetadataRoute.Robots {
   if (!indexable) {
     return { rules: [{ userAgent: '*', disallow: '/' }] }
