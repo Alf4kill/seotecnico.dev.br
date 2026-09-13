@@ -40,6 +40,8 @@ const paths = [
   '/ferramentas/validador-meta-tags',
   '/ferramentas/checador-cwv',
   '/en/guide/technical-seo-nextjs',
+  '/en',
+  '/en/about',
   '/sobre',
   '/politica-de-privacidade',
 ]

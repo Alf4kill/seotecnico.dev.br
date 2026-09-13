@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Lang } from '@/lib/hreflang'
 import { site } from '@/lib/site'
 
 // Ícones de marca inline (lucide-react removeu os brand icons)
@@ -14,16 +15,63 @@ const LinkedinIcon = () => (
   </svg>
 )
 
-const footerLinks = [
-  { label: 'Guia de SEO técnico',      href: '/guia/seo-tecnico-nextjs' },
-  { label: 'Blog',                     href: '/blog' },
-  { label: 'Ferramentas',              href: '/ferramentas' },
-  { label: 'Sobre',                    href: '/sobre' },
-  { label: 'Política de privacidade',  href: '/politica-de-privacidade' },
-]
+interface FooterLink {
+  label: string
+  href: string
+  /** Idioma do destino, quando difere do rodapé — vira `hrefLang` + `lang`. */
+  lang?: Lang
+}
 
-export function Footer() {
+interface Copy {
+  home: string
+  homeLabel: string
+  tagline: string
+  byline: string
+  navLabel: string
+  links: FooterLink[]
+  copyright: (year: number) => string
+}
+
+const COPY: Record<Lang, Copy> = {
+  'pt-BR': {
+    home: '/',
+    homeLabel: `${site.name} — página inicial`,
+    tagline: 'Laboratório vivo de SEO técnico para desenvolvedores Next.js —',
+    byline: 'por',
+    navLabel: 'Navegação do rodapé',
+    links: [
+      { label: 'Guia de SEO técnico',     href: '/guia/seo-tecnico-nextjs' },
+      { label: 'Blog',                    href: '/blog' },
+      { label: 'Ferramentas',             href: '/ferramentas' },
+      { label: 'Sobre',                   href: '/sobre' },
+      { label: 'Política de privacidade', href: '/politica-de-privacidade' },
+    ],
+    copyright: (year) =>
+      `© ${year} ${site.name} — projeto pessoal e laboratório público de SEO técnico. Conteúdo e imagens © ${site.author.name}, todos os direitos reservados; código-fonte sob licença MIT.`,
+  },
+  en: {
+    home: '/en',
+    homeLabel: `${site.name} — home`,
+    tagline: 'A live technical SEO lab for Next.js developers —',
+    byline: 'by',
+    navLabel: 'Footer navigation',
+    // A política de privacidade só existe em português. O link diz isso em vez
+    // de fingir o contrário: um rótulo em inglês levando a uma página em
+    // português, sem aviso, é o despejo silencioso que esta moldura evita.
+    links: [
+      { label: 'Technical SEO guide',           href: '/en/guide/technical-seo-nextjs' },
+      { label: 'About',                         href: '/en/about' },
+      { label: 'Site in Portuguese',            href: '/', lang: 'pt-BR' },
+      { label: 'Privacy policy (in Portuguese)', href: '/politica-de-privacidade', lang: 'pt-BR' },
+    ],
+    copyright: (year) =>
+      `© ${year} ${site.name} — personal project and public technical SEO lab. Content and images © ${site.author.name}, all rights reserved; source code under the MIT License.`,
+  },
+}
+
+export function Footer({ lang }: { lang: Lang }) {
   const year = new Date().getFullYear()
+  const copy = COPY[lang]
 
   return (
     <footer className="border-t border-gray bg-surface">
@@ -32,15 +80,14 @@ export function Footer() {
         {/* ── Marca + byline ────────────────────────────────────── */}
         <div className="max-w-sm">
           <Link
-            href="/"
+            href={copy.home}
             className="text-lg font-bold text-foreground"
-            title={`${site.name} — página inicial`}
+            title={copy.homeLabel}
           >
             SEO <span className="text-primary">Técnico</span>
           </Link>
           <p className="mt-3 text-sm text-muted leading-6">
-            Laboratório vivo de SEO técnico para desenvolvedores Next.js —
-            por {site.author.name}, {site.author.jobTitle}.
+            {copy.tagline} {copy.byline} {site.author.name}, {site.author.jobTitle}.
           </p>
 
           {(site.author.github || site.author.linkedin) && (
@@ -74,11 +121,15 @@ export function Footer() {
         </div>
 
         {/* ── Navegação ─────────────────────────────────────────── */}
-        <nav aria-label="Navegação do rodapé" className="flex flex-col gap-2">
-          {footerLinks.map(({ label, href }) => (
+        <nav aria-label={copy.navLabel} className="flex flex-col gap-2">
+          {copy.links.map(({ label, href, lang: targetLang }) => (
             <Link
               key={href}
               href={href}
+              hrefLang={targetLang}
+              lang={targetLang}
+              // Link para o outro idioma: sem prefetch (ver LanguageSwitch).
+              prefetch={targetLang ? false : undefined}
               className="text-sm text-foreground hover:text-primary transition-colors"
               title={label}
             >
@@ -91,11 +142,7 @@ export function Footer() {
       {/* ── Copyright ───────────────────────────────────────────── */}
       <div className="border-t border-gray">
         <div className="container py-4">
-          <p className="text-xs text-muted">
-            © {year} {site.name} — projeto pessoal e laboratório público de SEO
-            técnico. Conteúdo e imagens © {site.author.name}, todos os direitos
-            reservados; código-fonte sob licença MIT.
-          </p>
+          <p className="text-xs text-muted">{copy.copyright(year)}</p>
         </div>
       </div>
     </footer>

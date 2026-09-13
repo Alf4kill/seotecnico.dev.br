@@ -35,7 +35,8 @@ The container is deliberately thin because the site does the privacy-sensitive
 parts before GTM ever loads:
 
 1. **Consent default (denied) — before GTM.** Inline `beforeInteractive` script
-   in [`src/app/layout.tsx`](../src/app/layout.tsx) pushes
+   in [`src/components/layout/RootShell.tsx`](../src/components/layout/RootShell.tsx)
+   (the document shared by both language root layouts) pushes
    `gtag('consent','default', { ad_storage, ad_user_data, ad_personalization,
    analytics_storage: 'denied', wait_for_update: 500 })`.
 2. **GTM injection.** `<GoogleTagManager gtmId={site.gtmId} />` from
