@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest, type NextFetchEvent } from 'next/server'
 import { classifyAiCrawler, isAllowed, type AiCrawler } from '@/lib/ai-crawlers'
-import { verifyCrawler, type VerificationResult } from '@/lib/crawler-verification'
+import { signerHost, verifyCrawler, type VerificationResult } from '@/lib/crawler-verification'
 import { netId } from '@/lib/net-id'
 import { trapChannel } from '@/lib/lab-traps'
 
@@ -40,8 +40,22 @@ export const config = {
   // próprio client component), não leitura de conteúdo — contá-las poluiria o
   // volume guard de docs/detection-experiment.md §9.1. Crawler em /api/ segue
   // coberto pelo Disallow no robots.txt.
+  //
+  // `missing`: requisições RSC do próprio Next.js ficam de fora. Todo navegador
+  // real faz prefetch dos links visíveis (e navega client-side) com `rsc: 1` /
+  // `next-router-prefetch`, sem aceitar `text/html` — até 2026-09-13 elas
+  // passavam por aqui e eram contadas como `ua_class: unknown`, ou seja,
+  // navegação humana no balde "não navegador". Não são leitura de documento.
+  // Ver docs/detection-experiment.md §9.1.
   matcher: [
-    '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+    {
+      source:
+        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+      missing: [
+        { type: 'header', key: 'rsc' },
+        { type: 'header', key: 'next-router-prefetch' },
+      ],
+    },
   ],
 }
 
@@ -154,6 +168,12 @@ async function reportHit(request: NextRequest): Promise<void> {
               bot_policy: botPolicy(crawler, pathname),
             }),
             ...(verification && { bot_verified: verification.verdict }),
+            // Quem assinou: a identidade que uma assinatura prova é o domínio
+            // declarado em Signature-Agent. Sem isto, `verified-signature` não
+            // diz quem (docs/detection-experiment.md §5).
+            ...(verification?.verdict === 'verified-signature' && {
+              bot_signer: signerHost(verification.evidence) ?? undefined,
+            }),
             page_path: pathname,
             // `page_location` alimenta as dimensões nativas de página do GA4
             // (Pages and screens, Landing page). É a URL pública do próprio

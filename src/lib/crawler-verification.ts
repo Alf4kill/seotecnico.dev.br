@@ -306,6 +306,55 @@ interface SignatureParts {
   agentUrl: string
 }
 
+/**
+ * The agent URL named in `Signature-Agent`, in either of its two forms:
+ *
+ * - **Dictionary** (draft-meunier-web-bot-auth-architecture-05, 2026-03-02,
+ *   the form Google uses): `Signature-Agent: agent1="https://agent.example"`,
+ *   covered in the signature as `"signature-agent";key="agent1"`. The member is
+ *   chosen by that `key`, never by position — picking "the first member" would
+ *   let an unsigned member stand in for the signed one.
+ * - **sf-string** (earlier drafts): `Signature-Agent: "https://agent.example"`.
+ *
+ * Until 2026-09-13 only the second form was accepted, so a valid current-format
+ * signature could never verify (docs/experiment-log.md).
+ */
+function signatureAgentUrl(agentHeader: string, covered: Item[]): string | null {
+  const component = covered.find(([name]) => name === 'signature-agent')
+  const key = component?.[1].get('key')
+
+  if (typeof key === 'string') {
+    try {
+      const member = parseDictionary(agentHeader).get(key)
+      return member && typeof member[0] === 'string' ? member[0] : null
+    } catch {
+      return null
+    }
+  }
+
+  try {
+    const [value] = parseItem(agentHeader.trim())
+    return typeof value === 'string' ? value : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Hostname of the signer, for telemetry. A `verified-signature` proves only
+ * that the domain named in `Signature-Agent` holds the key — anyone can
+ * publish keys on their own domain — so that domain IS the identity, and a
+ * verdict without it says nothing about who signed.
+ */
+export function signerHost(agentUrl: string | null | undefined): string | null {
+  if (!agentUrl) return null
+  try {
+    return new URL(agentUrl.includes('://') ? agentUrl : `https://${agentUrl}`).hostname
+  } catch {
+    return null
+  }
+}
+
 /** Decode into a plain ArrayBuffer-backed view, which is what WebCrypto wants. */
 function toArrayBufferView(buf: ArrayBuffer | Buffer): Uint8Array<ArrayBuffer> {
   const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf
@@ -340,15 +389,15 @@ function parseSignatureHeaders(headers: Headers, deps: VerifyDeps): SignaturePar
       const [sigValue] = sigEntry
       if (!(sigValue instanceof ArrayBuffer)) return null
 
-      const [agentValue] = parseItem(agentHeader.trim())
-      if (typeof agentValue !== 'string') return null
+      const agentUrl = signatureAgentUrl(agentHeader, value)
+      if (!agentUrl) return null
 
       return {
         innerList: entry as InnerList,
         covered: value,
         keyid,
         signature: toArrayBufferView(sigValue),
-        agentUrl: agentValue,
+        agentUrl,
       }
     }
   } catch {
@@ -361,10 +410,28 @@ function buildSignatureBase(parts: SignatureParts, req: Request, headers: Header
   const lines: string[] = []
   for (const item of parts.covered) {
     const [component, itemParams] = item
-    if (typeof component !== 'string' || itemParams.size > 0) return null // e.g. @query-param;name=…
+    if (typeof component !== 'string') return null
+
+    // The only component parameter supported is `key` on a header field
+    // (RFC 9421 §2.1.2): the value is that Dictionary member, re-serialized.
+    // Web Bot Auth draft -05 covers `"signature-agent";key="…"` this way.
+    const key = itemParams.get('key')
+    const onlyKey = itemParams.size === 1 && typeof key === 'string'
+    if (itemParams.size > 0 && !onlyKey) return null // e.g. @query-param;name=…
 
     let value: string | null
-    if (component === '@authority') value = new URL(req.url).host.toLowerCase()
+    if (onlyKey) {
+      if (component.startsWith('@')) return null
+      const raw = headers.get(component)
+      if (raw === null) return null
+      try {
+        const member = parseDictionary(raw).get(key as string)
+        if (!member || Array.isArray(member[0])) return null // absent, or an inner list
+        value = serializeItem(member as Item)
+      } catch {
+        return null
+      }
+    } else if (component === '@authority') value = new URL(req.url).host.toLowerCase()
     else if (component === '@method') value = req.method.toUpperCase()
     else if (component === '@target-uri') value = req.url
     else if (component === '@path') value = new URL(req.url).pathname
