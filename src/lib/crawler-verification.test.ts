@@ -6,6 +6,7 @@ import {
   inCidr,
   ipToBigInt,
   parseCidr,
+  signerHost,
   verifyCrawler,
   type VerifyDeps,
 } from './crawler-verification'
@@ -286,7 +287,18 @@ describe('verifyCrawler — verdict matrix', () => {
 const AGENT_URL = 'https://crawler.example.com'
 const DIRECTORY_URL = `${AGENT_URL}/.well-known/http-message-signatures-directory`
 
-async function makeSignedRequest(opts: { expiresInSec?: number; tamper?: boolean } = {}) {
+interface SignOptions {
+  expiresInSec?: number
+  tamper?: boolean
+  /**
+   * Draft -05 form: `Signature-Agent` as a Dictionary, covered with `;key=`.
+   * `extraMember` puts an UNSIGNED member first in the header, to prove the
+   * verifier picks the member by key and never by position.
+   */
+  dictionary?: { key: string; coveredKey?: string; extraMember?: string }
+}
+
+async function makeSignedRequest(opts: SignOptions = {}) {
   const { publicKey, privateKey } = (await crypto.subtle.generateKey({ name: 'Ed25519' }, true, [
     'sign',
     'verify',
@@ -296,13 +308,17 @@ async function makeSignedRequest(opts: { expiresInSec?: number; tamper?: boolean
 
   const created = Math.floor(Date.now() / 1000)
   const expires = created + (opts.expiresInSec ?? 300)
-  const signatureInput = `sig1=("@authority" "signature-agent");created=${created};expires=${expires};keyid="test-key";tag="web-bot-auth"`
+  const dict = opts.dictionary
+  const agentComponent = dict
+    ? `"signature-agent";key="${dict.coveredKey ?? dict.key}"`
+    : '"signature-agent"'
+  const signatureInput = `sig1=("@authority" ${agentComponent});created=${created};expires=${expires};keyid="test-key";tag="web-bot-auth"`
 
   // Reconstrói a base exatamente como o módulo: serialização canônica SFV.
   const inner = parseDictionary(signatureInput).get('sig1') as InnerList
   const base = [
     `"@authority": seotecnico.dev.br`,
-    `"signature-agent": "${AGENT_URL}"`,
+    `${agentComponent}: "${AGENT_URL}"`,
     `"@signature-params": ${serializeInnerList(inner)}`,
   ].join('\n')
 
@@ -315,7 +331,9 @@ async function makeSignedRequest(opts: { expiresInSec?: number; tamper?: boolean
     headers: {
       'signature-input': signatureInput,
       signature: `sig1=:${Buffer.from(signature).toString('base64')}:`,
-      'signature-agent': `"${AGENT_URL}"`,
+      'signature-agent': dict
+        ? [dict.extraMember, `${dict.key}="${AGENT_URL}"`].filter(Boolean).join(', ')
+        : `"${AGENT_URL}"`,
     },
   })
 
@@ -343,5 +361,43 @@ describe('verifyCrawler — Web Bot Auth', () => {
     const { req, deps } = await makeSignedRequest({ tamper: true })
     const result = await verifyCrawler(req, null, null, deps)
     expect(result.verdict).toBe('unknown-agent')
+  })
+
+  it('verifies the draft -05 Dictionary form of Signature-Agent (the form Google uses)', async () => {
+    const { req, deps } = await makeSignedRequest({ dictionary: { key: 'agent1' } })
+    const result = await verifyCrawler(req, null, null, deps)
+    expect(result.verdict).toBe('verified-signature')
+    expect(result.evidence).toBe(AGENT_URL)
+  })
+
+  it('picks the Dictionary member by its covered key, not by position', async () => {
+    const { req, deps } = await makeSignedRequest({
+      dictionary: { key: 'agent1', extraMember: 'evil="https://evil.example"' },
+    })
+    const result = await verifyCrawler(req, null, null, deps)
+    expect(result.verdict).toBe('verified-signature')
+    expect(result.evidence).toBe(AGENT_URL)
+  })
+
+  it('rejects a covered key that names no member of the Dictionary', async () => {
+    const { req, deps } = await makeSignedRequest({
+      dictionary: { key: 'agent1', coveredKey: 'missing' },
+    })
+    const result = await verifyCrawler(req, null, null, deps)
+    expect(result.verdict).toBe('unknown-agent')
+  })
+})
+
+describe('signerHost', () => {
+  it('reduces the Signature-Agent URL to the hostname that holds the key', () => {
+    expect(signerHost('https://chatgpt.com')).toBe('chatgpt.com')
+    expect(signerHost('https://agent.bot.goog/')).toBe('agent.bot.goog')
+    expect(signerHost('crawler.example.com')).toBe('crawler.example.com')
+  })
+
+  it('returns null rather than guessing', () => {
+    expect(signerHost(null)).toBeNull()
+    expect(signerHost('')).toBeNull()
+    expect(signerHost('https://')).toBeNull()
   })
 })
