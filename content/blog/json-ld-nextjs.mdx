@@ -3,7 +3,7 @@ title: 'Como implementar JSON-LD no Next.js (App Router)'
 description: 'Como adicionar JSON-LD no App Router: Article, FAQPage e BreadcrumbList em Server Components, schema por rota dinâmica e validação — com código real.'
 slug: json-ld-nextjs
 datePublished: '2026-07-19'
-dateModified: '2026-07-19'
+dateModified: '2026-09-13'
 primaryQuery: 'json-ld next.js'
 keywords: ['json-ld', 'dados estruturados', 'schema.org', 'app router', 'faqpage', 'breadcrumblist', 'article', 'rich results', 'server component', 'dangerouslySetInnerHTML']
 lang: pt-BR
@@ -215,31 +215,50 @@ digitados:
 export function ArticleJsonLd({
   frontmatter,
   path,
+  imagePath,
 }: {
   frontmatter: PostFrontmatter
+  /** Path da página. Default: /blog/{slug}. */
   path?: string
+  /** Rota da imagem OG da página. Default: o card da marca. */
+  imagePath?: string
 }) {
+  const url = `${site.url}${path ?? `/blog/${frontmatter.slug}`}`
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
+    '@id': `${url}#article`,
     headline: frontmatter.title,
     description: frontmatter.description,
+    // `abstract` é a resposta curta do frontmatter: a mesma frase que o leitor
+    // vê no topo da página, disponível como dado para quem extrai.
+    ...(frontmatter.tldr ? { abstract: frontmatter.tldr } : {}),
     datePublished: frontmatter.datePublished,
     dateModified: frontmatter.dateModified,
     inLanguage: frontmatter.lang,
-    mainEntityOfPage: `${site.url}${path ?? `/blog/${frontmatter.slug}`}`,
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    isPartOf: { '@id': WEBSITE_ID },
+    image: `${site.url}${imagePath ?? '/opengraph-image'}`,
+    // A ÚNICA query que a página persegue (CLAUDE.md §10) é também o assunto
+    // dela — declarar as duas coisas pela mesma fonte impede que divirjam.
+    keywords: frontmatter.primaryQuery,
+    about: { '@type': 'Thing', name: frontmatter.primaryQuery },
     author: personSchema(),
-    publisher: { '@type': 'Organization', name: site.name, url: site.url },
+    publisher: organizationSchema(),
   }
   return <JsonLdScript schema={schema} />
 }
 ```
 
 O mapeamento é direto e é o ponto inteiro: `headline` vem do `title` do
-frontmatter, `description` do `description`, as datas das datas, `inLanguage` do
-`lang`, e `mainEntityOfPage` é a URL canônica montada a partir da base do site
-mais o caminho da rota. O `author` e o `publisher` não são digitados nunca: saem
-de uma função e de um módulo central. Escrevi o frontmatter uma vez; o schema se
+frontmatter, `description` do `description`, `abstract` da resposta curta
+(`tldr`) quando ela existe, as datas das datas, `inLanguage` do `lang`, e
+`keywords` e `about` da `primaryQuery`. A `url`, o `@id` e o `mainEntityOfPage`
+saem da URL canônica, montada a partir da base do site mais o caminho da rota.
+O `author` e o `publisher` não são digitados nunca: saem de funções centrais,
+as mesmas que as outras páginas usam. Escrevi o frontmatter uma vez; o schema se
 deriva dele. Não há um segundo lugar onde a data possa divergir, porque só existe
 um lugar onde ela é escrita.
 
