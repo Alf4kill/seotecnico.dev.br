@@ -1,6 +1,8 @@
 # Proposal — Publishing the crawler detection experiment as site content
 
-> Status: **proposal — approved direction, drafting not started** · 2026-07-25
+> Status: **article 1 written 2026-09-13** (`content/blog/detectar-crawlers-ia.mdx`) — later than the
+> ≈2026-08-08 plan below, and with 28 days of data instead of 14. Article 2 still waits for the
+> ≈2026-10-23 windows. Original proposal date: 2026-07-25
 > Source material: [`detection-experiment.md`](../detection-experiment.md) (method),
 > [`measurement-plan.md`](../measurement-plan.md) (event + synthetic exclusions),
 > [`experiment-log.md`](../experiment-log.md) (dated hypotheses H1–H6).
