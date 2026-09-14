@@ -6,21 +6,23 @@ primaryQuery: "inp next.js"
 keywords: ['inp', 'interaction to next paint', 'core web vitals', 'cwv', 'tbt', 'long tasks', 'scheduler.yield', 'usetransition', 'hidratação', 'input delay', 'rum', 'web-vitals', 'fid']
 lang: "pt-BR"
 tldr: >-
-  O INP mede o tempo entre a interação do usuário e o próximo frame pintado;
-  bom é ≤200 ms no p75 de campo. O Lighthouse não mede INP — roda sem
-  interação real e só oferece o TBT como proxy. Abaixo do limiar de tráfego do
-  CrUX, a única saída é instrumentar RUM próprio.
+  O INP mede o tempo entre a interação e o próximo frame pintado; bom é ≤200
+  ms no p75 de campo. O Lighthouse não mede INP, só dá o TBT como proxy.
+  Abaixo do limiar do CrUX, só RUM próprio: com 9 medições, este site tem p75
+  de 144 ms, pouco para provar um INP bom.
 datePublished: "2026-07-22"
-dateModified: "2026-07-22"
+dateModified: "2026-09-14"
 faq:
   - question: "INP substituiu o FID?"
     answer: "Sim. O INP passou a ser Core Web Vital em 12 de março de 2024, no lugar do FID. O FID media apenas o input delay da primeira interação da visita; o INP considera todas as interações e o ciclo completo, até o próximo frame pintado."
   - question: "Qual é um bom INP?"
-    answer: "No p75 de dados de campo: bom é ≤200 ms, entre 200 ms e 500 ms precisa melhorar, e acima de 500 ms é ruim. O percentil 75 significa que 75% das interações reais precisam ficar abaixo do limite."
+    answer: "No p75 de dados de campo: bom é ≤200 ms, entre 200 ms e 500 ms precisa melhorar, e acima de 500 ms é ruim. O p75 é calculado sobre carregamentos de página: cada carregamento tem um único INP, que corresponde aproximadamente à pior interação dele, e 75% desses carregamentos precisam ficar abaixo do limite."
   - question: "Por que o Lighthouse não mostra INP?"
     answer: "Porque o INP exige interação real de usuário real, e o Lighthouse roda em ambiente de lab sem ninguém clicando. O proxy de lab é o TBT (Total Blocking Time). O INP só existe em dado de campo — CrUX ou RUM próprio."
   - question: "Como medir INP sem aparecer no CrUX?"
     answer: "Com RUM próprio: a biblioteca web-vitals com onINP enviando um evento para o GA4. Sites abaixo do threshold de tráfego do CrUX não têm dado público, mas podem coletar o seu — é o que este site faz, e o código está no artigo."
+  - question: "Quantas medições de INP são necessárias para afirmar que o p75 é bom?"
+    answer: "Se nenhuma medição passar de 200 ms, são necessárias pelo menos 11. Com zero medições acima do limite em n carregamentos, o limite superior de 95% para a proporção real acima de 200 ms é 1 − 0,05^(1/n), e ele só fica abaixo dos 25% que o p75 permite a partir de n = 11. Com 9 medições, todas boas, o limite ainda é 28,3%."
   - question: "TBT e INP são a mesma coisa?"
     answer: "Não. Eles correlacionam, mas o TBT é métrica de lab e soma os bloqueios da main thread durante o carregamento; o INP é a latência real de interação, medida em qualquer momento da visita."
   - question: "O que causa INP alto no Next.js?"
@@ -125,17 +127,80 @@ Três detalhes desse código que não são óbvios e que custaram tempo:
 
 - **`MAX_SELECTOR_LENGTH = 100`.** O GA4 trunca parâmetros de evento em 100 caracteres. Sem o `slice`, seletores longos chegam cortados de forma silenciosa no relatório — melhor cortar de propósito e saber disso.
 - **`interactionTarget` pode vir vazio.** Quando o elemento sai do DOM depois da interação (um modal que fecha, um item de lista que some), a attribution não consegue mais resolver o seletor. Daí o fallback `'(unknown)'` — sem ele, o breakdown por elemento fica com buracos.
-- **O INP reporta de novo.** Quando a página volta de `hidden`, a biblioteca pode emitir um valor pior com o **mesmo `metric_id`**. Qualquer análise que some ou conte eventos vai inflar o número. A leitura correta é o **máximo por `metric_id`**.
+- **O INP reporta de novo.** Quando a página volta de `hidden`, a biblioteca pode emitir um valor pior com o **mesmo `metric_id`**. Qualquer análise que some ou conte eventos vai inflar o número. A leitura correta é o **máximo por `metric_id`**. No campo deste site, aconteceu em 1 dos 9 carregamentos medidos.
 
 Do dataLayer o caminho segue: GTM lê seis Data Layer Variables `inp_*` mapeadas na tag, e o GA4 recebe três dimensões custom (elemento, tipo de interação, load state) e três métricas custom em milissegundos, event-scoped. O pipeline está live em produção desde 22/07/2026.
 
 Uma nota sobre LGPD, já que o assunto é analytics: o site roda Consent Mode v2 em modo advanced. Com consentimento negado, o hit vira ping sem cookie — o dado de performance não vira rastreamento de usuário.
 
-### O que o campo já mostrou (e o que ainda não)
+### O que o campo mostrou (e o que ainda não)
 
-Transparência de laboratório: o pipeline de INP entrou em produção no dia da publicação deste artigo. Os primeiros eventos reais já chegaram ao GA4 com os seis parâmetros preenchidos — mas um punhado de interações não é estatística. Percentil calculado sobre meia dúzia de eventos é ruído com aparência de precisão, e este site não publica número que não sustenta.
+**Atualização (setembro de 2026):** quando este artigo saiu, em 22/07, o pipeline tinha poucas horas de produção, e a promessa foi publicar os percentis reais depois de 28 dias de coleta, a mesma janela do CrUX. Esta seção cumpre a promessa até onde o dado sustenta, e diz onde ele deixa de sustentar.
 
-O compromisso fica registrado: quando houver uma janela de 28 dias de coleta — a mesma que o CrUX usa —, esta seção ganha os percentis reais por elemento e por subparte, com o `dateModified` do artigo atualizado de verdade. Até lá, o que este artigo entrega é o que já é verificável hoje: o código, o pipeline e o método.
+O dado vem de uma Exploration do GA4 filtrada por `metric_name = INP`, de 22/07 a 12/09/2026, com uma linha por `metric_id`. Três regras foram fixadas antes de calcular qualquer número:
+
+- **22/07 ficou de fora.** Foi o dia de configuração e validação do pipeline. Uma das duas medições desse dia chegou sem nenhum parâmetro `inp_*`, o que é compatível com a tag do GTM ainda em montagem. Tráfego de teste não é dado de campo.
+- **30/08 e 04/09 ficaram dentro.** Não há como saber se essas visitas foram de teste, e excluir sem evidência seria escolher o resultado.
+- **Vale o máximo por `metric_id`.** Um carregamento reportou duas vezes, primeiro 8 ms e depois 56 ms; conta 56.
+
+Sobram **9 carregamentos de página com INP medido em 52 dias** (23/07 a 12/09). Na janela de 28 dias prometida, foram 5. O site tem pouco tráfego, e só chega ao GA4 quem não bloqueia o GTM.
+
+| Métrica | 52 dias (n = 9) | Últimos 28 dias (n = 5) |
+|---|---|---|
+| Mediana | 80 ms | 88 ms |
+| p75 | 144 ms | 168 ms |
+| Máximo | 168 ms | 168 ms |
+| Acima de 200 ms | 0 | 0 |
+
+O p75 foi calculado pelo método *nearest rank*: o menor valor que cobre pelo menos 75% das medições.
+
+#### Isso prova que o INP deste site é bom? Ainda não
+
+As 9 medições ficaram abaixo de 200 ms, e mesmo assim o dado não fecha a questão. O p75 fica abaixo de 200 ms quando no máximo 25% dos carregamentos passam desse valor. Com 0 medições acima do limite em 9, o limite superior de 95% (Clopper-Pearson) para a proporção real acima de 200 ms é **28,3%**. Como fica acima de 25%, o dado é compatível tanto com um INP bom quanto com um INP no limite.
+
+A conta tem forma fechada: com zero medições acima do limite em *n*, o limite superior de 95% é 1 − 0,05^(1/*n*). Ele só cai abaixo de 25% a partir de **n = 11**. Nos últimos 28 dias, com n = 5, o limite é 45,1%.
+
+A regra de exclusão precisava vir antes da conta por um motivo concreto. Com 22/07 incluído, n seria 11 e o limite cairia para 23,8%, o que inverteria a conclusão. A exclusão foi decidida pela origem das visitas, não pelo efeito no número.
+
+#### Por subparte
+
+| Subparte | Soma nas 9 medições | Participação | Maior subparte em |
+|---|---|---|---|
+| Input delay | 215 ms | 25% | 1 medição |
+| Processing duration | 194 ms | 22% | 3 medições |
+| Presentation delay | 456 ms | 53% | 5 medições |
+
+Neste site, o que mais pesa é **pintar o frame**, não executar JavaScript. E as 9 interações aconteceram com `inp_load_state = complete`: nenhuma durante a hidratação, que é o caso clássico do item 7 do catálogo abaixo. Com n = 9, isso é um padrão a acompanhar, não uma característica comprovada do site.
+
+#### Por elemento
+
+| Rota registrada no GA4 | Elemento | INP | Input delay | Processamento | Apresentação |
+|---|---|---|---|---|---|
+| `/ferramentas/validador-meta-tags` | botão "Validar" | 168 ms | 60 | 20 | 88 |
+| `/ferramentas/validador-meta-tags` | `(unknown)` | 168 ms | 62 | 28 | 78 |
+| `/blog/hreflang-nextjs` | descrição de um card de listagem | 144 ms | 2 | 4 | 138 |
+| `/guia/seo-tecnico-nextjs` | ícone do seletor de tema | 88 ms | 18 | 3 | 67 |
+| `/ferramentas` | ícone de rede social no rodapé | 80 ms | 9 | 68 | 3 |
+| `/` | `(unknown)` | 64 ms | 15 | 29 | 20 |
+| `/ferramentas/validador-meta-tags` | campo de URL | 64 ms | 15 | 0 | 49 |
+| `/ferramentas` | `(unknown)` | 56 ms | 1 | 42 | 13 |
+| `/guia/seo-tecnico-nextjs` | `(unknown)` | 32 ms | 33 | 0 | 0 |
+
+As subpartes estão em ms e são arredondadas uma a uma, por isso a última linha soma 33. Com uma ou duas medições por elemento, não existe percentil por elemento: a tabela mostra medições, não distribuições. O que ela aponta para investigar:
+
+- **Os dois maiores INPs estão no validador de meta tags**, e têm os dois maiores input delays (60 e 62 ms), com a página já carregada. Algo ocupava a main thread antes do handler começar. O `(unknown)` da segunda linha é compatível com um clique no ícone do mesmo botão: durante a validação, o ícone é trocado por um spinner, e o elemento clicado sai do DOM. É o primeiro alvo da gravação no Performance panel.
+- **Um toque em texto custou 138 ms só de apresentação.** O processamento levou 4 ms; quase todo o tempo ficou entre o fim do handler e o frame seguinte, num toque que disparou navegação para outra rota.
+- **4 das 9 medições vieram com elemento `(unknown)`.** É o fallback do código acima: o elemento clicado já não estava no DOM quando a attribution tentou resolver o seletor, o que acontece quando o clique troca o conteúdo da tela ou leva a outra rota.
+
+#### A armadilha que só apareceu no dado: a rota do evento pode estar errada
+
+A terceira linha da tabela tem uma incoerência: o seletor é da descrição de um card das listagens da home e de `/blog`, elemento que não existe na página de um artigo, mas o evento chegou com a rota `/blog/hreflang-nextjs`. A explicação está no `metric_id`. O `web-vitals` (5.3.0) monta o id como `v5-` + `Date.now()` + um número aleatório, e no dado deste site o LCP e o INP de cada carregamento nasceram no mesmo milissegundo, ou com 1 ms de diferença. Cruzando cada INP com o LCP do mesmo carregamento:
+
+- o carregamento do card abriu em `/blog` (o LCP foi registrado lá), o toque no card navegou para o artigo, e o INP foi enviado já no artigo;
+- um carregamento abriu em `/ferramentas/checador-cwv` e teve o INP registrado em `/ferramentas`;
+- o carregamento com dois reportes começou em `/`: o primeiro chegou com `/`, e o segundo, pior, com `/ferramentas`.
+
+**3 das 9 medições chegaram ao GA4 com uma rota diferente daquela em que a página carregou.** O mecanismo é o próprio App Router: a navegação acontece no cliente, o carregamento de página continua o mesmo, o INP pertence a esse carregamento inteiro, e o GA4 grava a rota do momento do envio, quando a página fica oculta. Um relatório de INP por rota no GA4 pode atribuir a interação à página errada, e não avisa: no caso do card, isso é certo; nos outros dois, o dado não diz em qual rota o clique aconteceu. Para quebrar por rota com confiança, é preciso enviar a rota junto com a métrica, capturada no momento da interação, e não depender da rota do evento.
 
 ## Diagnóstico: DevTools e Long Animation Frames
 
@@ -201,7 +266,7 @@ O INP existe para medir a sensação de resposta, não para ser vencido. Um site
 
 Depois de aplicar qualquer correção acima:
 
-1. **No GA4**, monte uma Exploration com `metric_name = INP`, agregando pelo **máximo por `metric_id`** (não pela soma — ver a armadilha do reporte duplo acima), com breakdown por `inp_element` e pelas três subpartes. Compare a janela antes e depois do deploy.
+1. **No GA4**, monte uma Exploration com `metric_name = INP`, `metric_id` nas linhas e Event count entre as métricas, e exporte. A Exploration **soma** métricas custom, então o **máximo por `metric_id`** precisa ser calculado fora do GA4: uma linha com Event count maior que 1 é soma de reportes, não uma medição. Depois quebre por `inp_element` e pelas três subpartes, sem confiar na rota do evento (ver a armadilha acima), e compare a janela antes e depois do deploy.
 2. **No DevTools**, repita a gravação do Performance panel na mesma interação e confira se a long task que você atacou saiu do rastro.
 3. **No Lighthouse**, o que vai se mover é o **TBT**, não o INP — use como sinal indireto e não confunda um com o outro.
 4. **No CrUX**, se e quando o site cruzar o threshold de tráfego, lembre que a janela é de 28 dias: dado de campo demora a refletir a correção. Para saber se o seu domínio já entrou — e qual é o INP de campo dele, se entrou —, consulte o [checador de Core Web Vitals](/ferramentas/checador-cwv).
