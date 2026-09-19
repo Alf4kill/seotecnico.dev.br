@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { site } from '@/lib/site'
 import { getAllPosts, getGuide } from '@/lib/content'
+import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sitemap: páginas estáticas (home, guia, blog, ferramentas, sobre) + artigos
@@ -53,6 +54,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // ignorar a tag (mesma regra de /sobre e /ferramentas).
     { url: `${base}/en`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/en/about`, changeFrequency: 'monthly', priority: 0.5 },
+    // Colofão do design, par PT/EN. lastmod é a data de revisão do texto da
+    // página (MANIFESTO_REVISED), a única fonte honesta que ela tem.
+    { url: `${base}/design`, lastModified: toDate(MANIFESTO_REVISED), changeFrequency: 'yearly', priority: 0.4 },
+    { url: `${base}/en/design`, lastModified: toDate(MANIFESTO_REVISED), changeFrequency: 'yearly', priority: 0.4 },
     { url: `${base}/blog`, lastModified: newestPost ? toDate(newestPost) : undefined, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/ferramentas`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/ferramentas/gerador-json-ld`, changeFrequency: 'monthly', priority: 0.8 },

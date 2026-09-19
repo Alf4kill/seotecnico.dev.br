@@ -58,6 +58,14 @@ export const STATIC_SEARCH_ITEMS: SearchItem[] = [
     category: 'pagina',
     keywords: ['autor', 'contato', 'projeto'],
   },
+  {
+    id: 'design',
+    title: 'Design do site',
+    description: 'Por que o site é escuro, sem cantos arredondados e usa formas no lugar de ícones',
+    href: '/design',
+    category: 'pagina',
+    keywords: ['design', 'colofão', 'retrofuturismo', 'bauhaus', 'paleta', 'contraste', 'tipografia'],
+  },
 
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
   {

@@ -74,6 +74,18 @@ export default function SobrePage() {
               confiança.
             </li>
           </ul>
+
+          <h2>Por que o site tem esta cara</h2>
+          <p>
+            O visual também é decisão documentada: fundo escuro por causa da
+            leitura longa, nenhum canto arredondado, três formas no lugar de
+            ícones e cada par de cores medido contra o contraste mínimo. A
+            explicação completa, com as escolas de design por trás, está no{' '}
+            <Link href="/design" title="Design do site: retrofuturismo suíço">
+              colofão do design
+            </Link>
+            .
+          </p>
         </div>
       </section>
     </>
