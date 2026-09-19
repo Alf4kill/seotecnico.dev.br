@@ -41,7 +41,7 @@ export function LanguageSwitch({ path }: { path: string }) {
       prefetch={false}
       lang={counterpart.lang}
       title={title}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-gray px-3 py-1.5 text-sm text-primary transition-colors hover:bg-surface"
+      className="inline-flex min-h-9 items-center gap-2 self-start border border-gray-control px-3 font-mono text-xs uppercase tracking-[0.1em] text-primary transition-colors hover:border-primary"
     >
       {label}
     </Link>
