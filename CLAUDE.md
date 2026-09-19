@@ -241,41 +241,59 @@ Use the standard container proportions (applied via Tailwind):
 Keep the design clean, fast, and content-first. No heavy JS libraries for
 presentation.
 
-**Theming (light + dark).** Implemented. `prefers-color-scheme` is the default;
-an explicit choice from the header toggle is stored in `localStorage` and wins
-over the system, applied by a tiny inline script in `<head>` so the correct
-theme is painted on the first frame (no flash).
+**Visual system: "Swiss retro-futurism", dark only.** Since 2026-09. The
+full reference — tokens with measured contrast, type scale, grid, components,
+rules and the accepted performance cost — is `docs/design-system.md`; the
+public rationale is the `/design` page. There is one theme: no light mode, no
+toggle, no theme script. `color-scheme: dark` and `theme-color` come from
+`rootViewport` in `src/lib/metadata.ts`.
 
 - All colors come from CSS custom properties in `globals.css`. Tailwind consumes
   the `*-rgb` channel triplets via `rgb(var(--x) / <alpha-value>)`, which is what
   keeps opacity modifiers like `bg-primary/10` working. **Never hardcode a hex in
-  a component or in `tailwind.config.js`** — a hex is a color that cannot follow
-  the theme.
-- `primary` is the **text/link/tint** color and adapts per theme. `primary-solid`
-  is the **button surface** and does not: it always carries white text, so
-  lightening it in dark mode would break that contrast. Reach for `primary-solid`
-  only when a solid filled surface sits under white text.
-- The inline SVG diagrams consume `--foreground`, `--color-accent` and
-  `--color-diagram-*` **as colors, not channels**, so those tokens exist in both
-  forms. Never convert them to channel-only: it would break every published
-  diagram.
-- Contrast is a gate, not a preference: `tests/seo/theme.spec.ts` asserts AA
-  (≥4.5:1) in both themes, and the Shiki code theme was chosen by measuring the
-  worst-contrast token of each candidate (see `src/lib/mdx.ts`). Measure before
-  changing a color pair.
+  a component or in `tailwind.config.js`.** The only hex mirror is
+  `src/lib/design-tokens.ts` (for Satori, the favicon and the `/design` contrast
+  table); `design-tokens.test.ts` fails if it drifts from `globals.css`.
+- `primary` (cyan) is text, link, rule and button surface at once. Text on a
+  solid cyan or amber surface is `text-on-primary` (the graphite background
+  color), never white.
+- Text roles: `foreground` (headings), `body` (long reading), `muted` (support),
+  `label` (mono labels — **not** on `surface-2`, use `label-code` there),
+  `danger` (red text; `shape-danger` and `shape-reference` are shapes only).
+  Form controls use `border-gray-control` (3:1); `border-gray` is a
+  decorative 1px rule.
+- The system forbids rounded corners (only `rounded-full` for the circle
+  shape), shadows, decorative gradients, emoji and illustrative icons.
+  `tailwind.config.js` removes those utilities and `src/design-rules.test.ts`
+  fails the build on any that come back.
+- The inline SVG diagrams consume `--foreground`, `--background`,
+  `--color-accent` and `--color-diagram-*` **as colors, not channels**, so those
+  tokens exist in both forms. Never convert them to channel-only: it would
+  break every published diagram.
+- Contrast is a gate, not a preference: `design-tokens.test.ts` checks the
+  palette pairs, `tests/seo/contrast.spec.ts` measures rendered text by role
+  on several routes, `shiki-theme.test.ts` checks every code token and
+  `tests/seo/design.spec.ts` checks every diagram label against the shape
+  behind it. Measure before changing a color pair.
+- Fonts (Space Grotesk, IBM Plex Sans, IBM Plex Mono) load with
+  `display: 'optional'` and no preload; the measured trade-off is in
+  `RootShell.tsx` and `docs/design-system.md` §8. Do not add a preload or a
+  fourth family without re-measuring.
 
 **Diagram palette (inline SVGs in articles)** — CSS custom properties defined
 in `globals.css`, shared by every cluster's diagrams and screenshot
 annotations. Use these tokens (English names, per §10) instead of hardcoded
 colors:
 
-- `--color-accent: #F59E0B` — highlight phases / annotation boxes and arrows
-- `--color-diagram-phase-a: #DBEAFE` — neutral phase fill (blue)
-- `--color-diagram-phase-b: #D1FAE5` — neutral phase fill (green)
-- `--color-diagram-axis: #9CA3AF` — axes, connector lines
-- Text inside diagrams uses `--foreground`; diagrams are inline SVG in MDX
-  (real `<text>` labels, crawlable/citable), each with a textual mirror
-  (table or paragraph) next to it.
+- `--color-accent: #E89B3C` — highlight phases / annotation boxes and arrows
+- `--color-diagram-phase-a: #1E3A5F` — neutral phase fill (blue)
+- `--color-diagram-phase-b: #14432F` — neutral phase fill (green)
+- `--color-diagram-axis: #7A8798` — axes, connector lines
+- Text inside diagrams uses `--foreground` (≥9:1 on both phases); on a solid
+  `--color-accent` box use `--background`. Never a fixed hex for text: a
+  label that is dark on a light phase disappears on a dark one. Diagrams are
+  inline SVG in MDX (real `<text>` labels, crawlable/citable), each with a
+  textual mirror (table or paragraph) next to it.
 
 ---
 
@@ -295,6 +313,8 @@ dateModified:
 primaryQuery:   # the ONE query this page targets
 lang: pt-BR | en
 translationOf:  # slug of hreflang pair, optional
+category:       # blog posts: required, one of lib/categories.ts (no URL is generated)
+status:         # optional: em-medicao | fechado | regressao | referencia — only when true
 keywords:       # optional list → synonyms for the SITE's search index only
 faq:            # optional array → renders FAQPage JSON-LD
 ```
