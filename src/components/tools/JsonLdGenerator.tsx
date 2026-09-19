@@ -33,8 +33,9 @@ const schemaOptions: { value: GeneratorSchemaType; label: string }[] = [
 type OutputTab = 'json' | 'next'
 
 const inputClass =
-  'w-full rounded-lg border border-gray bg-surface px-3 py-2 text-sm text-foreground ' +
-  'placeholder:text-muted/60 focus:border-primary focus:outline-none'
+  // Borda --control (≥3:1, WCAG 1.4.11) e foco trocando a borda para o ciano.
+  'w-full border border-gray-control bg-background px-3 py-2.5 text-sm text-foreground ' +
+  'placeholder:text-label focus:border-primary focus:outline-none'
 
 function Field({
   label,
@@ -98,7 +99,7 @@ export function JsonLdGenerator() {
   }
 
   return (
-    <div className="mt-10 rounded-2xl border border-gray bg-surface p-5 md:p-8">
+    <div className="mt-10 border border-gray bg-surface p-5 md:p-8">
       <Field label="Tipo de schema" required>
         <select
           className={inputClass}
@@ -207,8 +208,8 @@ export function JsonLdGenerator() {
         {schemaType === 'FAQPage' && (
           <>
             {input.faq.map((pair, i) => (
-              <fieldset key={i} className="rounded-xl border border-gray p-4">
-                <legend className="px-1 text-sm font-medium text-muted">
+              <fieldset key={i} className="border border-gray p-4">
+                <legend className="eyebrow px-1">
                   Pergunta {i + 1}
                 </legend>
                 <div className="grid gap-3">
@@ -261,7 +262,7 @@ export function JsonLdGenerator() {
               onClick={() =>
                 setInput((s) => ({ ...s, faq: [...s.faq, { question: '', answer: '' }] }))
               }
-              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-gray px-3 py-2 text-sm font-medium text-foreground hover:border-primary"
+              className="inline-flex w-fit items-center gap-1.5 px-3 py-2 border border-gray-control font-mono text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar pergunta
             </button>
@@ -271,8 +272,8 @@ export function JsonLdGenerator() {
         {schemaType === 'BreadcrumbList' && (
           <>
             {input.breadcrumb.map((item, i) => (
-              <fieldset key={i} className="rounded-xl border border-gray p-4">
-                <legend className="px-1 text-sm font-medium text-muted">
+              <fieldset key={i} className="border border-gray p-4">
+                <legend className="eyebrow px-1">
                   Nível {i + 1}
                 </legend>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -329,7 +330,7 @@ export function JsonLdGenerator() {
               onClick={() =>
                 setInput((s) => ({ ...s, breadcrumb: [...s.breadcrumb, { name: '', url: '' }] }))
               }
-              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-gray px-3 py-2 text-sm font-medium text-foreground hover:border-primary"
+              className="inline-flex w-fit items-center gap-1.5 px-3 py-2 border border-gray-control font-mono text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar nível
             </button>
@@ -421,7 +422,7 @@ export function JsonLdGenerator() {
       {errors.length > 0 && (
         <ul
           role="alert"
-          className="mt-6 list-disc rounded-xl border border-accent/40 bg-accent/10 py-3 pl-8 pr-4 text-sm text-foreground"
+          className="mt-6 list-disc border border-accent/60 bg-accent/10 py-3 pl-8 pr-4 text-sm text-foreground"
         >
           {errors.map((e) => (
             <li key={e}>{e}</li>
@@ -432,7 +433,7 @@ export function JsonLdGenerator() {
       <button
         type="button"
         onClick={generate}
-        className="mt-6 rounded-lg bg-primary-solid px-6 py-2.5 font-semibold text-white hover:bg-primary/90"
+        className="mt-6 min-h-12 bg-primary-solid px-6 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-on-primary transition-colors hover:bg-primary-solid-hover"
       >
         Gerar JSON-LD
       </button>
@@ -457,10 +458,10 @@ export function JsonLdGenerator() {
                     setCopied(false)
                   }}
                   className={[
-                    'rounded-lg px-4 py-2 text-sm font-medium',
+                    'px-4 py-2 font-mono text-xs uppercase tracking-[0.08em] transition-colors',
                     tab === value
-                      ? 'bg-primary-solid text-white'
-                      : 'border border-gray text-foreground hover:border-primary',
+                      ? 'border border-primary bg-primary text-on-primary'
+                      : 'border border-gray-control text-foreground hover:border-primary',
                   ].join(' ')}
                 >
                   {label}
@@ -470,7 +471,7 @@ export function JsonLdGenerator() {
             <button
               type="button"
               onClick={copy}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray px-4 py-2 text-sm font-medium text-foreground hover:border-primary"
+              className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-control font-mono text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               {copied ? (
                 <>
@@ -483,7 +484,7 @@ export function JsonLdGenerator() {
               )}
             </button>
           </div>
-          <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--code-background)] p-4 text-sm leading-6 text-[#c9d1d9]">
+          <pre className="mt-4 overflow-x-auto border border-gray bg-surface-2 p-4 font-mono text-sm leading-6 text-body">
             <code>{tab === 'json' ? output.json : output.next}</code>
           </pre>
           <p className="mt-3 text-sm text-muted">
@@ -492,7 +493,7 @@ export function JsonLdGenerator() {
               href="https://search.google.com/test/rich-results"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary underline"
+              className="text-primary underline underline-offset-[3px]"
             >
               teste de pesquisa aprimorada do Google
             </a>

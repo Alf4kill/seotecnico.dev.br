@@ -63,11 +63,15 @@ export default function ChecadorCwvPage() {
         ]}
       />
 
-      <section className="container py-12 lg:py-16">
-        <h1 className="font-bold text-foreground text-3xl md:text-4xl">
+      <section className="container-xl py-12 lg:py-16">
+        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+          Ferramenta gratuita · dados do CrUX
+        </p>
+        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
           Checador de Core Web Vitals
         </h1>
-        <p className="mt-4 max-w-3xl text-muted text-base leading-7">
+        <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
           Digite um endereço e veja os Core Web Vitals de campo daquela origem:
           LCP, INP e CLS no percentil 75 de usuários reais nos últimos 28 dias,
           direto do Chrome UX Report — com a distribuição das visitas em cada
@@ -76,7 +80,7 @@ export default function ChecadorCwvPage() {
 
         <CwvChecker />
 
-        <div className="rich-text mt-14 max-w-3xl">
+        <div className="rich-text mt-16 max-w-[68ch] border-t border-gray pt-4">
           <h2>Campo e laboratório medem coisas diferentes</h2>
           <p>
             O número que esta ferramenta mostra vem do <strong>campo</strong>:

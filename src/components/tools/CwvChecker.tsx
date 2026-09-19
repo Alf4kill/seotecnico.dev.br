@@ -22,8 +22,9 @@ import { formatMetric, type CruxReport, type MetricRating, type FormFactor } fro
 type Report = CruxReport & { inDataset: boolean }
 
 const inputClass =
-  'w-full rounded-lg border border-gray bg-surface px-3 py-2 text-sm text-foreground ' +
-  'placeholder:text-muted/60 focus:border-primary focus:outline-none'
+  // Borda --control (≥3:1, WCAG 1.4.11) e foco trocando a borda para o ciano.
+  'w-full border border-gray-control bg-background px-3 py-2.5 text-sm text-foreground ' +
+  'placeholder:text-label focus:border-primary focus:outline-none'
 
 // Tokens do tema, nunca hex (CLAUDE.md §9).
 const ratingClass: Record<MetricRating, string> = {
@@ -47,13 +48,13 @@ const barClass: Record<MetricRating, string> = {
 function MetricCard({ metric }: { metric: Report['metrics'][number] }) {
   const { distribution } = metric
   return (
-    <li className="rounded-lg border border-gray bg-background p-4">
+    <li className="border border-gray bg-background p-4">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold text-foreground">
           {metric.label}
           {metric.core && <span className="ml-2 text-xs font-normal text-muted">Core Web Vital</span>}
         </span>
-        <span className={`text-lg font-bold ${ratingClass[metric.rating]}`}>
+        <span className={`font-display text-xl font-bold ${ratingClass[metric.rating]}`}>
           {formatMetric(metric)}
         </span>
       </div>
@@ -62,7 +63,7 @@ function MetricCard({ metric }: { metric: Report['metrics'][number] }) {
 
       {/* Distribuição das visitas reais. O p75 sozinho esconde que um site
           "bom" pode ter um quarto dos usuários em "ruim". */}
-      <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-gray/40">
+      <div className="mt-3 flex h-2 overflow-hidden bg-gray">
         {(['good', 'needs-improvement', 'poor'] as const).map((band) => {
           const value =
             band === 'good'
@@ -120,7 +121,7 @@ export function CwvChecker() {
   }
 
   return (
-    <div className="mt-10 rounded-2xl border border-gray bg-surface p-5 md:p-8">
+    <div className="mt-10 border border-gray bg-surface p-5 md:p-8">
       <form
         className="flex flex-col gap-3 sm:flex-row"
         onSubmit={(e) => {
@@ -143,7 +144,7 @@ export function CwvChecker() {
         <button
           type="submit"
           disabled={loading}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-primary-solid px-6 py-2.5 font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+          className="flex min-h-11 shrink-0 items-center justify-center gap-2 bg-primary-solid px-6 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-on-primary transition-colors hover:bg-primary-solid-hover disabled:opacity-60"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />}
           {loading ? 'Consultando…' : 'Consultar'}
@@ -161,10 +162,10 @@ export function CwvChecker() {
             type="button"
             onClick={() => setFormFactor(value)}
             aria-pressed={formFactor === value}
-            className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm ${
+            className={`flex items-center gap-2 border px-3 py-1.5 font-mono text-xs uppercase tracking-[0.08em] ${
               formFactor === value
                 ? 'border-primary text-primary'
-                : 'border-gray text-muted hover:text-foreground'
+                : 'border-gray-control text-muted hover:text-foreground'
             }`}
           >
             <Icon className="h-4 w-4" />
@@ -180,7 +181,7 @@ export function CwvChecker() {
       )}
 
       {report && !report.inDataset && (
-        <div className="mt-6 rounded-lg border border-gray bg-background p-4">
+        <div className="mt-6 border border-gray bg-background p-4">
           <p className="text-sm font-semibold text-foreground">
             Esta origem ainda não está no conjunto de dados do CrUX.
           </p>
