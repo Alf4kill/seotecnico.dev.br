@@ -171,11 +171,11 @@ trata cada uma separadamente:
     <line x1="485" y1="78" x2="485" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
     <line x1="638" y1="78" x2="638" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
     <rect x="60" y="110" width="136" height="40" fill="var(--color-diagram-phase-a, #DBEAFE)" />
-    <text x="128" y="135" fontSize="14" textAnchor="middle" fill="#1a1a1a">TTFB</text>
+    <text x="128" y="135" fontSize="14" textAnchor="middle" fill="var(--foreground, #111827)">TTFB</text>
     <rect x="196" y="110" width="238" height="40" fill="var(--color-accent, #F59E0B)" />
     <text x="315" y="135" fontSize="14" textAnchor="middle" fill="#1a1a1a">Resource load delay</text>
     <rect x="434" y="110" width="102" height="40" fill="var(--color-diagram-phase-b, #D1FAE5)" />
-    <text x="485" y="135" fontSize="13" textAnchor="middle" fill="#1a1a1a">Download</text>
+    <text x="485" y="135" fontSize="13" textAnchor="middle" fill="var(--foreground, #111827)">Download</text>
     <rect x="536" y="110" width="204" height="40" fill="var(--color-accent, #F59E0B)" />
     <text x="638" y="135" fontSize="14" textAnchor="middle" fill="#1a1a1a">Element render delay</text>
     <line x1="60" y1="150" x2="740" y2="150" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
@@ -425,17 +425,17 @@ existe depois do fetch — o LCP fica refém do banco de dados.
   <svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Árvore de decisão do LCP: elemento imagem leva a descoberta e prioridade; elemento texto leva a fonte e CSS; componente data-driven leva a streaming e cache.">
     <title>Árvore de decisão: qual é o seu elemento LCP?</title>
     <rect x="250" y="16" width="300" height="58" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" />
-    <text x="400" y="40" fontSize="15" fontWeight="700" textAnchor="middle" fill="#1a1a1a">Qual é o seu elemento LCP?</text>
-    <text x="400" y="60" fontSize="11" textAnchor="middle" fill="#374151">DevTools → Performance → marcador LCP</text>
+    <text x="400" y="40" fontSize="15" fontWeight="700" textAnchor="middle" fill="var(--foreground, #111827)">Qual é o seu elemento LCP?</text>
+    <text x="400" y="60" fontSize="11" textAnchor="middle" fill="var(--foreground, #374151)">DevTools → Performance → marcador LCP</text>
     <line x1="400" y1="74" x2="400" y2="96" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
     <line x1="140" y1="96" x2="660" y2="96" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
     <line x1="140" y1="96" x2="140" y2="118" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
     <line x1="400" y1="96" x2="400" y2="118" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
     <line x1="660" y1="96" x2="660" y2="118" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
     <rect x="30" y="118" width="220" height="40" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" />
-    <text x="140" y="143" fontSize="14" fontWeight="700" textAnchor="middle" fill="#1a1a1a">Imagem</text>
+    <text x="140" y="143" fontSize="14" fontWeight="700" textAnchor="middle" fill="var(--foreground, #111827)">Imagem</text>
     <rect x="290" y="118" width="220" height="40" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" />
-    <text x="400" y="143" fontSize="14" fontWeight="700" textAnchor="middle" fill="#1a1a1a">Texto / headline</text>
+    <text x="400" y="143" fontSize="14" fontWeight="700" textAnchor="middle" fill="var(--foreground, #111827)">Texto / headline</text>
     <rect x="550" y="118" width="220" height="40" rx="8" fill="var(--color-accent, #F59E0B)" />
     <text x="660" y="143" fontSize="14" fontWeight="700" textAnchor="middle" fill="#1a1a1a">Componente data-driven</text>
     <line x1="140" y1="158" x2="140" y2="180" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
