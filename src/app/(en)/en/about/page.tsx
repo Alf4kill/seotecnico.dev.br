@@ -104,8 +104,12 @@ export default function EnglishAboutPage() {
             >
               technical SEO guide for Next.js
             </Link>
-            . The articles and the three free tools are in Portuguese; the guide links to them
-            where they go deeper.
+            , plus the{' '}
+            <Link href="/en/design" title="Site design: Swiss retro-futurism">
+              design colophon
+            </Link>
+            , which explains the visual system and its measured contrast. The articles and the
+            three free tools are in Portuguese; the guide links to them where they go deeper.
           </p>
 
           <h2>Contact</h2>

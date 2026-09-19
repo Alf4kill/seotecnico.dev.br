@@ -14,8 +14,14 @@ import { describe, expect, it } from 'vitest'
 
 const ROOT = path.join(process.cwd(), 'src')
 
-/** Onde hex é permitido: as duas fontes de verdade da paleta, e o favicon. */
-const HEX_ALLOWED = new Set(['lib/design-tokens.ts', 'app/globals.css', 'app/icon.svg'])
+/**
+ * Texto corrido da página /design: fala das regras em prosa ("o grafite
+ * #0E1116", "a rounded corner"), então fica fora das regras de classe e cor.
+ */
+const PROSE = 'components/design/manifesto-copy.ts'
+
+/** Onde hex é permitido: as duas fontes de verdade da paleta, o favicon e a prosa. */
+const HEX_ALLOWED = new Set(['lib/design-tokens.ts', 'app/globals.css', 'app/icon.svg', PROSE])
 
 function files(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -44,7 +50,12 @@ function offenders(pattern: RegExp, skip: (rel: string) => boolean = () => false
 
 describe('regras do sistema visual', () => {
   it('nenhum canto arredondado (só o círculo, rounded-full, é forma)', () => {
-    expect(offenders(/\brounded-(?!full\b|none\b)[\w[\]-]+|\brounded(?=["'\s`])|border-radius:\s*(?!0|50%)/)).toEqual([])
+    expect(
+      offenders(
+        /\brounded-(?!full\b|none\b)[\w[\]-]+|\brounded(?=["'\s`])|border-radius:\s*(?!0|50%)/,
+        (rel) => rel === PROSE
+      )
+    ).toEqual([])
   })
 
   // A faixa de alerta (repeating-linear-gradient) é listra, não degradê: é um
