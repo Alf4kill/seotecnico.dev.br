@@ -87,7 +87,7 @@ export default function BlogPage() {
       {latest && (
         <section className="border-b border-gray py-12 lg:py-14" aria-labelledby="latest-title">
           <div className="container-xl grid gap-10 lg:grid-cols-12 lg:gap-6">
-            <div className="flex flex-col gap-6 lg:col-span-7">
+            <div className="flex min-w-0 flex-col gap-6 lg:col-span-7">
               <p className="flex items-center gap-4">
                 <span className="font-display text-[0.9375rem] font-bold tracking-[0.1em] text-primary">01</span>
                 <span aria-hidden="true" className="h-px w-7 bg-gray-strong" />
@@ -108,7 +108,7 @@ export default function BlogPage() {
             </div>
 
             {/* Figura com dado real: artigos por eixo, contados no build. */}
-            <figure className="relative flex min-h-80 flex-col justify-between gap-6 border border-gray bg-surface p-7 pt-9 lg:col-span-5">
+            <figure className="relative flex min-h-80 min-w-0 flex-col justify-between gap-6 border border-gray bg-surface p-7 pt-9 lg:col-span-5">
               <div aria-hidden="true" className="absolute inset-x-0 top-0 flex h-1.5">
                 <span className="flex-1 bg-primary" />
                 <span className="w-30 bg-accent" />
@@ -118,16 +118,16 @@ export default function BlogPage() {
                 <span className="eyebrow text-[0.625rem]">Artigos por eixo</span>
                 <span className="eyebrow text-[0.625rem]">Fig. 01</span>
               </div>
-              <ul className="flex h-44 items-end gap-5">
+              <ul className="flex h-44 items-end gap-2 sm:gap-5">
                 {perAxis.map(({ slug, short, count }) => (
-                  <li key={slug} className="flex h-full flex-1 flex-col justify-end gap-2">
+                  <li key={slug} className="flex h-full min-w-0 flex-1 flex-col justify-end gap-2">
                     <span className="font-display text-sm font-medium text-foreground">{count}</span>
                     <span
                       aria-hidden="true"
                       className={slug === 'cwv' ? 'bg-accent' : slug === 'medicao' ? 'bg-primary' : slug === 'indexacao' ? 'bg-shape-reference' : 'bg-shape-danger'}
                       style={{ height: `${(count / maxPerAxis) * 100}%` }}
                     />
-                    <span className="flex items-center gap-1.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-muted">
+                    <span className="flex flex-wrap items-center gap-1.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-muted">
                       <CategoryMark category={slug} />
                       {short['pt-BR']}
                     </span>

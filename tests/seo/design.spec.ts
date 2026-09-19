@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { getAllPosts, getGuide } from '../../src/lib/content'
 import { CATEGORIES } from '../../src/lib/categories'
+import sitemap from '../../src/app/sitemap'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Comportamentos do sistema visual que um teste de SEO não vê, mas que
@@ -124,6 +125,24 @@ test.describe('filtro da /blog', () => {
     await page.locator('input[name="eixo"][value="all"]').check({ force: true })
     await expect(rows.filter({ visible: true })).toHaveCount(total)
   })
+})
+
+test.describe('sem rolagem horizontal no celular (390px)', () => {
+  // Um item de grid cresce até a largura mínima do conteúdo (min-width: auto):
+  // uma tabela larga dentro de um overflow-x-auto ainda empurra a página se a
+  // coluna que a contém não tiver min-w-0. Aconteceu em /design.
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  for (const route of sitemap().map((e) => new URL(e.url).pathname)) {
+    test(route, async ({ page }) => {
+      await page.goto(route)
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }))
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
+    })
+  }
 })
 
 test('o skip link é o primeiro foco e leva ao conteúdo', async ({ page }) => {
