@@ -1,6 +1,7 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { site, indexable } from '@/lib/site'
 import { languageAlternatePaths, type Lang } from '@/lib/hreflang'
+import { colors } from '@/lib/design-tokens'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildMetadata — helper único de metadados por página (CLAUDE.md §6).
@@ -70,6 +71,16 @@ export interface BuildMetadataInput {
 export function absoluteUrl(path: string): string {
   const base = site.url.replace(/\/$/, '')
   return path === '/' ? base : `${base}${path}`
+}
+
+/**
+ * Viewport dos root layouts. O site só tem tema escuro: `color-scheme` faz os
+ * controles nativos (scrollbar, autofill, <select>) nascerem escuros, e
+ * `theme-color` pinta a barra do navegador mobile com o grafite do fundo.
+ */
+export const rootViewport: Viewport = {
+  colorScheme: 'dark',
+  themeColor: colors.background,
 }
 
 /**

@@ -1,10 +1,9 @@
-import { Inter } from 'next/font/google'
+import { IBM_Plex_Mono, IBM_Plex_Sans, Space_Grotesk } from 'next/font/google'
 import Script from 'next/script'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ConsentBanner } from '@/components/layout/ConsentBanner'
-import { ThemeScript } from '@/components/layout/ThemeScript'
 import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter'
 import { SearchProvider } from '@/components/search/SearchContext'
 import { SearchModal } from '@/components/search/SearchModal'
@@ -28,8 +27,8 @@ import '@/app/globals.css'
 // diferentes recarrega a página inteira. Aqui isso só acontece ao trocar de
 // idioma, que é uma troca de site, não de página.
 //
-// Tudo que não depende de idioma mora aqui uma vez só: Consent Mode, GTM, tema,
-// RUM. O que depende recebe `lang`.
+// Tudo que não depende de idioma mora aqui uma vez só: Consent Mode, GTM,
+// fontes, RUM. O que depende recebe `lang`.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Consent Mode v2 — default "denied" ANTES de qualquer tag do Google carregar.
@@ -47,17 +46,48 @@ gtag('consent', 'default', {
 });
 `
 
-// display 'optional' + sem preload: o LCP da home é TEXTO (parágrafo do hero);
-// com preload, o woff2 de ~48KB entra no caminho crítico do LCP simulado
-// (PSI/Lighthouse) e adiciona ~1.7s de render delay no slow-4G. Com 'optional'
-// o fallback ajustado (adjustFontFallback) pinta imediatamente e fica
-// definitivo se a fonte perder a janela de bloqueio — sem repaint, sem CLS;
-// a Inter entra do cache nas navegações seguintes.
-const inter = Inter({
+// Três famílias do sistema visual (docs/design-system.md): Space Grotesk nos
+// títulos, IBM Plex Sans no corpo, IBM Plex Mono em rótulos e código.
+//
+// Todas com display 'optional' e SEM preload — a mesma regra que valia para a
+// Inter, agora remedida com três fontes (LHCI, throttling devtools, mediana de
+// 3, mesma máquina, 2026-09-19; LCP em ms de / · /blog · artigo · guia):
+//   Inter, sem preload (antes)           961 ·  981 · 1055 · 1026   48,7KB
+//   3 famílias, sem preload  ← escolhido 909 ·  938 · 1061 · 1091   63–74KB
+//   idem, Space Grotesk com preload     1051 · 1037 · 1345 · 1242
+// O preload põe o woff2 no caminho crítico e empurra o FCP (= LCP de texto)
+// em 140–290ms. Sem ele, o fallback ajustado (adjustFontFallback) pinta na
+// hora e fica definitivo se a fonte perder a janela de bloqueio — sem repaint,
+// sem CLS; as fontes entram do cache nas navegações seguintes.
+//
+// Custo que sobra, medido com o redesign inteiro (home, mediana de 5): as três
+// famílias somam ~190ms de Style & Layout ANTES da primeira pintura (FCP 1160
+// contra 976 com as fontes desligadas). Não é o download — o documento termina
+// em 760ms nos dois casos — nem a janela de bloqueio: 'swap' mede o mesmo
+// (1160) e ainda traz CLS de 0,053 no artigo; desligar o adjustFontFallback
+// também (1162). Aceito: LCP de laboratório segue em ~1,2s contra o budget de
+// 2,0s, Performance 100. Se o budget apertar, o próximo corte é a Plex Mono.
+//
+// Pesos mínimos: Plex Sans e Space Grotesk são variáveis (um arquivo cada);
+// a Plex Mono é estática, então só 400 (rótulos) e 600 (botões, índices).
+const sans = IBM_Plex_Sans({
   subsets: ['latin'],
   display: 'optional',
   preload: false,
-  variable: '--font-inter',
+  variable: '--font-sans',
+})
+const display = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'optional',
+  preload: false,
+  variable: '--font-display',
+})
+const mono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  display: 'optional',
+  preload: false,
+  variable: '--font-mono',
 })
 
 export function RootShell({ lang, children }: { lang: Lang; children: React.ReactNode }) {
@@ -68,23 +98,28 @@ export function RootShell({ lang, children }: { lang: Lang; children: React.Reac
 
   const chrome = (
     <>
+      <a href="#conteudo" className="skip-link">
+        {lang === 'en' ? 'Skip to content' : 'Pular para o conteúdo'}
+      </a>
       <Header lang={lang} />
-      <main className="flex-1">{children}</main>
+      <main id="conteudo" className="flex-1">{children}</main>
       <Footer lang={lang} />
     </>
   )
 
   return (
-    <html lang={lang} className={inter.variable} suppressHydrationWarning>
+    <html lang={lang} className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       {/* As duas regras do @next/next abaixo só reconhecem <head> e
           beforeInteractive dentro de um arquivo `layout`. Este componente É o
           corpo dos dois root layouts (e do global-not-found) — o mesmo lugar,
-          movido para não existir em três cópias. */}
+          movido para não existir em três cópias.
+
+          O <head> explícito fica mesmo vazio (desde que o script de tema saiu,
+          com o tema claro): sem ele o Next não iça o script beforeInteractive
+          do consentimento para o head, e o React passa a renderizá-lo como
+          <script> inerte no body — o dev overlay acusa na hora. */}
       {/* eslint-disable-next-line @next/next/no-head-element */}
-      <head>
-        {/* Antes de qualquer coisa: aplica o tema salvo sem flash. */}
-        <ThemeScript />
-      </head>
+      <head />
       <body className="flex min-h-screen flex-col font-sans antialiased">
         {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
         <Script
