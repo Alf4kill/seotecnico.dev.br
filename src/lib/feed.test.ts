@@ -18,6 +18,7 @@ function makePost(overrides: Partial<Post['frontmatter']> = {}): Post {
       ...overrides,
     },
     content: '',
+    derived: { readingTime: 1, headings: [] },
   }
 }
 
