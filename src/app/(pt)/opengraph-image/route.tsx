@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { OgCard } from '@/components/seo/OgCard'
 import { OG_SIZE } from '@/lib/metadata'
+import { ogFonts } from '@/lib/og-fonts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Card OG da marca em português, servido em /opengraph-image.
@@ -29,6 +30,6 @@ export function GET() {
         subtitle="Guias práticos, ferramentas gratuitas e experimentos medidos com dados reais."
       />
     ),
-    OG_SIZE
+    { ...OG_SIZE, fonts: ogFonts() }
   )
 }
