@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { RootShell } from '@/components/layout/RootShell'
 import { NotFoundContent } from '@/components/sections/NotFoundContent'
-import { rootMetadata } from '@/lib/metadata'
+import { rootMetadata, rootViewport } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -11,7 +11,7 @@ import { site } from '@/lib/site'
 // um app/layout.tsx único, não há onde compor o 404 global. Este arquivo
 // ignora os layouts e devolve o documento inteiro — por isso reusa o RootShell,
 // que é o mesmo documento que as páginas usam, e o 404 continua com header,
-// footer, tema e Consent Mode.
+// footer, fontes e Consent Mode.
 //
 // A moldura é a portuguesa (x-default do site, §10); o conteúdo é bilíngue
 // porque a URL errada pode ter vindo de qualquer um dos dois lados.
@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   ...rootMetadata('pt-BR'),
   title: `Página não encontrada | ${site.name}`,
 }
+
+export const viewport = rootViewport
 
 export default function GlobalNotFound() {
   return (

@@ -75,10 +75,10 @@ export function ConsentBanner({ lang }: { lang: Lang }) {
     <div
       role="dialog"
       aria-label={copy.dialog}
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-gray bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+      className="fixed inset-x-0 bottom-0 z-10 border-t-2 border-accent bg-surface"
     >
       <div className="container-xl flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm leading-6 text-foreground">
+        <p className="text-sm leading-6 text-body">
           {copy.body}{' '}
           <Link
             href="/politica-de-privacidade"
@@ -86,25 +86,26 @@ export function ConsentBanner({ lang }: { lang: Lang }) {
             // Na moldura inglesa a política é outro root layout (ver LanguageSwitch).
             prefetch={copy.policyLang ? false : undefined}
             title={copy.policy}
-            className="font-semibold text-primary hover:text-primary-dark transition-colors"
+            className="text-primary underline underline-offset-[3px] transition-colors hover:text-primary-hover"
           >
             {copy.policy}
           </Link>
         </p>
 
-        {/* Recusar e aceitar com o mesmo peso visual (LGPD, §7.1) — nos dois idiomas. */}
+        {/* Recusar e aceitar com o mesmo peso visual (LGPD, §7.1) — nos dois idiomas:
+            mesmo tamanho, mesma caixa, nenhum dos dois cheio de cor. */}
         <div className="flex shrink-0 items-center gap-3">
           <button
             type="button"
             onClick={() => choose('denied')}
-            className="rounded-full border-[1.5px] border-gray px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+            className="min-h-11 border border-gray-control px-5 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             {copy.decline}
           </button>
           <button
             type="button"
             onClick={() => choose('granted')}
-            className="rounded-full border-[1.5px] border-primary bg-primary-solid px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-solid-hover"
+            className="min-h-11 border border-gray-control px-5 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             {copy.accept}
           </button>
