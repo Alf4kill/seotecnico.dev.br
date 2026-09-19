@@ -2,6 +2,7 @@ import type { MDXRemoteProps } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import rehypePrettyCode, { type Options as PrettyCodeOptions } from 'rehype-pretty-code'
+import { shikiTheme } from '@/lib/shiki-theme'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pipeline MDX compartilhado entre artigos (/blog/[slug]) e o guia.
@@ -15,16 +16,19 @@ import rehypePrettyCode, { type Options as PrettyCodeOptions } from 'rehype-pret
 
 const prettyCodeOptions: PrettyCodeOptions = {
   // Tema medido, não escolhido por gosto: o audit de contraste do Lighthouse
-  // avalia os spans de código como texto. Medindo o token de PIOR contraste de
-  // cada tema sobre o próprio fundo (script em /tmp, comentário + pior token):
-  //   github-dark-high-contrast  11,12 / 9,23  ← escolhido
+  // avalia os spans de código como texto. Até 2026-09 o site usava o
+  // github-dark-high-contrast (pior token 9,23:1), escolhido medindo o token
+  // de PIOR contraste de cada tema do catálogo:
+  //   github-dark-high-contrast  11,12 / 9,23
   //   github-dark-default         6,15 / 6,15
-  //   github-dark-dimmed          3,88 / 3,88  ← anterior, reprovava
+  //   github-dark-dimmed          3,88 / 3,88
   //   github-dark                 3,05 / 3,05
   //   dracula / nord              3,03 / 2,43
-  // Só o escolhido passa AA (4,5:1) com folga em todos os tokens, não apenas
-  // nos comentários. Ao trocar de tema, meça de novo antes de trocar.
-  theme: 'github-dark-high-contrast',
+  // Com o sistema visual novo o tema passou a ser construído com a paleta do
+  // site (src/lib/shiki-theme.ts), pelo mesmo critério — pior token 5,12:1 —
+  // e o critério virou teste (shiki-theme.test.ts). Ao mexer numa cor do tema,
+  // o CI mede de novo.
+  theme: shikiTheme,
 }
 
 export const mdxOptions: MDXRemoteProps['options'] = {
