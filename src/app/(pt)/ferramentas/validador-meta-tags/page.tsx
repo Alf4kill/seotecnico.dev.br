@@ -58,11 +58,15 @@ export default function ValidadorMetaTagsPage() {
         ]}
       />
 
-      <section className="container py-12 lg:py-16">
-        <h1 className="font-bold text-foreground text-3xl md:text-4xl">
+      <section className="container-xl py-12 lg:py-16">
+        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+          Ferramenta gratuita · sem login
+        </p>
+        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
           Validador de meta tags
         </h1>
-        <p className="mt-4 max-w-3xl text-muted text-base leading-7">
+        <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
           Cole a URL de qualquer página e veja o que o Google e as redes
           sociais realmente leem: title, meta description, canonical, robots,
           H1 e Open Graph — com um preview da SERP e alertas do que corrigir.
@@ -71,7 +75,7 @@ export default function ValidadorMetaTagsPage() {
 
         <MetaValidator />
 
-        <div className="rich-text mt-14 max-w-3xl">
+        <div className="rich-text mt-16 max-w-[68ch] border-t border-gray pt-4">
           <h2>O que o validador checa (e com que régua)</h2>
           <p>
             As checagens são as mesmas que este site impõe a si próprio em CI:

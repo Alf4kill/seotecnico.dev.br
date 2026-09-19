@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Braces, FileSearch, Gauge } from 'lucide-react'
 import { buildMetadata } from '@/lib/metadata'
 import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 
@@ -12,21 +11,21 @@ export const metadata = buildMetadata({
 
 const ferramentas = [
   {
-    icon: Braces,
+    mark: 'h-12 w-12 rounded-full bg-primary',
     nome: 'Gerador de JSON-LD',
     descricao:
       'Monte dados estruturados schema.org válidos (Article, FAQ, Organization e mais) a partir de um formulário simples.',
     href: '/ferramentas/gerador-json-ld',
   },
   {
-    icon: FileSearch,
+    mark: 'h-12 w-12 bg-accent',
     nome: 'Validador de meta tags',
     descricao:
       'Cole uma URL e veja title, description, canonical e Open Graph como o Google enxerga — com alertas de problemas.',
     href: '/ferramentas/validador-meta-tags',
   },
   {
-    icon: Gauge,
+    mark: 'h-0 w-0 border-x-[27px] border-b-[48px] border-x-transparent border-b-shape-danger',
     nome: 'Checador de Core Web Vitals',
     descricao:
       'Consulte LCP, INP e CLS reais de qualquer domínio usando os dados públicos do Chrome UX Report (CrUX).',
@@ -34,9 +33,12 @@ const ferramentas = [
   },
 ]
 
+// Cada ferramenta tem uma forma primária — as mesmas três peças que marcam as
+// categorias do blog. O sistema não usa ícone ilustrativo (docs/design-system.md).
+
 export default function FerramentasPage() {
   return (
-    <section className="container py-12 lg:py-16">
+    <section className="container-xl py-12 lg:py-16">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', path: '/' },
@@ -44,53 +46,43 @@ export default function FerramentasPage() {
         ]}
       />
 
-      <h1 className="font-bold text-foreground text-3xl md:text-4xl">
+      <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+        <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+        Ferramentas · sem login, sem armazenar dados
+      </p>
+      <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
         Ferramentas gratuitas de SEO técnico
       </h1>
-      <p className="mt-4 max-w-2xl text-muted text-base leading-7">
+      <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
         Ferramentas de SEO técnico gratuitas, feitas para desenvolvedores:
         sem login, sem armazenar dados e com o código aberto no GitHub. O
         gerador de JSON-LD, o validador de meta tags e o checador de Core Web
         Vitals estão no ar.
       </p>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-3">
-        {ferramentas.map(({ icon: Icon, nome, descricao, href }) => {
-          const card = (
-            <article
-              className={[
-                'flex h-full flex-col rounded-2xl border border-gray bg-surface p-6',
-                href ? 'transition-colors hover:border-primary' : '',
-              ].join(' ')}
+      <ul className="mt-12 grid gap-6 md:grid-cols-3">
+        {ferramentas.map(({ mark, nome, descricao, href }, i) => (
+          <li key={nome}>
+            <Link
+              href={href}
+              title={nome}
+              className="group flex h-full flex-col gap-4 border border-gray bg-surface p-7 transition-colors hover:border-primary"
             >
-              <div className="flex items-start justify-between">
-                <Icon className="h-8 w-8 text-primary" strokeWidth={1.75} aria-hidden="true" />
-                <span
-                  className={
-                    href
-                      ? 'rounded-full bg-primary-solid px-3 py-1 text-xs font-semibold text-white'
-                      // text-primary-dark, não text-primary: sobre o tint de 10%
-                      // o primary dá 4,49:1 e reprova o audit de contraste (o
-                      // achado (3) da baseline de 2026-07-20). Assim são 5,82:1.
-                      : 'rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark'
-                  }
-                >
-                  {href ? 'Disponível' : 'Em breve'}
-                </span>
-              </div>
-              <h2 className="mt-4 font-bold text-foreground text-lg">{nome}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">{descricao}</p>
-            </article>
-          )
-          return href ? (
-            <Link key={nome} href={href} title={nome}>
-              {card}
+              <span className="flex items-start justify-between">
+                <span aria-hidden="true" className={mark} />
+                <span className="font-mono text-xs text-label">{String(i + 1).padStart(2, '0')}</span>
+              </span>
+              <h2 className="pt-4 font-display text-2xl font-bold leading-tight text-foreground group-hover:text-primary">
+                {nome}
+              </h2>
+              <p className="flex-1 text-[0.9375rem] leading-relaxed text-muted">{descricao}</p>
+              <span className="border-t border-gray pt-4 font-mono text-xs uppercase tracking-[0.08em] text-accent">
+                Usar a ferramenta <span aria-hidden="true">→</span>
+              </span>
             </Link>
-          ) : (
-            <div key={nome}>{card}</div>
-          )
-        })}
-      </div>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }
