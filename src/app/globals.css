@@ -91,6 +91,17 @@ a {
   text-decoration: none;
 }
 
+/* Títulos em escala de cartaz: uma palavra longa ("desenvolvedores") num h1
+   de 44px no celular não cabe se a webfont perder a janela do 'optional' e
+   a fallback do sistema for mais larga — a DejaVu do Linux é. Sem isto a
+   palavra empurra a página para os lados (pego pelo teste de 390px no CI);
+   com isto ela quebra, e só quando não cabe. */
+h1,
+h2,
+h3 {
+  overflow-wrap: break-word;
+}
+
 ::selection {
   background: rgb(var(--primary-rgb) / 0.3);
   color: var(--foreground);

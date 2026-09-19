@@ -44,7 +44,7 @@ export default function HomePage() {
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="border-b border-gray py-14 lg:py-22">
         <div className="container-xl grid items-end gap-12 lg:grid-cols-12 lg:gap-6">
-          <div className="flex flex-col gap-6 lg:col-span-8">
+          <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
             <p className="eyebrow flex items-center gap-3.5 text-primary">
               <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
               Laboratório vivo · seotecnico.dev.br
@@ -70,7 +70,7 @@ export default function HomePage() {
           </div>
 
           {/* Índice de instrumento: contagens reais do build. */}
-          <nav aria-label="Índice do site" className="border border-gray bg-surface p-6 lg:col-span-4">
+          <nav aria-label="Índice do site" className="min-w-0 border border-gray bg-surface p-6 lg:col-span-4">
             <p className="eyebrow pb-4 text-[0.625rem]">Índice do laboratório</p>
             <ul>
               {index.map(({ label, value, href }, i) => (
