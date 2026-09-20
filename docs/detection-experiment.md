@@ -11,6 +11,14 @@
 > Companion to [`ai-crawler-policy.md`](ai-crawler-policy.md) (which declares the policy),
 > [`measurement-plan.md`](measurement-plan.md) (which defines the `ai_crawler_hit` event)
 > and [`experiment-log.md`](experiment-log.md) (which holds the dated predictions).
+>
+> **2026-09-20 — the 2026-07-25 round is closed as a pilot.** Three collection
+> defects were found while it was running and H5 was voided once, which is what
+> a pilot is for; its numbers, its five lessons and the recalculated bounds are
+> in [`experiment-log.md`](experiment-log.md). Sections marked *[planned, not
+> implemented]* (§2.5, §2.6, §3.5) and §§12–13 are the v2 design, written before
+> the code per CLAUDE.md §7.2. Nothing in the pilot's served surfaces —
+> `robots.txt`, `/llms.txt`, the two traps — changes as part of v2.
 
 ## 0. Purpose — read this before reading anything else
 
@@ -125,6 +133,22 @@ accumulate into a durable identifier. That is enough to link a trap hit to a
 `/robots.txt` fetch in the same month and not enough to identify anyone.
 `/politica-de-privacidade` says all of this in plain Portuguese.
 
+**Extended for the client-side probe (v2, §2.5).** A script that runs in the
+visitor's browser is a different kind of collection from counting a request
+that arrived, and the list above does not cover it. Also never collected:
+the raw User-Agent, the raw WebGL renderer string, any canvas, audio, font or
+WebRTC fingerprint (hashed or not), `navigator.plugins` enumeration, pointer
+coordinates or paths, per-event timings, keystroke content or timing, battery,
+timezone or locale beyond what GA4 already derives — and **no client-side
+storage write of any kind**: no cookie, no `localStorage`, no `sessionStorage`,
+no IndexedDB. Nothing survives the page load.
+
+The reason, in one sentence, because it is load-bearing rather than cautious:
+the moment an emitted value carries enough entropy to re-identify a browser, it
+becomes personal data under the LGPD, needs a different legal basis, and
+contradicts §7. The buckets and closed enums are not conservatism — they are
+what keeps the design legal and publishable.
+
 ### 2.4 What is structurally unavailable on Vercel
 
 Named so nobody proposes them later: TLS fingerprints (JA3/JA4), HTTP/2 frame
@@ -132,6 +156,104 @@ fingerprints (Akamai-style), raw header *order*, and TCP-level signatures. TLS
 and the HTTP framing terminate at Vercel's edge before any code in this repo
 runs; the platform exposes none of them. IP-reputation databases are out too —
 paid services (CLAUDE.md §13).
+
+**Also dead, recorded so nobody re-proposes it:** the canonical CDP detection
+trick (planting a getter on `Error.stack` and watching it fire when a client
+with `Runtime.enable` serializes the object). Two V8 commits, 2025-05-07 and
+2025-05-09, added a getter guard that skips user-defined getters during error
+preview, so the getter never fires. It was a high-precision signal for roughly
+eleven months. It is listed here for the same reason JA3/JA4 are: to keep a
+future reader from building on it.
+
+The general lesson, which §7 rule 9 turns into a rule: signals in this field
+have a half-life measured in months, so every one of them carries the date it
+was last validated.
+
+### 2.5 Client-side signals — the `agent` class [planned, not implemented]
+
+The blind spot this closes is structural, not a tuning problem. §2.1 works
+because a crawler does not execute JavaScript. An AI agent driving a real
+browser does: it produces a `browser-like` request **and** a real pageview, so
+the two-pipeline delta counts it as a human. Published work puts a number on
+the cost — binary human/bot classification routes roughly one in three agent
+sessions into "human", not for want of signal but because the label set has no
+`agent` in it (arXiv 2607.26935, 2026, which separates human/bot/agent with
+macro-F1 at or above 0.99 from five automation-artifact features). The same
+round measured layer strength: IP alone F1 0.540, TLS 0.415, browser
+fingerprint 0.931, all layers 0.993 (arXiv 2606.30119). Browser-side is the
+strongest layer available and the one this instrument does not have.
+
+The probe reads automation **artifacts**, never cognition, and emits closed
+enums only (§2.3). Two stages, split by what they touch:
+
+- **Stage A — observation of the session with this site.** Pointer and wheel
+  event stream density in buckets, events with `isTrusted = false`, time to
+  first movement, and a click with no preceding movement. No device read, no
+  storage. The discriminator is stream *continuity*, not `isTrusted`: a client
+  driving the browser through CDP produces `isTrusted = true` but jumps rather
+  than moving.
+- **Stage B — interrogation of the terminal equipment.** Descriptor forensics
+  on `navigator.webdriver` (whether the getter is native, not its value),
+  `Function.prototype.toString` tampering, a GPU class derived from the
+  renderer string *inside the page*, hardware and viewport shape, and the
+  client-side twin of the coherence vector.
+
+**Stage B is consent-gated, and Stage A is not.** The existing stance — request
+telemetry is not personal data, so it is not consent-gated — does not stretch
+to Stage B, and taking the narrow reading would be indefensible for a site
+whose argument is measurement honesty. The EDPB Guidelines 2/2023 (final,
+2024-10-16) apply Article 5(3) ePrivacy to fingerprinting **even with no
+storage**, because *access* to terminal equipment is the trigger; the ICO final
+guidance (2026-04-29) calls the bar high. Brazil has no ANPD position on this,
+so the basis is legitimate interest (LGPD art. 7, IX) with a written LIA.
+Gated means the probe **does not execute** — not that it sends a cookieless
+ping.
+
+The cost, stated rather than discovered: **the population most worth probing is
+the one least likely to grant consent.** An agent driving a browser ignores or
+blind-dismisses the banner. Stage B's N will be small and biased toward humans.
+That is hypothesis H8, not a footnote.
+
+Named false positives, binding on any publication (§7 rule 8): Brave 1.93
+(2026-08-13) de-identifies the GPU strings, and Chromium v144 deprecated the
+SwiftShader fallback so a missing context is now ordinary. A privacy-conscious
+human must never be read as a bot.
+
+### 2.6 Cross-layer coherence [planned, not implemented]
+
+Every signal in §2.2 is read on its own. Incoherence *between* them is the
+cheap, robust tell that no line item captures: a request claiming Chromium that
+sends no Client Hints, a `Sec-CH-UA-Platform` that contradicts the OS token in
+the User-Agent, a browser-claiming client with no `Accept-Language`. The
+research round found the quantitative formulation of this to be an open gap —
+everyone knows incoherence gives a client away; nobody has published a measure.
+
+Implementation is header arithmetic at the edge: pure, synchronous, no I/O, no
+DNS, no feed fetch, microseconds, no new failure mode in the proxy. Thirteen
+checks in five groups (`ch`, `fetch`, `accept`, `proto`, `geo`), each returning
+coherent, incoherent, or **not applicable**.
+
+**It is a vector and never a score.** §0 forbids invented weights, and a single
+number would be exactly that. Parameters and shapes are in
+[`measurement-plan.md`](measurement-plan.md).
+
+Two things this is not:
+
+- **It is not verification.** It performs no lookup, contacts no vendor and
+  makes no identity claim, so the gate in §9.2 does not apply — see the note
+  there. It runs for every request, including `browser-like`.
+- **It is not a botness measure.** It measures self-contradiction. A corporate
+  proxy that strips headers makes a legitimate browser incoherent. It is an
+  input to weight, never a verdict — the same demotion the research recommends
+  for IP reputation, which measures F1 0.540 alone and whose residential
+  addresses rotate away after at most two sessions in 78% of cases.
+
+The contribution worth publishing is the third state. Per-layer results in the
+literature assume every layer is observable; on a commodity host most are not
+(§2.4). Reporting *how many checks were decidable* as an explicit denominator,
+instead of imputing an unobservable layer as coherent, turns partial
+observability from a limitation into the measured quantity: how much
+cross-layer discrimination survives when only the application layer is visible?
 
 ---
 
@@ -189,6 +311,38 @@ vendor's published network ranges, fetching a path this site told it not to, on 
 date. Every other cell is a hypothesis about behaviour and must be labelled as one
 in anything published.
 
+### 3.5 Axis C — automation-artifact likelihood [planned, not implemented]
+
+The third axis, for clients that execute JavaScript (§2.5). Like Axis A it is a
+ladder of observations, not a score, and like Axis A any reader can re-derive
+the tier from the emitted parameters.
+
+| Tier | Definition |
+|---|---|
+| `confirmed` | An observation that cannot occur in a hand-driven browser: an event with `isTrusted = false`, a non-native `navigator.webdriver` getter, or tampered `Function.prototype.toString` |
+| `high` | Two or more of: no pointer or wheel stream at all on a page that was scrolled or clicked; a click with no preceding movement; a software GPU class; headless-default hardware and viewport shape |
+| `medium` | Exactly one of the `high` observations |
+| `low` | Human-shaped on all of them |
+
+Three constraints on reading it:
+
+- **There is no `agent_class` parameter and no tier in the code.** The event
+  carries bits; the tier lives here, in prose, for the same reason weighted
+  scores and `wordCount` were rejected before.
+- **The axis is not defined for the whole population.** It exists only for
+  sessions that ran JavaScript, and its `confirmed` and `high` rungs lean on
+  Stage B, which requires consent. Any share computed from it has a denominator
+  of consented JS sessions — never of all traffic. Mixing those denominators
+  would be the easiest lie to tell with this data.
+- **It answers a different question from Axis A.** Axis A asks whether a client
+  is automated *given that it looks like it might not be a browser*. Axis C asks
+  whether a real browser is being *driven*. A session can be `low` on Axis A and
+  `confirmed` on Axis C; that combination is the whole point, and it is what
+  H9 predicts exists.
+
+When it ships, the §3.4 cross-tab gains a third dimension. Until then the cell
+that is a fact stays the one named there.
+
 ---
 
 ## 4. The honeypots
@@ -205,6 +359,28 @@ slug itself attributes the discovery vector**.
 | A — `/lab/trap-r-7fk3q9zj` | `/robots.txt`, as a `Disallow:` line | The client parsed `robots.txt` and chose to fetch what it forbids — **deliberate disregard** | `disallowed` for every agent |
 | B — `/lab/trap-l-x2m8wv5d` | `/llms.txt`, as a labelled link | The client parses `llms.txt` and follows its links — **channel adoption**, no disregard involved | `not-addressed` on purpose — putting it in robots.txt would contaminate the channel attribution |
 
+**Generalisation warning, for the channels v2 adds.** The sentence in §4.1 — "a
+request to it is, by construction, a deliberate disregard of the policy" — is
+true of **Trap A only**, and it is true for one narrow reason: the only way to
+learn that URL is to parse a file that forbids it. It does not transfer. Each
+channel needs its own "what a hit proves" sentence, and several prove much
+less. A hit on a feed-only or `Link`-header-only URL proves the client parses
+that surface and says nothing about policy. A hit on an internal-link-only URL
+proves almost nothing about automation at all — which is precisely why v2
+designates that one the **positive control** rather than a finding.
+
+That control is the pilot's missing piece. With zero hits and no control,
+"nothing came" and "the instrument is broken" are the same observation, and the
+pilot cannot tell them apart. A channel on a surface Googlebot demonstrably
+consumes converts every other channel's zero from an absence into a
+measurement.
+
+Two more things a null needs before it is publishable, both already computable
+from pilot data: **exposure** (N clients parsed `/robots.txt` and none followed
+the `Disallow` line is a finding; zero hits on a file nobody read is not) and a
+**denominator** (the zero reported against observed automated volume, not in
+isolation), with the bound stated using the one-sided method already used in
+this log rather than the bare word "zero".
 Trap B plugs directly into the llms.txt prediction already on the record in
 [`experiment-log.md`](experiment-log.md): the existing prediction counts fetches
 of the *file*; Trap B counts clients that actually *use* what the file says,
@@ -335,7 +511,7 @@ header the client can influence.
 
 Known softness, kept on the record: vendors add IPs before feeds update, and the
 in-memory feed cache (6h TTL, per serverless instance) can serve stale ranges.
-That is why §6 rule 7 exists.
+That is why §7 rule 7 exists.
 
 ---
 
@@ -386,6 +562,17 @@ constraints:
    vendor's published ranges as of DATE". A stale feed marking a vendor's new IP
    as an impersonator is this experiment's own most likely false accusation, and
    this rule is the fuse.
+8. **Never publish a client classification that could identify an individual
+   visitor.** Axis C describes populations: no agent-class count below
+   path-and-day granularity, and every artifact signal reported with its named
+   false-positive population attached (Brave 1.93 de-identifies GPU strings;
+   Chromium v144 deprecated the SwiftShader fallback; corporate proxies strip
+   headers). A privacy-conscious human read as a bot is the same class of error
+   as a vendor named as an impersonator on a stale feed.
+9. **Every signal carries the date it was last validated.** Not as bookkeeping:
+   the canonical CDP signal was published in June 2024 and killed by two V8
+   commits in May 2025 (§2.4). Any efficacy figure in this field is worth
+   months, so an undated one is worth nothing.
 
 ---
 
@@ -464,6 +651,15 @@ Verification work is gated: it runs only for `declared-ai` UAs or requests
 carrying signature headers, inside `event.waitUntil`, with hard timeouts, and its
 failure can never fail the request.
 
+**Coherence is observation, not verification, and the gate above does not cover
+it.** The cross-layer vector (§2.6) is computed for **every** request the
+matcher passes, including `browser-like` traffic. That is not a loosening of the
+rule: the rule exists because verification costs a DNS lookup or a vendor feed
+fetch and makes an identity claim about a named company. The vector does
+neither — pure header arithmetic, no network, no name. The two are recorded
+separately here because a reader who knows only the §9.2 sentence will
+otherwise read the vector as a violation of it.
+
 The `Signature-Input` header is parsed with the `structured-headers` package
 (spec-correct RFC 8941 Structured Field Values), not a regex.
 
@@ -529,3 +725,54 @@ from every window in §8 by timestamp, exactly as the four hits of 2026-07-25 ar
 
 Pasted on merge, with the ship date filled in — see
 [`experiment-log.md`](experiment-log.md).
+
+---
+
+## 12. Countermeasures considered and rejected, with citations
+
+Recorded because what was deliberately not built is part of the method, and
+because each of these is proposed to site owners regularly.
+
+- **Proof-of-work challenges.** Controlled honeysite measurement (arXiv
+  2606.30119, 2026) found that a leading PoW gate blocked cURL, wget and scrapy
+  and blocked **none** of three browser-automation frameworks nor any of six
+  web agents. Independent analysis a year earlier put the attacker cost of
+  mining tokens for every known deployment at roughly six minutes of CPU on a
+  free-tier VM. It taxes the cheap HTTP tier, which is real, and it taxes weak
+  hardware regressively, which is the part that disqualifies it here. The
+  flagship project itself has since become a graded-response gate rather than a
+  PoW gate.
+- **Tarpits, content degradation and poisoning.** Already rejected in §4.2 on
+  cost and brand grounds. The stronger reason arrived in February 2026, when
+  Google and Bing both indicated that maintaining crawler-specific content
+  variants is **cloaking**. For a domain whose entire argument is technical SEO,
+  that is not a trade-off, it is a disqualification.
+- **IP blocking and IP reputation.** F1 0.540 as a standalone layer (arXiv
+  2606.30119). Population measurement over four billion sessions (GreyNoise,
+  2026-04-02) found a median of one session per address, with 78% of
+  residential addresses seen at most twice before rotating — a reputation feed
+  is late by construction, not by coverage. Demoted to an input of weight,
+  which is what §3.1 signal 3 already is, with its false positive named.
+- **Paid access / the 402 route.** A real third state between 200 and 403, with
+  neutral governance since 2026, and no adoption data, a competing protocol, and
+  a waitlist. Worth watching, not adopting. Re-evaluate when adoption numbers
+  or native platform support exist.
+
+## 13. Supply-side shocks — a standing control on every before/after
+
+The two largest measured drops in scraping traffic during 2026 were not caused
+by any countermeasure installed on any website. They followed law-enforcement
+and vendor takedowns of residential proxy supply: one on 2026-01-28, another on
+2026-07-02 in coordination with the FBI and a network operator. A site operator
+on a public thread reported roughly −50% on one date and −30% on the other, the
+second matching the takedown exactly.
+
+The consequence for this repo is a rule, not a caveat. **Before attributing any
+traffic delta to a change made here, check for a dated external event** — an
+enforcement action against proxy supply, or a platform-side change at Google,
+Bing or Vercel. An unexplained step change of tens of percent is more likely
+exogenous than caused by a configuration on one small domain.
+
+This is the error the field is making in public, and it is cheap to avoid: the
+check is one row in [`experiment-log.md`](experiment-log.md) per analysis, and
+its absence is what turns a coincidence into a published causal claim.
