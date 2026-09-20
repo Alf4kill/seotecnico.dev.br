@@ -14,10 +14,12 @@
 >
 > **2026-09-20 — the 2026-07-25 round is closed as a pilot.** Three collection
 > defects were found while it was running and H5 was voided once, which is what
-> a pilot is for; its numbers, its five lessons and the recalculated bounds are
-> in [`experiment-log.md`](experiment-log.md). Sections marked *[planned, not
-> implemented]* (§2.5, §2.6, §3.5) and §§12–13 are the v2 design, written before
-> the code per CLAUDE.md §7.2. Nothing in the pilot's served surfaces —
+> a pilot is for; a fourth, in the canary design rather than the collection, was
+> found on 2026-09-20 (§4.5 — the trap slugs are in a public repository, so the
+> single-surface invariant has an out-of-band hole). Its numbers, its lessons and
+> the recalculated bounds are in [`experiment-log.md`](experiment-log.md).
+> Sections marked *[planned, not implemented]* (§2.5, §2.6, §3.5) and §§12–13
+> are the v2 design, written before the code per CLAUDE.md §7.2. Nothing in the pilot's served surfaces —
 > `robots.txt`, `/llms.txt`, the two traps — changes as part of v2.
 
 ## 0. Purpose — read this before reading anything else
@@ -451,6 +453,55 @@ out to be quiet.
   The traps are leaf routes that hub must **never** link — recorded here and in
   the proposal's way when it ships.
 
+### 4.5 The repository is a discovery channel [found 2026-09-20]
+
+**The single-surface invariant stated above is not true as written, and this is
+the pilot's fourth defect.** §4 claims that a random slug means "the only way to
+arrive at each URL is through its one channel". Both slugs are in tracked files
+in a **public** repository — [`src/lib/lab-traps.ts`](../src/lib/lab-traps.ts)
+and this document. `github.com` and `raw.githubusercontent.com` are crawled by
+exactly the agents this experiment measures, and GitHub has code search. There
+is therefore a second discovery channel, out of band, shared by every trap.
+
+What survives and what does not:
+
+- **Trap A's claim survives.** `Disallow` applies to the path however the client
+  learned it, so "fetched what robots.txt forbids" is still true. H1 survives
+  too, because it requires the trap hit to correlate with a `/robots.txt` fetch
+  from the same `net_id` within 24 hours — that correlation is the defence.
+- **Trap B's claim does not.** "The client parses `llms.txt` and follows its
+  links" would be false for a client that found the URL in the repository. A
+  Trap B hit is therefore not, by itself, evidence of llms.txt adoption, and H6
+  has to be read with that caveat.
+- **v2 is the most exposed.** Its whole contribution is channel attribution, and
+  a shared out-of-band channel contaminates every channel equally.
+
+**Git history is permanent, so traps A and B cannot be protected
+retroactively.** Deleting the slugs now would not unpublish them: they are in
+the history, in already-crawled blobs, and in any fork. For those two the
+confound can only be *bounded*, never removed. Nothing about them changes as
+part of v2 — the pilot's served surfaces stay frozen until its exports exist.
+
+Two consequences for v2, both in the design rather than in a caveat:
+
+1. **New channel slugs are born outside the repository.** One dynamic route,
+   `/lab/[probe]`, compares its segment against values read from environment
+   variables and 404s on anything else; every publishing surface emits its slug
+   from the same variable, and omits the channel entirely when the variable is
+   unset — the fail-safe shape `SITE_INDEXABLE` already uses. The literal never
+   enters a tracked file, and the tests read the environment rather than a
+   constant.
+2. **A repository-only canary, as a measured channel.** A static route whose
+   slug appears in the repository and in **no served surface at all** — not
+   `/robots.txt`, not `/llms.txt`, not the sitemap, not the feed, not a link,
+   not a header. A hit on it is direct evidence that the repository is a
+   discovery channel, and its count is the bound on the confound traps A and B
+   carry permanently. This is the same move as the positive control: convert a
+   confound into an instrument instead of apologising for it.
+
+The second one is also the more interesting finding. "Publishing the method
+makes the method's own bait discoverable" is a general problem for any
+reproducible detection work, and nobody appears to have measured it.
 ---
 
 ## 5. Identity verification — how a claim becomes an identity
@@ -573,6 +624,12 @@ constraints:
    the canonical CDP signal was published in June 2024 and killed by two V8
    commits in May 2025 (§2.4). Any efficacy figure in this field is worth
    months, so an undated one is worth nothing.
+10. **Every channel-attribution claim states whether that channel's slug was
+    ever in a tracked file, and reports the repository canary's count beside
+    it** (§4.5). For traps A and B the answer is yes and cannot be changed, so
+    any adoption claim about them carries the confound explicitly. Reporting a
+    channel attribution while knowing the slug is public on GitHub would be the
+    same error class as reporting an `impersonated` verdict from a stale feed.
 
 ---
 
