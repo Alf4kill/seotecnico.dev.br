@@ -281,7 +281,7 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [x] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (owner, 2026-07-25, before the PR #33 deploy)
 - [x] Custom dimension `bot_signer` registered (owner, 2026-09-13, right after the PR #50 deploy). GA4 custom dimensions are not retroactive: `bot_signer` is queryable only for events received after registration
 - [x] `NET_ID_SALT_SECRET` set in Vercel production env, `LAB_TRAP_DELAY_MS` active (confirmed by the 2.65s trap response, 2026-07-25) — without the salt, `net_id` is omitted and H1's correlation is blind
-- [ ] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand)
+- [x] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand) — **2026-07-30**, GPTBot, `verified-ip`, three paths. It is also H2's evidence; see [`experiment-log.md`](experiment-log.md)
 
 > Note: local debugging on 2026-07-13 sent a handful of real `page_view` hits to
 > `G-59LQZ6LR72` from `localhost`. Recommend defining internal/dev traffic
