@@ -21,12 +21,16 @@ export default function SobrePage() {
         ]}
       />
 
-      <section className="container max-w-3xl py-12 lg:py-16">
-        <h1 className="font-bold text-foreground text-3xl md:text-4xl">
+      <section className="container-xl py-12 lg:py-16">
+        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+          Sobre · autor e projeto
+        </p>
+        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
           Sobre o SEO Técnico
         </h1>
 
-        <div className="rich-text mt-8">
+        <div className="rich-text mt-10 max-w-[68ch]">
           <p>
             O <strong>SEO Técnico</strong> é um laboratório público de SEO
             técnico para Next.js, feito por {site.author.name} —{' '}

@@ -5,8 +5,7 @@ import { mdxOptions } from '@/lib/mdx'
 import { mdxComponents } from '@/components/mdx/mdx-components'
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { FaqSection } from '@/components/sections/FaqSection'
-import { AuthorByline } from '@/components/ui/AuthorByline'
-import { ArticleTldr } from '@/components/ui/ArticleTldr'
+import { ArticleLayout } from '@/components/article/ArticleLayout'
 import { LanguageSwitch } from '@/components/ui/LanguageSwitch'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
@@ -39,7 +38,8 @@ export function generateMetadata(): Metadata {
 }
 
 export default function GuideEnPage() {
-  const { frontmatter, content } = getGuide('en')
+  const guide = getGuide('en')
+  const { frontmatter, content } = guide
 
   return (
     <>
@@ -55,42 +55,16 @@ export default function GuideEnPage() {
         ]}
       />
 
-      <article className="container max-w-3xl py-12 lg:py-16">
-        <header>
-          <div className="mb-6">
-            <LanguageSwitch path={CANONICAL_PATH} />
-          </div>
-          <h1 className="font-bold text-foreground text-3xl leading-tight md:text-4xl">
-            {frontmatter.title}
-          </h1>
-          <p className="mt-3 text-sm text-muted">
-            <AuthorByline lang="en" />
-            {' · '}Updated{' '}
-            <time dateTime={frontmatter.dateModified}>
-              {new Date(`${frontmatter.dateModified}T00:00:00`).toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </time>
-          </p>
-          {frontmatter.tldr && <ArticleTldr lang="en">{frontmatter.tldr}</ArticleTldr>}
-        </header>
-
-        <div className="rich-text mt-8">
-          <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />
-        </div>
-
-        {/* Mesmo id estável da versão PT: alvo do trigger de element visibility
-            do evento `article_read` (docs/measurement-plan.md). */}
-        <footer id="article-end" className="mt-10 border-t border-gray pt-4">
-          <p className="text-xs text-muted">
-            © {frontmatter.dateModified.slice(0, 4)} {site.author.name}. All
-            rights reserved. Short quotes with attribution and a link to the
-            original guide are welcome.
-          </p>
-        </footer>
-      </article>
+      <ArticleLayout
+        post={guide}
+        lang="en"
+        path={CANONICAL_PATH}
+        breadcrumbs={[{ name: 'Home', href: '/en' }]}
+        beforeTitle={<LanguageSwitch path={CANONICAL_PATH} />}
+        copyright={`© ${frontmatter.dateModified.slice(0, 4)} ${site.author.name}. All rights reserved. Short quotes with attribution and a link to the original guide are welcome.`}
+      >
+        <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />
+      </ArticleLayout>
 
       {frontmatter.faq && frontmatter.faq.length > 0 && (
         <FaqSection

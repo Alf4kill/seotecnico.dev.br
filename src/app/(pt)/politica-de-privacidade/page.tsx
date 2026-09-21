@@ -12,7 +12,7 @@ export const metadata = buildMetadata({
 
 export default function PoliticaDePrivacidadePage() {
   return (
-    <section className="container max-w-3xl py-12 lg:py-16">
+    <section className="container-xl py-12 lg:py-16">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', path: '/' },
@@ -20,11 +20,19 @@ export default function PoliticaDePrivacidadePage() {
         ]}
       />
 
-      <h1 className="font-bold text-foreground text-3xl md:text-4xl">
+      <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+
+        <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+
+        Projeto · LGPD
+
+      </p>
+
+      <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
         Política de privacidade
       </h1>
 
-      <div className="rich-text mt-8">
+      <div className="rich-text mt-10 max-w-[68ch]">
         <p>
           O {site.name} ({new URL(site.url).hostname}) é um site de conteúdo e
           ferramentas gratuitas. Esta página explica, em linguagem direta, quais

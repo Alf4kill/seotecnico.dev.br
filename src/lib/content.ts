@@ -8,6 +8,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
+import { isCategorySlug, isPostStatus, type CategorySlug, type PostStatus } from '@/lib/categories'
+import { citedTool, extractHeadings, readingTime, type CitedTool, type Heading } from '@/lib/content-derived'
 
 export interface FaqItem {
   question: string
@@ -44,11 +46,30 @@ export interface PostFrontmatter {
    */
   keywords?: string[]
   faq?: FaqItem[]
+  /**
+   * Eixo temático (lib/categories.ts). Obrigatório em artigo do blog; a pilar
+   * cobre todos os eixos e não tem. Define a forma do marcador, o filtro da
+   * /blog e os relacionados — não gera URL.
+   */
+  category?: CategorySlug
+  /**
+   * Estado do experimento, quando o artigo é um. Opcional e só verdadeiro:
+   * "em-medicao" promete uma volta com dado real.
+   */
+  status?: PostStatus
+}
+
+/** Derivado do corpo no build (lib/content-derived.ts), nunca escrito à mão. */
+export interface PostDerived {
+  readingTime: number
+  headings: Heading[]
+  citedTool?: CitedTool
 }
 
 export interface Post {
   frontmatter: PostFrontmatter
   content: string
+  derived: PostDerived
 }
 
 const CONTENT_DIR = path.join(process.cwd(), 'content')
@@ -111,6 +132,13 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
     }
   }
 
+  if (data.category !== undefined && !isCategorySlug(data.category)) {
+    throw new Error(`[content] "${file}": unknown category "${String(data.category)}" (see lib/categories.ts)`)
+  }
+  if (data.status !== undefined && !isPostStatus(data.status)) {
+    throw new Error(`[content] "${file}": unknown status "${String(data.status)}" (see lib/categories.ts)`)
+  }
+
   return {
     title,
     description,
@@ -125,6 +153,8 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
       ? (data.keywords as string[]).map((k) => k.trim())
       : undefined,
     faq: Array.isArray(data.faq) ? (data.faq as FaqItem[]) : undefined,
+    category: data.category,
+    status: data.status,
   }
 }
 
@@ -134,6 +164,11 @@ function readMdxFile(filePath: string): Post {
   return {
     frontmatter: parseFrontmatter(data, path.relative(CONTENT_DIR, filePath)),
     content,
+    derived: {
+      readingTime: readingTime(content),
+      headings: extractHeadings(content),
+      citedTool: citedTool(content),
+    },
   }
 }
 
@@ -145,7 +180,13 @@ export function getAllPosts(): Post[] {
   return fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.mdx'))
-    .map((f) => readMdxFile(path.join(dir, f)))
+    .map((f) => {
+      const post = readMdxFile(path.join(dir, f))
+      if (!post.frontmatter.category) {
+        throw new Error(`[content] "blog/${f}": missing required frontmatter field "category"`)
+      }
+      return post
+    })
     .sort((a, b) =>
       b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
     )
@@ -168,4 +209,18 @@ const GUIDE_FILES: Record<'pt-BR' | 'en', string[]> = {
 /** The pillar guide. Defaults to pt-BR, the original. */
 export function getGuide(lang: 'pt-BR' | 'en' = 'pt-BR'): Post {
   return readMdxFile(path.join(CONTENT_DIR, ...GUIDE_FILES[lang]))
+}
+
+/**
+ * Até `limit` artigos para "Continue pelo mesmo eixo": primeiro os da mesma
+ * categoria, depois os mais recentes — nunca o próprio artigo. Links internos
+ * entre spokes, derivados em vez de curados à mão.
+ */
+export function getRelatedPosts(slug: string, limit = 3): Post[] {
+  const posts = getAllPosts()
+  const self = posts.find((p) => p.frontmatter.slug === slug)
+  const others = posts.filter((p) => p.frontmatter.slug !== slug)
+  const sameAxis = others.filter((p) => p.frontmatter.category === self?.frontmatter.category)
+  const rest = others.filter((p) => !sameAxis.includes(p))
+  return [...sameAxis, ...rest].slice(0, limit)
 }

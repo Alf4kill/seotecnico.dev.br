@@ -16,49 +16,70 @@ const namedSizes = { "2xs": "18rem", "3xs": "16rem" };
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
+    // Substituídos, não estendidos: o sistema não tem canto arredondado nem
+    // sombra (docs/design-system.md, regras "NÃO"). `rounded-full` fica porque
+    // o círculo é uma das três formas primárias; `rounded-lg`, `shadow-md` e
+    // afins deixam de existir — e src/design-rules.test.ts falha se alguém os
+    // escrever, em vez de gerar uma classe que silenciosamente não faz nada.
+    borderRadius: {
+      none: "0",
+      full: "9999px",
+    },
+    boxShadow: {
+      none: "none",
+    },
     extend: {
-      // Cores vêm dos tokens de globals.css, nunca de hex aqui: é o que faz o
-      // tema escuro alcançar toda utility já escrita nos componentes. A forma
+      // Cores vêm dos tokens de globals.css, nunca de hex aqui. A forma
       // `rgb(var(--x) / <alpha-value>)` é obrigatória para que os modificadores
       // de opacidade (bg-primary/10, text-foreground/50) continuem funcionando.
       colors: {
         background: "rgb(var(--background-rgb) / <alpha-value>)",
-        // surface = cartões, header, modais; surface-2 = preenchimento sutil.
-        // No claro surface é branco, então trocar bg-white por bg-surface não
-        // muda nada visualmente — só passa a acompanhar o tema.
+        // surface = cartões; surface-2 = elevada/código; surface-alt = faixa.
         surface: {
           DEFAULT: "rgb(var(--surface-rgb) / <alpha-value>)",
           2: "rgb(var(--surface-2-rgb) / <alpha-value>)",
+          alt: "rgb(var(--surface-alt-rgb) / <alpha-value>)",
         },
         foreground: "rgb(var(--foreground-rgb) / <alpha-value>)",
+        // Texto: body = leitura longa; muted = apoio; label = rótulo mono.
+        body: "rgb(var(--body-rgb) / <alpha-value>)",
+        muted: "rgb(var(--muted-rgb) / <alpha-value>)",
+        label: {
+          DEFAULT: "rgb(var(--label-rgb) / <alpha-value>)",
+          code: "rgb(var(--label-code-rgb) / <alpha-value>)",
+        },
         primary: {
           DEFAULT: "rgb(var(--primary-rgb) / <alpha-value>)",
-          dark: "rgb(var(--primary-dark-rgb) / <alpha-value>)",
-          // Superfície de botão (texto branco por cima): não acompanha o tema.
+          hover: "rgb(var(--primary-hover-rgb) / <alpha-value>)",
+          // Superfície de botão. O texto por cima é `text-on-primary`.
           solid: "rgb(var(--primary-solid-rgb) / <alpha-value>)",
           "solid-hover": "rgb(var(--primary-solid-hover-rgb) / <alpha-value>)",
         },
-        muted: "rgb(var(--muted-rgb) / <alpha-value>)",
+        "on-primary": "rgb(var(--on-primary-rgb) / <alpha-value>)",
+        // Fios: gray = 1px decorativo (border-gray); strong = contorno de
+        // botão; control = borda de campo de formulário (≥3:1).
         gray: {
           DEFAULT: "rgb(var(--border-rgb) / <alpha-value>)",
+          strong: "rgb(var(--border-strong-rgb) / <alpha-value>)",
+          control: "rgb(var(--control-rgb) / <alpha-value>)",
         },
-        // Mesmo valor de --color-accent (globals.css) — destaque/anotação.
         accent: {
           DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
         },
-        // Status semânticos (validador de meta tags). Pares medidos sobre
-        // --surface nos dois temas — valores e razões em globals.css.
+        // Formas De Stijl — nunca como cor de texto (ver globals.css).
+        shape: {
+          danger: "rgb(var(--danger-shape-rgb) / <alpha-value>)",
+          reference: "rgb(var(--reference-rgb) / <alpha-value>)",
+        },
+        // Estados semânticos. danger é o vermelho clareado, seguro como texto.
         success: "rgb(var(--success-rgb) / <alpha-value>)",
         danger: "rgb(var(--danger-rgb) / <alpha-value>)",
         warning: "rgb(var(--warning-rgb) / <alpha-value>)",
       },
       fontFamily: {
-        sans: [
-          "var(--font-inter)",
-          "ui-sans-serif",
-          "system-ui",
-          "sans-serif",
-        ],
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Consolas", "monospace"],
       },
       spacing,
       zIndex,

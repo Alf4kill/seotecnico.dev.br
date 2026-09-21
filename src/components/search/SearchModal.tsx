@@ -115,11 +115,11 @@ export function SearchModal({ items }: SearchModalProps) {
       >
       {/* Caixa branca — stopPropagation evita fechar ao clicar dentro */}
       <div
-        className="bg-surface rounded-b-2xl w-full max-w-3xl shadow-2xl overflow-hidden"
+        className="w-full max-w-3xl overflow-hidden border border-gray-strong border-t-2 border-t-primary bg-surface"
         onClick={e => e.stopPropagation()}
       >
         {/* ── Cabeçalho com input ──────────────────────────────── */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center gap-3 border-b border-gray px-6 py-5">
           <Search className="w-5 h-5 text-primary shrink-0" strokeWidth={2} />
           <input
             ref={inputRef}
@@ -128,7 +128,7 @@ export function SearchModal({ items }: SearchModalProps) {
             onChange={e => { setQuery(e.target.value); setActiveIndex(-1) }}
             onKeyDown={handleKeyDown}
             placeholder="Buscar artigos, ferramentas, páginas..."
-            className="flex-1 text-base text-foreground placeholder:text-gray-400 outline-none bg-transparent"
+            className="flex-1 bg-transparent font-mono text-base text-foreground outline-none placeholder:text-label"
             aria-label="Campo de busca"
             aria-autocomplete="list"
             aria-controls="search-results-list"
@@ -138,7 +138,7 @@ export function SearchModal({ items }: SearchModalProps) {
           <button
             type="button"
             onClick={closeSearch}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-foreground hover:bg-surface-2 transition-colors"
+            className="p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
             aria-label="Fechar busca"
           >
             <X className="w-4 h-4" />
@@ -165,17 +165,17 @@ export function SearchModal({ items }: SearchModalProps) {
                           onClick={closeSearch}
                           className={[
                             'flex items-start gap-4 px-5 py-3.5 transition-colors',
-                            active ? 'bg-primary/10' : 'hover:bg-surface-2',
+                            active ? 'bg-surface-2' : 'hover:bg-surface-2',
                           ].join(' ')}
                         >
-                          <span className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
+                          <span className="search-chip mt-0.5 shrink-0 border border-primary px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
                             {categoryLabel[item.category]}
                           </span>
                           <span className="flex flex-col min-w-0">
                             <span className={`text-sm font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>
                               {item.title}
                             </span>
-                            <span className="text-xs text-gray-500 truncate">
+                            <span className="truncate text-xs text-muted">
                               {item.description}
                             </span>
                           </span>
@@ -186,11 +186,11 @@ export function SearchModal({ items }: SearchModalProps) {
                 </ul>
 
                 {/* Link para página completa */}
-                <div className="border-t border-gray-100 px-5 py-3">
+                <div className="border-t border-gray px-5 py-3">
                   <Link
                     href={`/busca?q=${encodeURIComponent(debouncedQuery)}`}
                     onClick={closeSearch}
-                    className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+                    className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.1em] text-primary transition-colors hover:text-primary-hover"
                   >
                     Ver todos os resultados para &ldquo;{debouncedQuery}&rdquo;
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -198,7 +198,7 @@ export function SearchModal({ items }: SearchModalProps) {
                 </div>
               </>
             ) : (
-              <div className="px-5 py-10 text-center text-sm text-gray-500">
+              <div className="px-5 py-10 text-center text-sm text-muted">
                 Nenhum resultado encontrado para &ldquo;{debouncedQuery}&rdquo;
               </div>
             )}
@@ -207,7 +207,7 @@ export function SearchModal({ items }: SearchModalProps) {
 
         {/* Estado vazio (antes de digitar) */}
         {debouncedQuery.length < 2 && (
-          <div className="px-5 py-8 text-center text-sm text-gray-400">
+          <div className="px-5 py-8 text-center font-mono text-xs uppercase tracking-[0.1em] text-label">
             Digite ao menos 2 caracteres para buscar
           </div>
         )}

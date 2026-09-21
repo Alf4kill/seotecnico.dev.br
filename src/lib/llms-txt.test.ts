@@ -15,6 +15,7 @@ const post = (slug: string, title: string, description: string): Post => ({
     lang: 'pt-BR',
   },
   content: '# corpo',
+  derived: { readingTime: 1, headings: [] },
 })
 
 const guide = post('seo-tecnico-nextjs', 'Guia de SEO técnico', 'O guia pilar do site.')
