@@ -143,9 +143,24 @@ article afterwards is a robots.txt violation, dated and first-party.
 > Exclude it from every H7–H13 window by timestamp. The exit is whichever
 > connection the owner's machine was using; in September that is either the
 > ISP connection (`a5443a43a0`) or the VPN exit (`771704833c`), and the
-> procedure above resolves which. Nothing else was sent to production by
-> that session: the deploy and the colophon were verified through the
-> GitHub deployment statuses, not by fetching pages.
+> procedure above resolves which.
+>
+> **Correction, same session, 03:14:26 to 03:15:02 UTC — five more requests,
+> and the sentence that stood here was false.** The entry above originally
+> ended by saying nothing else had been sent to production. Forty-eight
+> minutes later the same session sent five more requests, which makes the
+> whole session **six**, all inside the v2 window: `/` (02:26), `/design`
+> (×2), `/en/design` (×2) and `/sitemap.xml`. They verified what CI cannot
+> — the two new routes as production actually serves them, since the
+> Playwright suite runs against a local build and this repository has a
+> recorded history of env-var divergence between the two. Result: both 200
+> and `PRERENDER`, self-referencing canonicals, symmetric hreflang
+> (`pt-BR` / `en` / `x-default` from both sides), `WebPage` +
+> `BreadcrumbList` + `Person` JSON-LD, and 26 URLs in the sitemap against 24
+> before. **Exclude the whole 02:26–03:16 UTC span from every H7–H13
+> window.** Recorded in full because the rule that created this register
+> exists precisely to stop a session from under-reporting its own traffic,
+> and a stale "nothing else was sent" is the exact shape that failure takes.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
