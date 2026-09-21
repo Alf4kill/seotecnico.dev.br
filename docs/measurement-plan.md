@@ -114,6 +114,24 @@ article afterwards is a robots.txt violation, dated and first-party.
 > proxy matcher does not count. Both are before the 2026-09-13 cutoffs. The
 > Sec-Fetch and RSC header checks of the same day ran against a local
 > production build, not against production.
+>
+> **Correction, 2026-09-20 — one connection is one identifier *per month*, and
+> this register had too few.** `net_id` rotates its salt monthly by design
+> (§2.3), so excluding "the owner's network" is a per-month operation. The
+> owner's ISP connection appears in the pilot window as **`f20012e925` (July,
+> 518 events), `312fb614f9` (August, 429) and `a5443a43a0` (September, 94)** —
+> one `/24`, three identifiers, all three in the data, only the first excluded
+> by the first analysis. `771704833c` is a **different** `/24`: the owner
+> reaches this site through a VPN, so it is an exit node used in September, and
+> that exit's July and August identifiers are **still unidentified**. Owner
+> traffic is at least **1,728 events, 24% of the raw dataset**. Verdicts are
+> unaffected — see [`experiment-log.md`](experiment-log.md).
+>
+> **Identify a connection like this, which needs no address and survives a
+> VPN:** send one request from it and read the `net_id` back from Realtime in
+> this property. Repeat per connection and per month. Recomputing the hash from
+> [`net-id.ts`](../src/lib/net-id.ts) also works when the address is known, and
+> validates itself against a month whose answer is already on the record.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 

@@ -110,12 +110,9 @@ Publish the interval, never the word "zero".
 **Window: 57 days, 63% of the registered 90.** Closed early at the redesign
 deploy, for the reason stated above. Source: seven Explore exports from the
 crawler property taken by the owner on 2026-09-20, kept outside the repo.
-7,208 raw events; **6,003 after excluding the owner's own networks**
-(`771704833c`, 687 events, registered in [`measurement-plan.md`](measurement-plan.md);
-and `f20012e925`, 518 events — **inferred**, not registered: it is the top July
-network, it carries browser-shaped traffic, and it produced both the 2026-07-25
-validation curls and the trap hit of that date. The owner should confirm it).
-The registered synthetic hits of 2026-07-25 are excluded by date.
+7,208 raw events; **5,480 after excluding the owner's own traffic**, which turned
+out to be **1,728 events — 24% of everything recorded** (§ below). The registered
+synthetic hits of 2026-07-25 are excluded by date.
 
 Bounds for zero-count results use the exact one-sided 95% Clopper-Pearson upper
 bound, the method already used in the 2026-09-14 row, stated against the
@@ -129,7 +126,7 @@ channel's own exposure rather than against time.
 | H4 | **Falsified** | Conditional requests do not discriminate documented purpose. Both retrieval-documented agents send **none**: Claude-SearchBot 0/939 (≤0.32%), OAI-SearchBot 0/182 (≤1.63%). The only agent that sends them is Bingbot, at **54.2%** (52/96). And **762 of 814 conditional requests — 93.6% — come from the undeclared bucket** |
 | H5 | **Inconclusive, and underpowered by roughly 10×** | Its own threshold is ≥5 fetches of the target in 14 days. Observed page-fetch rate across the window is **0.47 fetches per article per 14 days** (Claude-SearchBot 41 page fetches in 58 days over ~21 articles; OpenAI 39). The redesign deploy cut the post-window at day 6 of 14, which changes nothing: 6 days and 14 days both fall an order of magnitude short |
 | H6 | **Sustained, but the bound is useless** | Zero Trap B hits. Exposure: **9 real fetches of `/llms.txt` in 57 days** (a tenth was the 2026-07-25 synthetic). Upper bound ≤ **28.3%** — with nine reads, "nothing follows `llms.txt`" cannot be distinguished from "almost nothing reads it". The finding is the exposure number, not the zero |
-| H11 | **Confirmed** | Median **1 event per `net_id`** in both monthly windows. Seen exactly once: 51.0% (July, n=343) and 61.4% (September, n=360). Seen at most twice: 63.3% and 75.0%. Meanwhile the **top ten networks carry about half of all events** |
+| H11 | **Confirmed** | Median **1 event per `net_id`** in both monthly windows. Seen exactly once: 51.2% (July, n=342) and 61.7% (September, n=358). Seen at most twice: 63.5% and 75.4%. Meanwhile the **top ten networks carry about half of all events** |
 
 #### What the verdicts change
 
@@ -159,6 +156,62 @@ channel's own exposure rather than against time.
   proxy (`has_sec_fetch = false`), which is the conservative direction: the ratio
   above is a **lower** bound on the undeclared bucket.
 
+#### The owner's own traffic is several identifiers, not one
+
+`f20012e925` was excluded on 2026-09-20 as an inference. It is now **confirmed**,
+and confirming it exposed a fifth defect.
+
+**Method, reproducible by anyone holding the secret:** `net_id` is
+`SHA-256(secret : YYYY-MM : v<32|128> : <hex /24 or /48 prefix>)` truncated to
+five bytes ([`net-id.ts`](../src/lib/net-id.ts)). Recompute it for a candidate
+address and compare. The check validates itself — compute a month whose answer
+is already known, and if that reproduces, the other months are trustworthy.
+
+Run for the owner's ISP connection, one `/24`, the three months of the window
+each produced a **different identifier, and all three are in the data**:
+
+| Month | `net_id` | Events | Was it excluded on 2026-09-20? |
+|---|---|---|---|
+| 2026-07 | `f20012e925` | 518 | yes |
+| 2026-08 | `312fb614f9` | 429 | **no** |
+| 2026-09 | `a5443a43a0` | 94 | **no** |
+
+That is the monthly salt rotation working exactly as designed — the identifier is
+not supposed to accumulate across months (§2.3). But it makes *"exclude my own
+traffic"* a **per-month** operation, and the register in
+[`measurement-plan.md`](measurement-plan.md) listed one identifier per period,
+which is structurally too few.
+
+**And `771704833c` is a different `/24` entirely** — not the ISP connection. The
+owner browses this site through a VPN, so that identifier is a **VPN exit node**
+used in September. There are therefore at least two network paths in the data,
+and the VPN exit's July and August identifiers **remain unidentified and are
+still in the dataset**. The exclusion is more complete than it was and is still
+not complete.
+
+**No verdict changes.** Recomputed against the fuller exclusion set:
+
+| | Published 2026-09-20 | Corrected |
+|---|---|---|
+| H3 undeclared | 1,326 events / 436 networks | **identical** |
+| H3 declared-and-disallowed | 425 events / 7 networks | **identical** |
+| H11 July | median 1, once 51.0%, ≤2 63.3% (n=343) | median 1, once 51.2%, ≤2 63.5% (n=342) |
+| H11 September | median 1, once 61.4%, ≤2 75.0% (n=360) | median 1, once 61.7%, ≤2 75.4% (n=358) |
+
+H3 is **numerically unchanged** because every newly identified owner event
+carries `has_sec_fetch = true`, and H3's bucket is `false`. H11 moves by at most
+0.4 points and its median does not move. H1, H2, H4 and H6 never depended on
+`net_id` exclusion at all.
+
+**A side effect worth recording:** 994 of the owner's 1,041 ISP events are
+`ua_class = unknown` with `has_sec_fetch = true` — the exact signature of an RSC
+prefetch. **Defect C's contamination was, in large part, the owner's own
+browsing.**
+
+**Procedure from now on, which works under a VPN and needs no address at all:**
+make a request from the connection to be identified and read the `net_id` back
+from Realtime in the crawler property. That binds exit node to identifier
+definitively, for that month, and is repeated per connection and per month.
 #### Findings outside the hypotheses
 
 - **ClaudeBot fetched `/robots.txt` 424 times and nothing else, ever.** Not one
@@ -216,6 +269,13 @@ distribution. Export that column as text.
    the crawl volume already in the property. The fix is a line in the
    registration: what is the smallest effect this window can detect, and does
    the observed traffic reach it?
+8. **A rotating pseudonymous identifier makes self-exclusion a per-period
+   operation, and a VPN multiplies it again.** One physical connection produced
+   three `net_id` values across the pilot, of which the first analysis excluded
+   one; a VPN exit produced a fourth. Owner traffic turned out to be 24% of the
+   raw dataset. The identifier design is right — it is supposed to stop
+   accumulating — but an exclusion list written as "my network" rather than "my
+   network, per month, per exit" is incomplete by construction, and silently so.
 
 ### Exports — taken 2026-09-20, and the two that were not
 
