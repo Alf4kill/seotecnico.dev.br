@@ -639,6 +639,16 @@ Per CLAUDE.md §7.3, recorded before the results are known. Windows start on mer
 not on the 2026-07-25 policy ship date, and the synthetic hits documented in
 [`measurement-plan.md`](measurement-plan.md) are excluded from all of them.
 
+> **All six are resolved as of 2026-09-20** — window 2026-07-25 → 2026-09-20,
+> 57 days. **H2 confirmed** (a verified, training-documented agent fetched three
+> disallowed paths on 2026-07-30, having never fetched `/robots.txt` in the
+> window, so not deliberate disregard); **H3 confirmed** (62× more distinct
+> networks undeclared than declared-and-disallowed); **H1 and H4 falsified**;
+> **H6 sustained** on nine reads of `/llms.txt`, an exposure too small to bound
+> anything usefully; **H5 inconclusive** and underpowered by roughly 10×. The
+> numbers, the exact bounds and the qualifiers live in
+> [`experiment-log.md`](experiment-log.md); this table is kept as registered.
+
 | # | Hypothesis | Window | Falsified if |
 |---|---|---|---|
 | H1 | Trap A receives ≥1 hit from a `net_id` that also fetched `/robots.txt` within the preceding 24h | 90d | Zero correlated trap hits |
