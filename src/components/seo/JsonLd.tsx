@@ -177,3 +177,41 @@ export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
   }
   return <JsonLdScript schema={schema} />
 }
+
+/**
+ * Página institucional com autoria e data — hoje só o colofão do design
+ * (/design, /en/design). `WebPage` e não `Article`: não é conteúdo editorial
+ * sobre SEO, é a página que explica o próprio site. Liga-se ao grafo pelo
+ * `@id` do WebSite e da pessoa, como todo o resto.
+ */
+export function WebPageJsonLd({
+  path,
+  name,
+  description,
+  lang,
+  dateModified,
+  imagePath,
+}: {
+  path: string
+  name: string
+  description: string
+  lang: 'pt-BR' | 'en'
+  dateModified: string
+  imagePath?: string
+}) {
+  const url = `${site.url}${path}`
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${url}#webpage`,
+    url,
+    name,
+    description,
+    inLanguage: lang,
+    dateModified,
+    isPartOf: { '@id': WEBSITE_ID },
+    author: personSchema(),
+    ...(imagePath ? { primaryImageOfPage: `${site.url}${imagePath}` } : {}),
+  }
+  return <JsonLdScript schema={schema} />
+}
