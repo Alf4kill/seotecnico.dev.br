@@ -249,9 +249,25 @@ redesign deploy.
 
 ### H7–H13 — registered before implementation
 
-Windows start at the v2 T0 (the redesign deploy), not at this entry. Design for
-each is in [`detection-experiment.md`](detection-experiment.md) §§2.5, 2.6, 3.5
-and in [`measurement-plan.md`](measurement-plan.md).
+Each window starts when **the component that measures it deploys**, not at the
+redesign deploy. That distinction was written the other way round on
+2026-09-20 and is corrected here before it could mislead: the redesign changes
+what is served, not what is measured, and H7–H13 need instruments that do not
+exist yet. H7/H8/H9 start with the coherence vector and the probe; H10 and H13
+start with their channels; H11 is already computed from pilot data; H12 needs
+the probe plus two browser releases.
+
+The redesign deploy is instead a **dated global change to every served page**,
+and therefore a confounder the v2 analysis controls for under §13 — the same
+treatment any external shock gets.
+
+A decision recorded on 2026-09-20 is superseded by this: the probe was to ship
+bundled with the redesign, accepting a confounded RUM series. The probe is not
+written, so the two separate on their own and that confound does not arise. The
+redesign does not wait for the probe.
+
+Design for each is in [`detection-experiment.md`](detection-experiment.md)
+§§2.5, 2.6, 3.5 and in [`measurement-plan.md`](measurement-plan.md).
 
 | # | Hypothesis | Window | Falsified if |
 |---|---|---|---|
