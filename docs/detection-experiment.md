@@ -94,9 +94,19 @@ GA4 property (`G-59LQZ6LR72`) records a `page_view` only if JavaScript executed.
 This works for one reason that was decided months ago for unrelated reasons: the
 Consent Mode v2 setup is *advanced*, so a visitor who refuses the LGPD banner
 still produces a cookieless ping (`gcs=G100`, verified 2026-07-13). Consent
-refusal — the obvious confound — is therefore already eliminated. Remaining
-confounds are ad blockers and JS-disabled browsers; both are real, both are
-small, and neither correlates with the paths a crawler targets.
+refusal — the obvious confound — is therefore already eliminated.
+
+**The remaining confounds are larger here than first written.** This section
+originally said that ad blockers and JS-disabled browsers are "both real, both
+small, and neither correlates with the paths a crawler targets". That is not
+safe on this domain: **the owner browses this site in Brave**, whose Shields
+block GTM by default. Their own visits therefore produce a document request with
+no pageview — the exact shape this section calls a non-JS client. On a domain
+with this little traffic that is not small in proportion, and it correlates
+precisely with the pages being worked on. Any two-pipeline computation has to
+subtract owner traffic first, per month and per exit node
+(see [`experiment-log.md`](experiment-log.md)), and state the residual ad-blocker
+share as an unknown rather than as a negligible one.
 
 This signal does not read the User-Agent at all, which is precisely why it catches
 the clients that lie about it.
