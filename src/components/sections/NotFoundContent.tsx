@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Home } from 'lucide-react'
+import { ButtonLink } from '@/components/ui/Button'
 
 /**
  * Conteúdo da página 404, compartilhado pelas duas portas por onde um 404
@@ -15,72 +15,52 @@ import { ArrowRight, Home } from 'lucide-react'
  */
 export function NotFoundContent({ bilingual = false }: { bilingual?: boolean }) {
   return (
-    <section className="container flex min-h-[55vh] flex-col items-center justify-center gap-6 py-16 text-center lg:py-24">
-      <p className="font-bold leading-none text-primary text-7xl md:text-8xl lg:text-9xl">
+    <section className="container-xl grid min-h-[55vh] items-center gap-10 py-16 lg:grid-cols-12 lg:gap-6 lg:py-24">
+      {/* O código de status em escala de cartaz — hierarquia por tamanho, não por cor. */}
+      <p
+        aria-hidden="true"
+        className="font-display text-[clamp(6rem,3rem+14vw,13rem)] font-bold leading-[0.8] tracking-[-0.05em] text-primary lg:col-span-5"
+      >
         404
       </p>
 
-      <div className="flex flex-col items-center gap-3">
-        <h1 className="font-bold text-foreground text-2xl md:text-3xl lg:text-4xl">
+      <div className="flex flex-col gap-5 lg:col-span-7">
+        <p className="eyebrow text-accent">Sinal perdido · 404</p>
+        <h1 className="font-display text-[clamp(2rem,1.3rem+2.6vw,3.25rem)] font-bold leading-[1.05] tracking-[-0.025em] text-foreground">
           Página não encontrada
         </h1>
-        <p className="max-w-md text-muted text-sm leading-7 lg:text-base">
+        <p className="max-w-md text-base leading-relaxed text-muted">
           A página que você procura pode ter sido removida, teve seu endereço
           alterado ou está temporariamente indisponível.
         </p>
+
+        <div className="flex flex-wrap gap-4 pt-2">
+          <ButtonLink href="/" title="Voltar para o início">
+            Voltar para o início
+          </ButtonLink>
+          <ButtonLink href="/guia/seo-tecnico-nextjs" variant="outline" title="Guia de SEO técnico para Next.js">
+            Ler o guia de SEO técnico
+          </ButtonLink>
+        </div>
+
+        {bilingual && (
+          // Um único <h1> por página (§6): a versão inglesa é texto de apoio,
+          // não um segundo título.
+          <p lang="en" className="mt-2 max-w-md border-t border-gray pt-5 text-sm leading-relaxed text-muted">
+            Page not found. Looking for the English version of this site?{' '}
+            <Link
+              href="/en"
+              hrefLang="en"
+              prefetch={false}
+              title="SEO Técnico — English home"
+              className="text-primary underline underline-offset-[3px] transition-colors hover:text-primary-hover"
+            >
+              Go to the English home
+            </Link>
+            .
+          </p>
+        )}
       </div>
-
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-3 lg:gap-4">
-        {/* Primário — voltar à home */}
-        <Link
-          href="/"
-          title="Voltar para o início"
-          className="inline-flex items-center gap-2 rounded-full font-semibold
-                     bg-primary-solid text-white
-                     px-6 py-3.5 text-sm lg:text-base
-                     transition duration-300 ease-in-out
-                     hover:bg-primary-solid-hover
-                     focus-visible:outline focus-visible:outline-2
-                     focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <Home className="h-4 w-4" strokeWidth={2.5} />
-          Voltar para o início
-        </Link>
-
-        {/* Secundário — ler o guia */}
-        <Link
-          href="/guia/seo-tecnico-nextjs"
-          title="Guia de SEO técnico para Next.js"
-          className="group inline-flex items-center gap-2 rounded-full font-semibold
-                     border-[1.5px] border-gray text-foreground bg-surface
-                     px-6 py-3.5 text-sm lg:text-base
-                     transition duration-300 ease-in-out
-                     hover:border-primary hover:text-primary
-                     focus-visible:outline focus-visible:outline-2
-                     focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          Ler o guia de SEO técnico
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" strokeWidth={2.5} />
-        </Link>
-      </div>
-
-      {bilingual && (
-        // Um único <h1> por página (§6): a versão inglesa é texto de apoio,
-        // não um segundo título.
-        <p lang="en" className="mt-4 max-w-md border-t border-gray pt-6 text-sm leading-7 text-muted">
-          Page not found. Looking for the English version of this site?{' '}
-          <Link
-            href="/en"
-            hrefLang="en"
-            prefetch={false}
-            title="SEO Técnico — English home"
-            className="font-semibold text-primary hover:text-primary-dark transition-colors"
-          >
-            Go to the English home
-          </Link>
-          .
-        </p>
-      )}
     </section>
   )
 }

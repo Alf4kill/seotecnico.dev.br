@@ -66,14 +66,14 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
   return (
     <div className="py-12">
       {/* Input de busca */}
-      <div className="flex items-center gap-3 border border-gray rounded-full px-5 py-3 bg-surface shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all mb-10 max-w-xl">
-        <Search className="w-5 h-5 text-gray-400 shrink-0" strokeWidth={2} />
+      <div className="mb-10 flex max-w-xl items-center gap-3 border border-gray-control bg-surface px-5 py-3 transition-colors focus-within:border-primary">
+        <Search className="h-5 w-5 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
         <input
           type="search"
           value={query}
           onChange={e => handleChange(e.target.value)}
           placeholder="Buscar artigos, ferramentas, páginas..."
-          className="flex-1 text-sm text-foreground placeholder:text-gray-400 outline-none bg-transparent"
+          className="flex-1 bg-transparent font-mono text-sm text-foreground outline-none placeholder:text-label"
           aria-label="Campo de busca"
           autoFocus
           autoComplete="off"
@@ -86,7 +86,7 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
           <div className="flex flex-col gap-10">
             {Array.from(grouped.entries()).map(([cat, hits]) => (
               <section key={cat}>
-                <h2 className="text-xs font-bold uppercase tracking-widest text-primary mb-4">
+                <h2 className="eyebrow mb-4 text-primary">
                   {categoryLabel[cat]}s
                 </h2>
                 <ul className="flex flex-col gap-2">
@@ -94,12 +94,12 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
                     <li key={item.id}>
                       <Link
                         href={item.href}
-                        className="flex flex-col gap-1 p-4 rounded-xl border border-gray-100 bg-surface hover:border-primary hover:shadow-sm transition-all"
+                        className="flex flex-col gap-1 border border-gray bg-surface p-4 transition-colors hover:border-primary"
                       >
                         <span className="text-sm font-semibold text-foreground">
                           {item.title}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted">
                           {item.description}
                         </span>
                       </Link>
@@ -110,12 +110,12 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Nenhum resultado encontrado para &ldquo;{query}&rdquo;.
           </p>
         )
       ) : (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted">
           Digite ao menos 2 caracteres para buscar.
         </p>
       )}

@@ -2,139 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Tokens de tema ─────────────────────────────────────────────────────────── */
-/* Fonte única das cores. tailwind.config.js consome os `*-rgb` via              */
+/* ── Tokens ─────────────────────────────────────────────────────────────────── */
+/* Fonte única das cores do sistema "retrofuturismo suíço"                      */
+/* (docs/design-system.md). tailwind.config.js consome os `*-rgb` via            */
 /* rgb(var(--x) / <alpha-value>), que é o que faz `bg-primary/10` funcionar.     */
+/* Os mesmos valores em hex vivem em src/lib/design-tokens.ts, para o Satori e   */
+/* o favicon; design-tokens.test.ts falha se os dois divergirem.                 */
 /*                                                                              */
-/* Os SVGs inline dos artigos (§9) usam --foreground, --color-accent e           */
-/* --color-diagram-* diretamente como COR, não como canal — por isso esses três  */
-/* existem nas duas formas. Nunca troque a forma-cor por canais: quebraria todo  */
-/* diagrama já publicado.                                                        */
+/* Os SVGs inline dos artigos (§9) usam --foreground, --background,              */
+/* --color-accent e --color-diagram-* diretamente como COR, não como canal —     */
+/* por isso esses existem nas duas formas. Nunca troque a forma-cor por canais:  */
+/* quebraria todo diagrama já publicado.                                         */
 /*                                                                              */
-/* Regra de contraste: todo par texto/fundo abaixo foi medido (AA, ≥4.5:1).      */
+/* Só escuro, por decisão de leitura (página /design): artigos longos e cheios   */
+/* de código. Todo par texto/fundo abaixo foi medido (AA, ≥4,5:1).               */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --background-rgb: 255 255 255;
-  --surface-rgb: 255 255 255;      /* cards, header, modais */
-  --surface-2-rgb: 249 250 251;    /* preenchimentos sutis, hover de lista */
-  --foreground-rgb: 17 24 39;
-  --muted-rgb: 107 114 128;
-  --border-rgb: 229 231 235;
+  --background-rgb: 14 17 22;      /* #0E1116 grafite */
+  --surface-rgb: 21 26 33;         /* #151A21 cartão */
+  --surface-2-rgb: 27 34 43;       /* #1B222B elevada, código */
+  --surface-alt-rgb: 18 22 28;     /* #12161C faixa alternada */
 
-  /* primary = cor de TEXTO/link/tint: precisa contrastar com o fundo da página.
-     primary-dark = seu estado hover.                                           */
-  --primary-rgb: 37 99 235;
-  --primary-dark-rgb: 29 78 216;
-  /* primary-solid = SUPERFÍCIE de botão, sempre com texto branco por cima.
-     Não acompanha o tema: clarear no dark quebraria o contraste do texto.      */
-  --primary-solid-rgb: 37 99 235;
-  --primary-solid-hover-rgb: 29 78 216;
+  --foreground-rgb: 232 236 241;   /* #E8ECF1 títulos — 15,94:1 */
+  --body-rgb: 198 208 219;         /* #C6D0DB corpo — 12,11:1 */
+  --muted-rgb: 151 163 178;        /* #97A3B2 apoio — 7,38 / 6,82 / 6,26:1 */
+  --label-rgb: 122 135 152;        /* #7A8798 rótulo — 5,17 / 4,78:1; NÃO sobre surface-2 (4,39) */
+  --label-code-rgb: 133 147 164;   /* #8593A4 rótulo sobre código — 5,12:1 */
 
-  --accent-rgb: 245 158 11;
+  /* Fios. Decorativos (1,40 e 1,80:1): nunca delimitam um controle. */
+  --border-rgb: 38 47 58;          /* #262F3A */
+  --border-strong-rgb: 53 64 78;   /* #35404E */
+  /* Borda de input/select/textarea — WCAG 1.4.11 pede 3:1: 3,50 / 3,23:1. */
+  --control-rgb: 96 107 122;       /* #606B7A */
 
-  /* Status do validador de meta tags (e futuros usos semânticos). Medidos
-     sobre --surface em cada tema: 5.02 / 6.47 / 5.02 :1 no claro. */
-  --success-rgb: 21 128 61;
-  --danger-rgb: 185 28 28;
-  --warning-rgb: 180 83 9;
+  /* primary = ciano de instrumento: texto, link, fio e superfície de botão.
+     No escuro o mesmo ciano serve às duas coisas, porque o texto sobre ele é
+     o grafite (--on-primary), não branco: 10,68:1.                          */
+  --primary-rgb: 62 216 200;       /* #3ED8C8 — 10,68:1 como texto */
+  --primary-hover-rgb: 139 233 222;/* #8BE9DE */
+  --primary-solid-rgb: 62 216 200;
+  --primary-solid-hover-rgb: 139 233 222;
+  --on-primary-rgb: 14 17 22;      /* texto sobre ciano ou âmbar */
+
+  --accent-rgb: 232 155 60;        /* #E89B3C âmbar de alerta — 8,27:1 */
+
+  /* Formas De Stijl. Como texto o vermelho reprova (4,21:1) — texto vermelho
+     usa --danger-rgb, que é a versão clareada e medida.                     */
+  --danger-shape-rgb: 208 72 60;   /* #D0483C */
+  --reference-rgb: 47 91 208;      /* #2F5BD0 */
+
+  /* Estados semânticos (validador, checador de CWV, lista do blog). */
+  --success-rgb: 62 216 200;       /* = primary */
+  --warning-rgb: 232 155 60;       /* = accent */
+  --danger-rgb: 229 98 90;         /* #E5625A — 5,61 / 5,18 / 4,75:1 */
 
   --background: rgb(var(--background-rgb));
   --foreground: rgb(var(--foreground-rgb));
   --color-primary: rgb(var(--primary-rgb));
   --color-accent: rgb(var(--accent-rgb));
 
-  /* Paleta de diagramas (SVGs inline dos artigos — CLAUDE.md §9).
+  /* Paleta de diagramas (SVGs inline dos artigos — CLAUDE.md §9). Fases em
+     tons escuros para que --foreground continue legível por cima (>9:1);
      accent também é a cor de anotação de screenshots (caixas/setas). */
-  --color-diagram-phase-a: #DBEAFE;
-  --color-diagram-phase-b: #D1FAE5;
-  --color-diagram-axis: #9CA3AF;
-
-  --code-background: #0a0c10; /* = fundo do tema Shiki (src/lib/mdx.ts) */
-}
-
-/* Tema escuro. Duas portas para o mesmo conjunto de valores:
-   1. preferência do sistema (§9)  → só quando não há escolha explícita, daí o
-      :not([data-theme='light']), que deixa o usuário forçar o claro mesmo com
-      o sistema no escuro;
-   2. escolha explícita do usuário → [data-theme='dark'], que vence sempre por
-      vir depois e não estar dentro da media query. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-
-    --background-rgb: 13 17 23;
-    --surface-rgb: 22 27 34;
-    --surface-2-rgb: 28 33 40;
-    --foreground-rgb: 230 237 243;
-    --muted-rgb: 139 148 158;
-    --border-rgb: 48 54 61;
-
-    --primary-rgb: 96 165 250;
-    --primary-dark-rgb: 147 197 253;
-
-    /* Status sobre --surface escuro: 6.81 / 5.16 / 6.85 :1. */
-    --success-rgb: 63 185 80;
-    --danger-rgb: 248 81 73;
-    --warning-rgb: 210 153 34;
-
-    --color-diagram-phase-a: #1E3A5F;
-    --color-diagram-phase-b: #14432F;
-    --color-diagram-axis: #7D8590;
-  }
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-
-  --background-rgb: 13 17 23;
-  --surface-rgb: 22 27 34;
-  --surface-2-rgb: 28 33 40;
-  --foreground-rgb: 230 237 243;
-  --muted-rgb: 139 148 158;
-  --border-rgb: 48 54 61;
-
-  --primary-rgb: 96 165 250;
-  --primary-dark-rgb: 147 197 253;
-
-  /* Status sobre --surface escuro: 6.81 / 5.16 / 6.85 :1. */
-  --success-rgb: 63 185 80;
-  --danger-rgb: 248 81 73;
-  --warning-rgb: 210 153 34;
-
   --color-diagram-phase-a: #1E3A5F;
   --color-diagram-phase-b: #14432F;
-  --color-diagram-axis: #7D8590;
+  --color-diagram-axis: #7A8798;
+
+  --code-background: #1B222B; /* = fundo do tema Shiki (src/lib/shiki-theme.ts) */
 }
 
-/* Ícones do botão de tema. A escolha é feita em CSS, pelo mesmo data-theme que
-   o script inline aplica, para o ícone certo já vir pintado no primeiro frame
-   em vez de esperar a hidratação. Mostramos o ícone do destino: lua no claro
-   (clique → escuro), sol no escuro (clique → claro). */
-.theme-icon-light {
-  display: none;
-}
-.theme-icon-dark {
-  display: block;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .theme-icon-light {
-    display: block;
-  }
-  :root:not([data-theme='light']) .theme-icon-dark {
-    display: none;
-  }
-}
-:root[data-theme='dark'] .theme-icon-light {
-  display: block;
-}
-:root[data-theme='dark'] .theme-icon-dark {
-  display: none;
-}
 
-/* ── Reset global ───────────────────────────────────────────────────────────── */
+/* ── Base ───────────────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
+  /* Âncoras (#secao) param abaixo do header fixo, não atrás dele. */
+  scroll-padding-top: 5.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--border-strong-rgb)) var(--background);
 }
 
 body {
@@ -146,16 +91,43 @@ a {
   text-decoration: none;
 }
 
+/* Títulos em escala de cartaz: uma palavra longa ("desenvolvedores") num h1
+   de 44px no celular não cabe se a webfont perder a janela do 'optional' e
+   a fallback do sistema for mais larga — a DejaVu do Linux é. Sem isto a
+   palavra empurra a página para os lados (pego pelo teste de 390px no CI);
+   com isto ela quebra, e só quando não cabe. */
+h1,
+h2,
+h3 {
+  overflow-wrap: break-word;
+}
+
+::selection {
+  background: rgb(var(--primary-rgb) / 0.3);
+  color: var(--foreground);
+}
+
+/* Foco sempre visível e sempre do mesmo jeito — o ciano sobre o grafite. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   CONTAINERS — padrão percentual (baseado em utility.css de referência)
-   Uso: <div class="container"> ou <Container> / <Container variant="xl">
+   CONTAINERS — padrão percentual (CLAUDE.md §9)
    ───────────────────────────────────────────────────────────────────────────── */
 
 /*
-  .container     → conteúdo padrão    80% / max 1280px
-  .container-wide → seções largas     80% / max 1600px
-  .container-xl  → header e full-bleed 90% / max 1600px
+  .container      → conteúdo padrão     80% / max 1280px
+  .container-wide → seções largas       80% / max 1600px
+  .container-xl   → moldura e grade     90% / max 1600px  (margem ≈80 em 1440)
 */
 
 .container {
@@ -200,6 +172,105 @@ a {
 }
 
 
+/* ── Vocabulário do sistema ─────────────────────────────────────────────────── */
+@layer components {
+  /* Rótulo de instrumento: mono, caixa alta, espaçado. */
+  .eyebrow {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--label-rgb));
+  }
+
+  /* Faixa de alerta diagonal — abre e fecha a página /design. */
+  .hazard-stripe {
+    height: 1.375rem;
+    background: repeating-linear-gradient(
+      135deg,
+      var(--stripe, var(--color-accent)) 0 18px,
+      var(--background) 18px 36px
+    );
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 50;
+    padding: 0.75rem 1rem;
+    background: var(--color-primary);
+    color: rgb(var(--on-primary-rgb));
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+
+/* ── Progresso de leitura ───────────────────────────────────────────────────── */
+/* Animação ligada à rolagem do documento: zero JavaScript. Onde o navegador    */
+/* não suporta scroll-driven animations a barra simplesmente não aparece.       */
+.reading-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    height: 3px;
+    background: var(--color-primary);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes reading-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reading-progress {
+    display: none;
+  }
+}
+
+
+/* ── Filtro de categoria (/blog) ────────────────────────────────────────────── */
+/* Rádios + :has(): filtra sem JavaScript e sem URL nova (nenhuma página de     */
+/* categoria é indexável — decisão registrada em docs/design-system.md).        */
+/* Especificidade (0,4,1), igual à do "mostrar" abaixo — que vence por vir
+   depois. Um seletor mais pesado aqui esconderia tudo ao filtrar. */
+.category-filter:has(input:checked:not([value='all'])) [data-category] {
+  display: none;
+}
+.category-filter:has(input[value='cwv']:checked) [data-category='cwv'],
+.category-filter:has(input[value='indexacao']:checked) [data-category='indexacao'],
+.category-filter:has(input[value='dados-estruturados']:checked) [data-category='dados-estruturados'],
+.category-filter:has(input[value='medicao']:checked) [data-category='medicao'] {
+  display: grid;
+}
+.category-filter input:focus-visible + span {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.category-filter input:checked + span {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: rgb(var(--on-primary-rgb));
+}
+
+
 /* ── Search dialog ──────────────────────────────────────────────────────────── */
 /* Reset do <dialog> nativo — posicionamento é feito pelo overlay interno       */
 dialog.search-dialog {
@@ -214,93 +285,177 @@ dialog.search-dialog {
 }
 
 dialog.search-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: rgb(var(--background-rgb) / 0.8);
 }
 
 
 /* ─────────────────────────────────────────────────────────────────────────────
    RICH TEXT — corpo de artigos e guias renderizados a partir de MDX.
    Uso: <div class="rich-text"><MDXRemote ... /></div>
+
+   Escola suíça: medida presa (≈68 caracteres), alinhado à esquerda, parágrafo
+   separado por espaço, hierarquia por escala. Os h2 ganham índice (01, 02…)
+   por contador CSS — nenhum MDX precisa mudar.
    ───────────────────────────────────────────────────────────────────────────── */
 .rich-text {
-  color: var(--foreground);
-  line-height: 1.7;
-  font-size: 1rem;
+  color: rgb(var(--body-rgb));
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  counter-reset: section;
+}
+@media (min-width: 768px) {
+  .rich-text {
+    font-size: 1.125rem;
+  }
 }
 .rich-text > :first-child {
   margin-top: 0;
 }
 .rich-text p {
-  margin: 0 0 0.85em;
+  margin: 0 0 1.1em;
+}
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  color: var(--foreground);
+  font-weight: 700;
 }
 .rich-text h2 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  margin: 1.4em 0 0.5em;
+  counter-increment: section;
+  font-size: clamp(1.5rem, 1.15rem + 1.3vw, 2.125rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 2em 0 0.65em;
+}
+.rich-text h2::before {
+  content: counter(section, decimal-leading-zero);
+  display: inline-block;
+  margin-right: 0.9rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--color-primary);
+  vertical-align: 0.35em;
 }
 .rich-text h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 1.3em 0 0.45em;
+  font-size: 1.3125rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 1.7em 0 0.5em;
 }
 .rich-text h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 1.2em 0 0.4em;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  margin: 1.4em 0 0.4em;
 }
 .rich-text ul {
-  list-style: disc;
-  padding-left: 1.4em;
-  margin: 0 0 0.85em;
+  list-style: square;
+  padding-left: 1.3em;
+  margin: 0 0 1.1em;
 }
 .rich-text ol {
-  list-style: decimal;
-  padding-left: 1.4em;
-  margin: 0 0 0.85em;
+  list-style: decimal-leading-zero;
+  padding-left: 2em;
+  margin: 0 0 1.1em;
 }
 .rich-text li {
-  margin: 0.25em 0;
+  margin: 0.35em 0;
+  padding-left: 0.2em;
+}
+.rich-text li::marker {
+  color: var(--color-primary);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.85em;
 }
 .rich-text a {
   color: var(--color-primary);
   text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
-.rich-text blockquote {
-  border-left: 3px solid var(--color-primary);
-  padding-left: 1em;
-  margin: 0 0 0.85em;
-  color: rgb(var(--muted-rgb));
-  font-style: italic;
+.rich-text a:hover {
+  color: rgb(var(--primary-hover-rgb));
 }
 .rich-text strong {
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--foreground);
 }
-.rich-text code {
-  background: rgb(var(--foreground-rgb) / 0.08);
-  padding: 0.1em 0.35em;
-  border-radius: 4px;
+.rich-text blockquote {
+  margin: 1.5em 0;
+  padding: 1.25rem 1.5rem;
+  border-top: 2px solid var(--color-accent);
+  border-bottom: 1px solid rgb(var(--border-rgb));
+  background: rgb(var(--surface-rgb));
+  color: var(--foreground);
+}
+.rich-text blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Código inline */
+.rich-text :not(pre) > code {
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.85em;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: 0.1em 0.35em;
+  background: rgb(var(--surface-2-rgb));
+  border: 1px solid rgb(var(--border-rgb));
+  color: var(--foreground);
+}
+
+/* Blocos de código (rehype-pretty-code): moldura de instrumento com o título
+   do arquivo, quando o fence declara `title="…"`, e o botão Copiar que a ilha
+   CodeCopy injeta. */
+.rich-text figure[data-rehype-pretty-code-figure] {
+  position: relative;
+  margin: 1.6em 0;
+  background: var(--code-background);
+  border: 1px solid rgb(var(--border-rgb));
+}
+.rich-text [data-rehype-pretty-code-title] {
+  padding: 0.7rem 6rem 0.7rem 1.125rem;
+  border-bottom: 1px solid rgb(var(--border-rgb));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--label-code-rgb));
 }
 .rich-text pre {
-  background: var(--code-background);
-  color: #F9FAFB;
-  padding: 0.9em 1em;
-  border-radius: 8px;
+  margin: 0;
+  padding: 1.1rem 1.25rem;
   overflow-x: auto;
-  margin: 0 0 0.85em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  background: var(--code-background) !important;
 }
 .rich-text pre code {
-  background: transparent;
-  padding: 0;
-  color: inherit;
+  font-family: inherit;
 }
-/* Wrapper emitido pelo componente MDX `table` (mdx-components.tsx): dá às
-   tabelas o mesmo overflow-x que o `pre` já tem — sem ele, células com código
-   (que não quebra linha) estouram o container no mobile. */
+.rich-text .code-copy {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgb(var(--control-rgb));
+  background: var(--code-background);
+  color: var(--color-primary);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.rich-text .code-copy:hover {
+  border-color: var(--color-primary);
+}
+
+/* Tabelas: rótulos mono sobre fio ciano, sem grade vertical. */
 .rich-text .table-scroll {
   overflow-x: auto;
-  margin: 0 0 0.85em;
+  margin: 1.5em 0;
 }
 .rich-text .table-scroll table {
   margin: 0;
@@ -308,26 +463,35 @@ dialog.search-dialog::backdrop {
 .rich-text table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0 0 0.85em;
-  font-size: 0.9rem;
+  margin: 1.5em 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
 }
 .rich-text th,
 .rich-text td {
-  border: 1px solid rgb(var(--border-rgb));
-  padding: 0.5em 0.75em;
+  padding: 0.8rem 1rem 0.8rem 0;
   text-align: left;
+  vertical-align: top;
 }
 .rich-text th {
-  background: rgb(var(--surface-2-rgb));
-  font-weight: 600;
+  border-bottom: 2px solid var(--color-primary);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--label-rgb));
+}
+.rich-text td {
+  border-bottom: 1px solid rgb(var(--border-rgb));
 }
 .rich-text hr {
   border: none;
   border-top: 1px solid rgb(var(--border-rgb));
-  margin: 1.5em 0;
+  margin: 2.5em 0;
 }
 .rich-text figure {
-  margin: 1.5em 0;
+  margin: 1.8em 0;
 }
 .rich-text figure svg {
   max-width: 100%;
@@ -338,18 +502,10 @@ dialog.search-dialog::backdrop {
   max-width: 100%;
   height: auto;
   border: 1px solid rgb(var(--border-rgb));
-  border-radius: 8px;
 }
 .rich-text figcaption {
-  margin-top: 0.5em;
-  font-size: 0.85rem;
+  margin-top: 0.75em;
+  font-size: 0.875rem;
+  line-height: 1.6;
   color: rgb(var(--muted-rgb));
-  text-align: center;
-}
-
-
-/* ── Scrollbar (padrão W3C) ─────────────────────────────────────────────────── */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-primary) rgb(var(--surface-2-rgb));
 }

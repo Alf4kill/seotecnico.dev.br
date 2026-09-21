@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowUp, ArrowDown } from 'lucide-react'
 import type { FaqItem } from '@/lib/content'
 
 /**
@@ -26,21 +25,21 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes', lang }: Faq
   return (
     <section
       lang={lang}
-      className="bg-surface-2 py-12 md:py-16 lg:py-20"
+      className="mt-16 border-t border-gray bg-surface-alt py-12 md:py-16"
       aria-labelledby="faq-titulo"
     >
-      <div className="container">
+      <div className="container-xl grid gap-8 lg:grid-cols-12 lg:gap-6">
 
+        {/* Alinhado à esquerda, como todo título do sistema: a escola suíça
+            não centraliza (docs/design-system.md). */}
         <h2
           id="faq-titulo"
-          className="text-center font-bold text-foreground
-                     text-3xl md:text-4xl lg:text-5xl
-                     mb-10 lg:mb-14"
+          className="font-display text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.025em] text-foreground lg:col-span-4"
         >
           {titulo}
         </h2>
 
-        <div className="mx-auto flex max-w-4xl flex-col gap-4">
+        <div className="flex flex-col border-b border-gray lg:col-span-8">
           {items.map(({ question, answer }, i) => {
             const open = openIndex === i
             const panelId = `faq-panel-${i}`
@@ -49,12 +48,7 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes', lang }: Faq
             return (
               <div
                 key={question}
-                className={[
-                  'rounded-xl bg-surface transition-colors duration-200',
-                  open
-                    ? 'border border-primary'
-                    : 'border border-transparent shadow-sm',
-                ].join(' ')}
+                className="border-t border-gray"
               >
                 <button
                   type="button"
@@ -62,17 +56,15 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes', lang }: Faq
                   aria-expanded={open}
                   aria-controls={panelId}
                   onClick={() => setOpenIndex(open ? null : i)}
-                  className="flex w-full items-center justify-between gap-4
-                             px-5 py-5 md:px-6 text-left cursor-pointer"
+                  className="flex w-full cursor-pointer items-baseline gap-4 py-5 text-left"
                 >
-                  <span className="font-semibold text-foreground text-base lg:text-lg">
+                  <span className="font-mono text-xs text-primary">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="flex-1 font-display text-lg font-medium text-foreground lg:text-xl">
                     {question}
                   </span>
-                  {open ? (
-                    <ArrowUp className="w-5 h-5 shrink-0 text-foreground" strokeWidth={2} aria-hidden="true" />
-                  ) : (
-                    <ArrowDown className="w-5 h-5 shrink-0 text-foreground" strokeWidth={2} aria-hidden="true" />
-                  )}
+                  <span aria-hidden="true" className="font-mono text-lg text-primary">
+                    {open ? '−' : '+'}
+                  </span>
                 </button>
 
                 {/* Animação de altura via grid-template-rows (0fr -> 1fr) */}
@@ -86,7 +78,7 @@ export function FaqSection({ items, titulo = 'Perguntas frequentes', lang }: Faq
                   ].join(' ')}
                 >
                   <div className="overflow-hidden">
-                    <p className="px-5 pb-5 md:px-6 text-muted text-sm leading-7 lg:text-base">
+                    <p className="max-w-[68ch] pb-6 pl-8 text-base leading-relaxed text-body">
                       {answer}
                     </p>
                   </div>

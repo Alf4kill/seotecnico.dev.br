@@ -31,8 +31,9 @@ interface ValidationResponse {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray bg-surface px-3 py-2 text-sm text-foreground ' +
-  'placeholder:text-muted/60 focus:border-primary focus:outline-none'
+  // Borda --control (≥3:1, WCAG 1.4.11) e foco trocando a borda para o ciano.
+  'w-full border border-gray-control bg-background px-3 py-2.5 text-sm text-foreground ' +
+  'placeholder:text-label focus:border-primary focus:outline-none'
 
 const statusIcon: Record<CheckStatus, typeof CheckCircle2> = {
   ok: CheckCircle2,
@@ -40,8 +41,8 @@ const statusIcon: Record<CheckStatus, typeof CheckCircle2> = {
   error: XCircle,
 }
 
-// Tokens do tema, nunca hex. `warning` (não `accent`): o accent #F59E0B dá
-// 2.15:1 sobre surface clara e reprovaria até o critério non-text de 3:1.
+// Tokens do tema, nunca hex. Os três estados passam AA como texto sobre o
+// cartão: ciano 9,87 · âmbar 7,64 · vermelho clareado 5,18 (design-tokens.test.ts).
 const statusClass: Record<CheckStatus, string> = {
   ok: 'text-success',
   warning: 'text-warning',
@@ -63,8 +64,8 @@ function SerpPreview({ data }: { data: ValidationResponse }) {
   }
 
   return (
-    <div className="rounded-lg border border-gray bg-background p-4">
-      <p className="text-xs text-muted">
+    <div className="border border-gray bg-background p-4">
+      <p className="font-mono text-xs text-muted">
         {host}
         {pathname}
       </p>
@@ -113,7 +114,7 @@ export function MetaValidator() {
   const warnings = result?.checks.filter((c) => c.status === 'warning') ?? []
 
   return (
-    <div className="mt-10 rounded-2xl border border-gray bg-surface p-5 md:p-8">
+    <div className="mt-10 border border-gray bg-surface p-5 md:p-8">
       <form
         className="flex flex-col gap-3 sm:flex-row"
         onSubmit={(e) => {
@@ -136,7 +137,7 @@ export function MetaValidator() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-solid px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="inline-flex min-h-11 items-center justify-center gap-2 bg-primary-solid px-6 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-on-primary transition-colors hover:bg-primary-solid-hover disabled:opacity-60"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -148,7 +149,7 @@ export function MetaValidator() {
       </form>
 
       {error && (
-        <p role="alert" className="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-foreground">
+        <p role="alert" className="mt-4 border border-danger/60 bg-danger/10 px-4 py-3 text-sm text-foreground">
           {error}
         </p>
       )}
@@ -156,7 +157,7 @@ export function MetaValidator() {
       {result && (
         <div className="mt-8 space-y-8">
           <div>
-            <h2 className="font-bold text-foreground text-lg">Preview na busca</h2>
+            <h2 className="font-display text-xl font-bold text-foreground">Preview na busca</h2>
             <p className="mt-1 text-sm text-muted">
               Como a página tende a aparecer na SERP do Google
               {result.redirected && (
@@ -170,14 +171,14 @@ export function MetaValidator() {
           </div>
 
           <div>
-            <h2 className="font-bold text-foreground text-lg">
+            <h2 className="font-display text-xl font-bold text-foreground">
               Checagens{' '}
               <span className="text-sm font-normal text-muted">
                 — {errors.length} {errors.length === 1 ? 'erro' : 'erros'},{' '}
                 {warnings.length} {warnings.length === 1 ? 'aviso' : 'avisos'}
               </span>
             </h2>
-            <ul className="mt-3 divide-y divide-gray rounded-lg border border-gray">
+            <ul className="mt-3 divide-y divide-gray border border-gray">
               {result.checks.map((check) => {
                 const Icon = statusIcon[check.status]
                 return (
