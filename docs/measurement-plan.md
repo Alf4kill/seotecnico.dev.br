@@ -132,6 +132,20 @@ article afterwards is a robots.txt violation, dated and first-party.
 > this property. Repeat per connection and per month. Recomputing the hash from
 > [`net-id.ts`](../src/lib/net-id.ts) also works when the address is known, and
 > validates itself against a month whose answer is already on the record.
+>
+> **2026-09-21, 02:26 UTC (2026-09-20, 23:26 UTC−3) — one request, and it is
+> the first event of the v2 window.** A working session sent a single GET to
+> `https://seotecnico.dev.br/` to confirm the redesign deploy was serving
+> (HTTP 200). One request, no trap, no discovery endpoint. It falls **after**
+> the pilot window closed on 2026-09-20, so it cannot reach H1–H6 — but the
+> redesign deploy finished at **02:24:50 UTC**, which is the v2 T0, so this
+> hit lands 90 seconds inside the v2 window and is its first recorded event.
+> Exclude it from every H7–H13 window by timestamp. The exit is whichever
+> connection the owner's machine was using; in September that is either the
+> ISP connection (`a5443a43a0`) or the VPN exit (`771704833c`), and the
+> procedure above resolves which. Nothing else was sent to production by
+> that session: the deploy and the colophon were verified through the
+> GitHub deployment statuses, not by fetching pages.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
