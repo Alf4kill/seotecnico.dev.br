@@ -67,9 +67,9 @@ inside the band: the verdict can still move in either direction.
 | 2026-09-13 | **Interim read of the crawler property, and three collection defects it exposed.** The owner exported 2026-08-16 → 2026-09-12 (28 days, 3,251 `ai_crawler_hit` events) from GA4 Explore on 2026-09-13; the files stay outside the repo. **Synthetic traffic found inside the window:** the only robots-trap hit (2026-09-11) was a `curl` that Claude sent to production at 23:48:30 UTC during the indexation audit, together with other checks, the baseline crawl and the Lighthouse baseline, all from the owner's network. That network's September `net_id` (`771704833c`, taken from the trap event itself) carries 687 events, all excluded. August traffic from the same network has a different `net_id` (monthly salt) and cannot be separated. **Defect C — Next.js RSC requests counted as non-browser.** Every page view in a real browser prefetches the header and footer links with `rsc: 1` requests that do not accept `text/html`, so the proxy classified them `ua_class: unknown`. Confirmed on a local production build: one visit to an article prefetched `/`, `/blog`, `/ferramentas`, `/guia/seo-tecnico-nextjs`, `/sobre` and `/politica-de-privacidade`, exactly the six most frequent `unknown` paths from the owner's network. **Consequence: `ua_class = unknown` mixes crawlers with human browsing for every event since 2026-07-25 and cannot be used for H3 or for any published share of unidentified traffic.** **Defect A — signer not recorded.** A `verified-signature` verdict proves only that the request was signed by a key published at the domain the client names in `Signature-Agent`; that domain is the identity, and it never reached GA4. 64 events carry the verdict with no way to say who signed. **Defect B — current Web Bot Auth format rejected.** draft-meunier-web-bot-auth-architecture-05 (2026-03-02) makes `Signature-Agent` a Dictionary covered as `"signature-agent";key="…"`, the form Google documents for `Google-Agent`; the verifier accepted only the older sf-string form, so a valid current-format signature could never verify. **Fixes, in this order:** exclude requests carrying `rsc` or `next-router-prefetch` in the proxy matcher (they are not document fetches); send `bot_signer` (the signer's hostname, a public domain) with every `verified-signature`; accept the Dictionary form alongside the legacy one. | **Rules for reading the pre-fix data, stated before it is read further:** (a) the non-browser bucket for 2026-07-25 → cutoff is `has_sec_fetch = false`, never `ua_class = unknown` — browsers send `Sec-Fetch-*` on RSC fetches too, which the owner confirms with a `has_sec_fetch` split of the `unknown` class before any use; (b) the 64 pre-fix `verified-signature` events are reported only as "signed, signer not recorded"; (c) after the cutoff of this fix, `ua_class = unknown` is usable again. **Interim observations, net of the owner's network, not verdicts:** robots trap 0 real hits (H1 still unmet); llms.txt trap 0 hits (H6 holding); `/llms.txt` fetched 5 times, all by clients that did not declare an AI agent, 0 by a declared agent (the 90-day llms.txt prediction holding); 0 fetches of a disallowed page by any declared training agent (all 230 requests claiming ClaudeBot were `/robots.txt`, recorded `unverifiable` before the Anthropic feed was added); GPTBot, CCBot, Bytespider, meta-externalagent and Applebot absent; 15 `ChatGPT-User` fetches verified against OpenAI's ranges (14 of `/`, 1 of the English guide), origin of the user prompts unknown and possibly the owner's own. | pending. **Cutoff: 2026-09-13T22:42:03Z** (19:42:03 UTC−3), when Vercel marked the production deployment of merge commit `7483c07` (PR #50) successful. From this timestamp on, `ua_class = unknown` no longer includes RSC requests, `bot_signer` accompanies every `verified-signature`, and Dictionary-form signatures can verify. `bot_signer` was registered as a custom dimension by the owner on the same day. No synthetic request was sent to verify this deploy |
 | 2026-09-13 | Wrote the method article of the crawler detection experiment, `/blog/detectar-crawlers-ia` (primary query `como saber se a ia usa meu conteudo`), planned in `docs/proposals/detection-experiment-article.md`. It carries the method (what is measurable, the verification ladder, both honeypots, the two-pipeline delta), real production code, the first 28 days net of the owner's network (2026-08-16 → 2026-09-12), and the three collection defects and the synthetic trap hit found by the interim read. It deliberately does **not** publish a share of unidentified traffic, because Defect C inflated it; that number waits for post-cutoff data and the results article. The trap URLs appear nowhere in the text, so a scraper of the article cannot trigger them, and it does not link `/llms.txt`, so the article adds no discovery path to the llms.txt prediction. | **(a) Indexing:** indexed within 14 days of the indexing request. **(b) Query match:** within 28 days of indexing, the page draws impressions for the primary query or a close Portuguese variant (`saber se ia usa conteúdo`, `crawler de ia`, `bots de ia`), at any position. The Portuguese SERP for the query has opinion pieces and no first-party data, which is the bet. **(c) No effect on the experiment:** the trap single-surface invariants stay green (`tests/seo/traps.spec.ts`), and the llms.txt trap receives no hit traceable to the article in the 28 days after publication. A hit would be reported, not explained away. | pending. **Published 2026-09-13** (UTC−3): PR #52 merged at 23:58:49Z, production deploy of `dff627a` successful at 23:59:33Z, so `datePublished: 2026-09-13` matches. **Indexing requested in GSC and sitemap resubmitted by the owner on 2026-09-13** (UTC−3), right after the deploy; windows (a) and (b) count from this date. No request was sent to production to verify the deploy |
 | 2026-09-14 | **Publishing the INP field-data section that `/blog/inp-nextjs` promised on 2026-07-22, and re-opening H5 on it.** The article promised real percentiles "by element and by subpart" after a 28-day collection window (due ≈2026-08-19, overdue). Source: the owner's GA4 Explore exports of 2026-09-13 (`web_vitals`, `metric_name = INP`, 2026-07-22 → 2026-09-12, one row per `metric_id`, with Event count; the files stay outside the repo). **Reading rules, fixed before any number is published:** (1) **2026-07-22 is excluded whole.** It was the pipeline's set-up and validation day, and one of its two measurements arrived with no `inp_*` parameter at all, consistent with the GTM tag still being built; the owner confirmed the exclusion. Stated because it matters: with that day included, n = 11 and the 95% bound below falls under 25%, which would flip the conclusion. The rule is decided by where the visits came from, not by what it does to the number. (2) **2026-08-30 and 2026-09-04 stay in.** The owner does not remember whether they were theirs; excluding them without evidence would be convenient rather than principled, and the article says their origin is unknown. (3) **Max per `metric_id`** (one load re-reported, 8 → 56 ms). **Result:** n = 9 page loads over 52 days (5 in the last 28), median 80 ms, p75 144 ms (nearest rank), max 168 ms, 0 above 200 ms. The one-sided 95% Clopper-Pearson upper bound on the share above 200 ms is 28.3%, above 25%, so the data does **not** establish a good p75; with zero failures that takes n ≥ 11. Presentation delay is 53% of subpart time and the largest subpart in 5 of 9; all 9 have `inp_load_state = complete`. **Original finding:** web-vitals 5.3.0 builds ids as `v5-${Date.now()}-<random>`, so each INP id pairs with the LCP id of the same page load (every pair here is within 1 ms). The pairing shows 3 of 9 INP events carrying a page path other than the route where the page loaded: App Router navigations are client-side, the metric belongs to the whole page load, and GA4 stamps the route at send time. One case needs no pairing: a listing-card paragraph reported under an article URL. Two corrections to the article ride along: GA4 Explore sums custom metrics, so its verification step ("aggregate by max per `metric_id`" inside an Exploration) was not doable as written; and the p75 FAQ answer said "interactions" where CrUX's p75 is over page loads. `dateModified` → 2026-09-14 (the merge date; adjusted if the merge slips). | **(a) Pledge closed honestly:** the section publishes n, the bound and the method, and no per-element percentile (n ≤ 2 per element). **(b) H5 re-opened** ([`detection-experiment.md`](detection-experiment.md) §8): this bump is the stimulus the ≈2026-08-19 row never got. The original contrast was also degenerate: training agents get `Disallow: /`, so a compliant one fetches the article in neither window and its rate is zero by policy, not by freshness. **Restated:** with T = the production deploy of this change, verified retrieval-documented agents (`bot_purpose = retrieval`, `bot_verified` ∈ `verified-ip` / `verified-rdns` / `verified-signature`) make a larger share of their [T−14d, T+14d) fetches of `/blog/inp-nextjs` after T than they do, pooled, on four control articles whose lastmod has not moved since July (`melhorar-lcp-nextjs`, `lcp-alto-next-js`, `sitemap-dinamico-nextjs`, `next-image-seo`). Falsified if the target's post-T share is not larger than the controls'. Inconclusive if the target has fewer than 5 such fetches across both windows, which at this site's volume is the likeliest outcome and is recorded as such, not as support. Known confound: the pre-window holds the 2026-09-12/13 deploys (route groups, eight lastmod bumps, a new article, a sitemap resubmission); they hit target and controls alike, which is why controls exist. A verified training-agent fetch of the article in either window counts toward H2, not H5. The owner's September network (`771704833c`) is excluded. | pending. H5 window closes T + 14 d (≈2026-09-28); export the day after |
-| 2026-09-19 (merge ≥ 2026-09-29) | **Sitewide visual redesign — "Swiss retro-futurism", dark only** ([`design-system.md`](design-system.md)). Every page's markup and CSS change: new tokens (graphite #0E1116, cyan #3ED8C8, amber #E89B3C), three web fonts instead of one (Space Grotesk, IBM Plex Sans, IBM Plex Mono, all `display: optional`, no preload), no rounded corners or shadows, light theme and its toggle removed. New on article pages: visible breadcrumb, meta strip with reading time, build-time index of h2s, margin with the cited tool, author box, three related posts by axis (new internal links between spokes), CSS-only reading progress, one client island for code copy. `/blog` gains a no-JS axis filter; frontmatter gains `category` (all 12 posts) and `status` (only `detectar-crawlers-ia`), with **no** new URL and **no** `dateModified` bump. One content fix without a date bump: six diagram labels in `melhorar-lcp-nextjs` were hardcoded dark on fills that are dark in the dark palette (illegible in the old dark mode too). **Deploy timing:** merge held until the H5 export (window closes ≈2026-09-28) so the redesign is not a second confound inside it; the deploy timestamp is recorded here on merge and splits the `web_vitals` RUM series. H1–H6 see no change in `robots`, `llms.txt`, `proxy.ts`, traps or sitemap from this entry; per the 2026-09-20 row below, this deploy is also where that round closes as a pilot and the v2 T0 window starts, so its exports must exist before the merge. **Lab measurement before merge** (local LHCI, devtools throttling, median of 3–5): LCP `/` 961 → 1162 ms, `/blog` 981 → 1146, newest article 1055 → 1177, pillar 1026 → 1106; Performance 100 on `/` and `/blog`; the ~190 ms is Style & Layout before first paint with the three fonts enabled (isolated: fonts off = 976 ms). | **Hypotheses (field, 28-day p75 after deploy vs the 28 days before, `web_vitals` + CrUX):** (1) LCP p75 stays "good" (< 2.5 s) and rises by less than 250 ms; (2) INP p75 does not rise by more than 20 ms (one small client island added, theme toggle removed); (3) CLS stays < 0.05 (`optional` fonts never swap); (4) `article_read` events per article pageview do not fall — the related-posts block and the index should, if anything, raise depth. Falsified individually; (4) is descriptive only (consent-gated sample). Search effects are not predicted: no `<title>`, description, canonical or indexable URL changes; the only on-page text change is the `/blog` h1 ("Blog de SEO técnico" → "Artigos de SEO técnico, medidos em produção."). | pending — deploy after 2026-09-29; read ≈4 weeks after deploy |
-| 2026-09-19 (merge after the redesign, ≥ 2026-09-29) | **New indexable pair `/design` + `/en/design`** — the design colophon: why the site looks the way it does (schools, palette, rules), with a contrast table computed from the tokens on every build and the AI-assistance disclosure ("ST-01"). Hreflang pair, `WebPage` + `BreadcrumbList` JSON-LD, own OG cards, linked from both footers and both about pages; sitemap gains two URLs with lastmod = the page's revision date. **Confound note for H1–H6** (closed at the redesign deploy, per the 2026-09-20 row): this pair ships in that same deploy, so the sitemap change lands at the edge of their exported window — two new URLs, nothing removed, `robots.txt` / `llms.txt` / `proxy.ts` / traps untouched. Any crawler fetch of `/design` or `/en/design` is new-URL discovery and is excluded from the H1–H6 freshness comparisons. | Portfolio page, not a ranking bet: no query is targeted and no search result is predicted. Checked instead: both URLs indexed within 28 days of the request in GSC, and hreflang reported without errors. | pending — request indexing on deploy |
-| 2026-09-20 | **Closing the 2026-07-25 detection round as a pilot, and pre-registering the v2 instrument before writing it.** A literature round (2024–2026, cut-off 2026-09-20) found three structural gaps in the v1 instrument: there is no `agent` class, so an AI agent driving a real browser is counted as a human by the two-pipeline delta (published work puts that at roughly one agent session in three, caused by a missing label rather than a missing signal); cross-layer incoherence is collected signal by signal and never crossed; and the canary mesh has two channels, zero hits and **no positive control**, which makes its zero uninterpretable. Two methodological confounders came out of the same round: traffic deltas in 2026 were driven by takedowns of residential proxy supply rather than by site countermeasures, and residential addresses rotate away after at most two sessions in 78% of cases, which bounds `net_id` correlation. A fourth defect was found while writing this entry and did not come from the literature: both trap slugs are in tracked files in a **public** repository, which `github.com` and code search expose to the same agents being measured, so the single-surface invariant has an out-of-band hole (§4.5). Git history is permanent, so traps A and B carry it for good and Trap B stops being evidence of llms.txt adoption on its own; v2 answers by giving new channels slugs that live only in environment variables, and by adding a repository-only canary that measures how big the hole is. This entry closes the round, publishes its six lessons, and registers H7–H13 with their export preconditions — see the section at the end of this file. Documents amended before any code: `detection-experiment.md` (§2.3 extended to client-side collection, §2.4 records the dead CDP signal, §2.5/§2.6/§3.5 the v2 design, §4 the generalisation warning and the missing control, §4.5 the public repository as an out-of-band discovery channel, §7 rules 8 to 10, §9.2 observation vs verification, §§12–13 rejected countermeasures and the supply-shock control) and `measurement-plan.md` (the `client_signals` event and four coherence parameters, both marked planned). Owner action before the v2 T0: register the new event-scoped custom dimensions in both properties — registration is not retroactive, which is what cost 64 `verified-signature` events their signer on 2026-09-13. | H7–H13, tabled at the end of this file. Their windows start at the v2 T0 (the redesign deploy), not at this entry. The pilot's own H1–H6 are reported as observed, with the real window and recalculated bounds; publication rule 6 still binds, so falsified ones are published too. | **pending export.** Nothing in v2 that changes a served byte deploys before the H1–H6 and H5 exports exist — the void H5 row is the precedent for registering a precondition instead of assuming one. H5 exports first (window closes ≈2026-09-28). No synthetic hits were sent by this session |
+| 2026-09-19 (deploy 2026-09-20) | **Sitewide visual redesign — "Swiss retro-futurism", dark only** ([`design-system.md`](design-system.md)). Every page's markup and CSS change: new tokens (graphite #0E1116, cyan #3ED8C8, amber #E89B3C), three web fonts instead of one (Space Grotesk, IBM Plex Sans, IBM Plex Mono, all `display: optional`, no preload), no rounded corners or shadows, light theme and its toggle removed. New on article pages: visible breadcrumb, meta strip with reading time, build-time index of h2s, margin with the cited tool, author box, three related posts by axis (new internal links between spokes), CSS-only reading progress, one client island for code copy. `/blog` gains a no-JS axis filter; frontmatter gains `category` (all 12 posts) and `status` (only `detectar-crawlers-ia`), with **no** new URL and **no** `dateModified` bump. One content fix without a date bump: six diagram labels in `melhorar-lcp-nextjs` were hardcoded dark on fills that are dark in the dark palette (illegible in the old dark mode too). **Deploy timing:** merge held until the H5 export (window closes ≈2026-09-28) so the redesign is not a second confound inside it; the deploy timestamp is recorded here on merge and splits the `web_vitals` RUM series. H1–H6 see no change in `robots`, `llms.txt`, `proxy.ts`, traps or sitemap from this entry; per the 2026-09-20 row below, this deploy is also where that round closes as a pilot and the v2 T0 window starts, so its exports must exist before the merge. **Lab measurement before merge** (local LHCI, devtools throttling, median of 3–5): LCP `/` 961 → 1162 ms, `/blog` 981 → 1146, newest article 1055 → 1177, pillar 1026 → 1106; Performance 100 on `/` and `/blog`; the ~190 ms is Style & Layout before first paint with the three fonts enabled (isolated: fonts off = 976 ms). | **Hypotheses (field, 28-day p75 after deploy vs the 28 days before, `web_vitals` + CrUX):** (1) LCP p75 stays "good" (< 2.5 s) and rises by less than 250 ms; (2) INP p75 does not rise by more than 20 ms (one small client island added, theme toggle removed); (3) CLS stays < 0.05 (`optional` fonts never swap); (4) `article_read` events per article pageview do not fall — the related-posts block and the index should, if anything, raise depth. Falsified individually; (4) is descriptive only (consent-gated sample). Search effects are not predicted: no `<title>`, description, canonical or indexable URL changes; the only on-page text change is the `/blog` h1 ("Blog de SEO técnico" → "Artigos de SEO técnico, medidos em produção."). | **hold lifted 2026-09-20, deploy the same day.** The ≥2026-09-29 hold existed for one reason: H5 was re-opened on 2026-09-14 with a window running to ≈2026-09-28, and a sitewide change lands on its target and its four controls at once. H5 was resolved on 2026-09-20 as **inconclusive and underpowered by roughly 10×** — its threshold is five target fetches in fourteen days and this domain is crawled at ~0.47 page fetches per article per fortnight — so no window length saves it and the hold protects nothing. Recorded rather than dropped: the constraint was real when written, and the reason it stopped binding is the H5 verdict, not convenience. The client-side probe does **not** ship with this: it is not written, so hypotheses (1)–(3) read a `web_vitals` series with one treatment on it, not two. Fill the deploy timestamp after merge. Read ≈4 weeks after deploy. This row is also the dated global change that every later v2 analysis controls for under `detection-experiment.md` §13 |
+| 2026-09-19 (merge after the redesign; deploy 2026-09-20) | **New indexable pair `/design` + `/en/design`** — the design colophon: why the site looks the way it does (schools, palette, rules), with a contrast table computed from the tokens on every build and the AI-assistance disclosure ("ST-01"). Hreflang pair, `WebPage` + `BreadcrumbList` JSON-LD, own OG cards, linked from both footers and both about pages; sitemap gains two URLs with lastmod = the page's revision date. **Confound note for H1–H6** (closed at the redesign deploy, per the 2026-09-20 row): this pair ships in that same deploy, so the sitemap change lands at the edge of their exported window — two new URLs, nothing removed, `robots.txt` / `llms.txt` / `proxy.ts` / traps untouched. Any crawler fetch of `/design` or `/en/design` is new-URL discovery and is excluded from the H1–H6 freshness comparisons. | Portfolio page, not a ranking bet: no query is targeted and no search result is predicted. Checked instead: both URLs indexed within 28 days of the request in GSC, and hreflang reported without errors. | pending — the ≥2026-09-29 hold came from the redesign row and was lifted there on 2026-09-20 when H5 resolved as inconclusive; the dependency that remains is ordering, not date: this pair needs the design system live first. Request indexing on deploy |
+| 2026-09-20 | **Closing the 2026-07-25 detection round as a pilot, and pre-registering the v2 instrument before writing it.** A literature round (2024–2026, cut-off 2026-09-20) found three structural gaps in the v1 instrument: there is no `agent` class, so an AI agent driving a real browser is counted as a human by the two-pipeline delta (published work puts that at roughly one agent session in three, caused by a missing label rather than a missing signal); cross-layer incoherence is collected signal by signal and never crossed; and the canary mesh has two channels, zero hits and **no positive control**, which makes its zero uninterpretable. Two methodological confounders came out of the same round: traffic deltas in 2026 were driven by takedowns of residential proxy supply rather than by site countermeasures, and residential addresses rotate away after at most two sessions in 78% of cases, which bounds `net_id` correlation. A fourth defect was found while writing this entry and did not come from the literature: both trap slugs are in tracked files in a **public** repository, which `github.com` and code search expose to the same agents being measured, so the single-surface invariant has an out-of-band hole (§4.5). Git history is permanent, so traps A and B carry it for good and Trap B stops being evidence of llms.txt adoption on its own; v2 answers by giving new channels slugs that live only in environment variables, and by adding a repository-only canary that measures how big the hole is. This entry closes the round, publishes its six lessons, and registers H7–H13 with their export preconditions — see the section at the end of this file. Documents amended before any code: `detection-experiment.md` (§2.3 extended to client-side collection, §2.4 records the dead CDP signal, §2.5/§2.6/§3.5 the v2 design, §4 the generalisation warning and the missing control, §4.5 the public repository as an out-of-band discovery channel, §7 rules 8 to 10, §9.2 observation vs verification, §§12–13 rejected countermeasures and the supply-shock control) and `measurement-plan.md` (the `client_signals` event and four coherence parameters, both marked planned). Owner action before the v2 T0: register the new event-scoped custom dimensions in both properties — registration is not retroactive, which is what cost 64 `verified-signature` events their signer on 2026-09-13. | H7–H13, tabled at the end of this file. Their windows start at the v2 T0 (the redesign deploy), not at this entry. The pilot's own H1–H6 are reported as observed, with the real window and recalculated bounds; publication rule 6 still binds, so falsified ones are published too. | **closed 2026-09-20.** Exports taken the same day; verdicts in the section at the end of this file. H2 **confirmed** — a verified, vendor-documented training agent fetched three disallowed paths on 2026-07-30 — with the qualifier that it never fetched `/robots.txt` in the window, so it is not deliberate disregard. H3 **confirmed** (62× more distinct networks undeclared than declared-and-disallowed). H1 and H4 **falsified**, H6 sustained on an exposure too small to mean much, H5 inconclusive and underpowered by ~10×, H11 confirmed. Axis A `high` was never computed: the pageview join was never exported. No synthetic hits were sent by this session |
 
 ---
 
@@ -96,15 +96,93 @@ keeps this honest:
 - What is being claimed is therefore narrow: **this round produced a working
   instrument and a list of design defects, not effect sizes.**
 
-**The cost of stopping early, stated as a number.** For the zero-hit channels
-the loss is precision on the upper bound, and nothing else. By the rule of
-three, zero events in *n* days gives a 95% upper bound of about 3/*n* per day:
-the full 90-day window would have supported "under ~3 hits per channel per 90
-days", and a window ending at the redesign deploy supports roughly "under ~4".
-Compute it from the actual export date, with the one-sided Clopper-Pearson
-bound already used in the 2026-09-14 row, and publish the interval rather than
-the word "zero".
+**The cost of stopping early, now computed rather than estimated.** It is
+smaller than the calendar suggests, because the bound that matters is stated
+against **exposure**, not against time. Trap A's zero is bounded by the 1,191
+fetches of `/robots.txt` that actually happened, not by the 57 days they
+happened in — and 1,191 reads give a 95% upper bound of 0.25%, which a further
+33 days would have moved very little. Where the pilot is genuinely weak is the
+channel nobody reads: nine real fetches of `/llms.txt` bound Trap B only at
+28%, and no realistic extension of the window fixes that, because the problem
+is exposure, not duration. H5 is the clearest case — see its verdict below.
+Publish the interval, never the word "zero".
 
+### Verdicts — pilot window 2026-07-25 → 2026-09-20
+
+**Window: 57 days, 63% of the registered 90.** Closed early at the redesign
+deploy, for the reason stated above. Source: seven Explore exports from the
+crawler property taken by the owner on 2026-09-20, kept outside the repo.
+7,208 raw events; **6,003 after excluding the owner's own networks**
+(`771704833c`, 687 events, registered in [`measurement-plan.md`](measurement-plan.md);
+and `f20012e925`, 518 events — **inferred**, not registered: it is the top July
+network, it carries browser-shaped traffic, and it produced both the 2026-07-25
+validation curls and the trap hit of that date. The owner should confirm it).
+The registered synthetic hits of 2026-07-25 are excluded by date.
+
+Bounds for zero-count results use the exact one-sided 95% Clopper-Pearson upper
+bound, the method already used in the 2026-09-14 row, stated against the
+channel's own exposure rather than against time.
+
+| # | Verdict | Evidence |
+|---|---|---|
+| H1 | **Falsified** | Two Trap A hits, **both registered synthetics** (2026-07-25, the validation curl that produced `impersonated`; 2026-09-11, the owner's own network). Zero real hits. Exposure: **1,191 fetches of `/robots.txt`** — so following the `Disallow` line happens at most in **0.25% of reads, 1 in 398** |
+| H2 | **Confirmed** | 2026-07-30: **GPTBot, `verified-ip`, three disallowed paths** (`/`, `/feed.xml`, `/politica-de-privacidade`). Not in the synthetic register; `verified-ip` means the address was inside OpenAI's published `gptbot.json`, which a domestic connection cannot be. OpenAI documents GPTBot as training-purpose, and `Disallow: /` had been live for it since 2026-07-25 |
+| H3 | **Confirmed, by a wide margin** | Undeclared with `has_sec_fetch = false`: **1,326 events across 436 networks**. Declared-and-disallowed: **425 events across 7 networks**. 3.1× by events, **62× by distinct networks**. Counting the whole `unknown` bucket: 9.2× by events |
+| H4 | **Falsified** | Conditional requests do not discriminate documented purpose. Both retrieval-documented agents send **none**: Claude-SearchBot 0/939 (≤0.32%), OAI-SearchBot 0/182 (≤1.63%). The only agent that sends them is Bingbot, at **54.2%** (52/96). And **762 of 814 conditional requests — 93.6% — come from the undeclared bucket** |
+| H5 | **Inconclusive, and underpowered by roughly 10×** | Its own threshold is ≥5 fetches of the target in 14 days. Observed page-fetch rate across the window is **0.47 fetches per article per 14 days** (Claude-SearchBot 41 page fetches in 58 days over ~21 articles; OpenAI 39). The redesign deploy cut the post-window at day 6 of 14, which changes nothing: 6 days and 14 days both fall an order of magnitude short |
+| H6 | **Sustained, but the bound is useless** | Zero Trap B hits. Exposure: **9 real fetches of `/llms.txt` in 57 days** (a tenth was the 2026-07-25 synthetic). Upper bound ≤ **28.3%** — with nine reads, "nothing follows `llms.txt`" cannot be distinguished from "almost nothing reads it". The finding is the exposure number, not the zero |
+| H11 | **Confirmed** | Median **1 event per `net_id`** in both monthly windows. Seen exactly once: 51.0% (July, n=343) and 61.4% (September, n=360). Seen at most twice: 63.3% and 75.0%. Meanwhile the **top ten networks carry about half of all events** |
+
+#### What the verdicts change
+
+- **H2 is the one cell §3.4 calls a fact, and it has data.** All three conditions
+  of publication rule 1 are met: verified identity, dated first-party
+  observation, the vendor's own published purpose. **The qualifier that must
+  travel with it:** GPTBot **never fetched `/robots.txt`** in the whole window.
+  So this is not deliberate disregard — it is the other case §4.2 separates,
+  fetching what a file forbids without having read the file. "Fetched
+  disallowed paths without having read the directive in the observation window"
+  is what the data supports; "ignored robots.txt" is not, and the difference is
+  the difference between a measurement and an accusation. Three requests on one
+  date is an existence proof, not a rate.
+- **H4's falsification is more useful than its confirmation would have been.**
+  `req_conditional` measures one vendor's implementation — Microsoft keeps an
+  index it revalidates — not purpose. The sub-finding is the better one:
+  **13.9% of undeclared traffic maintains a cache it revalidates**, which says
+  more about who that bucket is than the original hypothesis would have.
+- **H11 bounds Axis A.** With a median of one event per network and three
+  quarters of September's networks seen at most twice, signal 3 of Axis A — the
+  same `net_id` fetching `/robots.txt` in the same month — can only ever reach a
+  small minority of the undeclared bucket. It is reported with that ceiling
+  attached from now on.
+- **Axis A `high` was never computed.** It needs the pageview join from the
+  human property, which was not exported, and a `net_id` × `page_path` join that
+  the channel export did not carry. H3 is therefore reported on the observable
+  proxy (`has_sec_fetch = false`), which is the conservative direction: the ratio
+  above is a **lower** bound on the undeclared bucket.
+
+#### Findings outside the hypotheses
+
+- **ClaudeBot fetched `/robots.txt` 424 times and nothing else, ever.** Not one
+  content path. Per publication rule 5, Anthropic's own documented position
+  belongs beside that observation.
+- **Claude-SearchBot spends its budget on the sitemap:** 648 sitemap fetches +
+  250 robots fetches out of 939 requests, leaving 41 actual page reads.
+- **14 requests claiming `ChatGPT-User` did not originate from OpenAI's
+  published ranges.** Reported under rule 2 in exactly those words and never
+  under OpenAI's name. The two `GPTBot` impersonations are the owner's own
+  validation curls and are excluded.
+- **Ahrefs runs Web Bot Auth in production:** 48 of 170 `verified-signature`
+  events are signed by `ahrefs.com`. The other 122 carry no signer — Defect A,
+  reported as "signed, signer not recorded".
+- **1,234 `unverifiable` events** are almost entirely Anthropic agents before
+  2026-09-13, when its feed was wired in. After that they verify.
+
+#### Data-quality note
+
+The spreadsheet coerced hexadecimal `net_id` values that look numeric into
+`inf` and `4.644092e+64` — 21 events across two exports, dropped from the H11
+distribution. Export that column as text.
 ### The lessons — the pilot's actual deliverable
 
 1. **A detection instrument fails silently.** None of the three defects raised
@@ -133,37 +211,65 @@ the word "zero".
    file, and a repository-only canary measures the size of the hole. The general
    version — reproducible detection work makes its own bait discoverable — looks
    unmeasured in the literature.
+7. **Pre-registering a hypothesis without pre-registering its power produces a
+   test that could not have worked.** H5 required at least five fetches of one
+   article in fourteen days. This domain is crawled at roughly half a fetch per
+   article per fortnight — an order of magnitude short, knowable in advance from
+   the crawl volume already in the property. The fix is a line in the
+   registration: what is the smallest effect this window can detect, and does
+   the observed traffic reach it?
 
-### Exports required before the v2 T0 (owner)
+### Exports — taken 2026-09-20, and the two that were not
 
-**Binding precondition: no v2 change that alters a served byte deploys before
-these exports exist.** The void H5 row is the precedent — an experiment whose
-trigger was someone else's deliverable, registered without a precondition
-check, and lost.
+Items 1 to 4 below were the precondition on the v2 T0. **Items 2, 3 and 4 were
+taken on 2026-09-20** and are what the verdicts above are computed from. Item 1
+resolved itself: H5 is inconclusive by its own threshold regardless of window
+length, so the redesign deploy does not cost it anything.
 
-1. **H5 first, and separately** — its window closes ≈2026-09-28, ahead of the
-   redesign deploy. Spec is in the 2026-09-14 row and in the `27-09` scheduled
-   reminder.
-2. **H1, H2, H3, H4, H6** — from the crawler property, window 2026-07-25 to the
-   export timestamp, excluding the synthetic hits registered in
-   [`measurement-plan.md`](measurement-plan.md) and the owner's own `net_id`.
-   For anything touching the unidentified bucket, use `has_sec_fetch = false`
-   and **not** `ua_class = unknown` for events before the
-   2026-09-13T22:42:03Z cutoff (Defect C).
-3. **Channel denominators** — fetch counts for `/robots.txt`, `/llms.txt`,
-   `/sitemap.xml` and `/feed.xml` over the same window, so each channel's zero
-   can be reported as a conditional rate.
-4. **H11, which needs no new code** — the `net_id` recurrence distribution:
-   events per `net_id`, distinct `net_id` per month, median and tail. This is a
-   small-domain replication of the published finding that residential addresses
-   rotate away after at most two sessions in 78% of cases, and it is what bounds
-   how much weight signal 3 of Axis A can carry.
+1. ~~**H5 first, and separately**~~ — **resolved without a dedicated export.**
+   The threshold was ≥5 target fetches in 14 days and the domain is crawled at
+   ~0.47 page fetches per article per 14 days. Underpowered by roughly 10×.
+2. ~~**H1, H2, H3, H4, H6**~~ — taken, window 2026-07-25 → 2026-09-20.
+3. ~~**Channel denominators**~~ — taken. `/robots.txt` 1,191; `/sitemap.xml`
+   767; `/feed.xml` 15; `/llms.txt` 10.
+4. ~~**H11**~~ — taken, one export per month so the monthly salt rotation does
+   not mix identifiers.
+
+**Still missing, and both block Axis A rather than the verdicts above:**
+
+- **The pageview join** — `page_view` by `page_path` by day from the **human**
+  property. Without it the two-pipeline delta cannot be computed, so Axis A
+  `high` has still never been evaluated. This is the load-bearing signal of the
+  whole method (§2.1) and it is the one thing the pilot never measured.
+- **`net_id` × `page_path`** — the channel export carried `page_path` but not
+  `net_id`, so "the same network fetched `/robots.txt` in the same month"
+  (Axis A signal 3) could not be joined. H11 already caps how much that signal
+  can ever carry, but it has not been computed even once.
+
+Both are exports, not code. They can be taken at any time and do not gate the
+redesign deploy.
 
 ### H7–H13 — registered before implementation
 
-Windows start at the v2 T0 (the redesign deploy), not at this entry. Design for
-each is in [`detection-experiment.md`](detection-experiment.md) §§2.5, 2.6, 3.5
-and in [`measurement-plan.md`](measurement-plan.md).
+Each window starts when **the component that measures it deploys**, not at the
+redesign deploy. That distinction was written the other way round on
+2026-09-20 and is corrected here before it could mislead: the redesign changes
+what is served, not what is measured, and H7–H13 need instruments that do not
+exist yet. H7/H8/H9 start with the coherence vector and the probe; H10 and H13
+start with their channels; H11 is already computed from pilot data; H12 needs
+the probe plus two browser releases.
+
+The redesign deploy is instead a **dated global change to every served page**,
+and therefore a confounder the v2 analysis controls for under §13 — the same
+treatment any external shock gets.
+
+A decision recorded on 2026-09-20 is superseded by this: the probe was to ship
+bundled with the redesign, accepting a confounded RUM series. The probe is not
+written, so the two separate on their own and that confound does not arise. The
+redesign does not wait for the probe.
+
+Design for each is in [`detection-experiment.md`](detection-experiment.md)
+§§2.5, 2.6, 3.5 and in [`measurement-plan.md`](measurement-plan.md).
 
 | # | Hypothesis | Window | Falsified if |
 |---|---|---|---|
