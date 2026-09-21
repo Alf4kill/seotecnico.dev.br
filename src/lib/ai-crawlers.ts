@@ -80,8 +80,10 @@ const BY_SPECIFICITY = [...AI_CRAWLERS].sort((a, b) => b.token.length - a.token.
  * (`Mozilla/5.0 (compatible; GPTBot/1.2; +https://openai.com/gptbot)`), so an
  * equality check would never fire.
  *
- * A User-Agent is a claim, not proof — anything can send any string. The
- * result is treated as "UA-claimed" until an IP-range check is added.
+ * A User-Agent is a claim, not proof — anything can send any string. This
+ * function answers only what a request CLAIMS to be; whether the claim is true
+ * is `verifyCrawler()` in `crawler-verification.ts` (vendor IP ranges,
+ * forward-confirmed rDNS, Web Bot Auth signatures), live since 2026-07-25.
  */
 export function classifyAiCrawler(userAgent: string | null | undefined): AiCrawler | undefined {
   if (!userAgent) return undefined

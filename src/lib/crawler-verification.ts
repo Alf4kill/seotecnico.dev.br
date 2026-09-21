@@ -24,9 +24,11 @@ import {
 //                   collapsed into `impersonated`: there was no source to fail
 //
 // RUNTIME: Node, not Edge — WebCrypto Ed25519, `node:dns` and `Buffer` are
-// unavailable in the Vercel Edge Runtime. `src/proxy.ts` declares
-// `runtime: 'nodejs'` for exactly this reason; forgetting it fails silently
-// as "no signature ever verifies".
+// unavailable in the Vercel Edge Runtime. In Next.js 16 the Proxy
+// (`src/proxy.ts`) ALWAYS runs on Node, and declaring `runtime` in its config
+// is a build error — so the requirement is satisfied by construction, not by a
+// declaration. It stays on the record because moving this module behind an
+// Edge middleware would fail silently, as "no signature ever verifies".
 //
 // The client IP must come from Vercel's `x-real-ip` (set from the
 // connection). An `impersonated` verdict cannot rest on a header the client

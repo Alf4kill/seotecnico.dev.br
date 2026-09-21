@@ -26,6 +26,7 @@
 | `outbound_click` | Click on external link | Link Click (Just Links) — Click URL does not contain `seotecnico.dev.br` | `link_domain` (Auto-Event Variable: Element URL → Host Name) | no | **live** — published 2026-07-19; verified on production: external-link click produces `gtm.linkClick` with the listener active (web.dev link) |
 | `scroll_depth` | Scroll milestones | Scroll Depth 25/50/75/90% (vertical) | `percent` (= `{{Scroll Depth Threshold}}` built-in) | no | **live** — published 2026-07-19; validated by owner in Tag Assistant (rAF-based trigger, not exercisable from hidden/headless tabs) |
 | `web_vitals` | Own RUM: a Core Web Vitals metric measured on a real visit (`web-vitals` attribution build; LCP + INP — CLS may be added later under the same event name) | Custom Event `web_vitals` (dataLayer push from `src/lib/rum.ts` when the metric finalizes — page hidden; INP may re-report a worse value if the page is revisited, same `metric_id`, so analyses take the **max per `metric_id`**) | Shared: `metric_name` (`LCP` / `INP`), `metric_id` (unique per page load, for dedup), `metric_value` (ms, rounded), `metric_rating` (`good` / `needs-improvement` / `poor`). LCP: `lcp_element` (CSS selector, ≤100 chars), `lcp_ttfb`, `lcp_load_delay`, `lcp_load_duration`, `lcp_render_delay` (ms, rounded — the 4 LCP subparts). INP: `inp_element` (CSS selector of the interacted element, ≤100 chars), `inp_interaction_type` (`pointer` / `keyboard`), `inp_load_state` (`loading` / `dom-interactive` / `dom-content-loaded` / `complete`), `inp_input_delay`, `inp_processing_duration`, `inp_presentation_delay` (ms, rounded — the 3 INP subparts) | no | **LCP live** — GTM tag/trigger created and container published 2026-07-18; tag fired with correct subpart sums in Tag Assistant preview against production (TTFB 616 + render 148 = 764 = metric_value) and confirmed again via consented production dataLayer (67 + 109 = 176). GA4 custom definitions registered 2026-07-18: 4 event-scoped dimensions (`metric_name`, `metric_rating`, `lcp_element`, `metric_id`) + 5 custom metrics in ms (`metric_value` + the 4 `lcp_*`). **INP live 2026-07-22** — code shipped in PR #24; owner created the 6 `inp_*` Data Layer Variables (same `web_vitals` GTM folder), mapped them in the `web_vitals` tag and published; all 6 `inp_*` parameters confirmed arriving in GA4 event reports the same day. Consent overview: all GA4 event tags attested as "No additional consent required" (built-in consent checks implement Consent Mode v2 advanced — no blocking rules, cookieless pings while denied). GA4 custom definitions for INP registered by the owner on 2026-07-22 and confirmed queryable by the 2026-09-13 Explore exports: 3 event-scoped dimensions (`inp_element`, `inp_interaction_type`, `inp_load_state`) + 3 custom metrics in ms (`inp_input_delay`, `inp_processing_duration`, `inp_presentation_delay`). **Two reading rules from the first analysis (2026-09-14):** (1) Explore **sums** custom metrics, so keep `metric_id` in the rows with Event count and take the max per id outside GA4; a row with Event count > 1 is a sum of re-reports, not a measurement. (2) The event's page path is the route **at send time**, not where the interaction happened: App Router navigations keep the same page load, and 3 of the first 9 INP events carried another route. The landing route comes from the LCP event of the same load, whose `metric_id` shares the `Date.now()` prefix |
+| `client_signals` | Automation-artifact signals from a client that **executes JavaScript** — the `agent` class the server-side pipeline is structurally blind to, because an agent driving a real browser produces both a `browser-like` request and a real pageview | Custom Event `client_signals` (dataLayer push from `src/lib/agent-probe.ts` on `visibilitychange → hidden` / `pagehide`, the same lifecycle `web_vitals` uses) | **Stage A — no consent required** (observation of the session with this site; no device read, no storage): `ptr_stream`, `wheel_stream` (`0` / `1-9` / `10-99` / `100+`), `untrusted_n` (`0` / `1-9` / `10+`), `first_move` (`none` / `lt1s` / `1-5s` / `gt5s`), `click_no_move` (`true` / `false` / `n-a`). **Stage B — consent-gated** (device interrogation): `wd_desc`, `fn_tostring`, `gpu_class`, `hw_shape`, `uad_coherence`. Every value is a closed enum or a bucket; **never a raw User-Agent, never a raw WebGL renderer string** | no | **planned — not implemented.** Documented before implementation per CLAUDE.md §7.2. Merge gated on the written LIA and the `/politica-de-privacidade` section; ships at the v2 T0 |
 
 ### AI crawler telemetry (separate GA4 property)
 
@@ -40,6 +41,13 @@ custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`,
 (Admin → Custom definitions).
 `page_location` needs no registration — GA4 reads it into the built-in page
 dimensions.
+
+**Before the v2 deploy**, four more in this property (`coh_bits`, `coh_n`,
+`coh_applicable`, `coh_groups`) and the `client_signals` parameters in the
+**human** property. Registration is not retroactive: a parameter that arrives
+first is invisible outside Realtime until it is registered, and that window is
+not recoverable. This is the `bot_signer` failure of 2026-09-13, which cost 64
+`verified-signature` events their signer.
 
 Scope and privacy notes for the expansion (full rationale in
 [`detection-experiment.md`](detection-experiment.md)):
@@ -137,6 +145,71 @@ silently accepting (`/mp/collect` always answers `204`, valid or not):
 ```bash
 curl -s -X POST "https://www.google-analytics.com/debug/mp/collect?measurement_id=$ID&api_secret=$SECRET" -d '{"client_id":"gptbot","events":[{"name":"ai_crawler_hit","params":{"bot_name":"GPTBot","engagement_time_msec":1}}]}'
 ```
+
+### v2 — documented before implementation
+
+Both items below are **specified and not built**. They are here first because
+CLAUDE.md §7.2 requires the event documented before the code, and because the
+`bot_signer` lesson of 2026-09-13 is that GA4 custom dimensions are **not
+retroactive**: a parameter that arrives before its dimension is registered is
+invisible outside Realtime, and the window is spent.
+
+#### Four new `ai_crawler_hit` parameters — the coherence vector
+
+Cross-layer incoherence, computed at the edge from headers alone. It is a
+**vector, never a score**: [`detection-experiment.md`](detection-experiment.md)
+§0 forbids invented weights, and a single number would be exactly that.
+
+| Parameter | Values | Why |
+|---|---|---|
+| `coh_bits` | fixed-width ordered string over `{0,1,-}`, prefixed with a version token (`1:`) | The full vector, position-stable. Any reader re-derives any weighting they want. The version token exists so that inserting a bit later cannot silently reinterpret historical data |
+| `coh_n` | integer | Bits set to `1`. Admissible **only** because every bit carries equal weight **and** the vector always travels with it |
+| `coh_applicable` | integer | The denominator: how many checks were decidable for this request |
+| `coh_groups` | comma list of `ch` / `fetch` / `accept` / `proto` / `geo` | Which groups fired. Explore ergonomics only |
+
+`-` (not applicable) is not padding. A check gates on what the request claims:
+Firefox and Safari never send Client Hints, so their absence is not a
+contradiction. Reporting `coh_applicable` as an explicit denominator — rather
+than imputing an unobservable layer as "coherent" — is the point, not a
+limitation. See [`detection-experiment.md`](detection-experiment.md) §2.6.
+
+**This runs for every request, including `browser-like` — unlike verification.**
+It performs no lookup, contacts no vendor and makes no identity claim, so the
+gate in §9.2 does not apply to it. That distinction is written down here and in
+the experiment record so nobody later reads it as a contradiction.
+
+Four dimensions rather than thirteen booleans, deliberately: GA4 caps
+event-scoped custom dimensions at 50 and this property already spends 13.
+
+#### `client_signals` — why it goes to the human property
+
+The event is in the table above. The sink decision, which is the part that can
+fail silently:
+
+- **Chosen: the existing GTM → human GA4 property**, through the typed helper
+  in `src/lib/analytics.ts`. Anything that executes JavaScript is, by
+  definition, the human pipeline. The typed union is also where the closed-enum
+  rule is *enforced* at compile time rather than merely documented.
+- **Rejected: a second tag pointing at the crawler property.** Browser hits
+  carry a cookie and a real User-Agent; that property's stated design is
+  cookieless and UA-free. Convenience is not a reason to break it.
+- **Rejected: a `fetch()` to a proxy-matched path** so the result rides the
+  existing Measurement Protocol hit. That is `/api/rum` wearing a hat — it
+  doubles function invocations, doubles `ai_crawler_hit` volume against the
+  volume guard, and lets a client write into the crawler property.
+
+**The join is `page_path` + date**, the same coarse granularity the two-pipeline
+delta already uses. The three-way cell becomes: a server request with no
+pageview is a non-JS client; a pageview with automation artifacts is an agent;
+a pageview without them is a human. An exact per-request key (a `Server-Timing`
+nonce echoed as `req_id`) is a **separate decision**, not bundled here: it
+would break the "the two properties share no identifier" invariant by design,
+and that sentence would have to be rewritten rather than footnoted.
+
+The cost that has to be stated rather than discovered: **the population most
+worth probing is the one least likely to grant consent.** An agent driving a
+browser ignores or blind-dismisses an LGPD banner, so Stage B's N will be small
+and biased toward humans. That is not a flaw to hide — it is hypothesis H8.
 
 ### Why the RUM sink is GA4 (and not an `/api/rum` endpoint)
 
