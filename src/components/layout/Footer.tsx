@@ -47,6 +47,7 @@ const COPY: Record<Lang, Copy> = {
         title: 'Projeto',
         links: [
           { label: 'Sobre',                   href: '/sobre' },
+          { label: 'Design',                  href: '/design' },
           { label: 'Política de privacidade', href: '/politica-de-privacidade' },
         ],
       },
@@ -76,6 +77,7 @@ const COPY: Record<Lang, Copy> = {
         title: 'Project',
         links: [
           { label: 'About',                          href: '/en/about' },
+          { label: 'Design',                         href: '/en/design' },
           { label: 'Privacy policy (in Portuguese)', href: '/politica-de-privacidade', lang: 'pt-BR' },
         ],
       },

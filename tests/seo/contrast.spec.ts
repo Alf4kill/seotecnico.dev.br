@@ -18,7 +18,7 @@ import { colors } from '../../src/lib/design-tokens'
 
 const newest = getAllPosts()[0].frontmatter.slug
 
-const ROUTES = ['/', '/blog', `/blog/${newest}`, '/guia/seo-tecnico-nextjs', '/ferramentas', '/ferramentas/checador-cwv', '/en']
+const ROUTES = ['/', '/blog', `/blog/${newest}`, '/guia/seo-tecnico-nextjs', '/ferramentas', '/ferramentas/checador-cwv', '/en', '/design']
 
 /** Um seletor por papel de cor do sistema. */
 const ROLES: Record<string, string> = {

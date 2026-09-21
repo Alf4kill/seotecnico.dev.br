@@ -66,6 +66,14 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/about',
     },
   },
+  // O colofão do design: mesma página nos dois idiomas, texto traduzido.
+  {
+    id: 'design',
+    paths: {
+      'pt-BR': '/design',
+      en: '/en/design',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */

@@ -94,6 +94,7 @@ Total recurring cost target: domain only (~R$40/year).
 /ferramentas/validador-meta-tags→ Tool 2: meta tag preview/validator
 /ferramentas/checador-cwv       → Tool 3: CWV quick check (CrUX API)
 /sobre                          → About / credentials / contact
+/design                         → Design colophon (visual system rationale; pair of /en/design)
 /en/...                         → Selected English versions (hreflang pairs)
 sitemap.xml                     → via app/sitemap.ts (dynamic)
 robots.txt                      → via app/robots.ts
