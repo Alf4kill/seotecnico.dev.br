@@ -94,9 +94,19 @@ GA4 property (`G-59LQZ6LR72`) records a `page_view` only if JavaScript executed.
 This works for one reason that was decided months ago for unrelated reasons: the
 Consent Mode v2 setup is *advanced*, so a visitor who refuses the LGPD banner
 still produces a cookieless ping (`gcs=G100`, verified 2026-07-13). Consent
-refusal — the obvious confound — is therefore already eliminated. Remaining
-confounds are ad blockers and JS-disabled browsers; both are real, both are
-small, and neither correlates with the paths a crawler targets.
+refusal — the obvious confound — is therefore already eliminated.
+
+**The remaining confounds are larger here than first written.** This section
+originally said that ad blockers and JS-disabled browsers are "both real, both
+small, and neither correlates with the paths a crawler targets". That is not
+safe on this domain: **the owner browses this site in Brave**, whose Shields
+block GTM by default. Their own visits therefore produce a document request with
+no pageview — the exact shape this section calls a non-JS client. On a domain
+with this little traffic that is not small in proportion, and it correlates
+precisely with the pages being worked on. Any two-pipeline computation has to
+subtract owner traffic first, per month and per exit node
+(see [`experiment-log.md`](experiment-log.md)), and state the residual ad-blocker
+share as an unknown rather than as a negligible one.
 
 This signal does not read the User-Agent at all, which is precisely why it catches
 the clients that lie about it.
@@ -638,6 +648,16 @@ constraints:
 Per CLAUDE.md §7.3, recorded before the results are known. Windows start on merge,
 not on the 2026-07-25 policy ship date, and the synthetic hits documented in
 [`measurement-plan.md`](measurement-plan.md) are excluded from all of them.
+
+> **All six are resolved as of 2026-09-20** — window 2026-07-25 → 2026-09-20,
+> 57 days. **H2 confirmed** (a verified, training-documented agent fetched three
+> disallowed paths on 2026-07-30, having never fetched `/robots.txt` in the
+> window, so not deliberate disregard); **H3 confirmed** (62× more distinct
+> networks undeclared than declared-and-disallowed); **H1 and H4 falsified**;
+> **H6 sustained** on nine reads of `/llms.txt`, an exposure too small to bound
+> anything usefully; **H5 inconclusive** and underpowered by roughly 10×. The
+> numbers, the exact bounds and the qualifiers live in
+> [`experiment-log.md`](experiment-log.md); this table is kept as registered.
 
 | # | Hypothesis | Window | Falsified if |
 |---|---|---|---|

@@ -114,6 +114,24 @@ article afterwards is a robots.txt violation, dated and first-party.
 > proxy matcher does not count. Both are before the 2026-09-13 cutoffs. The
 > Sec-Fetch and RSC header checks of the same day ran against a local
 > production build, not against production.
+>
+> **Correction, 2026-09-20 — one connection is one identifier *per month*, and
+> this register had too few.** `net_id` rotates its salt monthly by design
+> (§2.3), so excluding "the owner's network" is a per-month operation. The
+> owner's ISP connection appears in the pilot window as **`f20012e925` (July,
+> 518 events), `312fb614f9` (August, 429) and `a5443a43a0` (September, 94)** —
+> one `/24`, three identifiers, all three in the data, only the first excluded
+> by the first analysis. `771704833c` is a **different** `/24`: the owner
+> reaches this site through a VPN, so it is an exit node used in September, and
+> that exit's July and August identifiers are **still unidentified**. Owner
+> traffic is at least **1,728 events, 24% of the raw dataset**. Verdicts are
+> unaffected — see [`experiment-log.md`](experiment-log.md).
+>
+> **Identify a connection like this, which needs no address and survives a
+> VPN:** send one request from it and read the `net_id` back from Realtime in
+> this property. Repeat per connection and per month. Recomputing the hash from
+> [`net-id.ts`](../src/lib/net-id.ts) also works when the address is known, and
+> validates itself against a month whose answer is already on the record.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
@@ -281,7 +299,7 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [x] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (owner, 2026-07-25, before the PR #33 deploy)
 - [x] Custom dimension `bot_signer` registered (owner, 2026-09-13, right after the PR #50 deploy). GA4 custom dimensions are not retroactive: `bot_signer` is queryable only for events received after registration
 - [x] `NET_ID_SALT_SECRET` set in Vercel production env, `LAB_TRAP_DELAY_MS` active (confirmed by the 2.65s trap response, 2026-07-25) — without the salt, `net_id` is omitted and H1's correlation is blind
-- [ ] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand)
+- [x] First **unprompted** hit from a real AI crawler observed (the four above were sent by hand) — **2026-07-30**, GPTBot, `verified-ip`, three paths. It is also H2's evidence; see [`experiment-log.md`](experiment-log.md)
 
 > Note: local debugging on 2026-07-13 sent a handful of real `page_view` hits to
 > `G-59LQZ6LR72` from `localhost`. Recommend defining internal/dev traffic
