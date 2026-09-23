@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { PersonJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
+import { Scene } from '@/components/art/Art'
+import { PAGE_ART } from '@/lib/art'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // "Sobre" em inglês — par de hreflang de /sobre (lib/hreflang.ts).
@@ -36,13 +38,19 @@ export default function EnglishAboutPage() {
       />
 
       <section className="container-xl py-12 lg:py-16">
-        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
-          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
-          About · author and project
-        </p>
-        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
-          About {site.author.name}
-        </h1>
+        <div className="flex items-end justify-between gap-8">
+          <div className="min-w-0">
+            <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+              <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+              About · author and project
+            </p>
+            <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
+              About {site.author.name}
+            </h1>
+          </div>
+          {/* Cena "Contemplação": a página do autor (docs/design-system.md → Arte). */}
+          <Scene id={PAGE_ART.about} className="hidden w-64 shrink-0 md:block lg:w-80" />
+        </div>
 
         <div className="rich-text mt-10 max-w-[68ch]">
           <p>

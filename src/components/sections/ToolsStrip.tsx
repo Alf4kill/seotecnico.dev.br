@@ -1,27 +1,33 @@
 import Link from 'next/link'
+import { Emblem } from '@/components/art/Art'
+import { TOOL_EMBLEMS } from '@/lib/art'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // "Do artigo para a prática" — a faixa que liga conteúdo às três ferramentas
 // (§6: todo artigo leva a ≥1 ferramenta; aqui a listagem também leva). Cada
-// ferramenta ganha uma forma primária, como as categorias; nenhum ícone.
+// ferramenta ganha uma forma primária, como as categorias, e o seu emblema
+// (src/lib/art.ts) — a mesma arte do cabeçalho da ferramenta.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TOOLS = [
   {
     href: '/ferramentas/gerador-json-ld',
     title: 'Gerador de JSON-LD',
+    emblem: TOOL_EMBLEMS['gerador-json-ld'],
     note: 'Sem login, sem limite.',
     mark: <span aria-hidden="true" className="h-4.5 w-4.5 rounded-full bg-primary" />,
   },
   {
     href: '/ferramentas/validador-meta-tags',
     title: 'Validador de meta tags',
+    emblem: TOOL_EMBLEMS['validador-meta-tags'],
     note: 'Cola a URL e compara.',
     mark: <span aria-hidden="true" className="h-4.5 w-4.5 bg-accent" />,
   },
   {
     href: '/ferramentas/checador-cwv',
     title: 'Checador de Core Web Vitals',
+    emblem: TOOL_EMBLEMS['checador-cwv'],
     note: 'Dados de campo do CrUX, sem instalar nada.',
     mark: (
       <span
@@ -44,13 +50,16 @@ export function ToolsStrip({ headingLevel = 'h2' }: { headingLevel?: 'h2' | 'h3'
           </Heading>
         </div>
         <ul className="grid gap-4 sm:grid-cols-3 lg:col-span-7 lg:gap-6">
-          {TOOLS.map(({ href, title, note, mark }) => (
+          {TOOLS.map(({ href, title, note, mark, emblem }) => (
             <li key={href}>
               <Link
                 href={href}
                 className="flex h-full flex-col gap-2.5 border border-gray bg-surface-2 p-5 transition-colors hover:border-primary"
               >
-                {mark}
+                <span className="flex items-start justify-between">
+                  {mark}
+                  <Emblem id={emblem} className="h-10 w-10" />
+                </span>
                 <span className="font-display text-[1.0625rem] font-medium text-foreground">{title}</span>
                 <span className="text-[0.8125rem] leading-normal text-muted">{note}</span>
               </Link>

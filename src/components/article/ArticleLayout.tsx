@@ -9,6 +9,9 @@ import { CategoryChip, CategoryMark, StatusLabel } from '@/components/ui/Categor
 import { InstrumentFrame } from '@/components/ui/InstrumentFrame'
 import { CodeCopy } from '@/components/article/CodeCopy'
 import { CopyLinkButton } from '@/components/article/CopyLinkButton'
+import { sceneForPost } from '@/lib/art'
+import { Scene } from '@/components/art/Art'
+import { CentralMark } from '@/components/art/Marks'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Layout de leitura — artigos do blog e as duas versões da pilar.
@@ -100,6 +103,10 @@ export function ArticleLayout({
   const { frontmatter, derived } = post
   const copy = COPY[lang]
   const category = frontmatter.category ? getCategory(frontmatter.category) : undefined
+  // Arte (docs/design-system.md → Arte): o artigo de blog ganha a cena do seu
+  // eixo, na coluna direita e só a partir de lg; a pilar, que não tem eixo, a
+  // marca central A3 atrás do cabeçalho. Nunca as duas, nunca atrás do corpo.
+  const scene = frontmatter.category ? sceneForPost(frontmatter.category, frontmatter.slug) : undefined
   const updated = frontmatter.dateModified !== frontmatter.datePublished
 
   return (
@@ -109,8 +116,9 @@ export function ArticleLayout({
 
       <article>
         {/* ── Cabeçalho ─────────────────────────────────────────── */}
-        <header className="border-b border-gray py-10 lg:py-14">
-          <div className="container-xl grid gap-8 lg:grid-cols-12 lg:gap-6">
+        <header className="relative overflow-hidden border-b border-gray py-10 lg:py-14">
+          {!scene && <CentralMark variant="arcs" className="-right-20 -top-10 w-[30rem] lg:right-[6%] lg:w-[40rem]" />}
+          <div className="container-xl relative grid gap-8 lg:grid-cols-12 lg:gap-6">
             <div className="flex flex-col gap-5 lg:col-span-9">
               <nav aria-label={copy.breadcrumb}>
                 <ol className="eyebrow flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -134,14 +142,19 @@ export function ArticleLayout({
               </p>
             </div>
 
-            {frontmatter.status && (
-              <div className="flex flex-col justify-end lg:col-span-3">
-                <InstrumentFrame label={copy.status} tone="accent" corners="two" className="!bg-transparent p-4.5">
-                  <p className="font-display text-xl font-medium text-foreground">
-                    <StatusLabel status={frontmatter.status} lang={lang} />
-                  </p>
-                  <p className="pt-1.5 text-[0.8125rem] leading-normal text-muted">{copy.statusNote}</p>
-                </InstrumentFrame>
+            {(frontmatter.status || scene) && (
+              // Sem estado, a coluna só leva a cena — e a cena não existe no
+              // celular: a coluna some inteira para não deixar o vão do grid.
+              <div className={`${frontmatter.status ? 'flex' : 'hidden lg:flex'} flex-col justify-end gap-6 lg:col-span-3`}>
+                {scene && <Scene id={scene} className="hidden w-full max-w-[22.5rem] lg:block" />}
+                {frontmatter.status && (
+                  <InstrumentFrame label={copy.status} tone="accent" corners="two" className="!bg-transparent p-4.5">
+                    <p className="font-display text-xl font-medium text-foreground">
+                      <StatusLabel status={frontmatter.status} lang={lang} />
+                    </p>
+                    <p className="pt-1.5 text-[0.8125rem] leading-normal text-muted">{copy.statusNote}</p>
+                  </InstrumentFrame>
+                )}
               </div>
             )}
           </div>

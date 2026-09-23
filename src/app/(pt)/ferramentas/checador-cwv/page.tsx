@@ -3,6 +3,8 @@ import { buildMetadata } from '@/lib/metadata'
 import { BreadcrumbJsonLd, SoftwareApplicationJsonLd } from '@/components/seo/JsonLd'
 import { CwvChecker } from '@/components/tools/CwvChecker'
 import { FaqSection } from '@/components/sections/FaqSection'
+import { Emblem } from '@/components/art/Art'
+import { TOOL_EMBLEMS } from '@/lib/art'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Ferramenta 3 (CLAUDE.md §5.3): Checador de Core Web Vitals.
@@ -64,19 +66,24 @@ export default function ChecadorCwvPage() {
       />
 
       <section className="container-xl py-12 lg:py-16">
-        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
-          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
-          Ferramenta gratuita · dados do CrUX
-        </p>
-        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
-          Checador de Core Web Vitals
-        </h1>
-        <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
-          Digite um endereço e veja os Core Web Vitals de campo daquela origem:
-          LCP, INP e CLS no percentil 75 de usuários reais nos últimos 28 dias,
-          direto do Chrome UX Report — com a distribuição das visitas em cada
-          faixa. Grátis, sem login e sem armazenar o endereço consultado.
-        </p>
+        <div className="flex items-start justify-between gap-8">
+          <div className="min-w-0">
+            <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+              <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+              Ferramenta gratuita · dados do CrUX
+            </p>
+            <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
+              Checador de Core Web Vitals
+            </h1>
+            <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
+              Digite um endereço e veja os Core Web Vitals de campo daquela origem:
+              LCP, INP e CLS no percentil 75 de usuários reais nos últimos 28 dias,
+              direto do Chrome UX Report — com a distribuição das visitas em cada
+              faixa. Grátis, sem login e sem armazenar o endereço consultado.
+            </p>
+          </div>
+          <Emblem id={TOOL_EMBLEMS['checador-cwv']} className="hidden w-24 shrink-0 md:block lg:w-28" />
+        </div>
 
         <CwvChecker />
 

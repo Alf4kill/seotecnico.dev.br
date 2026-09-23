@@ -3,6 +3,8 @@ import { buildMetadata } from '@/lib/metadata'
 import { BreadcrumbJsonLd, SoftwareApplicationJsonLd } from '@/components/seo/JsonLd'
 import { JsonLdGenerator } from '@/components/tools/JsonLdGenerator'
 import { FaqSection } from '@/components/sections/FaqSection'
+import { Emblem } from '@/components/art/Art'
+import { TOOL_EMBLEMS } from '@/lib/art'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Ferramenta 1 (CLAUDE.md §5.3): Gerador de JSON-LD.
@@ -58,19 +60,24 @@ export default function GeradorJsonLdPage() {
       />
 
       <section className="container-xl py-12 lg:py-16">
-        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
-          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
-          Ferramenta gratuita · sem login
-        </p>
-        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
-          Gerador de JSON-LD
-        </h1>
-        <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
-          Escolha o tipo de schema, preencha o formulário e gere dados
-          estruturados schema.org válidos — em JSON-LD puro ou como componente
-          Next.js pronto para colar no seu projeto. Grátis, sem login e sem
-          armazenar nada do que você digita.
-        </p>
+        <div className="flex items-start justify-between gap-8">
+          <div className="min-w-0">
+            <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+              <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+              Ferramenta gratuita · sem login
+            </p>
+            <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
+              Gerador de JSON-LD
+            </h1>
+            <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
+              Escolha o tipo de schema, preencha o formulário e gere dados
+              estruturados schema.org válidos — em JSON-LD puro ou como componente
+              Next.js pronto para colar no seu projeto. Grátis, sem login e sem
+              armazenar nada do que você digita.
+            </p>
+          </div>
+          <Emblem id={TOOL_EMBLEMS['gerador-json-ld']} className="hidden w-24 shrink-0 md:block lg:w-28" />
+        </div>
 
         <JsonLdGenerator />
 
