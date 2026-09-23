@@ -12,9 +12,11 @@ export function GET() {
   return new ImageResponse(
     (
       <OgCard
-        badge="Colofão · design"
+        badge="Colofão"
+        kicker="Por que este site é assim"
         title="Retrofuturismo suíço: por que este site é assim"
         subtitle="Bauhaus, De Stijl e a escola suíça, com a paleta medida e as regras que o CI verifica."
+        art={{ kind: 'poster', words: ['Retro', 'futuro', 'suíço'] }}
       />
     ),
     { ...OG_SIZE, fonts: ogFonts() }
