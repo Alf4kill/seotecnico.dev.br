@@ -242,22 +242,27 @@ Use the standard container proportions (applied via Tailwind):
 Keep the design clean, fast, and content-first. No heavy JS libraries for
 presentation.
 
-**Visual system: "Swiss retro-futurism", dark only.** Since 2026-09. The
-full reference — tokens with measured contrast, type scale, grid, components,
-rules and the accepted performance cost — is `docs/design-system.md`; the
-public rationale is the `/design` page. There is one theme: no light mode, no
-toggle, no theme script. `color-scheme: dark` and `theme-color` come from
-`rootViewport` in `src/lib/metadata.ts`.
+**Visual system: "Swiss retro-futurism", dark by default + light theme.**
+Since 2026-09. The full reference — tokens with measured contrast in both
+themes, type scale, grid, components, art, rules and the accepted performance
+cost — is `docs/design-system.md`; the public rationale is the `/design` page.
+Dark is the base (and the theme without JavaScript); light ("warm paper, cold
+metal") is `:root[data-theme='light']` in `globals.css` and nothing else. The
+inline `ThemeScript` in `<head>` writes `data-theme` before first paint (saved
+choice → system preference); `ThemeToggle` stores the choice. Never add a
+`dark:` utility or a `prefers-color-scheme` block — `design-rules.test.ts`
+fails on them. Code blocks stay dark in both themes (`.theme-dark-island`).
 
 - All colors come from CSS custom properties in `globals.css`. Tailwind consumes
   the `*-rgb` channel triplets via `rgb(var(--x) / <alpha-value>)`, which is what
   keeps opacity modifiers like `bg-primary/10` working. **Never hardcode a hex in
   a component or in `tailwind.config.js`.** The only hex mirror is
-  `src/lib/design-tokens.ts` (for Satori, the favicon and the `/design` contrast
-  table); `design-tokens.test.ts` fails if it drifts from `globals.css`.
-- `primary` (cyan) is text, link, rule and button surface at once. Text on a
-  solid cyan or amber surface is `text-on-primary` (the graphite background
-  color), never white.
+  `src/lib/design-tokens.ts` (`colors` = dark, `lightColors` = light, for
+  Satori, the favicon and the `/design` contrast tables);
+  `design-tokens.test.ts` fails if either drifts from `globals.css`.
+- `primary` is text, link, rule and button surface at once — cyan #3ED8C8 in
+  dark, teal ink #0A5F59 in light. Text on a solid primary or amber surface is
+  `text-on-primary` (graphite in dark, paper in light), never white.
 - Text roles: `foreground` (headings), `body` (long reading), `muted` (support),
   `label` (mono labels — **not** on `surface-2`, use `label-code` there),
   `danger` (red text; `shape-danger` and `shape-reference` are shapes only).
@@ -267,15 +272,23 @@ toggle, no theme script. `color-scheme: dark` and `theme-color` come from
   shape), shadows, decorative gradients, emoji and illustrative icons.
   `tailwind.config.js` removes those utilities and `src/design-rules.test.ts`
   fails the build on any that come back.
+- **Art** (`src/components/art/`, registry `src/lib/art.ts`, rules in
+  `docs/design-system.md` §10) is the one exception to "no illustration":
+  scenes (one trio per blog axis), tool emblems and background marks. Always
+  `aria-hidden` inline SVG in token colours (`fill-art-*`, `fill-foreground`…),
+  never raster; at most one scene and one central mark per page, never inside
+  the article body. New artwork goes through `scripts/art-import.mjs`, which
+  fails on any colour without a token.
 - The inline SVG diagrams consume `--foreground`, `--background`,
   `--color-accent` and `--color-diagram-*` **as colors, not channels**, so those
   tokens exist in both forms. Never convert them to channel-only: it would
   break every published diagram.
 - Contrast is a gate, not a preference: `design-tokens.test.ts` checks the
-  palette pairs, `tests/seo/contrast.spec.ts` measures rendered text by role
-  on several routes, `shiki-theme.test.ts` checks every code token and
-  `tests/seo/design.spec.ts` checks every diagram label against the shape
-  behind it. Measure before changing a color pair.
+  palette pairs of both themes, `tests/seo/contrast.spec.ts` measures rendered
+  text by role on several routes in both themes, `shiki-theme.test.ts` checks
+  every code token and `tests/seo/design.spec.ts` checks every diagram label
+  against the shape behind it, in both themes. Measure before changing a color
+  pair.
 - Fonts (Space Grotesk, IBM Plex Sans, IBM Plex Mono) load with
   `display: 'optional'` and no preload; the measured trade-off is in
   `RootShell.tsx` and `docs/design-system.md` §8. Do not add a preload or a
@@ -290,8 +303,12 @@ colors:
 - `--color-diagram-phase-a: #1E3A5F` — neutral phase fill (blue)
 - `--color-diagram-phase-b: #14432F` — neutral phase fill (green)
 - `--color-diagram-axis: #7A8798` — axes, connector lines
-- Text inside diagrams uses `--foreground` (≥9:1 on both phases); on a solid
-  `--color-accent` box use `--background`. Never a fixed hex for text: a
+- `--color-diagram-on-accent` — label ON a solid `--color-accent` box
+  (graphite in both themes; `--background` would turn to paper in light)
+- `--color-diagram-accent-text` — label written IN amber (ink amber in light)
+- Text inside diagrams uses `--foreground` (≥9:1 on both phases, in both
+  themes). `--color-accent` stays #E89B3C in both themes (it is a fill); the
+  phases and the axis have light values. Never a fixed hex for text: a
   label that is dark on a light phase disappears on a dark one. Diagrams are
   inline SVG in MDX (real `<text>` labels, crawlable/citable), each with a
   textual mirror (table or paragraph) next to it.
