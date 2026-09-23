@@ -7,6 +7,7 @@ import { ButtonLink, buttonClasses } from '@/components/ui/Button'
 import { CategoryMark } from '@/components/ui/CategoryMark'
 import { PostRow } from '@/components/blog/PostRow'
 import { ToolsStrip } from '@/components/sections/ToolsStrip'
+import { CornerMark } from '@/components/art/Marks'
 
 export const metadata = buildMetadata({
   title: 'Blog de SEO técnico para Next.js',
@@ -44,8 +45,10 @@ export default function BlogPage() {
       />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="border-b border-gray py-12 lg:py-18">
-        <div className="container-xl grid items-end gap-10 lg:grid-cols-12 lg:gap-6">
+      <section className="relative overflow-hidden border-b border-gray py-12 lg:py-18">
+        {/* Canto morto B1 (prancha "Listagem"): cortado pela borda do bloco. */}
+        <CornerMark variant="arc" className="-right-16 -top-24 w-72 lg:-right-10 lg:w-80" />
+        <div className="container-xl relative grid items-end gap-10 lg:grid-cols-12 lg:gap-6">
           <div className="flex flex-col gap-5.5 lg:col-span-8">
             <p className="eyebrow flex items-center gap-3.5 text-primary">
               <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
