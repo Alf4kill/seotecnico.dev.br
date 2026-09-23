@@ -2,11 +2,28 @@ name: CI
 
 # "My CI blocks deploys that break SEO" (CLAUDE.md §8). Runs on every push to
 # main and every pull request; a red run should block the merge.
+#
+# `pull_request` carries NO `branches:` filter on purpose. That filter matches
+# the pull request's BASE, not its head, so `branches: [main]` silently
+# excluded every stacked pull request — one opened against another feature
+# branch rather than against main. Combined with `push` firing only on main,
+# such a pull request fell between the two triggers and ran nothing at all:
+# no lint, no unit tests, no SEO regression suite, no Lighthouse budgets.
+# It went unnoticed until 2026-09-21, when PR #56 (two new indexable routes,
+# an hreflang pair, JSON-LD, two sitemap URLs, and edits to both
+# `lighthouserc.js` and three test files) was found with zero runs on it,
+# stacked on the redesign branch. Vercel's own commit statuses were green,
+# which is what made the absence look like success — a missing check does not
+# resemble a failing one. See docs/experiment-log.md, the /design row.
+#
+# Cost of running on every pull request: intermediate ones in a stack each run
+# the full suite, and Lighthouse alone takes ~20 minutes. This repository is
+# public, where GitHub Actions minutes are free, so the price is wall-clock
+# and noise rather than money — a trade the gate is worth.
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 # A new push to the same branch cancels the superseded run.
 concurrency:
