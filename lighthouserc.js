@@ -6,6 +6,11 @@
 // the newest post is audited (it changes automatically as content is published);
 // the Playwright suite is what visits every post. Runs against the production
 // server (`next start`) — a build must exist before `lhci autorun`.
+//
+// Never pointed at production: every request there passes through
+// src/proxy.ts and becomes an `ai_crawler_hit`, which would contaminate the
+// detection experiment's buckets (docs/detection-experiment.md). Field
+// performance is the RUM pipeline's job, not this file's.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // CommonJS by necessity: @lhci/cli loads this file via require().
@@ -65,6 +70,20 @@ module.exports = {
         throttlingMethod: 'devtools',
         // GitHub Actions runners need --no-sandbox to launch Chrome.
         chromeFlags: '--no-sandbox',
+        // CI builds with the real GTM container (ci.yml), so gtm.js, gtag.js
+        // and every tag they run are part of the measured page, as they are
+        // for a real visitor. Only the beacons that would land in GA4 are
+        // cut: an audit must never write localhost pageviews or web_vitals
+        // into the human property (Consent Mode v2 advanced sends cookieless
+        // pings even while consent is denied). The scripts still download and
+        // execute; a blocked beacon costs nothing measurable.
+        blockedUrlPatterns: [
+          '*google-analytics.com*',
+          '*analytics.google.com*',
+          '*/g/collect*',
+          '*google.com/ccm/*',
+          '*doubleclick.net*',
+        ],
       },
     },
     assert: {
