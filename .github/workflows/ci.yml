@@ -119,8 +119,15 @@ jobs:
   # minutes; each shard builds on its own and audits three URLs.
   # Shards run on different runners, so compare timings only within a shard's
   # table in the job summary, where the runner's CPU index is printed.
+  #
+  # Two profiles (lighthouserc.js): the five `gate` shards audit every URL
+  # with gtm.js blocked and enforce the budgets on the site's own code; one
+  # `gtm` job audits three URLs with GTM running, reports its timings as
+  # warnings and enforces only its bytes. GTM adds ~+200ms of TBT on a typical
+  # runner (PR #63) — a known open item, measured and visible here, not
+  # something a pull request can regress or fix by accident.
   lighthouse:
-    name: Lighthouse CI (shard ${{ matrix.shard }}/5)
+    name: Lighthouse CI (${{ matrix.label }})
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
@@ -128,7 +135,13 @@ jobs:
       # whether the other templates are also over budget.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        include:
+          - { label: 'shard 1/5', profile: gate, shard: 1, total: 5 }
+          - { label: 'shard 2/5', profile: gate, shard: 2, total: 5 }
+          - { label: 'shard 3/5', profile: gate, shard: 3, total: 5 }
+          - { label: 'shard 4/5', profile: gate, shard: 4, total: 5 }
+          - { label: 'shard 5/5', profile: gate, shard: 5, total: 5 }
+          - { label: 'GTM, report', profile: gtm, shard: 1, total: 1 }
     steps:
       - uses: actions/checkout@v4
 
@@ -140,10 +153,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The real GTM container (public: it is in every served page), so the
-      # third-party cost a visitor pays is inside the budget. lighthouserc.js
-      # blocks the GA4 beacons; nothing reaches analytics. Only this job gets
-      # the id — the Playwright suite has no reason to load GTM.
+      # The real GTM container (public: it is in every served page). The
+      # profile decides whether the audited page runs it; lighthouserc.js
+      # blocks the GA4 beacons in both, so nothing reaches analytics. Only
+      # this job gets the id — the Playwright suite has no reason to load GTM.
       - name: Production build (with GTM)
         run: npm run build
         env:
@@ -152,14 +165,17 @@ jobs:
       - name: Lighthouse CI
         run: npm run lhci
         env:
+          LHCI_PROFILE: ${{ matrix.profile }}
           LHCI_SHARD: ${{ matrix.shard }}
-          LHCI_SHARD_TOTAL: 5
+          LHCI_SHARD_TOTAL: ${{ matrix.total }}
 
       # Also on failure: a red run is exactly when the spread and the runner's
       # CPU index are needed to tell a regression from a slow machine.
       - name: Summary (medians, spread, runner CPU)
         if: always()
         run: node scripts/lhci-summary.mjs
+        env:
+          LHCI_PROFILE: ${{ matrix.profile }}
 
   # One stable check name for the whole matrix (it keeps the name the single
   # job had), so a branch-protection rule never has to list shards.

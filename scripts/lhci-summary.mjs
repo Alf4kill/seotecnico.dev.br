@@ -78,7 +78,7 @@ const table = [header, header.map(() => '---'), ...rows]
   .join('\n')
 
 const output = [
-  '### Lighthouse — medians per URL',
+  `### Lighthouse (${process.env.LHCI_PROFILE ?? 'gate'} profile) — medians per URL`,
   '',
   table,
   '',
