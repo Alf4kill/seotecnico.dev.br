@@ -69,7 +69,53 @@ describe('regras do sistema visual', () => {
     expect(offenders(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b(?![\w-])/, (rel) => HEX_ALLOWED.has(rel))).toEqual([])
   })
 
-  it('o tema claro não voltou', () => {
-    expect(offenders(/data-theme|prefers-color-scheme:\s*light|ThemeToggle|ThemeScript/)).toEqual([])
+  // Dois temas, um seletor: o claro vive só no bloco [data-theme='light'] de
+  // globals.css e nos arquivos que gravam o atributo. Um `dark:` do Tailwind ou
+  // uma media query solta criariam um terceiro caminho que os testes de
+  // contraste não percorrem.
+  it('o tema só muda por data-theme, e só nos lugares donos dele', () => {
+    const THEME_OWNERS = new Set([
+      'app/globals.css',
+      'components/layout/ThemeScript.tsx',
+      'components/layout/ThemeToggle.tsx',
+      'lib/metadata.ts', // theme-color por preferência do sistema
+    ])
+    expect(offenders(/data-theme|prefers-color-scheme/, (rel) => THEME_OWNERS.has(rel) || rel === PROSE)).toEqual([])
+    expect(offenders(/dark:[\w-]/)).toEqual([])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Arte (docs/design-system.md → Arte): cenas, emblemas e marcas de fundo são
+// decoração. Precisam sair do leitor de tela, seguir o tema e nunca virar
+// imagem raster.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('regras da arte', () => {
+  const ART = SOURCES.filter(({ rel }) => rel.startsWith('components/art/'))
+
+  it('existe arte para verificar', () => {
+    expect(ART.map(({ rel }) => rel)).toEqual(
+      expect.arrayContaining(['components/art/generated.tsx', 'components/art/Marks.tsx'])
+    )
+  })
+
+  it('todo <svg> da arte é aria-hidden e não focável', () => {
+    const bad = ART.flatMap(({ rel, lines }) =>
+      lines.flatMap((line, i) =>
+        /<svg/.test(line) && !/aria-hidden/.test(line + (lines[i + 1] ?? '') + (lines[i + 2] ?? '') + (lines[i + 3] ?? ''))
+          ? [`${rel}:${i + 1}`]
+          : []
+      )
+    )
+    expect(bad).toEqual([])
+  })
+
+  it('sem raster, filtro, blur nem cor inline', () => {
+    const bad = ART.flatMap(({ rel, lines }) =>
+      lines.flatMap((line, i) =>
+        /<image|<filter|blur\(|(?:fill|stroke)="(?!none")[^"{]/.test(line) ? [`${rel}:${i + 1}  ${line.trim()}`] : []
+      )
+    )
+    expect(bad).toEqual([])
   })
 })
