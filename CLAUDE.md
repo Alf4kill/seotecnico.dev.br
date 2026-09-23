@@ -161,11 +161,15 @@ Tools must work without login. No stored user data (LGPD simplicity).
 **Performance budgets (enforced by Lighthouse CI):**
 - Performance ≥ 95, LCP < 2.0s, CLS < 0.05, INP < 200ms (lab TBT proxy).
 - Build fails if budgets regress.
-- Timings are the median of 5 runs, on pull requests only, with the real GTM
-  container loaded (GA4 beacons blocked) and never against production.
-  Alongside them, deterministic ceilings that do not move with runner CPU:
-  script bytes (incl. GTM), third-party bytes, font files, zero stylesheet
-  requests, DOM ≤ 1400. Values and rationale in `lighthouserc.js`.
+- Timings are the median of 5 runs, on pull requests only, never against
+  production. The budgets measure the site's own code (gtm.js blocked);
+  alongside them, deterministic ceilings that do not move with runner CPU:
+  first-party script bytes, font files, zero stylesheet requests, DOM ≤ 1400.
+- GTM's cost is measured next to the budgets, not inside them: a separate
+  job runs three URLs with GTM (GA4 beacons blocked), reports its timings as
+  warnings and blocks only on third-party bytes. On a typical runner GTM +
+  gtag.js add ~+200ms TBT (2026-09-23) — an open item, not an accepted cost.
+  Values and rationale in `lighthouserc.js`.
 - These are **lab** budgets, deliberately stricter than Google's **field**
   thresholds (LCP 2.5s / INP 200ms / CLS 0.1 at p75 of CrUX). Lab runs one
   emulated device on one emulated network; the field p75 includes the slow
