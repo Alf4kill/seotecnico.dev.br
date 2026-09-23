@@ -1,15 +1,18 @@
 # Design system — "Swiss retro-futurism"
 
 The visual system of seotecnico.dev.br since September 2026. It replaced the
-Inter / blue / rounded / light-and-dark look. The public explanation of *why*
-lives on the site at `/design` (the colophon page); this document is the
-implementation reference: tokens, measurements, components, rules, and the
-performance cost that was accepted.
+Inter / blue / rounded look. The public explanation of *why* lives on the site
+at `/design` (the colophon page); this document is the implementation
+reference: tokens, measurements, components, rules, and the performance cost
+that was accepted.
 
-The source design was delivered as an 8-board HTML bundle (graphic system,
-blog index, article, category archive, two 390px boards, manifesto, manifesto
-390). It stays outside the repository; everything needed to build from it is
-recorded here.
+The source design was delivered as an HTML bundle of boards. The first eight
+(graphic system, blog index, article, category archive, two 390px boards,
+manifesto, manifesto 390) shipped on 2026-09-21 as a dark-only system. Four
+more (light-theme system, light index, light article, background study) and a
+folder of 16 art SVGs added the light theme and the art layer (§3.1, §10).
+Neither the bundle nor the SVGs are in the repository; everything needed to
+build from them is recorded here.
 
 ## 1. Principles
 
@@ -29,11 +32,12 @@ is copied from anywhere.
 
 | Rule | Enforced by |
 |---|---|
-| NO large light surfaces — the site has one theme, dark | `contrast.spec.ts` (light system preference changes nothing), `design-rules.test.ts` (no `data-theme`, no light media query) |
+| YES two themes, one system — dark is the base (and the no-JS theme), light is `[data-theme='light']` only | `design-tokens.test.ts` (both palettes, one light block), `contrast.spec.ts` (first-frame theme, toggle, every role in both themes), `design-rules.test.ts` (`data-theme` / `prefers-color-scheme` only in their owners, no `dark:` utilities) |
 | NO rounded corners (only `rounded-full` for the circle shape) | `tailwind.config.js` replaces `borderRadius`; `design-rules.test.ts` fails on any `rounded-*` |
 | NO decorative shadow or gradient (the hazard stripe is a stripe, not a gradient) | `tailwind.config.js` replaces `boxShadow`; `design-rules.test.ts` |
 | NO colour outside the tokens (no hex, no `text-white`, no `gray-500`) | `design-rules.test.ts` (hex only in `design-tokens.ts`, `globals.css`, `icon.svg`) |
-| NO emoji or illustrative icon | review; functional status icons in the tools are the only lucide icons left |
+| NO emoji or illustrative icon | review; functional status icons in the tools are the only lucide icons left. The registered art (§10) is the one exception, and it is decoration |
+| YES art is `aria-hidden`, inline SVG, token colours only; at most one scene and one central mark per page, never inside the article body | `design-rules.test.ts` (art files), `design.spec.ts` (every sitemap route) |
 | YES body text above 4.5:1 | `design-tokens.test.ts` (palette pairs), `contrast.spec.ts` (rendered elements on 7 routes), `shiki-theme.test.ts` (code tokens), `design.spec.ts` (diagram labels) |
 | YES a measured number only with its source and date next to it | review; the mock numbers of the source boards (`[N]`, `[+X%]`, "Fig. 01") were never shipped — counts are computed at build time from `/content` |
 
@@ -76,6 +80,64 @@ Diagram tokens (inline SVGs in articles, consumed as colours, not channels):
 `--color-accent` #E89B3C, `--color-diagram-phase-a` #1E3A5F,
 `--color-diagram-phase-b` #14432F, `--color-diagram-axis` #7A8798,
 `--foreground`, `--background`. Foreground on the phases measures 9.69 / 9.45.
+Two more since the light theme: `--color-diagram-on-accent` (#0E1116 in both
+themes — a label ON an amber box) and `--color-diagram-accent-text` (#E89B3C
+dark / #8A4E0B light — a label IN amber). `--color-accent` is a literal
+#E89B3C in both themes: it is a fill; amber as text is `--accent-rgb`.
+
+### 3.1 Light theme — "warm paper, cold metal"
+
+Not the dark theme inverted: the same system in another material. No pure
+white anywhere. The bright accents become fills only; as text they turn into
+ink. The code block stays a dark screen (see *dark island* below).
+
+| Token | Dark | Light | Light on paper #F2EDE3 / card #EAE4D8 / metal #E4E6E8 |
+|---|---|---|---|
+| background | #0E1116 | #F2EDE3 paper | — |
+| surface | #151A21 | #EAE4D8 card | — |
+| surface-2 | #1B222B | #E4E6E8 metal | — |
+| surface-alt | #12161C | #ECE6DA | — |
+| surface-chrome (header, footer) | = background | #E4E6E8 metal | — |
+| foreground | #E8ECF1 | #16181C | 15.23 / 14.04 / 14.20 |
+| body | #C6D0DB | #3A3C42 | 9.45 / 8.71 / 8.81 |
+| muted | #97A3B2 | #5A5C60 | 5.74 / 5.29 / 5.35 |
+| label | #7A8798 | #67635A | 5.13 / 4.73 / 4.78 |
+| primary (text AND button surface) | #3ED8C8 | #0A5F59 | 6.44 / 5.94 / 6.01 |
+| on-primary | #0E1116 | #F2EDE3 | 6.44 on primary, 5.67 on accent |
+| accent (text) | #E89B3C | #8A4E0B | 5.67 / 5.22 / 5.29 |
+| danger (text and shape) | #E5625A / #D0483C | #B3322A | 5.28 / 4.87 / 4.93 |
+| reference | #2F5BD0 | #23409B | 7.90 (shape) |
+| control | #606B7A | #7A7E84 | 3.50 / 3.22 / 3.26 (≥3:1) |
+| rule / rule-strong | #262F3A / #35404E | #DCD5C6 / #A8ADB4 | decorative |
+
+Deviations from the light boards, all measured: the board's label #6E6A60
+fails on card and metal (4.26 / 4.31) and was darkened to #67635A; the board
+drew input borders with #A8ADB4 (1.94:1) — form controls use #7A7E84; the
+board's table claims ink-on-cyan buttons but its components render the teal
+ink #0A5F59 with paper text, which is what shipped (one token for text and
+surface, like dark, so no `bg-primary` had to be audited).
+
+**Mechanism.** `ThemeScript` (an inline `<script>` in `<head>`, ~500 bytes)
+reads the saved choice (`localStorage['seotecnico:theme']`), falls back to
+`prefers-color-scheme`, and writes `data-theme` on `<html>` before the first
+paint; it also rewrites `<meta name="theme-color">` so the mobile bar follows
+an explicit choice. There is no `@media (prefers-color-scheme)` copy of the
+light block: without JavaScript the base dark theme applies. `ThemeToggle` is
+a circle glyph (a primary shape, not an icon) whose filled half is decided in
+CSS from the same attribute, so the first frame is right before hydration. On
+mobile it lives inside the menu: a fourth 44px button does not fit the bar at
+390px.
+
+**Dark island.** `:root, .theme-dark-island, .rich-text
+figure[data-rehype-pretty-code-figure]` declare the dark tokens. A declaration
+on the element beats the value inherited from `<html>`, so a code block (and
+the JSON-LD generator output) keeps cyan, controls and labels of the dark
+theme on a light page. The Shiki theme is unchanged.
+
+**Components that change.** Instrument corners become printer's registration
+marks (`.instrument-corner` + `data-corner`, CSS only). Header and footer
+paint `surface-chrome`. Nothing else is theme-specific: every utility reads
+tokens.
 
 ## 4. Typography
 
@@ -129,6 +191,9 @@ had to change.
 | Category filter | `.category-filter` in `globals.css` | radio inputs + `:has()`, works without JavaScript, creates no URL |
 | Skip link | `.skip-link` in `globals.css` | first focusable element on every page |
 | Code theme | `lib/shiki-theme.ts` | built from the palette; worst token 5.12:1 |
+| Theme script / toggle | `components/layout/ThemeScript.tsx`, `ThemeToggle.tsx` | see §3.1 |
+| Scenes, emblems | `components/art/Art.tsx` (+ `generated.tsx`) | see §10 |
+| Background marks | `components/art/Marks.tsx` | see §10 |
 
 ## 7. Categories (taxonomy without URLs)
 
@@ -173,6 +238,29 @@ Local LHCI, devtools throttling, same machine, median of 3–5 runs, LCP in ms:
 - Inline CSS (`experimental.inlineCss`): 37.3 KB raw / 8.4 KB gzip per page,
   up from ~22 KB / ~5 KB. Font-face rules are 6.3 KB of it.
 
+### 8.1 Light theme + art (2026-09-23)
+
+Local LHCI, devtools throttling, same machine, 9 runs, medians, branch vs
+`main` built the same way:
+
+| Route | Main-thread total | Style & Layout | FCP | TBT |
+|---|---|---|---|---|
+| `/blog` (main → branch) | 1770 → 1723 ms | 589 → 577 ms | — | 163 → 428 ms |
+| newest article (main → branch) | 2080 → 2096 ms | 893 → 944 ms | ~1080 → ~750 ms | 430 → 737 ms |
+
+The work did not grow; the page paints earlier. On `main` the first
+parse/style long task (≈660 → 1060 ms) ends *before* FCP, and TBT only counts
+tasks after FCP. With the branch FCP arrives first and the same task lands
+after it. Bisecting by commit, FCP moves in steps (tokens ~975 ms, theme
+script ~760–860 ms) and removing the head script or the `color-scheme` meta
+does not bring it back — it is how Chrome splits the parse, not one feature.
+
+Caveat recorded with the numbers: on this machine that day `main` itself
+failed the article budget (TBT 430 > 200, Performance 88–90), so the local run
+is not the gate; the CI runner is. If CI fails the budget, the lever is the
+size of that parse/style task on long articles (DOM of the code blocks), not
+the theme.
+
 ## 9. Change process
 
 1. Colour change → edit `globals.css` and `design-tokens.ts` together; the
@@ -183,3 +271,66 @@ Local LHCI, devtools throttling, same machine, median of 3–5 runs, LCP in ms:
    `design.spec.ts` measures every `<text>` against the shape behind it.
 4. Any change that moves lab LCP/TBT → re-measure with the table in §8 and
    update it.
+5. Colour change → measure it in BOTH themes; `design-tokens.test.ts` tests
+   the dark and light palettes separately.
+6. New art → `node scripts/art-import.mjs <folder>`; a colour without a token
+   fails the import. Give it a `--art-*` token (dark and light) first, then
+   register the work in `lib/art.ts`.
+
+## 10. Art
+
+Three families, all inline SVG (`aria-hidden`, no request, no raster, no
+gradient — an inline SVG is not an LCP candidate). Every colour is a token
+class, so the same drawing changes material with the theme.
+
+**Scenes** (360×280, `components/art/generated.tsx`). Twelve works in four
+trios, one trio per blog axis. `lib/art.ts` maps them: an article inherits its
+axis's scene (a stable hash of the slug picks one of the three), and
+`SCENE_BY_SLUG` pins a scene only where the drawing tells the subject. A new
+article never requires editing that file.
+
+| Axis | Trio | Pinned |
+|---|---|---|
+| `cwv` | light column, piercing beam, broken vault | LCP articles → column / beam, INP → vault |
+| `indexacao` | arrival at the void, twin moons, vertical void | hreflang → twin moons, sitemap → arrival, SSR/SSG → vertical void |
+| `dados-estruturados` | the only one, window, contemplation | metadata → the only one, JSON-LD → window |
+| `medicao` | guardian eye, vigil, field of tombstones | AI crawlers → guardian eye, GTM → vigil |
+
+Fixed pages: `/sobre` and `/en/about` → contemplation; 404 → field of
+tombstones. The scene sits in the article header's right column from `lg`
+up and is not rendered in the flow below it.
+
+**Emblems** (96×96): dynamo → JSON-LD generator, circuit → meta tag
+validator, staircase → CWV checker, closed loop → tools index. They appear in
+each tool's header, on the tools index cards and in the tools strip.
+
+**Background marks** (from the background-study board). Family A, central:
+A1 beam (home, `/en`), A2 axonometric volume (tools index), A3 Bauhaus arcs
+(pillar guide). Family B, corner: B1 bleeding arc (`/blog`), plus B2 dot grid,
+B3 gutter ruler, B4 ghost numeral, B5 registration mark, B6 cut stripe
+available in `Marks.tsx`. Opacity is a token per theme — tinted ink on paper
+weighs more than light ink on graphite:
+
+| Token | Dark | Light |
+|---|---|---|
+| `--mark-central-opacity` | 0.07 | 0.08 |
+| `--mark-corner-opacity` | 0.20 | 0.24 |
+
+**Art ramp** (`--art-*-rgb`; shape only, never text). The scene's void and ink
+are `--background` and `--foreground`.
+
+| Token | Dark (as drawn) | Light |
+|---|---|---|
+| line | #7A7F86 | #8C8A84 |
+| mass | #3A444C | #B9BEC4 |
+| earth | #5B3A22 | #C9A27E |
+| olive | #4A4128 | #B8AD86 |
+| deep | #1C3B39 | #9FC3BD |
+| leaf | #3F9B7A | #2E7A5F |
+| brass | #B8893C | #A8691A |
+| signal | #C4553B | #B3322A |
+
+Rules: one scene and one central mark per page at most (`/design` is the
+catalogue and the only exception); a central mark only behind the header of a
+ceremonial page, never behind running text; a corner mark is always cut by
+the edge of its block.
