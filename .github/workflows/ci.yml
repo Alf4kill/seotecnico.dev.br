@@ -17,9 +17,10 @@ name: CI
 # resemble a failing one. See docs/experiment-log.md, the /design row.
 #
 # Cost of running on every pull request: intermediate ones in a stack each run
-# the full suite, and Lighthouse alone takes ~20 minutes. This repository is
-# public, where GitHub Actions minutes are free, so the price is wall-clock
-# and noise rather than money — a trade the gate is worth.
+# the full suite, and Lighthouse takes ~10 minutes of wall-clock (five
+# parallel shards, below). This repository is public, where GitHub Actions
+# minutes are free, so the price is wall-clock and noise rather than money —
+# a trade the gate is worth.
 on:
   push:
     branches: [main]
@@ -104,9 +105,43 @@ jobs:
   # Core Web Vitals budgets (CLAUDE.md §6): Performance ≥95, LCP <2.0s,
   # CLS <0.05, TBT <200ms (lab proxy for INP). Budgets live in lighthouserc.js;
   # the build fails if any of them regresses.
+  #
+  # Pull requests only. On a push to main the merge has already happened and
+  # Vercel is already deploying, so a red run there blocks nothing — it only
+  # re-measures, on a different runner, a tree its pull request already
+  # measured. Timing metrics move with runner CPU (Lighthouse's benchmarkIndex
+  # was seen from ~2400 to ~3500 across runs of the same code, halving TBT),
+  # so that second opinion was mostly noise: it is what turned the merge of
+  # #62 red at TBT 216ms after its pull request had passed at 166ms.
+  #
+  # Sharded: the URLs are split round-robin across parallel jobs (the split
+  # lives in lighthouserc.js). One job ran every URL in series and took ~20
+  # minutes; each shard builds on its own and audits three URLs.
+  # Shards run on different runners, so compare timings only within a shard's
+  # table in the job summary, where the runner's CPU index is printed.
+  #
+  # Two profiles (lighthouserc.js): the five `gate` shards audit every URL
+  # with gtm.js blocked and enforce the budgets on the site's own code; one
+  # `gtm` job audits three URLs with GTM running, reports its timings as
+  # warnings and enforces only its bytes. GTM adds ~+200ms of TBT on a typical
+  # runner (PR #63) — a known open item, measured and visible here, not
+  # something a pull request can regress or fix by accident.
   lighthouse:
-    name: Lighthouse CI budgets
+    name: Lighthouse CI (${{ matrix.label }})
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    strategy:
+      # Every shard reports even when one fails: a red shard alone would hide
+      # whether the other templates are also over budget.
+      fail-fast: false
+      matrix:
+        include:
+          - { label: 'shard 1/5', profile: gate, shard: 1, total: 5 }
+          - { label: 'shard 2/5', profile: gate, shard: 2, total: 5 }
+          - { label: 'shard 3/5', profile: gate, shard: 3, total: 5 }
+          - { label: 'shard 4/5', profile: gate, shard: 4, total: 5 }
+          - { label: 'shard 5/5', profile: gate, shard: 5, total: 5 }
+          - { label: 'GTM, report', profile: gtm, shard: 1, total: 1 }
     steps:
       - uses: actions/checkout@v4
 
@@ -118,8 +153,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Production build
+      # The real GTM container (public: it is in every served page). The
+      # profile decides whether the audited page runs it; lighthouserc.js
+      # blocks the GA4 beacons in both, so nothing reaches analytics. Only
+      # this job gets the id — the Playwright suite has no reason to load GTM.
+      - name: Production build (with GTM)
         run: npm run build
+        env:
+          NEXT_PUBLIC_GTM_ID: GTM-N5RB56R9
 
       - name: Lighthouse CI
         run: npm run lhci
+        env:
+          LHCI_PROFILE: ${{ matrix.profile }}
+          LHCI_SHARD: ${{ matrix.shard }}
+          LHCI_SHARD_TOTAL: ${{ matrix.total }}
+
+      # Also on failure: a red run is exactly when the spread and the runner's
+      # CPU index are needed to tell a regression from a slow machine.
+      - name: Summary (medians, spread, runner CPU)
+        if: always()
+        run: node scripts/lhci-summary.mjs
+        env:
+          LHCI_PROFILE: ${{ matrix.profile }}
+
+  # One stable check name for the whole matrix (it keeps the name the single
+  # job had), so a branch-protection rule never has to list shards.
+  lighthouse-gate:
+    name: Lighthouse CI budgets
+    if: always() && github.event_name == 'pull_request'
+    needs: lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every shard passed
+        run: test "${{ needs.lighthouse.result }}" = success
