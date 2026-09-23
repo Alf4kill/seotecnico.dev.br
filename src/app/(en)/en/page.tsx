@@ -3,6 +3,7 @@ import { getAllPosts } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 import { ButtonLink, buttonClasses } from '@/components/ui/Button'
+import { CentralMark } from '@/components/art/Marks'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Home em inglês — par de hreflang da home portuguesa (lib/hreflang.ts).
@@ -111,8 +112,10 @@ export default function EnglishHomePage() {
       <PersonJsonLd />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="border-b border-gray py-14 lg:py-22">
-        <div className="container-xl flex max-w-none flex-col gap-6">
+      <section className="relative overflow-hidden border-b border-gray py-14 lg:py-22">
+        {/* Central mark A1 (beam): ceremonial page, behind the header only. */}
+        <CentralMark variant="beam" className="-right-24 -top-16 w-[34rem] lg:right-[8%] lg:w-[44rem]" />
+        <div className="container-xl relative flex max-w-none flex-col gap-6">
           <p className="eyebrow flex items-center gap-3.5 text-primary">
             <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
             {site.name} · a live technical SEO lab

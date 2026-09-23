@@ -3,6 +3,8 @@ import { buildMetadata } from '@/lib/metadata'
 import { BreadcrumbJsonLd, SoftwareApplicationJsonLd } from '@/components/seo/JsonLd'
 import { MetaValidator } from '@/components/tools/MetaValidator'
 import { FaqSection } from '@/components/sections/FaqSection'
+import { Emblem } from '@/components/art/Art'
+import { TOOL_EMBLEMS } from '@/lib/art'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Ferramenta 2 (CLAUDE.md §5.3): Validador de meta tags.
@@ -59,19 +61,24 @@ export default function ValidadorMetaTagsPage() {
       />
 
       <section className="container-xl py-12 lg:py-16">
-        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
-          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
-          Ferramenta gratuita · sem login
-        </p>
-        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
-          Validador de meta tags
-        </h1>
-        <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
-          Cole a URL de qualquer página e veja o que o Google e as redes
-          sociais realmente leem: title, meta description, canonical, robots,
-          H1 e Open Graph — com um preview da SERP e alertas do que corrigir.
-          Grátis, sem login e sem armazenar a URL.
-        </p>
+        <div className="flex items-start justify-between gap-8">
+          <div className="min-w-0">
+            <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+              <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+              Ferramenta gratuita · sem login
+            </p>
+            <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
+              Validador de meta tags
+            </h1>
+            <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
+              Cole a URL de qualquer página e veja o que o Google e as redes
+              sociais realmente leem: title, meta description, canonical, robots,
+              H1 e Open Graph — com um preview da SERP e alertas do que corrigir.
+              Grátis, sem login e sem armazenar a URL.
+            </p>
+          </div>
+          <Emblem id={TOOL_EMBLEMS['validador-meta-tags']} className="hidden w-24 shrink-0 md:block lg:w-28" />
+        </div>
 
         <MetaValidator />
 

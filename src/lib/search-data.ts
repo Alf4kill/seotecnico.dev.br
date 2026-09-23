@@ -61,10 +61,10 @@ export const STATIC_SEARCH_ITEMS: SearchItem[] = [
   {
     id: 'design',
     title: 'Design do site',
-    description: 'Por que o site é escuro, sem cantos arredondados e usa formas no lugar de ícones',
+    description: 'Por que o site é escuro por padrão, tem tema claro e usa formas no lugar de ícones',
     href: '/design',
     category: 'pagina',
-    keywords: ['design', 'colofão', 'retrofuturismo', 'bauhaus', 'paleta', 'contraste', 'tipografia'],
+    keywords: ['design', 'colofão', 'retrofuturismo', 'bauhaus', 'paleta', 'contraste', 'tipografia', 'tema claro', 'modo escuro'],
   },
 
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─

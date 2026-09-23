@@ -6,13 +6,17 @@ import type { ReactNode } from 'react'
 // carrega o acento (docs/design-system.md → Nota de laboratório).
 //
 // `corners="two"` usa só o par diagonal, como a caixa de estado do artigo.
+//
+// No tema claro os cantos viram marcas de registro — as da margem de uma prova
+// de impressão. A troca é CSS (globals.css → .instrument-corner), pelo
+// data-corner de cada canto; o JSX é o mesmo nos dois temas.
 // ─────────────────────────────────────────────────────────────────────────────
 
 type Tone = 'primary' | 'accent'
 
 const CORNER: Record<Tone, string> = {
-  primary: 'border-primary',
-  accent: 'border-accent',
+  primary: 'border-primary text-primary',
+  accent: 'border-accent text-accent',
 }
 const LABEL: Record<Tone, string> = {
   primary: 'text-primary',
@@ -34,13 +38,13 @@ export function InstrumentFrame({
   className?: string
   children: ReactNode
 }) {
-  const c = `pointer-events-none absolute h-3.5 w-3.5 ${CORNER[tone]}`
+  const c = `instrument-corner pointer-events-none absolute h-3.5 w-3.5 ${CORNER[tone]}`
   return (
     <Tag className={`relative border border-gray-strong bg-surface p-6 ${className}`}>
-      <span aria-hidden="true" className={`${c} -left-px -top-px border-l-2 border-t-2`} />
-      {corners === 'four' && <span aria-hidden="true" className={`${c} -right-px -top-px border-r-2 border-t-2`} />}
-      {corners === 'four' && <span aria-hidden="true" className={`${c} -bottom-px -left-px border-b-2 border-l-2`} />}
-      <span aria-hidden="true" className={`${c} -bottom-px -right-px border-b-2 border-r-2`} />
+      <span aria-hidden="true" data-corner="tl" className={`${c} -left-px -top-px border-l-2 border-t-2`} />
+      {corners === 'four' && <span aria-hidden="true" data-corner="tr" className={`${c} -right-px -top-px border-r-2 border-t-2`} />}
+      {corners === 'four' && <span aria-hidden="true" data-corner="bl" className={`${c} -bottom-px -left-px border-b-2 border-l-2`} />}
+      <span aria-hidden="true" data-corner="br" className={`${c} -bottom-px -right-px border-b-2 border-r-2`} />
       {label && (
         <p className={`eyebrow mb-2.5 ${LABEL[tone]}`}>{label}</p>
       )}

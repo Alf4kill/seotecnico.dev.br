@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { PersonJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
+import { Scene } from '@/components/art/Art'
+import { PAGE_ART } from '@/lib/art'
 
 export const metadata = buildMetadata({
   title: 'Sobre o projeto SEO Técnico',
@@ -22,13 +24,19 @@ export default function SobrePage() {
       />
 
       <section className="container-xl py-12 lg:py-16">
-        <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
-          <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
-          Sobre · autor e projeto
-        </p>
-        <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
-          Sobre o SEO Técnico
-        </h1>
+        <div className="flex items-end justify-between gap-8">
+          <div className="min-w-0">
+            <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+              <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+              Sobre · autor e projeto
+            </p>
+            <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">
+              Sobre o SEO Técnico
+            </h1>
+          </div>
+          {/* Cena "Contemplação": a página do autor (docs/design-system.md → Arte). */}
+          <Scene id={PAGE_ART.about} className="hidden w-64 shrink-0 md:block lg:w-80" />
+        </div>
 
         <div className="rich-text mt-10 max-w-[68ch]">
           <p>
@@ -77,9 +85,10 @@ export default function SobrePage() {
 
           <h2>Por que o site tem esta cara</h2>
           <p>
-            O visual também é decisão documentada: fundo escuro por causa da
-            leitura longa, nenhum canto arredondado, três formas no lugar de
-            ícones e cada par de cores medido contra o contraste mínimo. A
+            O visual também é decisão documentada: fundo escuro por padrão por
+            causa da leitura longa, um tema claro com a mesma paleta medida,
+            nenhum canto arredondado, três formas no lugar de ícones e cada par
+            de cores medido contra o contraste mínimo. A
             explicação completa, com as escolas de design por trás, está no{' '}
             <Link href="/design" title="Design do site: retrofuturismo suíço">
               colofão do design

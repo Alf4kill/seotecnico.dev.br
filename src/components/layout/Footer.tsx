@@ -124,7 +124,7 @@ export function Footer({ lang }: { lang: Lang }) {
   const copy = COPY[lang]
 
   return (
-    <footer className="mt-14 border-t-[3px] border-primary">
+    <footer className="mt-14 border-t-[3px] border-primary bg-surface-chrome">
       <div className="container-xl flex flex-col gap-10 py-10 md:flex-row md:items-start md:justify-between">
 
         {/* ── Marca + byline ────────────────────────────────────── */}
