@@ -14,9 +14,18 @@
 /* por isso esses existem nas duas formas. Nunca troque a forma-cor por canais:  */
 /* quebraria todo diagrama já publicado.                                         */
 /*                                                                              */
-/* Só escuro, por decisão de leitura (página /design): artigos longos e cheios   */
-/* de código. Todo par texto/fundo abaixo foi medido (AA, ≥4,5:1).               */
-:root {
+/* Dois temas, um sistema (página /design): o escuro é a base e o padrão sem   */
+/* JavaScript; o claro ("papel quente, metal frio") é o mesmo sistema em outro   */
+/* material, ativado por [data-theme='light'] — que o script do <head>          */
+/* (RootShell) grava antes da primeira pintura, a partir da escolha salva ou da  */
+/* preferência do sistema. Todo par texto/fundo dos dois foi medido (≥4,5:1).    */
+/*                                                                              */
+/* `.theme-dark-island` redeclara os tokens escuros num trecho da página: o     */
+/* bloco de código continua sendo uma tela escura mesmo no tema claro. A         */
+/* declaração no próprio elemento vence o valor herdado do <html>.               */
+:root,
+.theme-dark-island,
+.rich-text figure[data-rehype-pretty-code-figure] {
   color-scheme: dark;
 
   --background-rgb: 14 17 22;      /* #0E1116 grafite */
@@ -57,10 +66,33 @@
   --warning-rgb: 232 155 60;       /* = accent */
   --danger-rgb: 229 98 90;         /* #E5625A — 5,61 / 5,18 / 4,75:1 */
 
+  /* Moldura (header, rodapé). No escuro é o próprio fundo; no claro, o metal. */
+  --surface-chrome-rgb: 14 17 22;  /* #0E1116 */
+
+  /* Rampa da arte (cenas e emblemas — src/components/art). Só forma, nunca
+     texto: é decoração aria-hidden. No escuro são as cores originais das
+     cenas; o vazio e a tinta delas são --background e --foreground.         */
+  --art-line-rgb: 122 127 134;     /* #7A7F86 fios, horizonte */
+  --art-mass-rgb: 58 68 76;        /* #3A444C massa, edifício */
+  --art-earth-rgb: 91 58 34;       /* #5B3A22 terra, céu de poeira */
+  --art-olive-rgb: 74 65 40;       /* #4A4128 oliva */
+  --art-deep-rgb: 28 59 57;        /* #1C3B39 água funda */
+  --art-leaf-rgb: 63 155 122;      /* #3F9B7A folha, órbita */
+  --art-brass-rgb: 184 137 60;     /* #B8893C latão, o foco da cena */
+  --art-signal-rgb: 196 85 59;     /* #C4553B sinal */
+
+  /* Marcas de fundo (Estudo de fundos): opacidade é token POR TEMA — tinta
+     escura sobre papel pesa mais que tinta clara sobre grafite. */
+  --mark-central-opacity: 0.07;
+  --mark-corner-opacity: 0.2;
+
   --background: rgb(var(--background-rgb));
   --foreground: rgb(var(--foreground-rgb));
   --color-primary: rgb(var(--primary-rgb));
-  --color-accent: rgb(var(--accent-rgb));
+  /* Âmbar como PREENCHIMENTO — igual nos dois temas (diagramas, faixa de
+     alerta, fio de citação). O âmbar como texto é --accent-rgb, que no
+     claro vira tinta. */
+  --color-accent: #E89B3C;
 
   /* Paleta de diagramas (SVGs inline dos artigos — CLAUDE.md §9). Fases em
      tons escuros para que --foreground continue legível por cima (>9:1);
@@ -70,6 +102,69 @@
   --color-diagram-axis: #7A8798;
 
   --code-background: #1B222B; /* = fundo do tema Shiki (src/lib/shiki-theme.ts) */
+  /* Rótulo sobre caixa âmbar num diagrama: grafite nos dois temas. */
+  --color-diagram-on-accent: #0E1116;
+  /* Rótulo EM âmbar (texto, não caixa): no claro vira a tinta âmbar. */
+  --color-diagram-accent-text: #E89B3C;
+}
+
+/* ── Tema claro: papel quente, metal frio ───────────────────────────────────── */
+/* Nenhum branco puro. Os acentos brilhantes viram preenchimento; os profundos */
+/* viram tinta. Razões medidas sobre papel / cartão / metal.                   */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --background-rgb: 242 237 227;   /* #F2EDE3 papel */
+  --surface-rgb: 234 228 216;      /* #EAE4D8 cartão */
+  --surface-2-rgb: 228 230 232;    /* #E4E6E8 metal — código inline, aparato */
+  --surface-alt-rgb: 236 230 218;  /* #ECE6DA faixa alternada */
+  --surface-chrome-rgb: 228 230 232; /* #E4E6E8 metal — header, rodapé */
+
+  --foreground-rgb: 22 24 28;      /* #16181C tinta — 15,23 / 14,04 / 14,20:1 */
+  --body-rgb: 58 60 66;            /* #3A3C42 corpo — 9,45 / 8,71 / 8,81:1 */
+  --muted-rgb: 90 92 96;           /* #5A5C60 apoio — 5,74 / 5,29 / 5,35:1 */
+  --label-rgb: 103 99 90;          /* #67635A rótulo — 5,13 / 4,73 / 4,78:1 (a prancha usava #6E6A60: 4,26 no cartão) */
+  --label-code-rgb: 103 99 90;     /* = rótulo; o bloco de código é ilha escura */
+
+  --border-rgb: 220 213 198;       /* #DCD5C6 fio decorativo */
+  --border-strong-rgb: 168 173 180;/* #A8ADB4 fio forte */
+  --control-rgb: 122 126 132;      /* #7A7E84 borda de campo — 3,50 / 3,22 / 3,26:1 */
+
+  /* No claro o ciano brilhante não passa como texto (1,52:1): primary vira a
+     tinta #0A5F59, que serve de texto E de superfície, com papel por cima. */
+  --primary-rgb: 10 95 89;         /* #0A5F59 — 6,44 / 5,94 / 6,01:1 */
+  --primary-hover-rgb: 7 63 59;    /* #073F3B */
+  --primary-solid-rgb: 10 95 89;
+  --primary-solid-hover-rgb: 7 63 59;
+  --on-primary-rgb: 242 237 227;   /* papel sobre tinta ciano 6,44 / âmbar 5,67:1 */
+
+  --accent-rgb: 138 78 11;         /* #8A4E0B tinta âmbar — 5,67 / 5,22:1 */
+
+  --danger-shape-rgb: 179 50 42;   /* #B3322A */
+  --reference-rgb: 35 64 155;      /* #23409B */
+
+  --success-rgb: 10 95 89;
+  --warning-rgb: 138 78 11;
+  --danger-rgb: 179 50 42;         /* #B3322A — 5,28 / 4,87 / 4,93:1 */
+
+  --art-line-rgb: 140 138 132;     /* #8C8A84 */
+  --art-mass-rgb: 185 190 196;     /* #B9BEC4 */
+  --art-earth-rgb: 201 162 126;    /* #C9A27E */
+  --art-olive-rgb: 184 173 134;    /* #B8AD86 */
+  --art-deep-rgb: 159 195 189;     /* #9FC3BD */
+  --art-leaf-rgb: 46 122 95;       /* #2E7A5F */
+  --art-brass-rgb: 168 105 26;     /* #A8691A */
+  --art-signal-rgb: 179 50 42;     /* #B3322A */
+
+  --mark-central-opacity: 0.08;
+  --mark-corner-opacity: 0.24;
+
+  /* Fases de diagrama em tints de papel: a tinta por cima mede 12,3 / 12,7:1. */
+  --color-diagram-phase-a: #BFD1E6;
+  --color-diagram-phase-b: #BEDBC8;
+  /* O eixo também rotula (texto de apoio nos diagramas): 5,74:1 no papel. */
+  --color-diagram-axis: #5A5C60;
+  --color-diagram-accent-text: #8A4E0B;
 }
 
 
@@ -212,6 +307,57 @@ h3 {
     top: 1rem;
   }
 }
+
+
+/* ── Marcas de fundo (src/components/art/Marks.tsx) ───────────────────────── */
+/* O SVG inteiro recebe a opacidade do tema; as formas dentro dele são         */
+/* desenhadas a 100% (ou uma fração fixa), nas cores de token.                 */
+.mark-central,
+.mark-ghost {
+  opacity: var(--mark-central-opacity);
+}
+.mark-corner {
+  opacity: var(--mark-corner-opacity);
+}
+
+
+/* ── Tema: glifo do botão e marcas de registro ──────────────────────────────── */
+/* O glifo do ThemeToggle é um círculo meio cheio: a metade esquerda no escuro, */
+/* a direita no claro. Decidido aqui, pelo data-theme, para o primeiro frame.  */
+.theme-glyph-fill {
+  left: 0;
+}
+:root[data-theme='light'] .theme-glyph-fill {
+  left: 50%;
+}
+
+/* Cantos de instrumento (InstrumentFrame) → marcas de registro no claro: dois */
+/* fios de 1px cruzando a borda perto de cada canto, na cor do tom.            */
+:root[data-theme='light'] .instrument-corner {
+  border-width: 0;
+}
+:root[data-theme='light'] .instrument-corner::before,
+:root[data-theme='light'] .instrument-corner::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+}
+:root[data-theme='light'] .instrument-corner::before {
+  width: 1px;
+  height: 14px;
+}
+:root[data-theme='light'] .instrument-corner::after {
+  width: 14px;
+  height: 1px;
+}
+:root[data-theme='light'] .instrument-corner[data-corner='tl']::before { left: 20px; top: -6px; }
+:root[data-theme='light'] .instrument-corner[data-corner='tl']::after { left: -6px; top: 20px; }
+:root[data-theme='light'] .instrument-corner[data-corner='tr']::before { right: 20px; top: -6px; }
+:root[data-theme='light'] .instrument-corner[data-corner='tr']::after { right: -6px; top: 20px; }
+:root[data-theme='light'] .instrument-corner[data-corner='bl']::before { left: 20px; bottom: -6px; }
+:root[data-theme='light'] .instrument-corner[data-corner='bl']::after { left: -6px; bottom: 20px; }
+:root[data-theme='light'] .instrument-corner[data-corner='br']::before { right: 20px; bottom: -6px; }
+:root[data-theme='light'] .instrument-corner[data-corner='br']::after { right: -6px; bottom: 20px; }
 
 
 /* ── Progresso de leitura ───────────────────────────────────────────────────── */
