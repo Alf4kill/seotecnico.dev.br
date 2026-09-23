@@ -1,15 +1,18 @@
 import { test, expect, type Page } from '@playwright/test'
 import { getAllPosts } from '../../src/lib/content'
-import { colors } from '../../src/lib/design-tokens'
+import { chrome, colors, lightColors } from '../../src/lib/design-tokens'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Contraste e tema (CLAUDE.md §9, docs/design-system.md).
 //
-// O site tem um tema só, escuro. O que precisa continuar verdadeiro:
-//  - a preferência clara do sistema não muda nada (nem pisca fundo branco);
-//  - não sobrou botão de tema nem script de tema;
+// Dois temas: escuro (base, e o de quem não tem JavaScript) e claro. O que
+// precisa continuar verdadeiro:
+//  - a preferência do sistema escolhe o tema já no primeiro frame (sem clarão);
+//  - o botão alterna, a escolha persiste e vence a preferência do sistema;
 //  - todo texto renderizado passa AA (4,5:1) contra o fundo que realmente está
-//    atrás dele — medido no navegador, papel por papel, em várias rotas.
+//    atrás dele — medido no navegador, papel por papel, em várias rotas, nos
+//    DOIS temas;
+//  - o bloco de código continua uma tela escura no tema claro.
 //
 // design-tokens.test.ts prova que os PARES da paleta passam. Este arquivo prova
 // que os componentes USAM os pares certos: um rótulo #7A8798 posto sobre o
@@ -89,32 +92,70 @@ function worstContrast(page: Page, selector: string): Promise<Worst | null> {
   }, selector)
 }
 
-test.describe('tema único, escuro', () => {
-  test('a preferência clara do sistema não muda o fundo', async ({ page }) => {
-    await page.emulateMedia({ colorScheme: 'light' })
+const rgb = (hex: string) => `rgb(${hex.match(/\w\w/g)!.map((h) => parseInt(h, 16)).join(', ')})`
+
+test.describe('dois temas', () => {
+  for (const [scheme, palette] of [['dark', colors], ['light', lightColors]] as const) {
+    test(`a preferência ${scheme} do sistema vale desde o primeiro frame`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme })
+      // O fundo é lido no DOMContentLoaded, antes de qualquer hidratação: se o
+      // tema dependesse do React, aqui ainda estaria o escuro da base.
+      await page.addInitScript(() => {
+        document.addEventListener('DOMContentLoaded', () => {
+          ;(window as unknown as { __firstBg: string }).__firstBg = getComputedStyle(document.body).backgroundColor
+        })
+      })
+      await page.goto('/')
+      expect(await page.evaluate(() => (window as unknown as { __firstBg: string }).__firstBg)).toBe(rgb(palette.background))
+      await expect(page.locator('html')).toHaveAttribute('data-theme', scheme)
+      await expect(page.locator('meta[name="theme-color"]').first()).toHaveAttribute('content', chrome[scheme])
+    })
+  }
+
+  test('sem JavaScript vale a base escura', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, colorScheme: 'light' })
+    const page = await context.newPage()
     await page.goto('/')
-    const rgb = colors.background.match(/\w\w/g)!.map((h) => parseInt(h, 16)).join(', ')
-    await expect(page.locator('body')).toHaveCSS('background-color', `rgb(${rgb})`)
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', colors.background)
+    await expect(page.locator('body')).toHaveCSS('background-color', rgb(colors.background))
+    await context.close()
   })
 
-  test('não há botão nem script de tema', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.getByRole('button', { name: /tema/i })).toHaveCount(0)
-    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBeUndefined()
+  test('o botão alterna, persiste e vence a preferência do sistema', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.goto('/blog')
+    await page.getByRole('button', { name: 'Mudar para o tema claro' }).first().click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+    await expect(page.locator('body')).toHaveCSS('background-color', rgb(lightColors.background))
+    await page.reload()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+    await expect(page.getByRole('button', { name: 'Mudar para o tema escuro' }).first()).toBeVisible()
+  })
+
+  test('no claro o bloco de código continua escuro (ilha escura)', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto(`/blog/${newest}`)
+    const figure = page.locator('figure[data-rehype-pretty-code-figure]').first()
+    await expect(figure).toHaveCSS('background-color', rgb(colors.surface2))
+    // O botão Copiar lê --primary: dentro da ilha é o ciano, não a tinta.
+    const copy = figure.locator('.code-copy')
+    if (await copy.count()) await expect(copy).toHaveCSS('color', rgb(colors.primary))
   })
 })
 
 test.describe('contraste AA por papel de cor', () => {
-  for (const route of ROUTES) {
-    test(route, async ({ page }) => {
-      await page.goto(route)
-      for (const [role, selector] of Object.entries(ROLES)) {
-        const worst = await worstContrast(page, selector)
-        if (!worst) continue // papel ausente nesta rota
-        expect(worst.ratio, `${role} em ${route}: "${worst.text}"`).toBeGreaterThanOrEqual(4.5)
-      }
-    })
+  for (const scheme of ['dark', 'light'] as const) {
+    for (const route of ROUTES) {
+      test(`${scheme} ${route}`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: scheme })
+        await page.goto(route)
+        await expect(page.locator('html')).toHaveAttribute('data-theme', scheme)
+        for (const [role, selector] of Object.entries(ROLES)) {
+          const worst = await worstContrast(page, selector)
+          if (!worst) continue // papel ausente nesta rota
+          expect(worst.ratio, `${role} em ${route} (${scheme}): "${worst.text}"`).toBeGreaterThanOrEqual(4.5)
+        }
+      })
+    }
   }
 
   test('chip de categoria da busca', async ({ page }) => {
