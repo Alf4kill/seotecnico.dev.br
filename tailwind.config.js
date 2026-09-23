@@ -39,6 +39,8 @@ module.exports = {
           DEFAULT: "rgb(var(--surface-rgb) / <alpha-value>)",
           2: "rgb(var(--surface-2-rgb) / <alpha-value>)",
           alt: "rgb(var(--surface-alt-rgb) / <alpha-value>)",
+          // Moldura: header e rodapé (metal no tema claro).
+          chrome: "rgb(var(--surface-chrome-rgb) / <alpha-value>)",
         },
         foreground: "rgb(var(--foreground-rgb) / <alpha-value>)",
         // Texto: body = leitura longa; muted = apoio; label = rótulo mono.
@@ -75,6 +77,18 @@ module.exports = {
         success: "rgb(var(--success-rgb) / <alpha-value>)",
         danger: "rgb(var(--danger-rgb) / <alpha-value>)",
         warning: "rgb(var(--warning-rgb) / <alpha-value>)",
+        // Rampa da arte (cenas e emblemas, src/components/art). Só forma:
+        // fill-art-*/stroke-art-*, nunca texto.
+        art: {
+          line: "rgb(var(--art-line-rgb) / <alpha-value>)",
+          mass: "rgb(var(--art-mass-rgb) / <alpha-value>)",
+          earth: "rgb(var(--art-earth-rgb) / <alpha-value>)",
+          olive: "rgb(var(--art-olive-rgb) / <alpha-value>)",
+          deep: "rgb(var(--art-deep-rgb) / <alpha-value>)",
+          leaf: "rgb(var(--art-leaf-rgb) / <alpha-value>)",
+          brass: "rgb(var(--art-brass-rgb) / <alpha-value>)",
+          signal: "rgb(var(--art-signal-rgb) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],

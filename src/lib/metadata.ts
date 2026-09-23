@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { site, indexable } from '@/lib/site'
 import { languageAlternatePaths, type Lang } from '@/lib/hreflang'
-import { colors } from '@/lib/design-tokens'
+import { chrome } from '@/lib/design-tokens'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildMetadata — helper único de metadados por página (CLAUDE.md §6).
@@ -74,13 +74,18 @@ export function absoluteUrl(path: string): string {
 }
 
 /**
- * Viewport dos root layouts. O site só tem tema escuro: `color-scheme` faz os
- * controles nativos (scrollbar, autofill, <select>) nascerem escuros, e
- * `theme-color` pinta a barra do navegador mobile com o grafite do fundo.
+ * Viewport dos root layouts. Dois temas: `color-scheme` declara os dois para os
+ * controles nativos (scrollbar, autofill, <select>) seguirem o tema, e
+ * `theme-color` pinta a barra do navegador mobile com a moldura de cada um. O
+ * ThemeScript sobrescreve o theme-color quando a escolha explícita do leitor
+ * difere da preferência do sistema.
  */
 export const rootViewport: Viewport = {
-  colorScheme: 'dark',
-  themeColor: colors.background,
+  colorScheme: 'dark light',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: chrome.light },
+    { media: '(prefers-color-scheme: dark)', color: chrome.dark },
+  ],
 }
 
 /**

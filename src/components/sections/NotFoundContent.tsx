@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { ButtonLink } from '@/components/ui/Button'
+import { Scene } from '@/components/art/Art'
+import { PAGE_ART } from '@/lib/art'
 
 /**
  * Conteúdo da página 404, compartilhado pelas duas portas por onde um 404
@@ -16,13 +18,18 @@ import { ButtonLink } from '@/components/ui/Button'
 export function NotFoundContent({ bilingual = false }: { bilingual?: boolean }) {
   return (
     <section className="container-xl grid min-h-[55vh] items-center gap-10 py-16 lg:grid-cols-12 lg:gap-6 lg:py-24">
-      {/* O código de status em escala de cartaz — hierarquia por tamanho, não por cor. */}
-      <p
-        aria-hidden="true"
-        className="font-display text-[clamp(6rem,3rem+14vw,13rem)] font-bold leading-[0.8] tracking-[-0.05em] text-primary lg:col-span-5"
-      >
-        404
-      </p>
+      {/* O código de status em escala de cartaz — hierarquia por tamanho, não
+          por cor — sobre a cena "Campo de lápides": as páginas que já não
+          existem (docs/design-system.md → Arte). */}
+      <div className="flex flex-col gap-6 lg:col-span-5">
+        <p
+          aria-hidden="true"
+          className="font-display text-[clamp(6rem,3rem+14vw,13rem)] font-bold leading-[0.8] tracking-[-0.05em] text-primary"
+        >
+          404
+        </p>
+        <Scene id={PAGE_ART.notFound} className="w-full max-w-[22.5rem]" />
+      </div>
 
       <div className="flex flex-col gap-5 lg:col-span-7">
         <p className="eyebrow text-accent">Sinal perdido · 404</p>

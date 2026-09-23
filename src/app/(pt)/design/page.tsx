@@ -12,7 +12,7 @@ import { buildMetadata } from '@/lib/metadata'
 const PATH = '/design'
 const TITLE = 'Design do site: retrofuturismo suíço'
 const DESCRIPTION =
-  'Por que o SEO Técnico é escuro, sem cantos arredondados e usa três formas no lugar de ícones: as escolas, a paleta medida e as regras que o CI verifica.'
+  'Por que o SEO Técnico é escuro por padrão, tem tema claro, não tem canto arredondado e usa formas no lugar de ícones: escolas, paleta medida e regras.'
 
 export const metadata = buildMetadata({
   title: TITLE,

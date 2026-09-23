@@ -51,59 +51,107 @@ test.describe('diagramas inline', () => {
   const withDiagrams = getAllPosts().filter((p) => p.content.includes('<svg'))
 
   for (const { frontmatter } of withDiagrams) {
-    test(`/blog/${frontmatter.slug}: rótulos legíveis (≥4,5:1)`, async ({ page }) => {
-      await page.goto(`/blog/${frontmatter.slug}`)
-      const failing = await page.evaluate(() => {
-        const parse = (css: string) => {
-          const m = css.match(/[\d.]+/g)
-          return m ? m.map(Number) : null
-        }
-        const ch = (c: number) => {
-          const v = c / 255
-          return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
-        }
-        const lum = ([r, g, b]: number[]) => 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
-        const ratio = (a: number[], b: number[]) => {
-          const [h, l] = [lum(a), lum(b)].sort((x, y) => y - x)
-          return (h + 0.05) / (l + 0.05)
-        }
-        const pageBg = parse(getComputedStyle(document.body).backgroundColor)!
-        const out: string[] = []
-        for (const svg of Array.from(document.querySelectorAll<SVGSVGElement>('.rich-text svg'))) {
-          const shapes = Array.from(svg.querySelectorAll<SVGGraphicsElement>('rect, circle, ellipse, polygon, path'))
-          for (const text of Array.from(svg.querySelectorAll<SVGTextElement>('text'))) {
-            const t = text.getBBox()
-            const cx = t.x + t.width / 2
-            const cy = t.y + t.height / 2
-            const behind = shapes
-              .filter((s) => text.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_PRECEDING)
-              .filter((s) => {
-                const fill = getComputedStyle(s).fill
-                if (fill === 'none' || fill.startsWith('url')) return false
-                const b = s.getBBox()
-                return cx >= b.x && cx <= b.x + b.width && cy >= b.y && cy <= b.y + b.height
-              })
-              .at(-1)
-            // Caixas de destaque costumam ser tint (fill-opacity 0.12): compõe
-            // a cor sobre o fundo da página antes de medir.
-            let bg = pageBg
-            if (behind) {
-              const style = getComputedStyle(behind)
-              const fill = parse(style.fill)!
-              const alpha = Number(style.fillOpacity) * Number(style.opacity) * (fill[3] ?? 1)
-              bg = [0, 1, 2].map((i) => fill[i] * alpha + pageBg[i] * (1 - alpha))
-            }
-            const fg = parse(getComputedStyle(text).fill)
-            if (!fg) continue
-            const r = ratio(fg, bg)
-            if (r < 4.5) out.push(`"${text.textContent?.trim().slice(0, 30)}" ${r.toFixed(2)}:1`)
+    for (const scheme of ['dark', 'light'] as const) {
+      test(`/blog/${frontmatter.slug} (${scheme}): rótulos legíveis (≥4,5:1)`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: scheme })
+        await page.goto(`/blog/${frontmatter.slug}`)
+        await expect(page.locator('html')).toHaveAttribute('data-theme', scheme)
+        const failing = await page.evaluate(() => {
+          const parse = (css: string) => {
+            const m = css.match(/[\d.]+/g)
+            return m ? m.map(Number) : null
           }
-        }
-        return out
+          const ch = (c: number) => {
+            const v = c / 255
+            return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+          }
+          const lum = ([r, g, b]: number[]) => 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+          const ratio = (a: number[], b: number[]) => {
+            const [h, l] = [lum(a), lum(b)].sort((x, y) => y - x)
+            return (h + 0.05) / (l + 0.05)
+          }
+          const pageBg = parse(getComputedStyle(document.body).backgroundColor)!
+          const out: string[] = []
+          for (const svg of Array.from(document.querySelectorAll<SVGSVGElement>('.rich-text svg'))) {
+            const shapes = Array.from(svg.querySelectorAll<SVGGraphicsElement>('rect, circle, ellipse, polygon, path'))
+            for (const text of Array.from(svg.querySelectorAll<SVGTextElement>('text'))) {
+              const t = text.getBBox()
+              const cx = t.x + t.width / 2
+              const cy = t.y + t.height / 2
+              const behind = shapes
+                .filter((s) => text.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_PRECEDING)
+                .filter((s) => {
+                  const fill = getComputedStyle(s).fill
+                  if (fill === 'none' || fill.startsWith('url')) return false
+                  const b = s.getBBox()
+                  return cx >= b.x && cx <= b.x + b.width && cy >= b.y && cy <= b.y + b.height
+                })
+                .at(-1)
+              // Caixas de destaque costumam ser tint (fill-opacity 0.12): compõe
+              // a cor sobre o fundo da página antes de medir.
+              let bg = pageBg
+              if (behind) {
+                const style = getComputedStyle(behind)
+                const fill = parse(style.fill)!
+                const alpha = Number(style.fillOpacity) * Number(style.opacity) * (fill[3] ?? 1)
+                bg = [0, 1, 2].map((i) => fill[i] * alpha + pageBg[i] * (1 - alpha))
+              }
+              const fg = parse(getComputedStyle(text).fill)
+              if (!fg) continue
+              const r = ratio(fg, bg)
+              if (r < 4.5) out.push(`"${text.textContent?.trim().slice(0, 30)}" ${r.toFixed(2)}:1`)
+            }
+          }
+          return out
+        })
+        expect(failing).toEqual([])
       })
-      expect(failing).toEqual([])
+    }
+  }
+})
+
+test.describe('arte (docs/design-system.md → Arte)', () => {
+  // A galeria de /design é o catálogo: a única rota com mais de uma cena.
+  const GALLERY = new Set(['/design', '/en/design'])
+  const routes = sitemap()
+    .map((e) => new URL(e.url).pathname)
+    .filter((route) => !GALLERY.has(route))
+
+  for (const route of routes) {
+    test(`${route}: no máximo uma cena e uma marca central, fora do corpo`, async ({ page }) => {
+      await page.goto(route)
+      const art = await page.evaluate(() => ({
+        scenes: Array.from(document.querySelectorAll('svg.art-scene')).filter((s) => s.getBoundingClientRect().width > 0).length,
+        central: document.querySelectorAll('[data-mark="central"]').length,
+        inBody: document.querySelectorAll('.rich-text [data-mark], .rich-text svg.art-scene').length,
+        notHidden: Array.from(document.querySelectorAll('[data-mark], svg.art-scene, svg.art-emblem')).filter(
+          (el) => el.getAttribute('aria-hidden') !== 'true'
+        ).length,
+      }))
+      expect(art.scenes, 'cenas visíveis').toBeLessThanOrEqual(1)
+      expect(art.central, 'marcas centrais').toBeLessThanOrEqual(1)
+      expect(art.inBody, 'arte dentro do corpo do texto').toBe(0)
+      expect(art.notHidden, 'arte sem aria-hidden').toBe(0)
     })
   }
+
+  test('o artigo tem a cena do seu eixo, e a pilar a marca central', async ({ page }) => {
+    await page.goto('/blog/hreflang-nextjs')
+    await expect(page.locator('header svg.art-scene')).toHaveCount(1)
+    await expect(page.locator('[data-mark="central"]')).toHaveCount(0)
+    await page.goto('/guia/seo-tecnico-nextjs')
+    await expect(page.locator('header [data-mark="central"]')).toHaveCount(1)
+  })
+
+  test('a arte troca de cor com o tema', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.goto('/sobre')
+    const fill = () => page.locator('svg.art-scene .fill-art-deep').first().evaluate((el) => getComputedStyle(el).fill)
+    const dark = await fill()
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.reload()
+    expect(await fill()).not.toBe(dark)
+  })
 })
 
 test.describe('filtro da /blog', () => {

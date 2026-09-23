@@ -2,12 +2,15 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { Lang } from '@/lib/hreflang'
 import { site } from '@/lib/site'
-import { colors, contrastRatio, type ColorToken } from '@/lib/design-tokens'
+import { colors, contrastRatio, lightColors, type ColorToken } from '@/lib/design-tokens'
 import { CATEGORIES } from '@/lib/categories'
 import { ButtonLink, buttonClasses } from '@/components/ui/Button'
 import { CategoryChip } from '@/components/ui/CategoryMark'
 import { InstrumentFrame, InstrumentStrip } from '@/components/ui/InstrumentFrame'
 import { MANIFESTO_COPY, MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
+import { ART_TITLES, SCENES_BY_CATEGORY, TOOL_EMBLEMS } from '@/lib/art'
+import { Emblem, Scene } from '@/components/art/Art'
+import { CentralMark, CornerMark } from '@/components/art/Marks'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A página especial do design — o colofão (prancha "Manifesto do design").
@@ -17,9 +20,10 @@ import { MANIFESTO_COPY, MANIFESTO_REVISED } from '@/components/design/manifesto
 // inline com as classes do sistema (fill-*, bg-*), nunca hex — o mesmo
 // guard (design-rules.test.ts) vale para esta página.
 //
-// Duas partes são dado, não ilustração: a tabela de contraste é calculada no
-// build a partir de lib/design-tokens.ts, e os marcadores de categoria são os
-// de lib/categories.ts.
+// Três partes são dado, não ilustração: as tabelas de contraste (uma por tema)
+// são calculadas no build a partir de lib/design-tokens.ts, os marcadores de
+// categoria são os de lib/categories.ts e a galeria de arte lê lib/art.ts.
+// A galeria é a única página com mais de uma cena: é o catálogo delas.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const REPO_DOC = `${site.repository}/blob/main/docs/design-system.md`
@@ -40,21 +44,30 @@ function SectionTitle({ id, children }: { id: string; children: ReactNode }) {
   )
 }
 
-/** Tabela de contraste calculada no build — a medição original desta página. */
-function ContrastTable({ lang }: { lang: Lang }) {
+/**
+ * Tabela de contraste calculada no build — a medição original desta página.
+ * Uma por tema. No claro não há linha de rótulo-sobre-código (o bloco de código
+ * é ilha escura) nem de vermelho-forma (no claro forma e texto são o mesmo).
+ */
+function ContrastTable({ lang, theme }: { lang: Lang; theme: 'dark' | 'light' }) {
   const copy = MANIFESTO_COPY[lang].color
-  const rows: ColorToken[] = ['foreground', 'body', 'muted', 'label', 'labelOnCode', 'primary', 'accent', 'dangerText', 'danger']
-  const surfaces = [colors.background, colors.surface, colors.surface2]
+  const palette = theme === 'dark' ? colors : lightColors
+  const rows: ColorToken[] =
+    theme === 'dark'
+      ? ['foreground', 'body', 'muted', 'label', 'labelOnCode', 'primary', 'accent', 'dangerText', 'danger']
+      : ['foreground', 'body', 'muted', 'label', 'primary', 'accent', 'dangerText']
+  const surfaces = [palette.background, palette.surface, palette.surface2]
+  const headers = theme === 'dark' ? copy.headers : copy.lightHeaders
   const fmt = (n: number) => n.toFixed(2).replace('.', lang === 'en' ? '.' : ',')
 
   return (
     <figure className="flex flex-col gap-4">
-      <p className="font-display text-xl font-bold text-foreground">{copy.tableTitle}</p>
+      <p className="font-display text-xl font-bold text-foreground">{theme === 'dark' ? copy.tableTitle : copy.lightTitle}</p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[34rem] border-collapse text-sm">
           <thead>
             <tr>
-              {copy.headers.map((h) => (
+              {headers.map((h) => (
                 <th key={h} className="eyebrow border-b-2 border-primary py-3 pr-4 text-left font-normal">
                   {h}
                 </th>
@@ -66,13 +79,13 @@ function ContrastTable({ lang }: { lang: Lang }) {
               <tr key={token}>
                 <td className="border-b border-gray py-3 pr-4">
                   <span className="flex items-center gap-3">
-                    <span aria-hidden="true" className="h-4 w-4 shrink-0 border border-gray-strong" style={{ background: colors[token] }} />
-                    <span className="font-mono text-xs text-foreground">{colors[token]}</span>
+                    <span aria-hidden="true" className="h-4 w-4 shrink-0 border border-gray-strong" style={{ background: palette[token] }} />
+                    <span className="font-mono text-xs text-foreground">{palette[token]}</span>
                   </span>
                 </td>
                 <td className="border-b border-gray py-3 pr-4 text-muted">{copy.roles[token]}</td>
                 {surfaces.map((bg) => {
-                  const ratio = contrastRatio(colors[token], bg)
+                  const ratio = contrastRatio(palette[token], bg)
                   const pass = ratio >= 4.5
                   return (
                     <td key={bg} className={`border-b border-gray py-3 pr-4 font-mono text-xs ${pass ? 'text-body' : 'text-danger'}`}>
@@ -85,7 +98,9 @@ function ContrastTable({ lang }: { lang: Lang }) {
           </tbody>
         </table>
       </div>
-      <figcaption className="max-w-[48rem] text-sm leading-relaxed text-muted">{copy.tableCaption}</figcaption>
+      <figcaption className="max-w-[48rem] text-sm leading-relaxed text-muted">
+        {theme === 'dark' ? copy.tableCaption : copy.lightCaption}
+      </figcaption>
     </figure>
   )
 }
@@ -237,6 +252,86 @@ function LineageArt({ index }: { index: number }) {
   )
 }
 
+/** Uma moldura de galeria: a obra sobre a superfície, a legenda em mono. */
+function Plate({ caption, children }: { caption: ReactNode; children: ReactNode }) {
+  return (
+    <figure className="flex flex-col border border-gray bg-surface">
+      <div className="relative flex items-center justify-center overflow-hidden border-b border-gray bg-background p-4">
+        {children}
+      </div>
+      <figcaption className="eyebrow px-4 py-3 text-[0.625rem]">{caption}</figcaption>
+    </figure>
+  )
+}
+
+/** 07 · Arte — o catálogo das cenas, emblemas e marcas, lido de lib/art.ts. */
+function ArtGallery({ lang, className }: { lang: Lang; className: string }) {
+  const c = MANIFESTO_COPY[lang].art
+  const marks = [
+    <CentralMark key="a1" variant="beam" className="!static !opacity-40 w-40" />,
+    <CentralMark key="a2" variant="axonometric" className="!static !opacity-40 w-40" />,
+    <CentralMark key="a3" variant="arcs" className="!static !opacity-40 w-40" />,
+    <CornerMark key="b1" variant="arc" className="!static !opacity-40 w-32" />,
+    <CornerMark key="b2" variant="dots" className="!static !opacity-40 w-36" />,
+    <CornerMark key="b5" variant="crosshair" className="!static !opacity-40 w-28" />,
+  ]
+
+  return (
+    <section aria-labelledby="arte" className={`${className} flex flex-col gap-12`}>
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-3"><SectionLabel>{c.label}</SectionLabel></div>
+        <div className="flex flex-col gap-5.5 lg:col-span-9">
+          <SectionTitle id="arte">{c.title}</SectionTitle>
+          {c.paragraphs.map((p) => (
+            <p key={p.slice(0, 20)} className="max-w-[51rem] text-lg leading-[1.75] text-body">{p}</p>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-6">
+        <h3 className="font-display text-xl font-bold text-foreground">{c.scenesTitle}</h3>
+        {CATEGORIES.map(({ slug }) => (
+          <div key={slug} className="flex flex-col gap-3">
+            <CategoryChip category={slug} lang={lang} />
+            <div className="grid gap-4 sm:grid-cols-3">
+              {SCENES_BY_CATEGORY[slug].map((id) => (
+                <Plate key={id} caption={ART_TITLES[id][lang]}>
+                  <Scene id={id} className="w-full max-w-[22.5rem]" />
+                </Plate>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h3 className="font-display text-xl font-bold text-foreground">{c.emblemsTitle}</h3>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {(Object.entries(TOOL_EMBLEMS) as [keyof typeof TOOL_EMBLEMS, (typeof TOOL_EMBLEMS)[keyof typeof TOOL_EMBLEMS]][]).map(
+            ([tool, id]) => (
+              <Plate key={id} caption={`${ART_TITLES[id][lang]} · ${c.emblemFor[tool]}`}>
+                <Emblem id={id} className="h-20 w-20" />
+              </Plate>
+            )
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h3 className="font-display text-xl font-bold text-foreground">{c.marksTitle}</h3>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {marks.map((mark, i) => (
+            <Plate key={c.marks[i]} caption={c.marks[i]}>
+              <span className="flex h-40 items-center justify-center">{mark}</span>
+            </Plate>
+          ))}
+        </div>
+        <p className="font-mono text-xs text-label">{c.marksNote}</p>
+      </div>
+    </section>
+  )
+}
+
 export function Manifesto({ lang }: { lang: Lang }) {
   const c = MANIFESTO_COPY[lang]
   const section = 'container-xl border-b border-gray py-14 lg:py-18'
@@ -348,7 +443,8 @@ export function Manifesto({ lang }: { lang: Lang }) {
               <span className="text-accent">{c.color.areaNote}</span>
             </figcaption>
           </figure>
-          <ContrastTable lang={lang} />
+          <ContrastTable lang={lang} theme="dark" />
+          <ContrastTable lang={lang} theme="light" />
         </div>
       </section>
 
@@ -458,7 +554,10 @@ export function Manifesto({ lang }: { lang: Lang }) {
         </ul>
       </section>
 
-      {/* ── 07 Sistema ──────────────────────────────────────────── */}
+      {/* ── 07 Arte ─────────────────────────────────────────────── */}
+      <ArtGallery lang={lang} className={section} />
+
+      {/* ── 08 Sistema ──────────────────────────────────────────── */}
       <section aria-labelledby="sistema" className={`${section} flex flex-col gap-12`}>
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="lg:col-span-3"><SectionLabel>{c.system.label}</SectionLabel></div>

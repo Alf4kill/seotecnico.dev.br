@@ -6,6 +6,7 @@ import { site } from '@/lib/site'
 import { ButtonLink } from '@/components/ui/Button'
 import { PostRow } from '@/components/blog/PostRow'
 import { ToolsStrip } from '@/components/sections/ToolsStrip'
+import { CentralMark } from '@/components/art/Marks'
 
 export const metadata = buildMetadata({
   title: 'SEO Técnico: guias e ferramentas de SEO para Next.js',
@@ -42,8 +43,10 @@ export default function HomePage() {
       <PersonJsonLd />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="border-b border-gray py-14 lg:py-22">
-        <div className="container-xl grid items-end gap-12 lg:grid-cols-12 lg:gap-6">
+      <section className="relative overflow-hidden border-b border-gray py-14 lg:py-22">
+        {/* Marca central A1 (feixe): página cerimonial, atrás do cabeçalho. */}
+        <CentralMark variant="beam" className="-right-24 -top-16 w-[34rem] lg:right-[18%] lg:w-[44rem]" />
+        <div className="container-xl relative grid items-end gap-12 lg:grid-cols-12 lg:gap-6">
           <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
             <p className="eyebrow flex items-center gap-3.5 text-primary">
               <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />

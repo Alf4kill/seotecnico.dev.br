@@ -5,6 +5,9 @@
 // Três lugares não conseguem: o Satori das imagens OG, o favicon e a tabela de
 // contraste que a página /design calcula no build. Eles leem daqui.
 //
+// `colors` é o tema escuro — a base, e o único das imagens OG e do favicon.
+// `lightColors` é o tema claro, com as mesmas chaves.
+//
 // Duas fontes de verdade para o mesmo número só são aceitáveis com um teste que
 // as mantém iguais: design-tokens.test.ts compara cada valor abaixo com o token
 // correspondente em globals.css e falha na primeira divergência.
@@ -54,6 +57,44 @@ export const colors = {
 } as const
 
 export type ColorToken = keyof typeof colors
+
+/**
+ * Tema claro — "papel quente, metal frio". Mesmas chaves do escuro; o que
+ * muda de papel está anotado. Razões sobre papel / cartão / metal.
+ */
+export const lightColors: Record<ColorToken, string> = {
+  /** Papel — marfim, base de leitura. Nenhum branco puro. */
+  background: '#F2EDE3',
+  /** Cartão — papel elevado. */
+  surface: '#EAE4D8',
+  /** Metal — código inline, aparato. O bloco de código é ilha escura. */
+  surface2: '#E4E6E8',
+  /** Faixa alternada. */
+  surfaceAlt: '#ECE6DA',
+  rule: '#DCD5C6',
+  ruleStrong: '#A8ADB4',
+  /** Borda de campo: 3,50 / 3,22 / 3,26:1. */
+  control: '#7A7E84',
+  /** Tinta — 15,23:1 sobre o papel. */
+  foreground: '#16181C',
+  body: '#3A3C42',
+  muted: '#5A5C60',
+  /** A prancha usava #6E6A60, que reprova no cartão (4,26:1). */
+  label: '#67635A',
+  labelOnCode: '#67635A',
+  /** Tinta ciano: texto E superfície de botão (papel por cima, 6,44:1). */
+  primary: '#0A5F59',
+  primaryHover: '#073F3B',
+  onPrimary: '#F2EDE3',
+  /** Tinta âmbar. O âmbar brilhante segue como preenchimento (--color-accent). */
+  accent: '#8A4E0B',
+  dangerText: '#B3322A',
+  danger: '#B3322A',
+  reference: '#23409B',
+}
+
+/** Chrome (header/rodapé) por tema — o metal só existe no claro. */
+export const chrome = { dark: colors.background, light: lightColors.surface2 } as const
 
 /** Luminância relativa (WCAG 2.x) de uma cor #RRGGBB. */
 export function relativeLuminance(hex: string): number {
