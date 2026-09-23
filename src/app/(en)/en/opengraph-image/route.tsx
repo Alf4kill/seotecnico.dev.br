@@ -18,9 +18,11 @@ export function GET() {
   return new ImageResponse(
     (
       <OgCard
-        badge="Technical SEO lab"
-        title="Technical SEO for Next.js, implemented and measured"
+        kicker="A live laboratory"
+        title="Technical SEO for"
+        highlight="Next.js, implemented and measured"
         subtitle="Guides, free tools and experiments measured with real Search Console data."
+        art={{ kind: 'mark', variant: 'beam' }}
       />
     ),
     { ...OG_SIZE, fonts: ogFonts() }

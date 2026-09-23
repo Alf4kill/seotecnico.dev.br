@@ -1,13 +1,15 @@
 import { ImageResponse } from 'next/og'
 import { getAllPosts, getPostBySlug } from '@/lib/content'
 import { getCategory } from '@/lib/categories'
+import { sceneForPost } from '@/lib/art'
 import { OgCard } from '@/components/seo/OgCard'
 import { OG_SIZE } from '@/lib/metadata'
 import { ogFonts } from '@/lib/og-fonts'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Imagem OG por artigo: título do frontmatter, eixo e data, sobre o cartão
-// base da marca (OgCard). Servida em /blog/<slug>/opengraph-image.
+// Imagem OG por artigo: título do frontmatter, eixo (com a forma dele), data
+// e a mesma cena do cabeçalho do artigo (lib/art.ts), sobre o cartão base da
+// marca (OgCard). Servida em /blog/<slug>/opengraph-image.
 //
 // Route handler, não file convention: dentro do route group (pt) a convenção
 // geraria /blog/<slug>/opengraph-image-18vth1, quebrando o `image` do JSON-LD do
@@ -29,14 +31,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   if (!post) return new Response('Not found', { status: 404 })
 
   const { frontmatter, derived } = post
-  const axis = frontmatter.category ? ` · ${getCategory(frontmatter.category).short['pt-BR']}` : ''
+  const category = frontmatter.category ? getCategory(frontmatter.category) : undefined
 
   return new ImageResponse(
     (
       <OgCard
-        badge={`Artigo${axis}`}
+        badge="Artigo"
+        kicker={category?.label['pt-BR'] ?? 'Blog'}
+        shape={category}
         title={frontmatter.title}
-        subtitle={`Publicado ${frontmatter.datePublished} · ${derived.readingTime} min de leitura`}
+        meta={`${frontmatter.datePublished} · ${derived.readingTime} min`}
+        art={
+          frontmatter.category
+            ? { kind: 'scene', id: sceneForPost(frontmatter.category, slug) }
+            : { kind: 'mark', variant: 'beam' }
+        }
       />
     ),
     { ...OG_SIZE, fonts: ogFonts() }
