@@ -23,10 +23,11 @@ export const THEME_EVENT = 'seotecnico:themechange'
 const script = `(function(){
 var d=document.documentElement,k=${JSON.stringify(THEME_STORAGE_KEY)},m=window.matchMedia('(prefers-color-scheme: light)'),c=${JSON.stringify(chrome)};
 function saved(){try{var v=localStorage.getItem(k);return v==='light'||v==='dark'?v:null}catch(e){return null}}
-function apply(){var t=saved()||(m.matches?'light':'dark');d.dataset.theme=t;var n=document.querySelectorAll('meta[name="theme-color"]');for(var i=0;i<n.length;i++){n[i].setAttribute('content',c[t]);n[i].removeAttribute('media')}}
-apply();
-if(m.addEventListener)m.addEventListener('change',function(){if(!saved()){apply();window.dispatchEvent(new Event(${JSON.stringify(THEME_EVENT)}))}});
-document.addEventListener('DOMContentLoaded',apply);
+function theme(){return saved()||(m.matches?'light':'dark')}
+function meta(t){var n=document.querySelectorAll('meta[name="theme-color"]');for(var i=0;i<n.length;i++){n[i].setAttribute('content',c[t]);n[i].removeAttribute('media')}}
+d.dataset.theme=theme();
+if(m.addEventListener)m.addEventListener('change',function(){if(!saved()){var t=theme();d.dataset.theme=t;meta(t);window.dispatchEvent(new Event(${JSON.stringify(THEME_EVENT)}))}});
+document.addEventListener('DOMContentLoaded',function(){meta(d.dataset.theme)});
 })();`
 
 export function ThemeScript() {
