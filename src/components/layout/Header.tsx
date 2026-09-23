@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { site } from '@/lib/site'
 import { counterpartPath, type Lang } from '@/lib/hreflang'
 import { useSearchModal } from '@/components/search/SearchContext'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Header de um root layout. Recebe o idioma do layout (ver RootShell) e nunca
@@ -17,7 +18,8 @@ import { useSearchModal } from '@/components/search/SearchContext'
 // recrutador que clica em qualquer coisa não pode ser despejado noutro idioma.
 //
 // Visual: barra de instrumento — marca em grotesca, navegação em mono
-// caixa-alta, item ativo sublinhado em ciano (docs/design-system.md).
+// caixa-alta, item ativo sublinhado em ciano (docs/design-system.md). No tema
+// claro a barra é metal (bg-surface-chrome), não papel.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Copy {
@@ -176,7 +178,7 @@ export function Header({ lang }: { lang: Lang }) {
   const withSearch      = lang === 'pt-BR'
 
   return (
-    <header className="sticky top-0 z-9 w-full border-b border-gray bg-background">
+    <header className="sticky top-0 z-9 w-full border-b border-gray bg-surface-chrome">
       <div className="container-xl flex h-16 items-center justify-between gap-6 lg:h-19">
 
         {/* ── Marca ─────────────────────────────────────────────── */}
@@ -218,6 +220,7 @@ export function Header({ lang }: { lang: Lang }) {
         {/* ── Ações desktop ─────────────────────────────────────── */}
         <div className="hidden items-center gap-4 lg:flex">
           {withSearch && <SearchButton variant="desktop" />}
+          <ThemeToggle lang={lang} />
           <LanguageToggle lang={lang} />
         </div>
 
@@ -238,7 +241,7 @@ export function Header({ lang }: { lang: Lang }) {
 
       {/* ── Menu mobile ───────────────────────────────────────── */}
       {open && (
-        <div className="absolute top-16 z-9 w-full border-b border-gray bg-background lg:hidden">
+        <div className="absolute top-16 z-9 w-full border-b border-gray bg-surface-chrome lg:hidden">
           <nav aria-label={copy.mobileNavLabel} className="container-xl flex flex-col py-4">
             {copy.nav.map(({ label, href }) => {
               const active = isActive(pathname, href)
@@ -260,8 +263,9 @@ export function Header({ lang }: { lang: Lang }) {
             })}
             <LanguageLink
               lang={lang}
-              className="flex min-h-12 items-center font-mono text-[0.8125rem] uppercase tracking-[0.12em] text-muted transition-colors hover:text-primary"
+              className="flex min-h-12 items-center border-b border-gray font-mono text-[0.8125rem] uppercase tracking-[0.12em] text-muted transition-colors hover:text-primary"
             />
+            <ThemeToggle lang={lang} variant="menu" />
           </nav>
         </div>
       )}

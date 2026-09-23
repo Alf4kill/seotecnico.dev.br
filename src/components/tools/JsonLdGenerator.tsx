@@ -484,7 +484,7 @@ export function JsonLdGenerator() {
               )}
             </button>
           </div>
-          <pre className="mt-4 overflow-x-auto border border-gray bg-surface-2 p-4 font-mono text-sm leading-6 text-body">
+          <pre className="theme-dark-island mt-4 overflow-x-auto border border-gray bg-surface-2 p-4 font-mono text-sm leading-6 text-body">
             <code>{tab === 'json' ? output.json : output.next}</code>
           </pre>
           <p className="mt-3 text-sm text-muted">

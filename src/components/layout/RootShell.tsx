@@ -4,6 +4,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ConsentBanner } from '@/components/layout/ConsentBanner'
+import { ThemeScript } from '@/components/layout/ThemeScript'
 import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter'
 import { SearchProvider } from '@/components/search/SearchContext'
 import { SearchModal } from '@/components/search/SearchModal'
@@ -108,18 +109,21 @@ export function RootShell({ lang, children }: { lang: Lang; children: React.Reac
   )
 
   return (
-    <html lang={lang} className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+    // suppressHydrationWarning: o ThemeScript grava data-theme no <html> antes
+    // da hidratação — divergência esperada, restrita a este elemento.
+    <html lang={lang} className={`${sans.variable} ${display.variable} ${mono.variable}`} suppressHydrationWarning>
       {/* As duas regras do @next/next abaixo só reconhecem <head> e
           beforeInteractive dentro de um arquivo `layout`. Este componente É o
           corpo dos dois root layouts (e do global-not-found) — o mesmo lugar,
           movido para não existir em três cópias.
 
-          O <head> explícito fica mesmo vazio (desde que o script de tema saiu,
-          com o tema claro): sem ele o Next não iça o script beforeInteractive
-          do consentimento para o head, e o React passa a renderizá-lo como
-          <script> inerte no body — o dev overlay acusa na hora. */}
+          O <head> explícito carrega o script de tema, que precisa rodar antes
+          da primeira pintura; e sem ele o Next não iça o script
+          beforeInteractive do consentimento para o head. */}
       {/* eslint-disable-next-line @next/next/no-head-element */}
-      <head />
+      <head>
+        <ThemeScript />
+      </head>
       <body className="flex min-h-screen flex-col font-sans antialiased">
         {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
         <Script
