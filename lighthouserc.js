@@ -72,7 +72,10 @@ module.exports = {
       url: shardPaths.map((p) => `${BASE_URL}${p === '/' ? '' : p}`),
       startServerCommand: 'npm run start -- --port 3200',
       startServerReadyPattern: 'Ready',
-      numberOfRuns: 3,
+      // Five, not three: timings on a shared runner spread ±25% even between
+      // runs on the same machine, and the median of three moves with a
+      // single slow run. Sharding (ci.yml) pays for the extra runs.
+      numberOfRuns: 5,
       settings: {
         // Real (devtools) throttling instead of the default lantern simulation:
         // lantern models the preloaded webfont as an LCP dependency and reports
@@ -99,12 +102,43 @@ module.exports = {
     },
     assert: {
       assertions: {
-        // median-run: devtools throttling is a real measurement, so single
-        // outlier runs must not fail the budget.
-        'categories:performance': ['error', { minScore: 0.95, aggregationMethod: 'median-run' }],
-        'largest-contentful-paint': ['error', { maxNumericValue: 2000, aggregationMethod: 'median-run' }],
-        'cumulative-layout-shift': ['error', { maxNumericValue: 0.05, aggregationMethod: 'median-run' }],
-        'total-blocking-time': ['error', { maxNumericValue: 200, aggregationMethod: 'median-run' }],
+        // ── Timing budgets (CLAUDE.md §6) ──────────────────────────────────
+        // `median`, not `median-run`. median-run does not take the median of
+        // each metric: it picks ONE representative run by FCP and TTI and
+        // reads every metric from it, so the TBT it asserts can be any of the
+        // runs' values. `median` is the median of each metric over the five
+        // runs, so one outlier run cannot fail (or pass) the budget alone.
+        // These move with the runner's CPU; the job summary prints its index.
+        'categories:performance': ['error', { minScore: 0.95, aggregationMethod: 'median' }],
+        'largest-contentful-paint': ['error', { maxNumericValue: 2000, aggregationMethod: 'median' }],
+        'cumulative-layout-shift': ['error', { maxNumericValue: 0.05, aggregationMethod: 'median' }],
+        'total-blocking-time': ['error', { maxNumericValue: 200, aggregationMethod: 'median' }],
+
+        // ── Deterministic budgets ─────────────────────────────────────────
+        // Bytes, request counts and DOM size are identical on every runner,
+        // so these fail on the pull request that causes them and never on a
+        // slow machine — which the timings above cannot promise. They guard
+        // the causes of main-thread cost rather than the cost itself.
+        // Measured 2026-09-23 with GTM: script 480 KiB (first-party ~177 +
+        // gtm.js/gtag.js ~302), fonts 82 KiB in 4 files, no stylesheet
+        // request, DOM 1141 on /design (the largest audited page).
+        // Raising a ceiling is allowed when the growth is deliberate: do it in
+        // the same pull request, with the measured reason in its description.
+        // gtag.js is versioned by Google, not by this repo; if only the
+        // third-party line grows, that is the likely cause.
+        'resource-summary:script:size': ['error', { maxNumericValue: 500 * 1024, aggregationMethod: 'median' }],
+        'resource-summary:third-party:size': ['error', { maxNumericValue: 320 * 1024, aggregationMethod: 'median' }],
+        // Three families (Space Grotesk, IBM Plex Sans, IBM Plex Mono) in four
+        // files; a fourth family needs re-measuring first (RootShell.tsx).
+        'resource-summary:font:count': ['error', { maxNumericValue: 4, aggregationMethod: 'median' }],
+        'resource-summary:font:size': ['error', { maxNumericValue: 90 * 1024, aggregationMethod: 'median' }],
+        // CSS is inlined (experimental.inlineCss, the LCP render-delay fix);
+        // a stylesheet request means it became render-blocking again.
+        'resource-summary:stylesheet:count': ['error', { maxNumericValue: 0, aggregationMethod: 'median' }],
+        // Lighthouse's own dom-size median (the node count where the audit
+        // scores 0.5). Articles grow with their content, so this is a ceiling
+        // for a page that has gone wrong, not a per-page regression check.
+        'dom-size': ['error', { maxNumericValue: 1400, aggregationMethod: 'median' }],
       },
     },
     upload: {
