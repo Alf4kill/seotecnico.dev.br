@@ -12,7 +12,7 @@ import { buildMetadata } from '@/lib/metadata'
 const PATH = '/en/design'
 const TITLE = 'Site design: Swiss retro-futurism'
 const DESCRIPTION =
-  'Why SEO Técnico is dark, square-cornered and uses three shapes instead of icons: the schools behind it, the measured palette and the rules CI enforces.'
+  'Why SEO Técnico is dark by default, has a light theme, square corners and three shapes instead of icons: the schools, measured palette and CI rules.'
 
 export const metadata = buildMetadata({
   title: TITLE,

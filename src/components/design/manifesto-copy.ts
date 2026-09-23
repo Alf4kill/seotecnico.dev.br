@@ -13,7 +13,7 @@ import type { Lang } from '@/lib/hreflang'
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Data da última revisão do texto desta página — atualizar ao editá-lo. */
-export const MANIFESTO_REVISED = '2026-09-19'
+export const MANIFESTO_REVISED = '2026-09-23'
 
 export interface ManifestoCopy {
   eyebrow: string
@@ -41,6 +41,9 @@ export interface ManifestoCopy {
     headers: [string, string, string, string, string]
     roles: Record<string, string>
     fails: string
+    lightTitle: string
+    lightCaption: string
+    lightHeaders: [string, string, string, string, string]
   }
   atmosphereSection: {
     label: string
@@ -59,6 +62,17 @@ export interface ManifestoCopy {
     roles: { label: string; text: string }[]
     strip: [string, string, string]
     robotAria: string
+  }
+  art: {
+    label: string
+    title: string
+    paragraphs: string[]
+    scenesTitle: string
+    emblemsTitle: string
+    emblemFor: Record<'index' | 'gerador-json-ld' | 'validador-meta-tags' | 'checador-cwv', string>
+    marksTitle: string
+    marksNote: string
+    marks: [string, string, string, string, string, string]
   }
   rules: {
     label: string
@@ -140,14 +154,18 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
     },
     color: {
       label: '03 · Cor',
-      title: 'Escuro por decisão de leitura, não por moda',
-      text: 'Os artigos são longos e cheios de código. Um fundo claro em tela grande, à noite, cansa antes do terceiro bloco. O grafite #0E1116 sustenta sessões longas e faz o ciano e o âmbar funcionarem como sinal, não como ruído — eles só aparecem em áreas pequenas ou como texto.',
+      title: 'Escuro por padrão, claro como segundo material',
+      text: 'Os artigos são longos e cheios de código, e o grafite #0E1116 sustenta sessões longas — por isso ele é a base, e o tema de quem navega sem JavaScript. O tema claro não é a inversão do escuro: é o mesmo sistema em outro material. Papel marfim #F2EDE3 onde se lê, metal #E4E6E8 no cabeçalho e no rodapé, e a tela de código continua escura, como um monitor embutido na parede clara. Os acentos se dividem: o ciano e o âmbar brilhantes só preenchem; como texto, viram tinta. O site segue a preferência do sistema, e o botão do cabeçalho grava a escolha.',
       areaCaption: 'Proporção de área por cor',
       areaNote: 'intenção de projeto, não medição',
       tableTitle: 'Contraste medido, não suposto',
       tableCaption:
-        'Razão de contraste WCAG de cada cor de texto sobre as três superfícies, calculada a partir dos tokens a cada build. O mínimo para texto é 4,5:1. As duas reprovações são o motivo de existirem as duas variantes ao lado delas.',
+        'Tema escuro: razão de contraste WCAG de cada cor de texto sobre as três superfícies, calculada a partir dos tokens a cada build. O mínimo para texto é 4,5:1. As duas reprovações são o motivo de existirem as duas variantes ao lado delas.',
       headers: ['Token', 'Uso', 'Fundo', 'Cartão', 'Código'],
+      lightTitle: 'No claro: papel, cartão e metal',
+      lightCaption:
+        'As mesmas funções, na versão-tinta do tema claro. O rótulo da prancha original (#6E6A60) reprovava no cartão e no metal — 4,26 e 4,31:1 —, então o token publicado é #67635A. O ciano #3ED8C8 mede 1,52:1 no papel: no claro ele só preenche, nunca escreve.',
+      lightHeaders: ['Token', 'Uso', 'Papel', 'Cartão', 'Metal'],
       roles: {
         foreground: 'títulos',
         body: 'corpo de leitura',
@@ -191,6 +209,25 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
       robotAria:
         'Robô ST-01 desenhado apenas com círculo, quadrado e triângulo: cabeça quadrada com visor ciano, antena triangular âmbar e painel de peito com blocos primários.',
     },
+    art: {
+      label: '07 · Arte',
+      title: 'Cenas, emblemas e marcas de fundo',
+      paragraphs: [
+        'Três famílias de desenho, todas em SVG inline: sem textura, sem degradê, sem imagem — nenhuma requisição a mais e nada que dispute o LCP. Cada cor é um token, então as mesmas obras mudam de material quando o tema muda. E tudo é decoração: sai do leitor de tela, e a página não depende de nada disso para ser entendida.',
+        'As cenas vêm em quatro trios, um por eixo do blog — luz para Core Web Vitals, vazio para rastreio, janela para metadados, vigília para medição —, e cada artigo herda a cena do seu eixo. Os emblemas marcam as ferramentas. As marcas de fundo, um desenho grande a 7% de opacidade no escuro e 8% no claro, só aparecem atrás do cabeçalho de uma página cerimonial, nunca atrás de texto corrido.',
+      ],
+      scenesTitle: 'Cenas · um trio por eixo',
+      emblemsTitle: 'Emblemas · ferramentas',
+      emblemFor: {
+        index: 'Índice de ferramentas',
+        'gerador-json-ld': 'Gerador de JSON-LD',
+        'validador-meta-tags': 'Validador de meta tags',
+        'checador-cwv': 'Checador de CWV',
+      },
+      marksTitle: 'Marcas de fundo',
+      marksNote: 'Mostradas aqui a 40% para serem vistas; no uso, 7–8% (centrais) e 20–24% (de canto).',
+      marks: ['A1 · Feixe', 'A2 · Volume axonométrico', 'A3 · Arcos Bauhaus', 'B1 · Arco sangrando', 'B2 · Malha de pontos', 'B5 · Mira de registro'],
+    },
     rules: {
       label: '06 · Regras',
       title: 'O que o sistema proíbe',
@@ -198,29 +235,31 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
       yes: 'Sim',
       enforced: 'verificado no CI',
       items: [
-        { kind: 'no', text: 'Fundo claro em área grande, em nenhuma tela', check: 'tests/seo/contrast.spec.ts' },
+        { kind: 'yes', text: 'Dois temas medidos: todo texto passa 4,5:1 no escuro e no claro', check: 'tests/seo/contrast.spec.ts' },
         { kind: 'no', text: 'Degradê, sombra difusa ou brilho como decoração', check: 'src/design-rules.test.ts' },
         { kind: 'no', text: 'Canto arredondado em qualquer componente', check: 'src/design-rules.test.ts' },
-        { kind: 'no', text: 'Emoji, ícone ilustrativo ou mascote fora da ST‑01', check: 'revisão' },
+        { kind: 'no', text: 'Emoji, ícone ilustrativo ou arte fora das cenas e emblemas registrados', check: 'revisão' },
+        { kind: 'no', text: 'Marca central atrás do corpo de um artigo', check: 'tests/seo/design.spec.ts' },
+        { kind: 'yes', text: 'Arte sempre aria-hidden, em SVG inline, na cor dos tokens', check: 'src/design-rules.test.ts' },
         { kind: 'yes', text: 'Número medido só entra com fonte e data ao lado', check: 'revisão' },
         { kind: 'yes', text: 'Texto do corpo sempre acima de 4,5:1 de contraste', check: 'src/lib/design-tokens.test.ts' },
       ],
     },
     system: {
-      label: '07 · Sistema',
+      label: '08 · Sistema',
       title: 'As peças, em tamanho de uso',
       text: 'O que as seções acima explicam, montado com os mesmos componentes que o resto do site usa — não uma ilustração deles.',
       typeTitle: 'Tipografia',
       specimens: [
         { meta: 'Space Grotesk 700 · 64 / 0,98', sample: 'Renderização e indexação', kind: 'display' },
         { meta: 'Space Grotesk 700 · 32 / 1,15', sample: 'Título de seção dentro do artigo', kind: 'section' },
-        { meta: 'IBM Plex Sans 400 · 18 / 1,75 · 68ch', sample: 'O corpo do texto usa fundo grafite e texto quente‑neutro para reduzir o brilho em leitura longa. Os parágrafos são separados por espaço, nunca por recuo.', kind: 'body' },
+        { meta: 'IBM Plex Sans 400 · 18 / 1,75 · 68ch', sample: 'O corpo do texto usa fundo grafite — ou papel marfim, no claro — e texto quente‑neutro para reduzir o brilho em leitura longa. Os parágrafos são separados por espaço, nunca por recuo.', kind: 'body' },
         { meta: 'IBM Plex Mono · 11 / +14%', sample: 'Rótulo de instrumento', kind: 'mono' },
       ],
       componentsTitle: 'Componentes',
       buttons: ['Ler o experimento', 'Ver o código', 'Assinar o RSS'],
       noteLabel: 'Nota de laboratório',
-      note: 'Blocos de destaque usam cantos de instrumento em vez da barra lateral colorida. A moldura é fina, o preenchimento é o mesmo da superfície e o rótulo carrega o acento.',
+      note: 'Blocos de destaque usam cantos de instrumento em vez da barra lateral colorida. No tema claro eles viram marcas de registro, como na margem de uma prova de impressão.',
       gridTitle: 'Grade',
       gridLegend: ['1–3 · índice e metadados', '4–10 · corpo do texto', '11–12 · apoio e navegação'],
     },
@@ -281,14 +320,18 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
     },
     color: {
       label: '03 · Color',
-      title: 'Dark as a reading decision, not a trend',
-      text: 'The articles are long and full of code. A light background on a large screen, at night, tires the eye before the third block. The #0E1116 graphite holds long sessions and lets cyan and amber work as signal, not noise — they only appear in small areas or as text.',
+      title: 'Dark by default, light as a second material',
+      text: 'The articles are long and full of code, and the #0E1116 graphite holds long sessions — so it is the base, and the theme of anyone browsing without JavaScript. The light theme is not the dark one inverted: it is the same system in another material. Ivory paper #F2EDE3 where you read, #E4E6E8 metal in the header and footer, and the code screen stays dark, like a monitor set into a light wall. The accents split: bright cyan and amber only fill; as text they turn into ink. The site follows the system preference, and the header button remembers the choice.',
       areaCaption: 'Area share by color',
       areaNote: 'design intent, not a measurement',
       tableTitle: 'Contrast measured, not assumed',
       tableCaption:
-        'WCAG contrast ratio of each text color on the three surfaces, computed from the tokens on every build. The minimum for text is 4.5:1. The two failures are the reason the variants next to them exist.',
+        'Dark theme: WCAG contrast ratio of each text color on the three surfaces, computed from the tokens on every build. The minimum for text is 4.5:1. The two failures are the reason the variants next to them exist.',
       headers: ['Token', 'Role', 'Page', 'Card', 'Code'],
+      lightTitle: 'In light: paper, card and metal',
+      lightCaption:
+        'The same roles, in the ink version of the light theme. The original board’s label (#6E6A60) failed on card and metal — 4.26 and 4.31:1 — so the shipped token is #67635A. Cyan #3ED8C8 measures 1.52:1 on paper: in light it only fills, it never writes.',
+      lightHeaders: ['Token', 'Role', 'Paper', 'Card', 'Metal'],
       roles: {
         foreground: 'headings',
         body: 'long-form text',
@@ -332,6 +375,25 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
       robotAria:
         'Robot ST-01 drawn only with circles, squares and triangles: a square head with a cyan visor, an amber triangular antenna and a chest panel with primary blocks.',
     },
+    art: {
+      label: '07 · Art',
+      title: 'Scenes, emblems and background marks',
+      paragraphs: [
+        'Three families of drawings, all inline SVG: no texture, no gradient, no image — not one extra request and nothing competing for LCP. Every color is a token, so the same works change material when the theme changes. And all of it is decoration: hidden from screen readers, and no page depends on it to be understood.',
+        'The scenes come in four trios, one per blog axis — light for Core Web Vitals, void for crawling, window for metadata, vigil for measurement — and each article inherits its axis’s scene. The emblems mark the tools. The background marks, a large drawing at 7% opacity in dark and 8% in light, only appear behind the header of a ceremonial page, never behind running text.',
+      ],
+      scenesTitle: 'Scenes · one trio per axis',
+      emblemsTitle: 'Emblems · tools',
+      emblemFor: {
+        index: 'Tools index',
+        'gerador-json-ld': 'JSON-LD generator',
+        'validador-meta-tags': 'Meta tag validator',
+        'checador-cwv': 'CWV checker',
+      },
+      marksTitle: 'Background marks',
+      marksNote: 'Shown here at 40% so they can be seen; in use, 7–8% (central) and 20–24% (corner).',
+      marks: ['A1 · Beam', 'A2 · Axonometric volume', 'A3 · Bauhaus arcs', 'B1 · Bleeding arc', 'B2 · Dot grid', 'B5 · Registration mark'],
+    },
     rules: {
       label: '06 · Rules',
       title: 'What the system forbids',
@@ -339,29 +401,31 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
       yes: 'Yes',
       enforced: 'checked in CI',
       items: [
-        { kind: 'no', text: 'A light background over a large area, on any screen', check: 'tests/seo/contrast.spec.ts' },
+        { kind: 'yes', text: 'Two measured themes: all text passes 4.5:1 in dark and in light', check: 'tests/seo/contrast.spec.ts' },
         { kind: 'no', text: 'Gradient, soft shadow or glow as decoration', check: 'src/design-rules.test.ts' },
         { kind: 'no', text: 'A rounded corner on any component', check: 'src/design-rules.test.ts' },
-        { kind: 'no', text: 'Emoji, illustrative icon or mascot other than ST‑01', check: 'review' },
+        { kind: 'no', text: 'Emoji, illustrative icon or art outside the registered scenes and emblems', check: 'review' },
+        { kind: 'no', text: 'A central mark behind the body of an article', check: 'tests/seo/design.spec.ts' },
+        { kind: 'yes', text: 'Art is always aria-hidden, inline SVG, in token colors', check: 'src/design-rules.test.ts' },
         { kind: 'yes', text: 'A measured number only with its source and date beside it', check: 'review' },
         { kind: 'yes', text: 'Body text always above 4.5:1 contrast', check: 'src/lib/design-tokens.test.ts' },
       ],
     },
     system: {
-      label: '07 · System',
+      label: '08 · System',
       title: 'The parts, at working size',
       text: 'What the sections above explain, assembled with the same components the rest of the site uses — not a picture of them.',
       typeTitle: 'Typography',
       specimens: [
         { meta: 'Space Grotesk 700 · 64 / 0.98', sample: 'Rendering and indexing', kind: 'display' },
         { meta: 'Space Grotesk 700 · 32 / 1.15', sample: 'A section title inside an article', kind: 'section' },
-        { meta: 'IBM Plex Sans 400 · 18 / 1.75 · 68ch', sample: 'Body text sits on graphite in a warm neutral to cut glare during long reading. Paragraphs are separated by space, never by indentation.', kind: 'body' },
+        { meta: 'IBM Plex Sans 400 · 18 / 1.75 · 68ch', sample: 'Body text sits on graphite — or ivory paper, in light — in a warm neutral to cut glare during long reading. Paragraphs are separated by space, never by indentation.', kind: 'body' },
         { meta: 'IBM Plex Mono · 11 / +14%', sample: 'Instrument label', kind: 'mono' },
       ],
       componentsTitle: 'Components',
       buttons: ['Read the experiment', 'See the code', 'Subscribe via RSS'],
       noteLabel: 'Lab note',
-      note: 'Callouts use instrument corners instead of a colored side bar. The frame is thin, the fill matches the surface and the label carries the accent.',
+      note: 'Callouts use instrument corners instead of a colored side bar. In the light theme they become registration marks, like the margin of a printer’s proof.',
       gridTitle: 'Grid',
       gridLegend: ['1–3 · index and metadata', '4–10 · body text', '11–12 · support and navigation'],
     },
