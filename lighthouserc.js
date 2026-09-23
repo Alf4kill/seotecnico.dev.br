@@ -55,10 +55,21 @@ const paths = [
 const slug = newestPostSlug()
 if (slug) paths.push(`/blog/${slug}`)
 
+// Sharding (ci.yml runs one job per shard, in parallel). Round-robin over the
+// list, so each shard gets a mix of templates. LHCI_SHARD is 1-based, because
+// GitHub expressions cannot do arithmetic on the matrix value. Unset = every
+// URL, which is what a local `npm run lhci` does.
+const shardTotal = Number(process.env.LHCI_SHARD_TOTAL ?? 1)
+const shard = Number(process.env.LHCI_SHARD ?? 1)
+if (!(Number.isInteger(shard) && shard >= 1 && shard <= shardTotal)) {
+  throw new Error(`LHCI_SHARD=${shard} is outside 1..${shardTotal}`)
+}
+const shardPaths = paths.filter((_, i) => i % shardTotal === shard - 1)
+
 module.exports = {
   ci: {
     collect: {
-      url: paths.map((p) => `${BASE_URL}${p === '/' ? '' : p}`),
+      url: shardPaths.map((p) => `${BASE_URL}${p === '/' ? '' : p}`),
       startServerCommand: 'npm run start -- --port 3200',
       startServerReadyPattern: 'Ready',
       numberOfRuns: 3,

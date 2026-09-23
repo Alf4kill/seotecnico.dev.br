@@ -17,9 +17,10 @@ name: CI
 # resemble a failing one. See docs/experiment-log.md, the /design row.
 #
 # Cost of running on every pull request: intermediate ones in a stack each run
-# the full suite, and Lighthouse alone takes ~20 minutes. This repository is
-# public, where GitHub Actions minutes are free, so the price is wall-clock
-# and noise rather than money — a trade the gate is worth.
+# the full suite, and Lighthouse takes ~10 minutes of wall-clock (five
+# parallel shards, below). This repository is public, where GitHub Actions
+# minutes are free, so the price is wall-clock and noise rather than money —
+# a trade the gate is worth.
 on:
   push:
     branches: [main]
@@ -112,10 +113,22 @@ jobs:
   # was seen from ~2400 to ~3500 across runs of the same code, halving TBT),
   # so that second opinion was mostly noise: it is what turned the merge of
   # #62 red at TBT 216ms after its pull request had passed at 166ms.
+  #
+  # Sharded: the URLs are split round-robin across parallel jobs (the split
+  # lives in lighthouserc.js). One job ran every URL in series and took ~20
+  # minutes; each shard builds on its own and audits three URLs.
+  # Shards run on different runners, so compare timings only within a shard's
+  # table in the job summary, where the runner's CPU index is printed.
   lighthouse:
-    name: Lighthouse CI budgets
+    name: Lighthouse CI (shard ${{ matrix.shard }}/5)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    strategy:
+      # Every shard reports even when one fails: a red shard alone would hide
+      # whether the other templates are also over budget.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
 
@@ -138,3 +151,23 @@ jobs:
 
       - name: Lighthouse CI
         run: npm run lhci
+        env:
+          LHCI_SHARD: ${{ matrix.shard }}
+          LHCI_SHARD_TOTAL: 5
+
+      # Also on failure: a red run is exactly when the spread and the runner's
+      # CPU index are needed to tell a regression from a slow machine.
+      - name: Summary (medians, spread, runner CPU)
+        if: always()
+        run: node scripts/lhci-summary.mjs
+
+  # One stable check name for the whole matrix (it keeps the name the single
+  # job had), so a branch-protection rule never has to list shards.
+  lighthouse-gate:
+    name: Lighthouse CI budgets
+    if: always() && github.event_name == 'pull_request'
+    needs: lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every shard passed
+        run: test "${{ needs.lighthouse.result }}" = success
