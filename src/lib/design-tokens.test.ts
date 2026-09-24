@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { colors, contrastRatio, lightColors, type ColorToken } from '@/lib/design-tokens'
+import { artColors, colors, contrastRatio, lightColors, type ColorToken } from '@/lib/design-tokens'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A paleta existe em dois lugares — globals.css (canais, para o Tailwind) e
@@ -69,6 +69,10 @@ describe('design tokens', () => {
       }
     )
   }
+
+  it.each(Object.entries(artColors))('escuro: art %s em hex bate com --art-%s-rgb', (name, hex) => {
+    expect(channelsOf(THEMES.escuro.body, `--art-${name}-rgb`)).toBe(hexToChannels(hex))
+  })
 
   it('--code-background é o surface2 escuro (fundo do tema Shiki), nos dois temas', () => {
     expect(css).toMatch(new RegExp(`--code-background:\\s*${colors.surface2};`, 'i'))

@@ -334,3 +334,14 @@ Rules: one scene and one central mark per page at most (`/design` is the
 catalogue and the only exception); a central mark only behind the header of a
 ceremonial page, never behind running text; a corner mark is always cut by
 the edge of its block.
+
+**OG cards** (`components/seo/OgCard.tsx`) repeat the header of the page they
+stand for, so a shared link and the page it opens read as the same thing: an
+article card carries that article's scene (same `sceneForPost` pick) and its
+axis shape; the brand cards (`/`, `/en`) carry the A1 beam mark behind the
+title; the colophon cards carry the `/design` poster. The art is the same SVG
+the site renders: `lib/og-art.ts` swaps each token class for the dark hex
+(`artColors` in `design-tokens.ts`, tested against `globals.css`) and throws on
+a class with no token. Cards are always dark. The mark sits at 0.14 opacity on
+the card, double the page token: a preview is seen at ~500px, where 0.07
+vanishes.

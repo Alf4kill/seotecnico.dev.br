@@ -93,6 +93,22 @@ export const lightColors: Record<ColorToken, string> = {
   reference: '#23409B',
 }
 
+/**
+ * Rampa da arte (--art-*-rgb) no escuro. Só as imagens OG a leem em hex — o
+ * cartão OG é sempre escuro, então o claro não tem espelho aqui. Forma, nunca
+ * texto: sem par de contraste para medir.
+ */
+export const artColors = {
+  line: '#7A7F86',
+  mass: '#3A444C',
+  earth: '#5B3A22',
+  olive: '#4A4128',
+  deep: '#1C3B39',
+  leaf: '#3F9B7A',
+  brass: '#B8893C',
+  signal: '#C4553B',
+} as const
+
 /** Chrome (header/rodapé) por tema — o metal só existe no claro. */
 export const chrome = { dark: colors.background, light: lightColors.surface2 } as const
 
