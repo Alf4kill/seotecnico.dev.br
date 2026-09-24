@@ -26,7 +26,7 @@ import {
 // gerado — a arte é decoração, o conteúdo da página não depende dela.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SCENES: Record<SceneId, ComponentType<ArtProps>> = {
+export const SCENES: Record<SceneId, ComponentType<ArtProps>> = {
   'beam-piercing': BeamPiercing,
   'broken-vault': BrokenVault,
   'light-column': LightColumn,
