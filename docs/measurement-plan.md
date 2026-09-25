@@ -161,6 +161,21 @@ article afterwards is a robots.txt violation, dated and first-party.
 > window.** Recorded in full because the rule that created this register
 > exists precisely to stop a session from under-reporting its own traffic,
 > and a stale "nothing else was sent" is the exact shape that failure takes.
+>
+> **2026-09-25, 03:31:23 UTC (00:31:23 UTC−3) — one request: the H14
+> synthetic validation.** A working session sent a single
+> `curl -H 'Accept: text/markdown' https://seotecnico.dev.br/blog/json-ld-nextjs`,
+> 69 seconds after the PR #66 deploy finished (03:30:14 UTC, commit `9ddb60b`).
+> Response: HTTP 200, `text/html; charset=utf-8` — stage 1 serves HTML, as
+> designed. Expected event: `ai_crawler_hit` with `accept_md = true`,
+> `ua_class = unknown`, `has_sec_fetch = false`, `page_path =
+> /blog/json-ld-nextjs`. **Exclude it from H14 by timestamp**, and from every
+> H7–H13 window likewise. It is the only production request this session sent:
+> the rest of the session's work (PRs #65 and #66) ran against a local
+> production build and the GitHub API. The owner requested indexing of
+> `/en/case-studies` in URL Inspection earlier the same day; that fetch comes
+> from Google, not from this session, and is not synthetic in this register's
+> sense. The exit is the owner's connection, resolved by the procedure above.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
