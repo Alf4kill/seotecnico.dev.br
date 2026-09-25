@@ -4,6 +4,7 @@ import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 import { Scene } from '@/components/art/Art'
 import { PAGE_ART } from '@/lib/art'
+import { AvailabilityNote } from '@/components/sections/AvailabilityNote'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // "Sobre" em inglês — par de hreflang de /sobre (lib/hreflang.ts).
@@ -104,6 +105,10 @@ export default function EnglishAboutPage() {
             This page, the{' '}
             <Link href="/en" title={`${site.name} — home`}>
               home page
+            </Link>
+            , the{' '}
+            <Link href="/en/case-studies" title="Case studies: technical SEO, measured">
+              case studies
             </Link>{' '}
             and the{' '}
             <Link
@@ -119,20 +124,9 @@ export default function EnglishAboutPage() {
             , which explains the visual system and its measured contrast. The articles and the
             three free tools are in Portuguese; the guide links to them where they go deeper.
           </p>
-
-          <h2>Contact</h2>
-          <p>
-            {site.author.name} is on{' '}
-            <a href={site.author.linkedin} target="_blank" rel="noopener noreferrer">
-              LinkedIn
-            </a>{' '}
-            and{' '}
-            <a href={site.author.github} target="_blank" rel="noopener noreferrer">
-              GitHub
-            </a>
-            , where the code behind every claim on this site lives.
-          </p>
         </div>
+
+        <AvailabilityNote lang="en" />
       </section>
     </>
   )

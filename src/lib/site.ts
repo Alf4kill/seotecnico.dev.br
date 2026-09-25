@@ -34,8 +34,11 @@ export const site = {
     name: 'Henrique Lopes Souza',
     jobTitle: 'Technical SEO Engineer',
     github: 'https://github.com/Alf4kill',
-    linkedin: 'https://www.linkedin.com/in/henrique-lopes-souza-028a1215a/',
+    linkedin: 'https://www.linkedin.com/in/henriquelopessouza/',
     email: '',
+    // Currículo em PDF hospedado FORA do repositório: o repo é público e o
+    // histórico do git é permanente, e um CV carrega dados pessoais (§14).
+    cv: '',
   },
 } as const
 
