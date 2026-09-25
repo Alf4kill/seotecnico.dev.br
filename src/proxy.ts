@@ -35,7 +35,10 @@ export const config = {
   // Páginas HTML + os endpoints de descoberta. `/robots.txt` e `/sitemap.xml`
   // entram de propósito: é onde o crawler se anuncia primeiro, e um hit ali sem
   // nenhum hit de página depois já é um achado.
-  // Ficam de fora os estáticos, onde um hit não diz nada sobre leitura — e é o
+  // Ficam de fora os estáticos e os cartões OG em qualquer profundidade
+  // (`.*/opengraph-image$`: até 2026-09-26 só o da raiz saía, e os aninhados
+  // contavam como leitura — docs/experiment-log.md). Em nenhum dos dois um hit
+  // diz algo sobre leitura — e é o
   // matcher que limita o volume de eventos, já que agora tudo que passa vira
   // evento.
   // `api/` fora do matcher: são chamadas internas das ferramentas (fetch do
@@ -52,7 +55,7 @@ export const config = {
   matcher: [
     {
       source:
-        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*/opengraph-image$|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
       missing: [
         { type: 'header', key: 'rsc' },
         { type: 'header', key: 'next-router-prefetch' },
