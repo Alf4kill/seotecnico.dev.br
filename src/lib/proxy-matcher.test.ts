@@ -43,6 +43,27 @@ describe('proxy matcher', () => {
     expect(matches('/sobre', { 'next-router-prefetch': '1' })).toBe(false)
   })
 
+  // Até 2026-09-26 o matcher só excluía `opengraph-image` no começo do
+  // caminho: as imagens OG aninhadas (artigos, /design, /en/*) contavam como
+  // leitura de página. Achado no fechamento da H15 (um hit do PerplexityBot em
+  // /blog/hreflang-nextjs/opengraph-image). Lista = toda rota opengraph-image do app.
+  it('never counts an Open Graph image, at any depth', () => {
+    for (const url of [
+      '/opengraph-image',
+      '/blog/inp-nextjs/opengraph-image',
+      '/design/opengraph-image',
+      '/en/opengraph-image',
+      '/en/design/opengraph-image',
+      '/en/case-studies/opengraph-image',
+    ]) {
+      expect(matches(url), url).toBe(false)
+    }
+  })
+
+  it('still counts a page whose slug merely mentions opengraph-image', () => {
+    expect(matches('/blog/opengraph-image-nextjs')).toBe(true)
+  })
+
   it('never counts static assets or the internal API', () => {
     for (const url of ['/_next/static/chunks/app.js', '/images/hero.webp', '/icon.svg', '/api/checador-cwv']) {
       expect(matches(url), url).toBe(false)
