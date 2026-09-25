@@ -176,6 +176,13 @@ article afterwards is a robots.txt violation, dated and first-party.
 > `/en/case-studies` in URL Inspection earlier the same day; that fetch comes
 > from Google, not from this session, and is not synthetic in this register's
 > sense. The exit is the owner's connection, resolved by the procedure above.
+>
+> **From the H15 deploy on — every request under `/lab/<control slug>` is
+> synthetic by construction** (the positive-control rounds and the owner's
+> checks, [`lab-control-rounds.md`](lab-control-rounds.md)). They are excluded
+> from every other hypothesis **by path**, not by timestamp, so they need no
+> entry here one by one; their times live in the rounds file. The slug itself
+> is never written here, because it lives only in `LAB_PROBE_CONTROL_SLUG`.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
