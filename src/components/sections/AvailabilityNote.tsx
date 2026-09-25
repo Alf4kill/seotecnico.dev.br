@@ -9,8 +9,8 @@ import type { Lang } from '@/lib/hreflang'
 // autor está disponível nem como falar com ele. Este bloco é essa resposta, no
 // mesmo lugar nas duas línguas.
 //
-// Cada canal vem de `site.author` e só aparece quando o campo existe: email e
-// CV ficam vazios até haver um endereço dedicado (§14) e um PDF hospedado fora
+// Cada canal vem de `site.author` e só aparece quando o campo existe: o email
+// espera um endereço dedicado (§14), e o CV é um PDF por idioma hospedado fora
 // do repositório. Os links externos são medidos pelo `outbound_click` do GTM,
 // sem código aqui.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -48,7 +48,8 @@ const COPY: Record<Lang, {
 
 export function AvailabilityNote({ lang }: { lang: Lang }) {
   const copy = COPY[lang]
-  const { linkedin, cv, email, github } = site.author
+  const { linkedin, email, github } = site.author
+  const cv = site.author.cv[lang]
 
   // A ação principal é a primeira que existir: uma só em ciano cheio por tela.
   const actions = [
