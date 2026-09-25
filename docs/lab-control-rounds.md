@@ -95,7 +95,7 @@ every answer said so.
 ### Instrument (the control proper)
 
 Crawler property, Explore, event `ai_crawler_hit`, `page_path` under
-`/lab/<slug>`, day 2026-09-25, exported on 2026-09-26:
+`/lab/<slug>`, day 2026-09-25, exported later the same day, several hours after the rounds:
 
 | `page_path` | `bot_name` | `bot_verified` | `ua_class` | Events |
 |---|---|---|---|---|
@@ -120,10 +120,13 @@ would close it, and the verdict does not need it. **No assistant fetched
 All ten assistant hits had `accept_md = false`. Claude's fetcher converts HTML
 to Markdown itself and does not ask for it (relevant to H14).
 
-**Method lesson:** the same export taken **on 2026-09-25 itself** showed 3 and
-2 hits, not 5 and 5, because GA4 Explore had not finished processing the day.
-Read at face value, that export would have reported five instrument misses.
-Rule: never analyse an Explore export of the same day.
+**Method lesson:** an earlier export of the same query, taken a few hours
+after the rounds, showed 3 and 2 hits, not 5 and 5, because GA4 Explore had
+not finished processing. Read at face value, it would have reported five
+instrument misses. Rule: wait until the day has been closed for 24 hours
+([`measurement-plan.md`](measurement-plan.md)).
+
+**Re-confirmation due:** the 5/5 export was taken on 2026-09-25 as well, a few hours after the 3/2 one, so by the rule this very lesson produced it is not final. The same query is re-exported on or after 2026-09-27, once the day has been closed for 24 hours. Counts can only grow, so the verdict can only change if an extra hit appears in some round while another round shows none.
 
 ### Perplexity — diagnostics outside the protocol
 
@@ -151,7 +154,7 @@ These are not rounds and are not scored. They were run to explain 0/5.
      loaded the page is one sentence in the middle.
    - The protocol prompt ("do not invent") drew an honest refusal 5 times out
      of 5. **The same agent confabulates when the prompt leaves room.**
-4. **The home page, which PerplexityBot had visited** (2026-09-26 22:13 UTC).
+4. **The home page, which PerplexityBot had visited** (2026-09-25 22:13 UTC).
    - The heading and first paragraph were reported **correctly**.
    - **No Perplexity request reached the server.** The only events in that
      minute were four `/robots.txt` fetches with no declared agent, from two

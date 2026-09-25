@@ -516,7 +516,8 @@ reproducible detection work, and nobody appears to have measured it.
 
 ### 4.6 Positive control — what an AI assistant actually reads [designed 2026-09-25]
 
-> **Run 2026-09-25, closed 2026-09-26.** The instrument recorded every round (0 misses, 10/10 `verified-ip`). ChatGPT and Claude read the served HTML text, `'use client'` output included, and neither the JSON-LD nor anything that needs JavaScript. On the free plan, Perplexity never fetched: it answers from its index. Verdicts in [`experiment-log.md`](experiment-log.md) (H15); records in [`lab-control-rounds.md`](lab-control-rounds.md).
+> **Run and closed 2026-09-25** (the instrument verdict is re-confirmed by an
+> export taken on or after 2026-09-27; see the log). The instrument recorded every round (0 misses, 10/10 `verified-ip`). ChatGPT and Claude read the served HTML text, `'use client'` output included, and neither the JSON-LD nor anything that needs JavaScript. On the free plan, Perplexity never fetched: it answers from its index. Verdicts in [`experiment-log.md`](experiment-log.md) (H15); records in [`lab-control-rounds.md`](lab-control-rounds.md).
 
 Pilot lesson 2: a zero without a positive control is not a measurement. This is
 the control for the **user-triggered** class. It works by making known agent
