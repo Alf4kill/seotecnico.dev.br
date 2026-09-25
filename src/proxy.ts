@@ -3,6 +3,7 @@ import { classifyAiCrawler, isAllowed, type AiCrawler } from '@/lib/ai-crawlers'
 import { signerHost, verifyCrawler, type VerificationResult } from '@/lib/crawler-verification'
 import { netId } from '@/lib/net-id'
 import { trapChannel } from '@/lib/lab-traps'
+import { acceptsMarkdown } from '@/lib/content-negotiation'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Telemetria de requisições (docs/measurement-plan.md → `ai_crawler_hit`;
@@ -184,6 +185,10 @@ async function reportHit(request: NextRequest): Promise<void> {
             req_conditional: String(
               request.headers.has('if-none-match') || request.headers.has('if-modified-since')
             ),
+            // H14 etapa 1: alguém pede Markdown? Só mede — a resposta segue
+            // HTML. Vai em todo hit, true ou false, para o denominador estar
+            // na mesma consulta (docs/measurement-plan.md).
+            accept_md: String(acceptsMarkdown(request.headers.get('accept'))),
             ...(net && { net_id: net }),
             ...(trap && { is_trap: 'true', trap_channel: trap }),
             session_id: `${id}${Math.floor(Date.now() / DAY_MS)}`,
