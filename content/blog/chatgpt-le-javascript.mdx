@@ -1,0 +1,311 @@
+---
+title: "ChatGPT lê JavaScript? O que a IA vê de uma página Next.js"
+description: "ChatGPT e Claude leram só o texto do HTML servido: nada de JavaScript nem JSON-LD, e use client não esconde nada. O Perplexity grátis nem buscou a página."
+slug: "chatgpt-le-javascript"
+primaryQuery: "chatgpt lê javascript"
+keywords: ['chatgpt', 'claude', 'perplexity', 'javascript', 'use client', 'json-ld', 'renderização', 'ssr', 'csr', 'chatgpt-user', 'claude-user', 'aeo', 'geo', 'ia']
+lang: "pt-BR"
+category: indexacao
+status: fechado
+tldr: >-
+  Não. Em 15 rodadas controladas, ChatGPT e Claude leram só o texto do HTML
+  servido: nenhum executou JavaScript ou leu o JSON-LD. Conteúdo de
+  componente 'use client' chegou normalmente, porque também é renderizado no
+  servidor. O Perplexity gratuito respondeu pelo índice, sem buscar a página.
+datePublished: "2026-09-26"
+dateModified: "2026-09-26"
+faq:
+  - question: "O ChatGPT executa JavaScript quando lê uma página?"
+    answer: "Não executou em nenhuma das 5 rodadas deste teste, em setembro de 2026. O código que só existia depois de um fetch no navegador nunca foi relatado, e o endpoint que esse fetch chamaria não recebeu nenhuma requisição. O que o ChatGPT leu foi o texto do HTML que o servidor entregou."
+  - question: "Um componente 'use client' fica invisível para a IA?"
+    answer: "Não. Um componente 'use client' também é renderizado no servidor, e o que ele desenha no primeiro render sai no HTML como qualquer outro texto. ChatGPT e Claude relataram esse conteúdo nas 10 rodadas em que leram a página. O que fica invisível é o que só aparece depois de a página rodar no navegador, como o resultado de um fetch dentro de useEffect."
+  - question: "O ChatGPT e o Claude leem o JSON-LD da página?"
+    answer: "Neste teste, não: 0 de 10 rodadas. As ferramentas de leitura dos dois extraem o texto da página e descartam o conteúdo de tags script, onde o JSON-LD mora. O JSON-LD continua útil para os resultados enriquecidos do Google, mas qualquer fato que você queira ver citado por um assistente precisa estar também no texto visível."
+  - question: "Por que o Perplexity diz que não consegue abrir meu site?"
+    answer: "No plano gratuito, testado aqui, o Perplexity respondeu pelo próprio índice e não buscou a página ao vivo: o agente de busca sob demanda dele nunca fez uma requisição a este domínio em dois meses. Quando a página já tinha sido rastreada pelo PerplexityBot, ele respondeu certo; quando não tinha, disse que não conseguiu abrir. Para aparecer no Perplexity, a página precisa estar no índice dele antes da pergunta."
+---
+
+Não. Em 15 rodadas controladas neste site, em setembro de 2026, o **ChatGPT e
+o Claude leram só o texto do HTML que o servidor entrega**. Nenhum dos dois
+executou JavaScript e nenhum leu o JSON-LD. O conteúdo de um componente
+`'use client'` chegou até eles normalmente, porque esse componente também é
+renderizado no servidor. O Perplexity, no plano gratuito, nem buscou a página:
+respondeu pelo próprio índice. E o servidor registrou, com identidade
+verificada, cada leitura que os assistentes disseram ter feito.
+
+## O resultado em uma tabela
+
+Cada assistente recebeu o mesmo pedido cinco vezes: abrir uma página e relatar
+quatro códigos. Cada código chega à página por um caminho de renderização
+diferente, e muda a cada rodada.
+
+| Assistente | Abriu a página | Texto do servidor | Componente `'use client'` | Só no JSON-LD | Só depois do JavaScript | Requisições no servidor |
+|---|---|---|---|---|---|---|
+| ChatGPT | 5 de 5 | **5 de 5** | **5 de 5** | 0 de 5 | 0 de 5 | 5, identidade verificada |
+| Claude | 5 de 5 | **5 de 5** | **5 de 5** | 0 de 5 | 0 de 5 | 5, identidade verificada |
+| Perplexity (grátis) | 0 de 5 | — | — | — | — | 0 |
+
+Nenhum assistente inventou um código. Foram 60 códigos pedidos, e toda vez que
+um código não chegou até o assistente, a resposta disse que ele não foi
+encontrado.
+
+## Como o teste foi montado
+
+A página do teste é uma rota Next.js em `/lab/<slug>`, fora do sitemap, fora
+do índice de busca e sem link de lugar nenhum. O `<slug>` é secreto e vive só
+numa variável de ambiente de produção. O motivo é específico deste teste: os
+assistentes conseguem buscar no GitHub, e o repositório deste site é público.
+Se o endereço ou os códigos estivessem num arquivo versionado, um assistente
+poderia responder encontrando o código no GitHub, sem abrir a página, e o
+teste mediria busca em vez de leitura.
+
+A página tem quatro códigos, um por caminho de renderização:
+
+| Código | Onde ele existe | Se o assistente relatar, prova que… |
+|---|---|---|
+| `SRV-` | texto de um Server Component | leu o HTML servido |
+| `UC-` | texto renderizado por um componente `'use client'` | nada além do `SRV-`: ele também está no HTML |
+| `LD-` | só no campo `identifier` do JSON-LD | a leitura preserva o conteúdo de `<script type="application/ld+json">` |
+| `JS-` | buscado por um `fetch` dentro de `useEffect`, depois da montagem | o assistente executou JavaScript |
+
+Os códigos são um HMAC do slug com o número da rodada, então cada rodada tem
+códigos novos e nenhuma resposta pode ser reaproveitada de uma rodada anterior.
+A parte que importa para quem escreve Next.js é o componente cliente, em
+[`src/components/lab/ControlCodes.tsx`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/src/components/lab/ControlCodes.tsx):
+
+```tsx
+'use client'
+
+import { useEffect, useState } from 'react'
+
+// Renderiza o código DURANTE o render: sai no HTML, mesmo sendo 'use client'.
+export function RenderedByClientComponent({ code }: { code: string }) {
+  return (
+    <p>
+      Código do componente cliente: <strong>{code}</strong>
+    </p>
+  )
+}
+
+// Só obtém o código DEPOIS da montagem: sem JavaScript, ele não existe.
+export function FetchedCode({ endpoint }: { endpoint: string }) {
+  const [code, setCode] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    fetch(endpoint, { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then((data: { code: string }) => setCode(data.code))
+      .catch(() => setFailed(true))
+  }, [endpoint])
+
+  return (
+    <p>
+      Código carregado no navegador:{' '}
+      <strong data-testid="fetched-code">{code ?? (failed ? 'indisponível' : 'carregando…')}</strong>
+    </p>
+  )
+}
+```
+
+Os dois componentes estão no mesmo arquivo `'use client'` de propósito: a
+diferença entre eles é o experimento inteiro. A suíte de testes do site
+confere no HTML servido que cada código está exatamente onde a tabela diz:
+`SRV-` e `UC-` no texto, `LD-` só dentro do JSON-LD e `JS-` em lugar nenhum
+até o `fetch` rodar
+([`tests/seo/lab-control.spec.ts`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/tests/seo/lab-control.spec.ts)).
+
+O pedido foi o mesmo em todas as rodadas, sempre numa conversa nova e com a
+navegação na web ligada:
+
+> Abra esta página e me diga, exatamente como aparecem, todos os códigos que
+> começam com SRV-, UC-, LD- ou JS- que você encontrar nela, e em que parte da
+> página cada um estava. Se não encontrar algum, diga que não encontrou — não
+> invente.
+
+As 15 rodadas foram intercaladas (ChatGPT, Claude, Perplexity, e de novo),
+com pelo menos três minutos entre elas, em 25 de setembro de 2026, entre 11:56
+e 13:04 UTC. O protocolo, as respostas na íntegra e os desvios estão
+registrados no repositório, em
+[`docs/lab-control-rounds.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/lab-control-rounds.md).
+
+## O servidor viu cada leitura
+
+Antes de interpretar o que os assistentes leram, uma pergunta de método: o
+instrumento que registra as visitas funciona? Um instrumento que não vê um
+agente chegando produz o mesmo zero que um agente que nunca veio. Este teste
+é, antes de tudo, um **controle positivo**: uma visita que se sabe que
+aconteceu, num horário conhecido, para conferir se o registro aparece.
+
+Apareceu. O proxy do site registrou **5 requisições do ChatGPT-User e 5 do
+Claude-User**, todas vindas de faixas de IP publicadas pela OpenAI e pela
+Anthropic. Cada rodada usou uma URL que aquele assistente nunca tinha buscado,
+e os códigos só existem neste servidor. Então cada resposta certa exigiu uma
+requisição nova, e cada uma foi registrada. O método de verificação de
+identidade está no [artigo sobre como saber se a IA usa seu
+conteúdo](/blog/detectar-crawlers-ia).
+
+Um detalhe sobre o instrumento que quase virou um falso achado: a mesma
+consulta no GA4, feita no dia das rodadas, mostrava 3 e 2 requisições em vez
+de 5 e 5. O Explore do GA4 ainda não tinha processado o dia. Lida ao pé da
+letra, aquela exportação teria reportado cinco falhas do instrumento que
+nunca aconteceram. Desde então, nenhuma exportação do mesmo dia entra numa
+análise deste site.
+
+## `'use client'` não esconde nada
+
+O `UC-` apareceu toda vez que o `SRV-` apareceu, nos dois assistentes: 10 de
+10. Para eles, o texto que um componente `'use client'` desenha no primeiro
+render é indistinguível do texto de um Server Component.
+
+Isso contradiz uma leitura comum da diretiva. `'use client'` não quer dizer
+"renderizado só no navegador". O componente é renderizado no servidor como
+qualquer outro e depois hidratado no navegador. O que ele produz no primeiro
+render sai no HTML. A distinção que importa não é entre Server e Client
+Component, e sim entre **o que existe no primeiro render** e **o que só
+aparece depois**. É o mesmo ponto que o [artigo sobre SSR, SSG e
+ISR](/blog/ssr-ssg-isr-nextjs) faz para o Googlebot, agora medido em
+assistentes de IA.
+
+## O que fica de fora: JavaScript e JSON-LD
+
+**JavaScript.** Nenhum assistente relatou o `JS-` em 10 rodadas, e o endpoint
+que o `fetch` chamaria não recebeu nenhuma requisição de nenhum deles. Nas
+respostas, os dois descreveram a linha do código como "carregando…", que é o
+texto que o componente mostra antes de o `fetch` terminar. A página que eles
+leram é a página que existe antes de qualquer JavaScript rodar.
+
+**JSON-LD.** O `LD-` também ficou em 0 de 10, contra 10 de 10 do `SRV-`, e ele
+estava no mesmo HTML. O Claude explicou o motivo sem ser perguntado, em mais
+de uma rodada: a ferramenta de leitura dele baixa o HTML, converte em texto e
+descarta o conteúdo das tags `<script>`, que é onde o JSON-LD mora.
+
+Isso não torna o JSON-LD inútil. Ele continua sendo o que o Google usa para
+resultados enriquecidos, e o [artigo sobre JSON-LD no
+Next.js](/blog/json-ld-nextjs) mostra como gerá-lo. Mas um fato que só existe
+no JSON-LD não chega a esses dois assistentes. Se um dado precisa ser citado
+por uma IA, ele precisa estar também no texto visível.
+
+<figure>
+  <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Caminho de uma página até o modelo no ChatGPT e no Claude, e o caminho do Perplexity gratuito pelo índice">
+    <title>O que chega ao modelo, e onde o resto fica pelo caminho</title>
+    <desc>ChatGPT e Claude: o agente busca o HTML servido, a ferramenta extrai o texto e o modelo recebe os códigos SRV e UC. O JSON-LD é descartado na extração, e o código que depende de JavaScript nunca existe, porque nada roda. Perplexity gratuito: a pergunta vai ao índice preenchido pelo PerplexityBot, sem requisição ao site; página fora do índice resulta em falha.</desc>
+
+    <text x="20" y="28" fontSize="13" fill="var(--foreground)">ChatGPT e Claude</text>
+
+    <rect x="20" y="44" width="150" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="95" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">agente busca</text>
+    <text x="95" y="88" textAnchor="middle" fontSize="12" fill="var(--foreground)">o HTML servido</text>
+    <line x1="170" y1="75" x2="200" y2="75" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+
+    <rect x="200" y="44" width="170" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="285" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">extrai o texto,</text>
+    <text x="285" y="88" textAnchor="middle" fontSize="12" fill="var(--foreground)">sem rodar JavaScript</text>
+    <line x1="370" y1="75" x2="400" y2="75" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+
+    <rect x="400" y="44" width="300" height="62" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="550" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">o modelo recebe SRV e UC</text>
+    <text x="550" y="88" textAnchor="middle" fontSize="12" fill="var(--foreground)">(texto do servidor e do 'use client')</text>
+
+    <line x1="285" y1="106" x2="285" y2="140" stroke="var(--color-accent)" strokeWidth="1.5" />
+    <rect x="200" y="140" width="250" height="46" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="325" y="160" textAnchor="middle" fontSize="12" fill="var(--foreground)">descartado: JSON-LD (LD)</text>
+    <text x="325" y="177" textAnchor="middle" fontSize="12" fill="var(--foreground)">nunca existiu: fetch no navegador (JS)</text>
+
+    <text x="20" y="226" fontSize="13" fill="var(--foreground)">Perplexity, plano gratuito</text>
+
+    <rect x="20" y="242" width="150" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="95" y="268" textAnchor="middle" fontSize="12" fill="var(--foreground)">a pergunta vai</text>
+    <text x="95" y="286" textAnchor="middle" fontSize="12" fill="var(--foreground)">ao índice</text>
+    <line x1="170" y1="273" x2="200" y2="273" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+
+    <rect x="200" y="242" width="220" height="62" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="310" y="268" textAnchor="middle" fontSize="12" fill="var(--foreground)">página no índice (rastreada</text>
+    <text x="310" y="286" textAnchor="middle" fontSize="12" fill="var(--foreground)">pelo PerplexityBot): responde</text>
+
+    <rect x="440" y="242" width="260" height="62" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="570" y="268" textAnchor="middle" fontSize="12" fill="var(--foreground)">fora do índice: "não consegui</text>
+    <text x="570" y="286" textAnchor="middle" fontSize="12" fill="var(--foreground)">abrir", sem requisição ao site</text>
+  </svg>
+  <figcaption>Nos dois primeiros, o limite é a extração de texto. No Perplexity gratuito, é o índice: nenhuma requisição chegou ao site em nenhuma tentativa.</figcaption>
+</figure>
+
+Em texto, o que a figura mostra:
+
+| Assistente | Caminho da página até a resposta | O que se perde |
+|---|---|---|
+| ChatGPT, Claude | o agente busca o HTML servido → a ferramenta extrai o texto sem rodar JavaScript → o modelo recebe o texto | o JSON-LD (descartado na extração) e tudo o que depende de JavaScript (nunca chega a existir) |
+| Perplexity (grátis) | a pergunta vai ao índice do Perplexity, sem requisição ao site | qualquer página que o PerplexityBot ainda não rastreou |
+
+## Perplexity: a resposta vem do índice
+
+O Perplexity falhou nas cinco rodadas, sempre com a mesma mensagem: não
+conseguiu abrir a página. Quatro verificações fora do protocolo explicam o
+porquê:
+
+1. **Não foi bloqueio.** O firewall da hospedagem não tinha nenhuma regra de
+   bot ativa, e nenhum dos IPs bloqueados naquele dia pertencia às faixas que
+   o Perplexity publica. O robots.txt deste site permite os dois agentes do
+   Perplexity.
+2. **O agente de busca sob demanda nunca veio.** Em dois meses de registro, o
+   PerplexityBot, o indexador, buscou este domínio 6 vezes, todas com
+   identidade verificada: a home, o robots.txt, o guia e uma imagem de
+   compartilhamento. O Perplexity-User, o
+   agente que deveria buscar uma página quando alguém pede, fez **zero**
+   requisições. Nem nas rodadas, nem fora delas.
+3. **Ele responde pelo índice.** Perguntado sobre a home, uma página que o
+   PerplexityBot já tinha visitado, o Perplexity respondeu certo, com título e
+   primeiro parágrafo, **sem nenhuma requisição chegar ao servidor**. A página
+   do teste e um artigo que o indexador não tinha visitado falharam.
+4. **Com espaço, ele preenche.** Com uma pergunta aberta ("analise o conteúdo
+   desta página") sobre um artigo fora do índice, o Perplexity escreveu uma
+   análise longa e convincente, deduzida das palavras da URL. A admissão de
+   que não tinha lido a página ficou numa única frase no meio do texto. Com o
+   pedido fechado do teste ("não invente"), ele admitiu a falha cinco vezes em
+   cinco. A forma da pergunta decidiu entre honestidade e invenção.
+
+A conclusão vale para o **plano gratuito**, que é o que foi testado. Uma conta
+paga pode buscar páginas ao vivo; isso não foi medido aqui.
+
+## O que fazer num site Next.js
+
+- **Coloque o que precisa ser lido no primeiro render.** Texto de Server
+  Component e texto de Client Component no primeiro render chegam ao
+  assistente. Conteúdo que depende de um `fetch` no navegador, de uma aba
+  fechada que carrega sob demanda ou de um `useEffect` não chega.
+- **Não conte com o JSON-LD para ser citado.** Mantenha o JSON-LD para o
+  Google, e repita no texto visível qualquer fato que você quer ver numa
+  resposta de IA: preço, data, autor, especificação.
+- **Confira o que um leitor sem JavaScript recebe.** O jeito mais rápido é
+  buscar a página como um desses agentes busca, sem executar nada, e procurar
+  o trecho que importa:
+
+  ```bash
+  curl -s https://seusite.com.br/sua-pagina | grep -o "o trecho que precisa ser citado"
+  ```
+
+  Se o `grep` não acha, o assistente também não vai achar. O [validador de
+  meta tags](/ferramentas/validador-meta-tags) deste site faz a mesma leitura
+  do HTML cru para os metadados.
+- **Para o Perplexity, o índice vem antes da pergunta.** Uma página só aparece
+  no plano gratuito depois de o PerplexityBot rastreá-la. Deixe o agente
+  liberado no robots.txt e a página no sitemap, e dê tempo.
+
+## Os limites deste teste
+
+- **Cinco rodadas por assistente medem capacidade, não taxa.** "5 de 5"
+  significa, com 95% de confiança, que o comportamento acontece em pelo menos
+  55% das vezes; "0 de 5", em no máximo 45%. Somando ChatGPT e Claude, "0 de
+  10" em JavaScript e em JSON-LD fica abaixo de 26%. Os números acima são
+  contagens com esse limite, nunca porcentagens.
+- **Um site, uma data.** O teste foi feito em 25 de setembro de 2026. As
+  ferramentas de leitura dos assistentes mudam sem aviso, e qualquer
+  afirmação sobre elas vale pela data em que foi medida.
+- **Desvios registrados.** As três primeiras rodadas usaram por engano o
+  número de rodada da conferência inicial, e os nomes dos modelos do ChatGPT e
+  do Claude não foram anotados. Nenhum dos dois desvios muda o resultado, e os
+  dois estão no registro público do teste.
+
+A pergunta que este teste responde é uma parte do que o [guia de SEO técnico
+para Next.js](/guia/seo-tecnico-nextjs) chama de medir em vez de supor: o que
+cada leitor, humano ou automático, recebe de verdade da sua página.
