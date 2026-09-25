@@ -30,6 +30,13 @@ describe('proxy matcher', () => {
     }
   })
 
+  // H14 mede quem pede Markdown. Se o matcher filtrasse por Accept, o
+  // numerador seria zero por construção e o "ninguém pede" seria do filtro.
+  it('counts a document request that asks for Markdown (H14)', () => {
+    expect(matches('/blog/inp-nextjs', { accept: 'text/markdown' })).toBe(true)
+    expect(matches('/', { accept: 'text/markdown, text/html;q=0.9' })).toBe(true)
+  })
+
   it('never counts Next.js RSC prefetch or client navigation requests', () => {
     expect(matches('/sobre?_rsc=abc12', { rsc: '1', 'next-router-prefetch': '1' })).toBe(false)
     expect(matches('/sobre?_rsc=abc12', { rsc: '1' })).toBe(false)
