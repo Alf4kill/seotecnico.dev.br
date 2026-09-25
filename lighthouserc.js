@@ -47,6 +47,7 @@ const paths = [
   '/en/guide/technical-seo-nextjs',
   '/en',
   '/en/about',
+  '/en/case-studies',
   '/design',
   '/en/design',
   '/sobre',

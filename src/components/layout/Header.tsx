@@ -52,6 +52,7 @@ const COPY: Record<Lang, Copy> = {
     homeLabel: `${site.name} — home`,
     nav: [
       { label: 'Guide', href: '/en/guide/technical-seo-nextjs' },
+      { label: 'Case studies', href: '/en/case-studies' },
       { label: 'About', href: '/en/about' },
     ],
     navLabel: 'Main navigation',
