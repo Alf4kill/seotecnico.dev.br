@@ -36,6 +36,9 @@ export const site = {
     github: 'https://github.com/Alf4kill',
     linkedin: 'https://www.linkedin.com/in/henriquelopessouza/',
     email: '',
+    // Currículo em PDF hospedado FORA do repositório: o repo é público e o
+    // histórico do git é permanente, e um CV carrega dados pessoais (§14).
+    cv: '',
   },
 } as const
 
