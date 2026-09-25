@@ -514,6 +514,56 @@ makes the method's own bait discoverable" is a general problem for any
 reproducible detection work, and nobody appears to have measured it.
 ---
 
+### 4.6 Positive control — what an AI assistant actually reads [designed 2026-09-25]
+
+Pilot lesson 2: a zero without a positive control is not a measurement. This is
+the control for the **user-triggered** class. It works by making known agent
+visits happen on purpose, at a recorded time, and checking that the instrument
+sees each one. The same rounds answer a question worth an article of its own:
+**what does an AI assistant read from a Next.js page?**
+
+**Route.** `/lab/[probe]`, the dynamic route §4.5 designed for v2. The segment
+is compared against `LAB_PROBE_CONTROL_SLUG`, an environment variable that
+never enters a tracked file. Any other segment gets a 404, and so does every
+segment while the variable is unset. The page is `noindex` in the HTML and in
+`X-Robots-Tag`. It is absent from the sitemap, `/llms.txt`, the feed and
+`/robots.txt`: a `Disallow` line would publish the slug, which is the §4.5
+failure in another form.
+
+**Why the slug must stay out of the repository here specifically.** The
+assistants under test can search GitHub. If the slug or the codes were in a
+tracked file, an assistant could report a code it found in the repository
+without reading the page, and the round would measure search, not reading.
+The codes are therefore derived at request time,
+`HMAC-SHA256(slug, round : kind)`. They cannot be computed without the secret
+and cannot be guessed.
+
+**Four codes per round, one per rendering path:**
+
+| Code | Where it lives | A correct report proves |
+|---|---|---|
+| `SRV-` | text rendered by a Server Component | the agent read the served HTML |
+| `UC-` | text rendered by a `'use client'` component during render | nothing beyond `SRV-`: a client component is still server-rendered. It is in the HTML, and that is the article's point |
+| `LD-` | only in the page's JSON-LD `identifier` | the agent's extraction keeps `<script type="application/ld+json">` |
+| `JS-` | fetched from `/lab/<slug>/c` in a `useEffect` after mount | the agent executed JavaScript. The fetch itself is recorded by the proxy, so this one is observed server-side whatever the assistant answers |
+
+The round id (`?r=`) changes every code, so no round can reuse an earlier
+round's answer from a cache.
+
+**What the instrument must show, per round.** At least one `ai_crawler_hit` on
+`/lab/<slug>` within five minutes of the prompt. A round where the assistant
+reports a correct code **and the proxy saw no request** is an instrument
+failure, or a fetch path the proxy cannot see (a vendor cache, a relay), and
+either one is a finding about the instrument. That is the purpose of a
+positive control. A reported code that matches no round is a hallucination and
+is reported as one.
+
+**All control traffic is synthetic by construction**, and it is excluded from
+every other hypothesis by path (any `page_path` under `/lab/<slug>`), not by
+timestamp. Protocol, the fixed prompt and the round records:
+[`lab-control-rounds.md`](lab-control-rounds.md). Hypothesis: H15 in
+[`experiment-log.md`](experiment-log.md).
+
 ## 5. Identity verification — how a claim becomes an identity
 
 Three independent paths, strongest first. Implemented in
