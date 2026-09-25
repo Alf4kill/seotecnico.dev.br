@@ -305,6 +305,10 @@ worth probing is the one least likely to grant consent.** An agent driving a
 browser ignores or blind-dismisses an LGPD banner, so Stage B's N will be small
 and biased toward humans. That is not a flaw to hide — it is hypothesis H8.
 
+### Never analyse a same-day Explore export (rule since 2026-09-26)
+
+GA4 Explore does not finish processing a day until well after it ends. On 2026-09-25, an export of the H15 control traffic taken the same day showed 3 ChatGPT-User and 2 Claude-User hits. The same query, exported on 2026-09-26, showed 5 and 5, exactly one per round. Read at face value, the first export would have reported five instrument misses that never happened. Every export used for a verdict covers days that ended **at least 24 hours before** the export, and the export date is recorded next to the numbers. Realtime is exempt, because it is a live 30-minute view and not a daily table.
+
 ### Why the RUM sink is GA4 (and not an `/api/rum` endpoint)
 
 The site is below the CrUX traffic threshold, so there is **zero field CWV
