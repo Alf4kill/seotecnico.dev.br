@@ -146,7 +146,7 @@ These are not rounds and are not scored. They were run to explain 0/5.
    - **Perplexity-User: zero, ever.**
    - The export's only other row is the synthetic `PerplexityBot → /llms.txt`
      of 2026-07-25, which confirms the export covered the whole range.
-3. **An article, open-ended prompt** (2026-09-25 22:53 UTC,
+3. **An article, open-ended prompt** (2026-09-25 21:53 UTC,
    `/blog/detectar-crawlers-ia`, which PerplexityBot had not visited).
    - The page was not opened.
    - Perplexity still wrote a long, confident "analysis" built from the words
