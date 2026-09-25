@@ -405,6 +405,9 @@ baseline de 2026-07-20: nas 10 páginas, **LCP = FCP** — o maior elemento
 visível pinta junto com o primeiro, porque nada de conteúdo aparece depois
 da hidratação. Quando LCP e FCP divergem muito num site de conteúdo, essa é
 uma pista de que algo importante está nascendo tarde — e o que nasce tarde
-para o usuário, nasce tarde (ou nunca) para o indexador. Como sempre no
+para o usuário, nasce tarde (ou nunca) para o indexador. Assistentes de IA
+são mais radicais ainda: num teste controlado, [ChatGPT e Claude não
+executaram JavaScript nenhuma vez](/blog/chatgpt-le-javascript), e o que
+nascia num `useEffect` simplesmente não existia para eles. Como sempre no
 [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs): a estratégia
 de renderização você declara no código, mas quem confirma é a medição.
