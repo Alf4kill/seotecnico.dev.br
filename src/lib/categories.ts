@@ -73,10 +73,42 @@ export function getCategory(slug: CategorySlug): Category {
  * Só entra quando é verdade — "em medição" promete uma volta com dado real.
  */
 export const STATUSES = {
-  'em-medicao': { 'pt-BR': 'Em medição', en: 'Measuring', tone: 'accent' },
-  fechado: { 'pt-BR': 'Fechado', en: 'Closed', tone: 'primary' },
-  regressao: { 'pt-BR': 'Regressão', en: 'Regression', tone: 'danger' },
-  referencia: { 'pt-BR': 'Referência', en: 'Reference', tone: 'muted' },
+  'em-medicao': {
+    'pt-BR': 'Em medição',
+    en: 'Measuring',
+    tone: 'accent',
+    note: {
+      'pt-BR': 'Este artigo volta com dado novo a cada coleta.',
+      en: 'This article returns with new data after each collection.',
+    },
+  },
+  fechado: {
+    'pt-BR': 'Fechado',
+    en: 'Closed',
+    tone: 'primary',
+    note: {
+      'pt-BR': 'Experimento encerrado: os números deste artigo não mudam mais.',
+      en: 'Experiment closed: the numbers in this article are final.',
+    },
+  },
+  regressao: {
+    'pt-BR': 'Regressão',
+    en: 'Regression',
+    tone: 'danger',
+    note: {
+      'pt-BR': 'Uma mudança piorou o resultado, e o artigo registra o que regrediu.',
+      en: 'A change made the result worse, and this article records what regressed.',
+    },
+  },
+  referencia: {
+    'pt-BR': 'Referência',
+    en: 'Reference',
+    tone: 'muted',
+    note: {
+      'pt-BR': 'Material de referência, sem medição em andamento.',
+      en: 'Reference material, with no measurement running.',
+    },
+  },
 } as const
 
 export type PostStatus = keyof typeof STATUSES
