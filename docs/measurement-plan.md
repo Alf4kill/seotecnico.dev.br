@@ -32,13 +32,13 @@
 
 | Event name | Description | Trigger | Parameters | GA4 key event? | Status |
 |---|---|---|---|---|---|
-| `ai_crawler_hit` | A client requested a page or a discovery endpoint. Originally AI-UA-only; scope expanded for the detection experiment ([`detection-experiment.md`](detection-experiment.md)). Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `src/proxy.ts` (Node runtime), for **every request the matcher passes** — documents, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/feed.xml`, the lab traps. `ua_class` separates the buckets | For declared agents: `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (`verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent`), and with `verified-signature` only, `bot_signer` (the signer's hostname — the identity a signature proves). For every hit: `page_path`, `page_location` (feeds GA4's native page dimensions), `ua_class` (`declared-ai` / `browser-like` / `unknown`), `has_sec_fetch` (`true`/`false`), `req_conditional` (`true`/`false`), `net_id` (salted truncated /24 or /48 hash, monthly salt). On the traps: `is_trap` (`true`), `trap_channel` (`robots` / `llms`) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day (four synthetic hits in Realtime, all 8 original parameter keys, `bot_name` split across the 4 agents sent). **Expanded 2026-07-25** — detection experiment: all-requests scope, verification verdicts and the 6 new parameters; see [`detection-experiment.md`](detection-experiment.md). Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
+| `ai_crawler_hit` | A client requested a page or a discovery endpoint. Originally AI-UA-only; scope expanded for the detection experiment ([`detection-experiment.md`](detection-experiment.md)). Declared policy in [`ai-crawler-policy.md`](ai-crawler-policy.md) | **Not GTM.** Server-side Measurement Protocol hit from `src/proxy.ts` (Node runtime), for **every request the matcher passes** — documents, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/feed.xml`, the lab traps. `ua_class` separates the buckets | For declared agents: `bot_name` (e.g. `GPTBot`), `bot_vendor` (`OpenAI` / `Anthropic` / …), `bot_purpose` (`training` / `retrieval` / `user-triggered`), `bot_policy` (`allowed` / `disallowed` — what robots.txt tells this agent), `bot_verified` (`verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent`), and with `verified-signature` only, `bot_signer` (the signer's hostname — the identity a signature proves). For every hit: `page_path`, `page_location` (feeds GA4's native page dimensions), `ua_class` (`declared-ai` / `browser-like` / `unknown`), `has_sec_fetch` (`true`/`false`), `req_conditional` (`true`/`false`), `net_id` (salted truncated /24 or /48 hash, monthly salt), `accept_md` (`true`/`false` — the `Accept` header explicitly lists `text/markdown` or `text/x-markdown` with q > 0; H14, documented 2026-09-25). On the traps: `is_trap` (`true`), `trap_channel` (`robots` / `llms`) | no | **live 2026-07-25** — shipped in PR #31 and validated end-to-end against production the same day (four synthetic hits in Realtime, all 8 original parameter keys, `bot_name` split across the 4 agents sent). **Expanded 2026-07-25** — detection experiment: all-requests scope, verification verdicts and the 6 new parameters; see [`detection-experiment.md`](detection-experiment.md). Remaining: register the event-scoped custom dimensions (below) so the parameters are queryable outside Realtime |
 
 To query the crawler property beyond Realtime, register the event-scoped
 custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`,
 `page_path`, `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`,
-`net_id`, `is_trap`, `trap_channel` and — since 2026-09-13 — `bot_signer`
-(Admin → Custom definitions).
+`net_id`, `is_trap`, `trap_channel`, — since 2026-09-13 — `bot_signer` and —
+**before the H14 deploy** — `accept_md` (Admin → Custom definitions).
 `page_location` needs no registration — GA4 reads it into the built-in page
 dimensions.
 
@@ -192,6 +192,31 @@ silently accepting (`/mp/collect` always answers `204`, valid or not):
 ```bash
 curl -s -X POST "https://www.google-analytics.com/debug/mp/collect?measurement_id=$ID&api_secret=$SECRET" -d '{"client_id":"gptbot","events":[{"name":"ai_crawler_hit","params":{"bot_name":"GPTBot","engagement_time_msec":1}}]}'
 ```
+
+### `accept_md` — H14 stage 1, documented before implementation (2026-09-25)
+
+One new `ai_crawler_hit` parameter, `accept_md` (`true` / `false`), computed by
+`acceptsMarkdown()` in [`src/lib/content-negotiation.ts`](../src/lib/content-negotiation.ts).
+It answers one question: **does anything ask this site for Markdown?** Stage 1
+only measures. Every response stays HTML, so nothing a visitor or a crawler
+receives changes, and there is no cloaking surface to audit.
+
+- **Explicit requests only.** `*/*` and `text/*` accept Markdown without asking
+  for it; counting them would measure HTTP-client defaults, not demand.
+  `text/markdown;q=0` is a refusal and counts as `false`.
+- **Sent on every hit**, `true` or `false`, so the denominator (all requests in
+  a bucket) is in the same query as the numerator.
+- **Register the custom dimension before the deploy.** Registration is not
+  retroactive (the `bot_signer` lesson above), and H14's window starts at the
+  deploy.
+- **Synthetic validation:** one `curl -H 'Accept: text/markdown'` against a
+  production article after the deploy, logged in this section with its UTC time
+  and excluded from H14 by timestamp.
+
+Stage 2 (serving Markdown) is **not** designed here. It is built only if the
+decision rule in the H14 row of [`experiment-log.md`](experiment-log.md) is met,
+and it needs, before any code, `Vary: Accept` on every negotiated response and
+a parity test asserting that the Markdown carries the same text as the HTML.
 
 ### v2 — documented before implementation
 

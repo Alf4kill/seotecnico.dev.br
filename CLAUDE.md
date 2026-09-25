@@ -220,6 +220,12 @@ All custom events pushed via a typed `dataLayer` helper in
   deliberate SEO change. Changes are logged in `/docs/experiment-log.md`
   (date, change, hypothesis, result).
 - `ai-search-monitor`: monthly AEO citation checks.
+- **Power before registration.** Every hypothesis in the log states, next to
+  its window, the smallest effect or count that window can detect given the
+  traffic already observed. This domain's human traffic cannot power a
+  per-visitor test (a pilot hypothesis needed 10× the fetches the domain gets),
+  so prefer units with volume: agent requests, lab runs, public datasets
+  (CrUX, HTTP Archive), dated prompts to AI assistants. Rule since 2026-09-25.
 
 ---
 
