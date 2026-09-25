@@ -46,7 +46,9 @@ function expectedJsonLdTypes(path: string): string[] {
   // Both homes and both about pages: same entity graph in either language.
   if (path === '/' || path === '/en') return ['WebSite', 'Organization', 'Person']
   if (path === '/sobre' || path === '/en/about') return ['Person', 'BreadcrumbList']
-  if (path === '/design' || path === '/en/design') return ['WebPage', 'BreadcrumbList']
+  if (path === '/design' || path === '/en/design' || path === '/en/case-studies') {
+    return ['WebPage', 'BreadcrumbList']
+  }
   if (path.startsWith('/en/guide/')) {
     return ['Article', 'BreadcrumbList', ...faqTypes(guideEnFrontmatter)]
   }

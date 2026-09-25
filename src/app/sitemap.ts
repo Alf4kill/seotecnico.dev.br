@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { site } from '@/lib/site'
 import { getAllPosts, getGuide } from '@/lib/content'
 import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
+import { CASE_STUDIES_REVISED } from '@/lib/case-studies'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sitemap: páginas estáticas (home, guia, blog, ferramentas, sobre) + artigos
@@ -54,6 +55,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // ignorar a tag (mesma regra de /sobre e /ferramentas).
     { url: `${base}/en`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/en/about`, changeFrequency: 'monthly', priority: 0.5 },
+    // Cases em inglês, sem par PT: página do leitor de portfólio. lastmod é a
+    // data de revisão do texto dos cartões (CASE_STUDIES_REVISED).
+    { url: `${base}/en/case-studies`, lastModified: toDate(CASE_STUDIES_REVISED), changeFrequency: 'monthly', priority: 0.6 },
     // Colofão do design, par PT/EN. lastmod é a data de revisão do texto da
     // página (MANIFESTO_REVISED), a única fonte honesta que ela tem.
     { url: `${base}/design`, lastModified: toDate(MANIFESTO_REVISED), changeFrequency: 'yearly', priority: 0.4 },

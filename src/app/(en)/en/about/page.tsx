@@ -105,6 +105,10 @@ export default function EnglishAboutPage() {
             This page, the{' '}
             <Link href="/en" title={`${site.name} — home`}>
               home page
+            </Link>
+            , the{' '}
+            <Link href="/en/case-studies" title="Case studies: technical SEO, measured">
+              case studies
             </Link>{' '}
             and the{' '}
             <Link
