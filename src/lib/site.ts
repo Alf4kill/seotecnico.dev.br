@@ -38,11 +38,7 @@ export const site = {
     email: '',
     // Currículo em PDF hospedado FORA do repositório: o repo é público e o
     // histórico do git é permanente, e um CV carrega dados pessoais (§14).
-    // Um por idioma: cada página "sobre" linka o do próprio idioma.
-    cv: {
-      'pt-BR': 'https://drive.google.com/file/d/1dEmpxE1v9fUTAPEWZCNfNi4iwM2i0KDR/view',
-      en: 'https://drive.google.com/file/d/1gTKLUBiKruYidknaniAMY2w1FO7OBqKs/view',
-    },
+    cv: '',
   },
 } as const
 
