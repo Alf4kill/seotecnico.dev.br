@@ -84,15 +84,21 @@ jobs:
 
       # SITE_INDEXABLE=true mirrors production: it lets the suite assert that
       # indexable pages carry no noindex (and that /busca still does).
+      # LAB_PROBE_CONTROL_SLUG enables the H15 positive-control route so
+      # tests/seo/lab-control.spec.ts runs instead of skipping. A public test
+      # value on purpose: production uses a different, secret one
+      # (docs/detection-experiment.md §4.6).
       - name: Production build (indexable)
         run: npm run build
         env:
           SITE_INDEXABLE: 'true'
+          LAB_PROBE_CONTROL_SLUG: ci-control-0123456789abcdef
 
       - name: SEO regression suite
         run: npm run test:seo
         env:
           SITE_INDEXABLE: 'true'
+          LAB_PROBE_CONTROL_SLUG: ci-control-0123456789abcdef
 
       - name: Upload Playwright report
         if: failure()

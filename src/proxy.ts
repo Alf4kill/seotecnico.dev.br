@@ -4,6 +4,7 @@ import { signerHost, verifyCrawler, type VerificationResult } from '@/lib/crawle
 import { netId } from '@/lib/net-id'
 import { trapChannel } from '@/lib/lab-traps'
 import { acceptsMarkdown } from '@/lib/content-negotiation'
+import { isControlPath } from '@/lib/lab-probes'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Telemetria de requisições (docs/measurement-plan.md → `ai_crawler_hit`;
@@ -208,5 +209,12 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   // `.catch` obrigatório — telemetria nunca pode derrubar um request.
   event.waitUntil(reportHit(request).catch(() => {}))
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+  // Controle positivo (§4.6): um page.tsx não define headers de resposta, e o
+  // noindex precisa estar no header também, não só na meta. O endpoint /c já
+  // manda o seu.
+  if (isControlPath(request.nextUrl.pathname)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  }
+  return response
 }
