@@ -132,7 +132,12 @@ export default function EnglishHomePage() {
             repository is the lab notebook.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
-            <ButtonLink href="/en/guide/technical-seo-nextjs" title="Technical SEO for Next.js: the App Router guide">
+            {/* The reader who arrives by name wants the evidence first: the cases
+                are the primary action, the guide the second. */}
+            <ButtonLink href="/en/case-studies" title="Case studies: technical SEO, measured">
+              See the case studies
+            </ButtonLink>
+            <ButtonLink href="/en/guide/technical-seo-nextjs" variant="outline" title="Technical SEO for Next.js: the App Router guide">
               Read the guide
             </ButtonLink>
             <ButtonLink href="/en/about" variant="outline" title={`About ${site.author.name}`}>
@@ -184,6 +189,9 @@ export default function EnglishHomePage() {
             </div>
           ))}
         </dl>
+        <ButtonLink href="/en/case-studies" variant="link" title="Case studies: technical SEO, measured" className="mt-6">
+          How these were measured: the case studies
+        </ButtonLink>
       </section>
 
       {/* ── O que há no site ──────────────────────────────────── */}
