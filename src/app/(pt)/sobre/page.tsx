@@ -4,6 +4,7 @@ import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 import { Scene } from '@/components/art/Art'
 import { PAGE_ART } from '@/lib/art'
+import { AvailabilityNote } from '@/components/sections/AvailabilityNote'
 
 export const metadata = buildMetadata({
   title: 'Sobre o projeto SEO Técnico',
@@ -96,6 +97,8 @@ export default function SobrePage() {
             .
           </p>
         </div>
+
+        <AvailabilityNote lang="pt-BR" />
       </section>
     </>
   )
