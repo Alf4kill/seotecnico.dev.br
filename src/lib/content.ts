@@ -212,6 +212,15 @@ export function getGuide(lang: 'pt-BR' | 'en' = 'pt-BR'): Post {
 }
 
 /**
+ * Case studies in English (/en/case-studies/<slug>). Written for the portfolio
+ * reader, not translations: no hreflang pair, no place in the Portuguese blog.
+ * One file per route, the same shape as the English guide.
+ */
+export function getEnglishCaseStudy(slug: string): Post {
+  return readMdxFile(path.join(CONTENT_DIR, 'en', 'case-studies', `${slug}.mdx`))
+}
+
+/**
  * Até `limit` artigos para "Continue pelo mesmo eixo": primeiro os da mesma
  * categoria, depois os mais recentes — nunca o próprio artigo. Links internos
  * entre spokes, derivados em vez de curados à mão.
