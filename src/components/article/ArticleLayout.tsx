@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { Post } from '@/lib/content'
-import { getCategory } from '@/lib/categories'
+import { getCategory, STATUSES } from '@/lib/categories'
 import type { Lang } from '@/lib/hreflang'
 import { absoluteUrl } from '@/lib/metadata'
 import { site } from '@/lib/site'
@@ -35,7 +35,6 @@ const COPY = {
     minutes: 'min',
     tldr: 'Resposta curta',
     status: 'Estado',
-    statusNote: 'Este artigo volta com dado novo a cada coleta.',
     share: 'Compartilhar',
     tool: 'Ferramenta citada',
     history: 'Histórico',
@@ -52,7 +51,6 @@ const COPY = {
     minutes: 'min',
     tldr: 'Short answer',
     status: 'Status',
-    statusNote: 'This article returns with new data after each collection.',
     share: 'Share',
     tool: 'Tool used',
     history: 'History',
@@ -152,7 +150,7 @@ export function ArticleLayout({
                     <p className="font-display text-xl font-medium text-foreground">
                       <StatusLabel status={frontmatter.status} lang={lang} />
                     </p>
-                    <p className="pt-1.5 text-[0.8125rem] leading-normal text-muted">{copy.statusNote}</p>
+                    <p className="pt-1.5 text-[0.8125rem] leading-normal text-muted">{STATUSES[frontmatter.status].note[lang]}</p>
                   </InstrumentFrame>
                 )}
               </div>
