@@ -150,10 +150,13 @@ const CASES: CaseStudy[] = [
         <code>robots.txt</code> in the window, so the finding is &ldquo;fetched without
         having read the directive&rdquo;, not &ldquo;ignored it&rdquo;. Two hypotheses
         were falsified and one was underpowered by about 10×, and all three are published.
-        The main lesson: pre-register the statistical power, not only the hypothesis.
+        The main lesson: pre-register the statistical power, not only the hypothesis. A
+        positive control in September then showed that the instrument records every AI
+        assistant visit it should: 10 of 10, all with verified identity.
       </>
     ),
     links: [
+      { label: 'Full case study', href: '/en/case-studies/ai-crawler-detection' },
       { label: 'Pull request #57', href: pr(57) },
       { label: 'Pilot verdicts', href: `${LOG}#pilot-closure-and-v2-pre-registration--2026-09-20` },
       { label: 'Method article (in Portuguese)', href: '/blog/detectar-crawlers-ia', lang: 'pt-BR' },

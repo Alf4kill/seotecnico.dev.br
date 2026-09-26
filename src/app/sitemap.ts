@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { site } from '@/lib/site'
-import { getAllPosts, getGuide } from '@/lib/content'
+import { getAllPosts, getGuide, getEnglishCaseStudy } from '@/lib/content'
 import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
 import { CASE_STUDIES_REVISED } from '@/lib/case-studies'
 
@@ -30,6 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = site.url.replace(/\/$/, '')
   const guide = getGuide()
   const guideEn = getGuide('en')
+  const crawlerCaseStudy = getEnglishCaseStudy('ai-crawler-detection')
   const posts = getAllPosts()
 
   // Conteúdo mais recente do site (guia + posts): a home e o índice do blog
@@ -58,6 +59,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Cases em inglês, sem par PT: página do leitor de portfólio. lastmod é a
     // data de revisão do texto dos cartões (CASE_STUDIES_REVISED).
     { url: `${base}/en/case-studies`, lastModified: toDate(CASE_STUDIES_REVISED), changeFrequency: 'monthly', priority: 0.6 },
+    // Case study em inglês de página inteira. lastmod vem do frontmatter, como
+    // qualquer MDX do site.
+    { url: `${base}/en/case-studies/ai-crawler-detection`, lastModified: toDate(crawlerCaseStudy.frontmatter.dateModified), changeFrequency: 'monthly', priority: 0.5 },
     // Colofão do design, par PT/EN. lastmod é a data de revisão do texto da
     // página (MANIFESTO_REVISED), a única fonte honesta que ela tem.
     { url: `${base}/design`, lastModified: toDate(MANIFESTO_REVISED), changeFrequency: 'yearly', priority: 0.4 },
