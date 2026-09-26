@@ -49,6 +49,9 @@ function expectedJsonLdTypes(path: string): string[] {
   if (path === '/design' || path === '/en/design' || path === '/en/case-studies') {
     return ['WebPage', 'BreadcrumbList']
   }
+  if (path.startsWith('/en/case-studies/')) {
+    return ['Article', 'BreadcrumbList', 'FAQPage']
+  }
   if (path.startsWith('/en/guide/')) {
     return ['Article', 'BreadcrumbList', ...faqTypes(guideEnFrontmatter)]
   }

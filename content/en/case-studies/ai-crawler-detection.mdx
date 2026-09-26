@@ -1,0 +1,200 @@
+---
+title: 'Detecting AI crawlers on a live site: a pilot and a control'
+description: 'AI crawler telemetry on a live Next.js site: verified identities, honeypots, six instrument defects and a positive control with ChatGPT and Claude.'
+slug: ai-crawler-detection
+datePublished: '2026-09-26'
+dateModified: '2026-09-26'
+primaryQuery: 'ai crawler detection'
+keywords: ['english', 'inglês', 'ai crawlers', 'gptbot', 'claudebot', 'perplexity', 'chatgpt-user', 'claude-user', 'robots.txt', 'honeypot', 'web bot auth', 'bot verification', 'positive control', 'case study']
+lang: en
+category: medicao
+tldr: >-
+  A 57-day pilot measured every request to this site with verified identities
+  and two honeypots: one verified GPTBot fetch of disallowed paths, 62× more
+  undeclared networks than declared ones, and six defects in the instrument. A
+  positive control then showed that it sees every AI assistant visit.
+faq:
+  - question: 'Can a user agent string identify an AI crawler?'
+    answer: 'No. A user agent is a claim that any client can send. Identity exists only when the request matches a source the vendor publishes: an IP range, a forward-confirmed reverse DNS name or a Web Bot Auth signature. In this pilot, only requests that passed one of those checks were attributed to a vendor.'
+  - question: 'Did GPTBot ignore robots.txt?'
+    answer: 'The data does not support that wording. On 2026-07-30, GPTBot from an address in OpenAI’s published range fetched three paths its robots.txt group disallowed. But it never fetched robots.txt during the 57-day window, so the finding is that it fetched disallowed paths without having read the directive here, not that it read the rule and ignored it.'
+  - question: 'Do ChatGPT and Claude execute JavaScript when they read a page?'
+    answer: 'Not in this test. Across 10 controlled readings in September 2026, neither assistant reported content that only existed after JavaScript ran, and the endpoint that content came from received no request from either. Both reported text rendered on the server, including text rendered by a use client component.'
+---
+
+This site measured every request it received for 57 days, from 2026-07-25 to
+2026-09-20, to answer a narrow question: **which automated clients read it,
+whether they are who they claim to be, and whether they follow its
+robots.txt**. The pilot confirmed two of its six pre-registered hypotheses,
+falsified two, and found six defects in its own instrument, all of them
+silent. A positive control in September then showed that the instrument sees
+every AI assistant visit it should. What follows is the method, the numbers,
+and what went wrong. Every figure traces back to the public [experiment
+log](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/experiment-log.md).
+
+## The instrument
+
+The site runs on Next.js on Vercel. Its proxy (Next.js middleware) records
+every document request and every fetch of `robots.txt`, `sitemap.xml`,
+`llms.txt` and the feed as a server-side event in a separate analytics
+property. Static assets and the site's own client navigation are excluded.
+Each event carries:
+
+- **The claimed agent**, read from the user agent. A claim, not an identity.
+- **A verification verdict**, computed only for clients that claim a known
+  agent or sign the request. The verdict is one of `verified-ip` (inside the
+  vendor’s published range), `verified-rdns` (forward-confirmed reverse DNS),
+  `verified-signature` (a valid Web Bot Auth signature), `impersonated`
+  (claims a vendor that publishes sources, and fails them) or
+  `unverifiable` (the vendor publishes nothing to check against). A missing
+  source never becomes an accusation.
+- **Request-shape signals**, such as whether the browser-only `Sec-Fetch-*`
+  headers are present and whether the request is conditional.
+- **A network identifier** for correlation without identification: a salted,
+  truncated hash of the /24 (IPv4) or /48 (IPv6) prefix, with a salt that
+  rotates every month. The IP address itself never leaves the server.
+
+Two honeypot URLs, each designed to be reachable through exactly one channel,
+measured policy behaviour. Trap A existed only as a `Disallow:` line in robots.txt;
+fetching it means the client read the file and fetched what it forbids. Trap
+B existed only as a link in `llms.txt`. Six hypotheses, with windows and
+falsification conditions, were written into the log before any data existed.
+
+## What the pilot found
+
+The window closed at 57 of the planned 90 days, when a site-wide redesign
+shipped. The early close was declared, not hidden, and the round is reported
+as a pilot. It recorded **7,208 events, 5,480 after excluding the owner’s own
+traffic**, which turned out to be 24% of everything recorded.
+
+| # | Hypothesis | Verdict | Evidence |
+|---|---|---|---|
+| H1 | A client reads robots.txt and fetches the trap it forbids | **Falsified** | Zero real trap hits against 1,191 robots.txt fetches: following the `Disallow` line happens in at most 0.25% of reads (one-sided 95%) |
+| H2 | A verified training crawler fetches a disallowed page | **Confirmed** | 2026-07-30: GPTBot, `verified-ip`, three disallowed paths |
+| H3 | Undeclared automation outnumbers declared-and-disallowed agents | **Confirmed** | 436 networks vs 7, **62×** by networks, 3.1× by events |
+| H4 | Conditional requests reveal retrieval-purpose agents | **Falsified** | Claude-SearchBot 0/939, OAI-SearchBot 0/182; Bingbot 52/96; 93.6% of conditional requests came from undeclared clients |
+| H5 | Refreshing an article’s `dateModified` draws more retrieval fetches | **Inconclusive** | Underpowered by about 10×: the test needed 5 fetches of one article in 14 days, and the site gets 0.47 |
+| H6 | Nothing follows links in `llms.txt` | **Sustained, uselessly** | Zero trap B hits, but only 9 reads of `llms.txt` in 57 days: the bound is ≤ 28% |
+
+Three of these need their qualifiers attached.
+
+**H2 is not "GPTBot ignored robots.txt."** OpenAI documents GPTBot as a
+training crawler, and this site’s robots.txt had disallowed it since
+2026-07-25. The three requests on 2026-07-30 came from inside OpenAI’s
+published range. But GPTBot never fetched robots.txt during the window. What
+the data supports is "fetched disallowed paths without having read the
+directive here", and the difference between that and "ignored the rule" is
+the difference between a measurement and an accusation. Three requests on
+one date prove the behaviour exists. They do not give a rate.
+
+**H3 is a lower bound in one direction and an upper estimate in another.**
+It was computed on requests without `Sec-Fetch-*` headers, a conservative
+proxy for "not a browser". But a matcher defect found later (below) counted
+share-image fetches as page reads, and link-preview bots rarely declare
+themselves. The direction is safe at 62×; the exact size is not.
+
+**H1 and H6 carry a confound that cannot be removed.** Both trap slugs were
+in tracked files of this site’s public repository, which the same agents
+crawl. A trap hit could have come from reading the repository. For Trap A the
+claim survives, because a `Disallow` line applies however the URL was found.
+For Trap B, any hit would not have proven that a client follows `llms.txt`.
+
+## Six defects, all silent
+
+None of these raised an error. Each one was found by reading exports by hand
+or by checking an odd number.
+
+1. **The signer was never recorded.** A valid Web Bot Auth signature proves
+   only that the request was signed by a key published at the domain named in
+   `Signature-Agent`. That domain is the identity, and it never reached the
+   analytics property: 64 `verified-signature` events have no signer.
+2. **The current signature format was rejected.** A 2026 draft of the Web Bot
+   Auth architecture changed `Signature-Agent` to a structured Dictionary. The
+   verifier accepted only the older form.
+3. **Human browsing was counted as automation.** Next.js prefetches visible
+   links with requests that do not ask for HTML, and those passed the matcher
+   as "unknown" clients. Of the owner’s own provider-network events, 994 of
+   1,041 were prefetches.
+4. **The public repository is itself a discovery channel.** Publishing the
+   method published the bait. Git history is permanent, so the confound on the
+   two traps can only be bounded, never removed.
+5. **One connection produced several network identifiers.** Because the salt
+   rotates monthly, the owner’s single connection appeared under three
+   identifiers across the window, and a VPN exit under a fourth. The first
+   analysis excluded only one of them.
+6. **Share images counted as page reads.** The matcher excluded
+   `opengraph-image` only at the start of a path, so every nested card, such
+   as `/blog/<slug>/opengraph-image`, was recorded as a document fetch. It was
+   found while closing the positive control and fixed on 2026-09-25.
+
+The lesson that generalises best: **pre-registering a hypothesis without
+pre-registering its power produces a test that could not have worked.** H5
+was knowable in advance to be ten times short, from the crawl volume the
+property already held. Every hypothesis on this site now states the smallest
+effect its window can detect before it is registered.
+
+## The positive control: does the instrument see a known visit?
+
+With zero hits and no control, "nothing came" and "the instrument is broken"
+are the same observation. So in September the site ran one on purpose: 15
+dated prompts, five each to ChatGPT, Claude and Perplexity, asking each to
+open a page and report the codes on it.
+
+The page lived at a secret URL stored only in an environment variable, since
+the assistants under test can search GitHub. It carried four codes, one per
+rendering path: text from a Server Component, text rendered by a
+`'use client'` component, a value that existed only in the JSON-LD, and a
+value fetched in a `useEffect` after mount. Every code was derived from an
+HMAC of the secret and the round number, so each round had new codes.
+
+| Assistant | Opened the page | Server text | `'use client'` text | JSON-LD only | After JavaScript | Requests seen |
+|---|---|---|---|---|---|---|
+| ChatGPT | 5 of 5 | 5 of 5 | 5 of 5 | 0 of 5 | 0 of 5 | 5, `verified-ip` |
+| Claude | 5 of 5 | 5 of 5 | 5 of 5 | 0 of 5 | 0 of 5 | 5, `verified-ip` |
+| Perplexity (free plan) | 0 of 5 | — | — | — | — | 0 |
+
+**The instrument saw every visit.** Every correct answer needed a request to
+this server, because the codes existed nowhere else. The proxy recorded five
+verified requests per vendor, one per round. No assistant invented a code:
+60 were asked for, and every one that did not reach an assistant was
+reported as not found.
+
+**What the assistants read** is the text of the server-rendered HTML. Output
+from a `'use client'` component arrived every time, because client
+components are rendered on the server too. Neither the JSON-LD nor anything
+that required JavaScript ever arrived. Claude described its own tool: fetch
+the HTML, extract the text, drop `<script>` blocks. The full write-up is in
+Portuguese: [what ChatGPT reads from a Next.js
+page](/blog/chatgpt-le-javascript).
+
+**Perplexity, on the free plan, answered from its index.** Its user-triggered
+agent made zero requests to this domain in two months, against six verified
+fetches by its indexer. Asked about the home page, which the indexer had
+crawled, it answered correctly with no request reaching the server. Asked
+open-endedly about an article the indexer had never visited, it wrote a
+confident analysis inferred from the words in the URL, with the admission
+that it had not loaded the page buried in the middle.
+
+**One more near-miss for the method.** An analytics export taken a few hours
+after the rounds showed 3 and 2 requests instead of 5 and 5. The property had
+not finished processing the day. Read at face value, it would have reported
+five instrument failures that never happened. Exports are now analysed only
+after the day has been closed for 24 hours, and the 5 and 5 figure is being
+re-confirmed under that rule.
+
+## What is measured now
+
+- **v2 of the detection instrument** (H7–H13, pre-registered before its code):
+  a coherence vector over request headers, new discovery channels whose slugs
+  never enter a tracked file, and a repository-only canary that measures how
+  often the public repository itself is crawled for URLs.
+- **H14, from 2026-09-25 to 2026-12-24:** does anything ask this site for
+  Markdown with `Accept: text/markdown`? Measurement only; every response stays
+  HTML. Serving Markdown is built only if at least five distinct networks or
+  two verified agents ask for it.
+
+The method, the verification code and every registered hypothesis are in the
+[repository](https://github.com/Alf4kill/seotecnico.dev.br). The method
+article, in Portuguese, is [how to know whether AI uses your
+content](/blog/detectar-crawlers-ia). The other case studies are on the [case
+studies page](/en/case-studies).

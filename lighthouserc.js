@@ -48,6 +48,7 @@ const paths = [
   '/en',
   '/en/about',
   '/en/case-studies',
+  '/en/case-studies/ai-crawler-detection',
   '/design',
   '/en/design',
   '/sobre',
