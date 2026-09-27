@@ -437,8 +437,7 @@ three accounts were on the **free plan**.
 | 29 | DeepSeek | free / _pending_ | 21:00 | correct | correct | absent | **correct** |
 | 30 | Grok | free / _pending_ | 21:05 | correct | correct | absent | **correct** |
 
-‡ The owner's note read "6:53". Taken as 16:53 local, between rounds 16
-(16:49) and 18 (16:58); _pending the owner's confirmation_.
+‡ The owner's note read "6:53"; the owner confirmed 16:53 local (19:53 UTC).
 
 **Scoring totals:** 60 codes asked for across 15 rounds, **0 wrong**.
 
