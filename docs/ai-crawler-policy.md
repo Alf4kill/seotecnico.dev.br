@@ -35,6 +35,7 @@ inference from behaviour.
 | `Claude-User` | Anthropic | One-off fetch on a user's request |
 | `PerplexityBot` | Perplexity | Search index that produces Perplexity's citations |
 | `Perplexity-User` | Perplexity | One-off fetch on a user's request |
+| `Google-Agent` | Google | Agents hosted on Google infrastructure that navigate the web on a user's request. Added 2026-09-27 (H16). Google documents that user-triggered fetchers ignore robots.txt, so its group changes no crawl; it is named because this registry also drives the telemetry, which now verifies it against `user-triggered-agents.json` |
 | `Applebot` | Apple | Siri and Spotlight suggestions |
 | `Bingbot` | Microsoft | Bing's index — load-bearing for O7, since Bing feeds Copilot and part of ChatGPT's answers |
 
