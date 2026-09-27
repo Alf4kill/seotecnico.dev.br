@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { controlCode, controlSlug } from '../../src/lib/lab-probes'
+import { DERIVED_PROBES, controlCode, controlSlug, probeSlug } from '../../src/lib/lab-probes'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Controle positivo da H15 (docs/detection-experiment.md §4.6).
@@ -71,9 +71,26 @@ test.describe('positive control (H15)', () => {
   })
 
   test('the slug leaks into no discovery surface', async ({ request }) => {
+    const secrets = [slug!, ...DERIVED_PROBES.map((name) => probeSlug(slug!, name))]
     for (const surface of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/feed.xml', '/', '/en']) {
       const body = await (await request.get(surface)).text()
-      expect(body, surface).not.toContain(slug!)
+      for (const secret of secrets) expect(body, surface).not.toContain(secret)
+    }
+  })
+
+  // H16 (§4.7): uma URL por assistente, cada uma com os próprios códigos.
+  test('each derived probe serves its own codes, page and endpoint', async ({ request }) => {
+    for (const name of DERIVED_PROBES) {
+      const probe = probeSlug(slug!, name)
+      const response = await request.get(`/lab/${probe}?r=18`)
+      expect(response.status(), name).toBe(200)
+      expect(response.headers()['x-robots-tag'], name).toContain('noindex')
+      const html = await response.text()
+      expect(html, name).toContain(controlCode(probe, '18', 'SRV'))
+      expect(html, name).not.toContain(controlCode(slug!, '18', 'SRV'))
+
+      const endpoint = await request.get(`/lab/${probe}/c?r=18`)
+      expect(await endpoint.json(), name).toEqual({ code: controlCode(probe, '18', 'JS') })
     }
   })
 })
