@@ -409,7 +409,9 @@ out of the repository; this file gets the summary.
 ## Records
 
 All rounds on **2026-09-27**. Times are UTC; the owner is at UTC−3. All
-three accounts were on the **free plan**.
+three accounts were on the **free plan**. The model labels are what each
+interface showed, the same in all five rounds of each assistant: Gemini 3
+Flash; DeepSeek with **Search** on (DeepThink off); Grok "Fast".
 
 - **Slug rotated** before the merge of PR #73 (2026-09-27T18:31:20Z); the exact
   time was not recorded.
@@ -421,21 +423,21 @@ three accounts were on the **free plan**.
 
 | Round | Assistant | Plan / model | Prompt sent (UTC) | SRV | UC | LD | JS |
 |---|---|---|---|---|---|---|---|
-| 16 | Gemini | free / _pending_ | 19:49 | correct | correct | absent | absent |
-| 17 | DeepSeek | free / _pending_ | 19:53 ‡ | correct | correct | absent | **correct** |
-| 18 | Grok | free / _pending_ | 19:58 | correct | correct | absent | **correct** |
-| 19 | Gemini | free / _pending_ | 20:05 | correct | correct | absent | absent |
-| 20 | DeepSeek | free / _pending_ | 20:09 | correct | correct | absent | **correct** |
-| 21 | Grok | free / _pending_ | 20:15 | correct | correct | **correct** | **correct** |
-| 22 | Gemini | free / _pending_ | 20:20 | correct | correct | absent | absent |
-| 23 | DeepSeek | free / _pending_ | 20:24 | correct | correct | absent | absent |
-| 24 | Grok | free / _pending_ | 20:29 | correct | correct | **correct** | **correct** |
-| 25 | Gemini | free / _pending_ | 20:39 | correct | correct | absent | absent |
-| 26 | DeepSeek | free / _pending_ | 20:44 | correct | correct | absent | absent |
-| 27 | Grok | free / _pending_ | 20:49 | correct | correct | absent | **correct** |
-| 28 | Gemini | free / _pending_ | 20:56 | correct | correct | absent | absent |
-| 29 | DeepSeek | free / _pending_ | 21:00 | correct | correct | absent | **correct** |
-| 30 | Grok | free / _pending_ | 21:05 | correct | correct | absent | **correct** |
+| 16 | Gemini | free / Gemini 3 Flash | 19:49 | correct | correct | absent | absent |
+| 17 | DeepSeek | free / "Search" mode | 19:53 ‡ | correct | correct | absent | **correct** |
+| 18 | Grok | free / "Fast" | 19:58 | correct | correct | absent | **correct** |
+| 19 | Gemini | free / Gemini 3 Flash | 20:05 | correct | correct | absent | absent |
+| 20 | DeepSeek | free / "Search" mode | 20:09 | correct | correct | absent | **correct** |
+| 21 | Grok | free / "Fast" | 20:15 | correct | correct | **correct** | **correct** |
+| 22 | Gemini | free / Gemini 3 Flash | 20:20 | correct | correct | absent | absent |
+| 23 | DeepSeek | free / "Search" mode | 20:24 | correct | correct | absent | absent |
+| 24 | Grok | free / "Fast" | 20:29 | correct | correct | **correct** | **correct** |
+| 25 | Gemini | free / Gemini 3 Flash | 20:39 | correct | correct | absent | absent |
+| 26 | DeepSeek | free / "Search" mode | 20:44 | correct | correct | absent | absent |
+| 27 | Grok | free / "Fast" | 20:49 | correct | correct | absent | **correct** |
+| 28 | Gemini | free / Gemini 3 Flash | 20:56 | correct | correct | absent | absent |
+| 29 | DeepSeek | free / "Search" mode | 21:00 | correct | correct | absent | **correct** |
+| 30 | Grok | free / "Fast" | 21:05 | correct | correct | absent | **correct** |
 
 ‡ The owner's note read "6:53"; the owner confirmed 16:53 local (19:53 UTC).
 
