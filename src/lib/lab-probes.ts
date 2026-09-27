@@ -2,7 +2,8 @@ import { createHmac } from 'node:crypto'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sondas de laboratório com slug secreto (docs/detection-experiment.md §4.5,
-// §4.6). Hoje só o controle positivo da H15.
+// §4.6, §4.7). O controle positivo: a URL da H15 e, desde a H16, uma URL por
+// assistente testado.
 //
 // O slug vive SÓ em variável de ambiente: o repositório é público e os
 // assistentes testados buscam no GitHub. Um slug ou um código num arquivo
@@ -56,9 +57,86 @@ export function controlPaths(slug: string) {
   return { page: `/lab/${slug}`, js: `/lab/${slug}/c` }
 }
 
+/**
+ * Uma sonda por assistente da rodada 2 (H16, §4.7), mais a do dono para o
+ * teste prévio. Para um agente que não se declara, a URL é a única identidade
+ * que ele não escolhe: um hit na sonda do Grok só pode vir de quem recebeu a
+ * URL do Grok, diga o user agent o que disser.
+ */
+export const DERIVED_PROBES = ['gemini', 'deepseek', 'grok', 'owner'] as const
+export type ProbeName = 'h15' | (typeof DERIVED_PROBES)[number]
+
+/**
+ * `p-` + 24 hex de HMAC(slug, probe:<nome>). Sem o slug, não há como calcular
+ * nem chutar; com ele, qualquer um calcula — por isso a rodada 2 começa
+ * rotacionando um slug que já tinha circulado (docs/lab-control-rounds.md).
+ */
+export function probeSlug(base: string, name: (typeof DERIVED_PROBES)[number]): string {
+  return `p-${createHmac('sha256', base).update(`probe:${name}`).digest('hex').slice(0, 24)}`
+}
+
+export interface ControlProbe {
+  name: ProbeName
+  /** O segmento da URL, e a chave dos códigos desta sonda. */
+  slug: string
+}
+
+/** O segmento de /lab/[probe] → a sonda, ou null (a rota responde 404). */
+export function resolveProbe(segment: string, base: string | null = controlSlug()): ControlProbe | null {
+  if (!base) return null
+  if (segment === base) return { name: 'h15', slug: base }
+  const name = DERIVED_PROBES.find((n) => probeSlug(base, n) === segment)
+  return name ? { name, slug: segment } : null
+}
+
+/** A sonda e o endpoint de um caminho do controle, ou null fora dele. */
+export function controlProbeForPath(
+  pathname: string,
+  base: string | null = controlSlug()
+): (ControlProbe & { endpoint: 'page' | 'js' }) | null {
+  const match = /^\/lab\/([^/]+)(\/c)?$/.exec(pathname)
+  if (!match) return null
+  const probe = resolveProbe(match[1], base)
+  return probe && { ...probe, endpoint: match[2] ? 'js' : 'page' }
+}
+
 /** Se o caminho pertence ao controle — o proxy usa para mandar o X-Robots-Tag. */
-export function isControlPath(pathname: string, slug: string | null = controlSlug()): boolean {
-  if (!slug) return false
-  const { page, js } = controlPaths(slug)
-  return pathname === page || pathname === js
+export function isControlPath(pathname: string, base: string | null = controlSlug()): boolean {
+  return controlProbeForPath(pathname, base) !== null
+}
+
+/** O GA4 corta valor de parâmetro em 100 caracteres. */
+const GA4_VALUE_MAX = 100
+
+function clip(value: string | null, from = 0): string {
+  const text = value?.slice(from, from + GA4_VALUE_MAX) ?? ''
+  return text || '(none)'
+}
+
+/**
+ * Os parâmetros `lab_*` do `ai_crawler_hit` numa sonda (H16, §4.7;
+ * docs/measurement-plan.md). Cabeçalhos brutos, e SÓ aqui: estas URLs são
+ * secretas e só os assistentes testados e o dono as recebem, então os
+ * cabeçalhos descrevem o fetcher de um fornecedor, não um visitante (§2.3).
+ * `ipOwner` chega pronto: é a única parte que faz rede.
+ */
+export function labHitParams(
+  probe: ControlProbe & { endpoint: 'page' | 'js' },
+  url: URL,
+  headers: Headers,
+  ipOwner: string
+): Record<string, string> {
+  const ua = headers.get('user-agent')
+  return {
+    lab_probe: probe.name,
+    lab_round: normalizeRound(url.searchParams.get('r') ?? undefined),
+    lab_endpoint: probe.endpoint,
+    lab_ua_1: clip(ua),
+    // Um user agent de Chrome passa de 100 caracteres; o resto vai aqui.
+    ...(ua && ua.length > GA4_VALUE_MAX && { lab_ua_2: clip(ua, GA4_VALUE_MAX) }),
+    lab_accept: clip(headers.get('accept')),
+    lab_accept_lang: clip(headers.get('accept-language')),
+    lab_ip_owner: ipOwner,
+    lab_country: clip(headers.get('x-vercel-ip-country')),
+  }
 }
