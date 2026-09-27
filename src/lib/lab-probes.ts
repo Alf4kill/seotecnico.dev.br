@@ -104,3 +104,39 @@ export function controlProbeForPath(
 export function isControlPath(pathname: string, base: string | null = controlSlug()): boolean {
   return controlProbeForPath(pathname, base) !== null
 }
+
+/** O GA4 corta valor de parâmetro em 100 caracteres. */
+const GA4_VALUE_MAX = 100
+
+function clip(value: string | null, from = 0): string {
+  const text = value?.slice(from, from + GA4_VALUE_MAX) ?? ''
+  return text || '(none)'
+}
+
+/**
+ * Os parâmetros `lab_*` do `ai_crawler_hit` numa sonda (H16, §4.7;
+ * docs/measurement-plan.md). Cabeçalhos brutos, e SÓ aqui: estas URLs são
+ * secretas e só os assistentes testados e o dono as recebem, então os
+ * cabeçalhos descrevem o fetcher de um fornecedor, não um visitante (§2.3).
+ * `ipOwner` chega pronto: é a única parte que faz rede.
+ */
+export function labHitParams(
+  probe: ControlProbe & { endpoint: 'page' | 'js' },
+  url: URL,
+  headers: Headers,
+  ipOwner: string
+): Record<string, string> {
+  const ua = headers.get('user-agent')
+  return {
+    lab_probe: probe.name,
+    lab_round: normalizeRound(url.searchParams.get('r') ?? undefined),
+    lab_endpoint: probe.endpoint,
+    lab_ua_1: clip(ua),
+    // Um user agent de Chrome passa de 100 caracteres; o resto vai aqui.
+    ...(ua && ua.length > GA4_VALUE_MAX && { lab_ua_2: clip(ua, GA4_VALUE_MAX) }),
+    lab_accept: clip(headers.get('accept')),
+    lab_accept_lang: clip(headers.get('accept-language')),
+    lab_ip_owner: ipOwner,
+    lab_country: clip(headers.get('x-vercel-ip-country')),
+  }
+}

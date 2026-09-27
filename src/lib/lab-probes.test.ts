@@ -10,6 +10,7 @@ import {
   controlProbeForPath,
   controlSlug,
   isControlPath,
+  labHitParams,
   normalizeRound,
   probeSlug,
   resolveProbe,
@@ -122,6 +123,60 @@ describe('derived probes (H16)', () => {
     expect(controlProbeForPath(`/lab/${grok}/x`, SLUG)).toBeNull()
     expect(controlProbeForPath(`/blog/${grok}`, SLUG)).toBeNull()
     expect(isControlPath(`/lab/${probeSlug(SLUG, 'gemini')}`, SLUG)).toBe(true)
+  })
+})
+
+describe('labHitParams', () => {
+  const grok = { name: 'grok' as const, slug: probeSlug(SLUG, 'grok'), endpoint: 'page' as const }
+  const url = new URL(`https://seotecnico.dev.br/lab/${grok.slug}?r=18`)
+  const CHROME =
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
+
+  it('splits a long user agent at GA4’s 100-character limit and keeps it whole', () => {
+    const params = labHitParams(
+      grok,
+      url,
+      new Headers({
+        'user-agent': CHROME,
+        accept: 'text/html,application/xhtml+xml',
+        'accept-language': 'en-US,en;q=0.9',
+        'x-vercel-ip-country': 'US',
+      }),
+      'none'
+    )
+    expect(params).toEqual({
+      lab_probe: 'grok',
+      lab_round: '18',
+      lab_endpoint: 'page',
+      lab_ua_1: CHROME.slice(0, 100),
+      lab_ua_2: CHROME.slice(100),
+      lab_accept: 'text/html,application/xhtml+xml',
+      lab_accept_lang: 'en-US,en;q=0.9',
+      lab_ip_owner: 'none',
+      lab_country: 'US',
+    })
+    expect(params.lab_ua_1 + params.lab_ua_2).toBe(CHROME)
+  })
+
+  it('marks absent headers as (none) and omits an empty second half', () => {
+    const params = labHitParams({ ...grok, endpoint: 'js' }, new URL('https://x.test/lab/p'), new Headers({ 'user-agent': 'curl/8.7.1' }), 'unknown')
+    expect(params).toEqual({
+      lab_probe: 'grok',
+      lab_round: '00',
+      lab_endpoint: 'js',
+      lab_ua_1: 'curl/8.7.1',
+      lab_accept: '(none)',
+      lab_accept_lang: '(none)',
+      lab_ip_owner: 'unknown',
+      lab_country: '(none)',
+    })
+    expect(labHitParams(grok, url, new Headers(), 'none').lab_ua_1).toBe('(none)')
+  })
+
+  it('never sends a value longer than GA4 accepts', () => {
+    const long = 'x'.repeat(450)
+    const params = labHitParams(grok, url, new Headers({ 'user-agent': long, accept: long, 'accept-language': long }), 'none')
+    for (const value of Object.values(params)) expect(value.length).toBeLessThanOrEqual(100)
   })
 })
 
