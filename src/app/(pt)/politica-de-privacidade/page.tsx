@@ -87,6 +87,16 @@ export default function PoliticaDePrivacidadePage() {
           veredito, nunca o endereço.
         </p>
         <p>
+          <strong>Uma exceção: as páginas de laboratório de endereço secreto</strong>{' '}
+          (em <code>/lab/</code>), que existem para testar assistentes de IA,
+          não têm link em lugar nenhum e só são enviadas pelo autor ao assistente
+          testado. Nelas também são registrados o <em>user agent</em>, os
+          cabeçalhos <code>Accept</code> e <code>Accept-Language</code>, o
+          país de origem e o nome da lista pública de faixas de rede (de um
+          fornecedor como Google ou OpenAI) em que o endereço está, se estiver
+          em alguma. O endereço IP continua não sendo registrado.
+        </p>
+        <p>
           Essa contagem é agregada e anônima, não identifica você
           individualmente e não depende do banner de consentimento. Está
           descrita aqui porque um site cuja proposta é medição transparente

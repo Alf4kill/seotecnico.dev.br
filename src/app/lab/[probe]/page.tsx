@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { controlCode, controlPaths, controlSlug, normalizeRound } from '@/lib/lab-probes'
+import { controlCode, controlPaths, normalizeRound, resolveProbe } from '@/lib/lab-probes'
 import { FetchedCode, RenderedByClientComponent } from '@/components/lab/ControlCodes'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Controle positivo da H15 (docs/detection-experiment.md §4.6).
+// Controle positivo da H15 e da H16 (docs/detection-experiment.md §4.6, §4.7).
 //
 // Quatro códigos por rodada, um por caminho de renderização:
 //   SRV- texto deste Server Component            → está no HTML
@@ -13,7 +13,9 @@ import { FetchedCode, RenderedByClientComponent } from '@/components/lab/Control
 //   JS-  buscado depois da montagem, em useEffect → só existe se o JS rodar
 //
 // Dinâmica: a rodada (?r=) muda os códigos, e o slug é lido do ambiente em
-// tempo de requisição. Segmento ≠ slug (ou slug ausente) → 404.
+// tempo de requisição. Cada sonda (o slug da H15, ou uma URL derivada por
+// assistente na H16) tem os próprios códigos. Segmento que não é sonda, ou
+// slug ausente → 404.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const dynamic = 'force-dynamic'
@@ -30,9 +32,9 @@ export default async function ControlProbePage({
   params: Promise<{ probe: string }>
   searchParams: Promise<{ r?: string | string[] }>
 }) {
-  const slug = controlSlug()
-  const { probe } = await params
-  if (!slug || probe !== slug) notFound()
+  const probe = resolveProbe((await params).probe)
+  if (!probe) notFound()
+  const { slug } = probe
 
   const round = normalizeRound((await searchParams).r)
   const code = (kind: 'SRV' | 'UC' | 'LD') => controlCode(slug, round, kind)
@@ -55,7 +57,7 @@ export default async function ControlProbePage({
         alguém pede que ele a abra. Ela não está no sitemap, não está no índice de busca e
         nenhuma página aponta para cá: só chega aqui quem recebeu o endereço. O experimento é
         público e está documentado no repositório do site (
-        <code>docs/detection-experiment.md</code>, §4.6).
+        <code>docs/detection-experiment.md</code>, §4.6 e §4.7).
       </p>
       <p>
         Rodada <strong>{round}</strong>. Os códigos abaixo mudam a cada rodada.
@@ -66,8 +68,10 @@ export default async function ControlProbePage({
       <RenderedByClientComponent code={code('UC')} />
       <FetchedCode endpoint={`${controlPaths(slug).js}?r=${round}`} />
       <p>
-        O acesso é registrado de forma anônima (caminho, sinais técnicos da requisição e um código
-        de rede truncado que rotaciona todo mês, nunca o endereço IP), conforme a{' '}
+        O acesso é registrado sem o endereço IP: caminho, cabeçalhos técnicos da requisição (user
+        agent, <code>Accept</code>, <code>Accept-Language</code>), o país, a lista pública de
+        faixas de rede em que o endereço está, se estiver em alguma, e um código de rede truncado
+        que rotaciona todo mês. Detalhes na{' '}
         <a href="/politica-de-privacidade">política de privacidade</a>.
       </p>
     </main>

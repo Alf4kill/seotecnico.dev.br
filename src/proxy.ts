@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest, type NextFetchEvent } from 'next/server'
 import { classifyAiCrawler, isAllowed, type AiCrawler } from '@/lib/ai-crawlers'
-import { signerHost, verifyCrawler, type VerificationResult } from '@/lib/crawler-verification'
+import { ipOwner, signerHost, verifyCrawler, type VerificationResult } from '@/lib/crawler-verification'
 import { netId } from '@/lib/net-id'
 import { trapChannel } from '@/lib/lab-traps'
 import { acceptsMarkdown } from '@/lib/content-negotiation'
-import { isControlPath } from '@/lib/lab-probes'
+import { controlProbeForPath, isControlPath, labHitParams } from '@/lib/lab-probes'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Telemetria de requisições (docs/measurement-plan.md → `ai_crawler_hit`;
@@ -145,6 +145,19 @@ async function reportHit(request: NextRequest): Promise<void> {
     verification = await verifyCrawler(request, crawler?.token ?? null, clientIp).catch(() => null)
   }
 
+  // Sondas do controle positivo (H16, §4.7): quem buscou, pelo formato da
+  // requisição e pela lista pública em que o IP está, diga o UA o que disser.
+  // Só aqui: fora das sondas, nada disto é coletado (§2.3).
+  const probe = controlProbeForPath(pathname)
+  const lab =
+    probe &&
+    labHitParams(
+      probe,
+      request.nextUrl,
+      request.headers,
+      await ipOwner(clientIp).catch(() => 'unknown')
+    )
+
   // Um "usuário" por crawler declarado; para o resto, um por rede (net_id
   // rotaciona por mês, então o "usuário" também). Sessão agrupa o dia.
   const id = stableId(crawler?.token ?? net ?? uaClass)
@@ -195,6 +208,7 @@ async function reportHit(request: NextRequest): Promise<void> {
             accept_md: String(acceptsMarkdown(request.headers.get('accept'))),
             ...(net && { net_id: net }),
             ...(trap && { is_trap: 'true', trap_channel: trap }),
+            ...lab,
             session_id: `${id}${Math.floor(Date.now() / DAY_MS)}`,
             // Sem isto o GA4 trata o evento como sem engajamento e ele some
             // dos relatórios padrão.

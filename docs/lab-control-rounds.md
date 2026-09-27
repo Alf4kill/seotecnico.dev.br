@@ -312,3 +312,119 @@ account may behave differently, and that was not tested.
 #### Round 15 — Perplexity
 
 > Não consegui acessar o conteúdo da página: a tentativa de carregamento falhou. Portanto, não é possível verificar com segurança quais códigos aparecem nela ou em que parte estão. Não vou inventar resultados.
+
+---
+
+# Round 2 — Gemini, DeepSeek, Grok (H16)
+
+Design: [`detection-experiment.md`](detection-experiment.md) §4.7.
+Hypothesis: H16 in [`experiment-log.md`](experiment-log.md). Written on
+2026-09-27, before the instrument change ships and before any round.
+
+What changes from round 1, and why:
+
+- **Each assistant gets its own secret URL**, derived from the slug. For an
+  agent that does not declare itself, the URL is the only identity it cannot
+  choose. A hit on the Grok probe can only come from something that received
+  the Grok URL.
+- **The probe pages record the request's shape** (`lab_*` parameters in
+  [`measurement-plan.md`](measurement-plan.md)): the raw user agent, `Accept`,
+  `Accept-Language`, the country, and which published IP feed the address
+  falls in, whatever the user agent claims.
+- **Model and plan are recorded per round.** Round 1 missed this.
+
+## Setup (owner, once, in this order)
+
+1. **Rotate the slug.** The round-1 slug was sent to three vendors and pasted
+   into Discord. The probe URLs are secret only while the slug is, since
+   anyone who knows it can compute them from the public algorithm. Generate a
+   new one with the command in round 1's setup, set it as
+   `LAB_PROBE_CONTROL_SLUG` in Vercel → Production, and record the date below.
+   The round-1 URL then returns 404. Its GA4 data is unaffected, so the H15
+   re-export still works.
+2. **Register the nine `lab_*` custom dimensions** in the crawler property
+   (Admin → Custom definitions, event scope): `lab_probe`, `lab_round`,
+   `lab_endpoint`, `lab_ua_1`, `lab_ua_2`, `lab_accept`, `lab_accept_lang`,
+   `lab_ip_owner`, `lab_country`. **Before** the deploy: registration is not
+   retroactive.
+3. **Merge and deploy** the instrument PR, then redeploy once so the new slug
+   is live (or set the slug before the merge, and the merge's deploy covers
+   both).
+4. **Print the URLs and codes** locally. The output stays out of the
+   repository:
+   `LAB_PROBE_CONTROL_SLUG=<slug> node scripts/lab-control-codes.mjs --probes`.
+5. **Pre-flight on the `owner` probe only.** Open the owner URL with `?r=00`
+   in a browser, wait for the `JS-` code, then check Realtime for two hits
+   with `lab_probe = owner` (`page` and `js`) carrying `lab_ua_1` and
+   `lab_ip_owner`. **Never open a vendor URL in a browser, and never paste it
+   anywhere but the assistant's prompt box.** Round 1's Discord preview is the
+   reason.
+
+## Protocol (fixed before the first round)
+
+- **15 rounds, numbered 16–30, 5 per assistant, interleaved:** Gemini gets
+  `16, 19, 22, 25, 28`, DeepSeek gets `17, 20, 23, 26, 29`, Grok gets
+  `18, 21, 24, 27, 30`. Each assistant always receives **its own** probe URL,
+  with the round number in `?r=`.
+- **Where:** Gemini at gemini.google.com; DeepSeek at chat.deepseek.com with
+  **Search** on and DeepThink off; Grok at grok.com (not inside the X app).
+  One round = one new conversation, default model.
+- **Record per round:** the plan (free or paid) and the model name the
+  interface shows.
+- **At least 3 minutes between rounds.**
+- **The prompt, verbatim**, identical to round 1, with only the URL filled in:
+
+  > Abra esta página e me diga, exatamente como aparecem, todos os códigos que
+  > começam com SRV-, UC-, LD- ou JS- que você encontrar nela, e em que parte
+  > da página cada um estava. Se não encontrar algum, diga que não encontrou —
+  > não invente.
+  > https://seotecnico.dev.br/lab/<probe>?r=NN
+
+- **No retries, no follow-ups inside a round.** A refusal or a failure is the
+  round's result. Diagnostics, if any, run only after round 30, with round
+  numbers from 31 up, and are recorded as diagnostics, not rounds.
+- Record the **UTC time the prompt was sent** (to the minute) and paste the
+  answer **verbatim**, before looking at GA4.
+
+Scoring is round 1's: **correct**, **absent** or **wrong** per code. A correct
+code with no hit on that assistant's probe is an **instrument miss**.
+
+## Export (on or after the second day after the rounds)
+
+Explore → free form, event `ai_crawler_hit`, filter `lab_probe` exactly
+matches each of `gemini`, `deepseek`, `grok`, `owner`, metric **Event count**,
+the round day as the range. GA4 takes five row dimensions per table, so four
+tables, all joined on (`lab_probe`, `lab_round`):
+
+| Table | Rows |
+|---|---|
+| A | `lab_probe`, `lab_round`, `lab_endpoint`, `bot_name`, `bot_verified` |
+| B | `lab_probe`, `lab_round`, `lab_ip_owner`, `lab_country`, `ua_class` |
+| C | `lab_probe`, `lab_round`, `lab_ua_1`, `lab_ua_2`, `lab_accept_lang` |
+| D | `lab_probe`, `lab_round`, `lab_accept`, `has_sec_fetch`, `Date hour and minute` |
+
+No table uses `page_path`, so no export contains a slug. The CSVs still stay
+out of the repository; this file gets the summary.
+
+## Records
+
+Slug rotated: _pending_. Instrument deploy: _pending_. Owner pre-flight:
+_pending_.
+
+| Round | Assistant | Plan / model | Prompt sent (UTC) | SRV | UC | LD | JS |
+|---|---|---|---|---|---|---|---|
+| 16 | Gemini | | | | | | |
+| 17 | DeepSeek | | | | | | |
+| 18 | Grok | | | | | | |
+| 19 | Gemini | | | | | | |
+| 20 | DeepSeek | | | | | | |
+| 21 | Grok | | | | | | |
+| 22 | Gemini | | | | | | |
+| 23 | DeepSeek | | | | | | |
+| 24 | Grok | | | | | | |
+| 25 | Gemini | | | | | | |
+| 26 | DeepSeek | | | | | | |
+| 27 | Grok | | | | | | |
+| 28 | Gemini | | | | | | |
+| 29 | DeepSeek | | | | | | |
+| 30 | Grok | | | | | | |

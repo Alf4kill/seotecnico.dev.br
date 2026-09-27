@@ -145,6 +145,14 @@ accumulate into a durable identifier. That is enough to link a trap hit to a
 `/robots.txt` fetch in the same month and not enough to identify anyone.
 `/politica-de-privacidade` says all of this in plain Portuguese.
 
+**One exception, since 2026-09-27: the secret probe pages (§4.7).** On
+`/lab/<probe>` only, the raw `User-Agent`, `Accept` and `Accept-Language`
+headers are recorded (truncated to GA4's 100-character limit), with the
+country and the published feed the address falls in. Those URLs are unlinked
+and known only to the assistants under test and the owner, so the headers
+describe a vendor's fetcher, not a visitor. The address still never leaves the
+server.
+
 **Extended for the client-side probe (v2, §2.5).** A script that runs in the
 visitor's browser is a different kind of collection from counting a request
 that arrived, and the list above does not cover it. Also never collected:
@@ -566,6 +574,79 @@ every other hypothesis by path (any `page_path` under `/lab/<slug>`), not by
 timestamp. Protocol, the fixed prompt and the round records:
 [`lab-control-rounds.md`](lab-control-rounds.md). Hypothesis: H15 in
 [`experiment-log.md`](experiment-log.md).
+
+### 4.7 Positive control, round 2 — assistants that publish less [designed 2026-09-27]
+
+§4.6 tested three vendors that publish a user-triggered agent and its IP
+ranges. For those, a correct answer, a declared user agent and a
+`verified-ip` verdict told one story. Round 2 tests three assistants where
+that chain breaks, which is why the owner chose them:
+
+| Assistant | What the vendor publishes (checked 2026-09-27) | What §4.6's instrument would record |
+|---|---|---|
+| **Gemini** (Google) | User-triggered fetchers with tokens and IP files (`user-triggered-fetchers.json`, `user-triggered-fetchers-google.json`), and `Google-Agent`, "agents hosted on Google infrastructure to navigate the web", with its own file, `user-triggered-agents.json` | A hit with no `bot_name`: `Google-Agent` was not in the registry, and IP checks ran only for a declared token |
+| **DeepSeek** | No crawler documentation found. Third-party directories list a `DeepSeekBot` token and disagree about whether it is ever sent | A `browser-like` or `unknown` hit, attributed by time only |
+| **Grok** (xAI) | No crawler documentation found. The API docs describe a web search tool, but give no user agent or IP ranges for it. Third-party directories report browser user agents; not verified here | Same: a hit that says nothing about who sent it |
+
+Three changes make round 2 answerable. The first is instrument work, done
+before any round runs.
+
+**1. One secret URL per assistant.** For an agent that does not declare
+itself, the URL is the identity. Each assistant gets its own probe,
+`/lab/p-<24 hex>`, where the hex is `HMAC-SHA256(LAB_PROBE_CONTROL_SLUG,
+"probe:<name>")` truncated, for `gemini`, `deepseek`, `grok` and `owner`
+(the owner's pre-flight check). The derived slugs are computed at request time
+and never enter a tracked file, for the reason §4.6 gives. A request on the
+Grok probe can only come from something that received the Grok URL, whatever
+it claims, whenever it arrives, and however many times. Attribution stops
+depending on the time window, which §4.6 needed and which a delayed or
+repeated fetch would break. Codes are `HMAC(probe slug, round : kind)`, as in
+§4.6, so each probe has its own codes. The §4.6 URL keeps working, as probe
+`h15`.
+
+**2. Identity parameters, on control paths only.** A secret probe page is the
+one place where recording the raw request shape costs nothing in privacy:
+only the assistants under test and the owner have the address. Everywhere else
+§2.3 is unchanged. On `/lab/<probe>` and `/lab/<probe>/c`, `ai_crawler_hit`
+also carries:
+
+| Parameter | Values | Why |
+|---|---|---|
+| `lab_probe` | `h15` / `gemini` / `deepseek` / `grok` / `owner` | The attribution. It also lets every query leave `page_path` out, so exports carry no slug and can be summarised in the repository |
+| `lab_round` | `00`–`999`, from `?r=` | Joins a hit to a round without the time dimension |
+| `lab_endpoint` | `page` / `js` | `js` is the `/c` fetch: JavaScript ran |
+| `lab_ua_1`, `lab_ua_2` | the `User-Agent`, characters 1–100 and 101–200 | GA4 caps a parameter value at 100 characters, and a Chrome user agent is longer. The raw user agent is the answer to "does it declare itself" |
+| `lab_accept` | the `Accept` header, first 100 characters, or `(none)` | §2.2: `*/*` against a browser's `text/html,…` |
+| `lab_accept_lang` | the `Accept-Language` header, first 100 characters, or `(none)` | §2.2: a browser always sends it, a bare HTTP client rarely does |
+| `lab_ip_owner` | the published feed containing the address, e.g. `google-user-triggered-agents`, `openai-chatgpt-user`, or `none`; `unknown` when a feed could not be read and none matched | Identity by address, **whatever the user agent says**. Until now only a declared token triggered an IP check, which is exactly the case an undeclared agent never hits |
+| `lab_country` | Vercel's `x-vercel-ip-country` | Where the fetch left from. A country, not an address |
+
+The address itself still never leaves the server. `lab_ip_owner` is computed
+the way `verified-ip` is, in memory, against every feed in §5 plus Google's
+five published files (the three user-triggered ones, special crawlers, and
+common crawlers, which carry Googlebot).
+
+**3. `Google-Agent` joins the registry** as a `user-triggered` agent with its
+published file, so a Gemini fetch that declares it gets `bot_name` and a
+verdict on every page, not only on the probe. Like the other allowed agents,
+it gets a named robots.txt group that repeats the `*` group's `Disallow`
+lines. Google documents that user-triggered fetchers ignore robots.txt, so the
+group changes no crawl behaviour; it is there because the registry is the
+single source for policy and telemetry.
+
+**Rounds.** Protocol and records in
+[`lab-control-rounds.md`](lab-control-rounds.md) (round 2). Hypothesis: H16 in
+[`experiment-log.md`](experiment-log.md). All round-2 traffic is synthetic and
+is excluded from every other hypothesis by path, like §4.6's.
+
+**Wording rule for the write-up (§7).** "Grok hides its crawler" is the
+question, not a finding. What a round can establish is narrower: the request
+that fetched the Grok URL declared or did not declare a vendor token, came or
+did not come from a published range, and had or did not have a browser's
+request shape. A missing token from a vendor that publishes nothing is
+**undeclared**, not concealed, unless the request also claims to be something
+else (for example a browser user agent with no browser headers). Then the
+write-up says that, and only that.
 
 ## 5. Identity verification — how a claim becomes an identity
 
