@@ -391,17 +391,25 @@ code with no hit on that assistant's probe is an **instrument miss**.
 
 ## Export (on or after the second day after the rounds)
 
-Explore → free form, event `ai_crawler_hit`, filter `lab_probe` exactly
-matches each of `gemini`, `deepseek`, `grok`, `owner`, metric **Event count**,
-the round day as the range. GA4 takes five row dimensions per table, so four
-tables, all joined on (`lab_probe`, `lab_round`):
+Explore → free form, event `ai_crawler_hit`, filter `lab_probe` matching
+`gemini|deepseek|grok|owner`, metric **Event count**, the round day as the
+range, **Show rows = 500**. GA4 takes five row dimensions per table.
 
-| Table | Rows |
-|---|---|
-| A | `lab_probe`, `lab_round`, `lab_endpoint`, `bot_name`, `bot_verified` |
-| B | `lab_probe`, `lab_round`, `lab_ip_owner`, `lab_country`, `ua_class` |
-| C | `lab_probe`, `lab_round`, `lab_ua_1`, `lab_ua_2`, `lab_accept_lang` |
-| D | `lab_probe`, `lab_round`, `lab_accept`, `has_sec_fetch`, `Date hour and minute` |
+**Revised 2026-09-27, after the rounds and before any export existed.** The
+first version joined four tables on (`lab_probe`, `lab_round`). That key is
+ambiguous when a round has several hits (Realtime showed 11 on the Grok probe
+in one round): it cannot say whether a user agent and an IP feed came from the
+same request. Each question below is now answered inside one table, and
+`lab_ua_1` anchors the two tables that have no round.
+
+| Table | Rows | Answers |
+|---|---|---|
+| 1 Instrument | `lab_probe`, `lab_round`, `lab_endpoint`, `bot_name`, `bot_verified` | A hit behind every correct code; any declared agent |
+| 2 Identity | `lab_probe`, `lab_round`, `lab_ua_1`, `lab_ua_2`, `lab_ip_owner` | G2, G3, X2: token and published range in the same hit |
+| 3 JavaScript | `lab_probe`, `lab_round`, `lab_endpoint`, `lab_ua_1`, `lab_ip_owner` | Which fetcher requested `/c` |
+| 4 Browser shape | `lab_probe`, `lab_ua_1`, `has_sec_fetch`, `lab_accept_lang`, `lab_endpoint` | X3: a browser user agent without browser headers |
+| 5 Accept, country | `lab_probe`, `lab_ua_1`, `lab_accept`, `lab_country`, `lab_endpoint` | Request shape and origin per fetcher |
+| 6 Timing | `lab_probe`, `lab_round`, `lab_endpoint`, `Date hour and minute`, `ua_class` | Hits per round, delay after the prompt, unexplained revisits |
 
 No table uses `page_path`, so no export contains a slug. The CSVs still stay
 out of the repository; this file gets the summary.
