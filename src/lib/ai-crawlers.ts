@@ -49,6 +49,11 @@ export const AI_CRAWLERS: readonly AiCrawler[] = [
   { token: 'ChatGPT-User', vendor: 'OpenAI', purpose: 'user-triggered' },
   { token: 'Claude-User', vendor: 'Anthropic', purpose: 'user-triggered' },
   { token: 'Perplexity-User', vendor: 'Perplexity', purpose: 'user-triggered' },
+  // Agente hospedado pelo Google que navega a pedido do usuário. O Google
+  // documenta que fetchers acionados pelo usuário ignoram o robots.txt; o grupo
+  // nomeado não muda o rastreamento, está aqui porque esta lista é a fonte
+  // única da telemetria também (H16, docs/detection-experiment.md §4.7).
+  { token: 'Google-Agent', vendor: 'Google', purpose: 'user-triggered' },
 
   // ── Training: disallowed ──────────────────────────────────────────────────
   { token: 'GPTBot', vendor: 'OpenAI', purpose: 'training' },

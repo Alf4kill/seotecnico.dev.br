@@ -18,6 +18,8 @@ const REAL_USER_AGENTS: Record<string, string> = {
   CCBot: 'CCBot/2.0 (https://commoncrawl.org/faq/)',
   Bytespider: 'Mozilla/5.0 (compatible; Bytespider; spider-feedback@bytedance.com)',
   'meta-externalagent': 'meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)',
+  // Desktop form, as Google documents it (2026-09-27): the token sits inside a Chrome UA.
+  'Google-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko; compatible; Google-Agent; +https://developers.google.com/crawling/docs/crawlers-fetchers/google-agent) Chrome/140.0.0.0 Safari/537.36',
 }
 
 describe('AI_CRAWLERS registry', () => {

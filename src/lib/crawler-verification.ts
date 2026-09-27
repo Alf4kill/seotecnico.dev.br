@@ -84,6 +84,11 @@ const defaultDeps: VerifyDeps = {
 // "veio da Anthropic", não qual dos três agentes — a lista não distingue.
 const ANTHROPIC_FEED = 'https://claude.com/crawling/bots.json'
 
+// O Google publica um arquivo por família de fetcher. `Google-Agent` usa só o
+// user-triggered-agents.json (página de fetchers acionados pelo usuário,
+// conferida em 2026-09-27).
+const GOOGLE_RANGES = 'https://developers.google.com/static/crawling/ipranges/'
+
 const RANGE_FEEDS: Record<string, string> = {
   GPTBot: 'https://openai.com/gptbot.json',
   'OAI-SearchBot': 'https://openai.com/searchbot.json',
@@ -96,7 +101,31 @@ const RANGE_FEEDS: Record<string, string> = {
   'Claude-SearchBot': ANTHROPIC_FEED,
   'Claude-User': ANTHROPIC_FEED,
   CCBot: 'https://index.commoncrawl.org/ccbot.json',
+  'Google-Agent': `${GOOGLE_RANGES}user-triggered-agents.json`,
 }
+
+/**
+ * Every published feed, labelled by owner, for `ipOwner()`: the ones above
+ * plus Google's other files, which no agent in the registry claims but a
+ * Gemini fetch may come from. Declaration order is match order.
+ */
+export const OWNER_FEEDS: ReadonlyArray<readonly [label: string, url: string]> = [
+  ['openai-gptbot', RANGE_FEEDS.GPTBot],
+  ['openai-searchbot', RANGE_FEEDS['OAI-SearchBot']],
+  ['openai-chatgpt-user', RANGE_FEEDS['ChatGPT-User']],
+  ['anthropic', ANTHROPIC_FEED],
+  ['perplexity-bot', RANGE_FEEDS.PerplexityBot],
+  ['perplexity-user', RANGE_FEEDS['Perplexity-User']],
+  ['microsoft-bingbot', RANGE_FEEDS.Bingbot],
+  ['apple-applebot', RANGE_FEEDS.Applebot],
+  ['commoncrawl', RANGE_FEEDS.CCBot],
+  ['google-user-triggered-agents', `${GOOGLE_RANGES}user-triggered-agents.json`],
+  ['google-user-triggered-fetchers', `${GOOGLE_RANGES}user-triggered-fetchers.json`],
+  ['google-user-triggered-fetchers-google', `${GOOGLE_RANGES}user-triggered-fetchers-google.json`],
+  ['google-special-crawlers', `${GOOGLE_RANGES}special-crawlers.json`],
+  // Googlebot and the other common crawlers (the old googlebot.json redirects here).
+  ['google-common-crawlers', `${GOOGLE_RANGES}common-crawlers.json`],
+]
 
 /**
  * Vendor-documented reverse-DNS suffixes, used as a second positive source:
@@ -224,8 +253,10 @@ export function clearVerificationCaches(): void {
 
 async function getRanges(agent: string, deps: VerifyDeps): Promise<Cidr[] | null> {
   const url = RANGE_FEEDS[agent]
-  if (!url) return null
+  return url ? getRangesAt(url, deps) : null
+}
 
+async function getRangesAt(url: string, deps: VerifyDeps): Promise<Cidr[] | null> {
   // Indexado pela URL, não pelo agente: os três agentes da Anthropic
   // compartilham a mesma lista, e um fetch por TTL basta para todos.
   const cached = rangeCache.get(url)
@@ -250,6 +281,27 @@ async function getRanges(agent: string, deps: VerifyDeps): Promise<Cidr[] | null
     // the GA4 env vars in src/proxy.ts.
     return cached?.cidrs ?? null
   }
+}
+
+/**
+ * Which published feed contains this address, **whatever the request claims**
+ * (H16, docs/detection-experiment.md §4.7). `verifyCrawler()` checks only the
+ * feed of the agent a user agent names, which is exactly the check an
+ * undeclared agent never triggers. The address is compared in memory and only
+ * the label leaves: a feed label, `none` (every feed read, no match) or
+ * `unknown` (no match, and at least one feed unreadable, so `none` would be a
+ * claim the data does not support).
+ *
+ * Fetches every feed on a cold instance, so it runs on the probe pages only.
+ */
+export async function ipOwner(clientIp: string | null, deps: VerifyDeps = defaultDeps): Promise<string> {
+  if (!clientIp) return 'unknown'
+  const feeds = await Promise.all(
+    OWNER_FEEDS.map(async ([label, url]) => ({ label, cidrs: await getRangesAt(url, deps) }))
+  )
+  const owner = feeds.find(({ cidrs }) => cidrs?.some((c) => inCidr(clientIp, c)))
+  if (owner) return owner.label
+  return feeds.every(({ cidrs }) => cidrs !== null) ? 'none' : 'unknown'
 }
 
 /* ------------------------------------------------------------------ *

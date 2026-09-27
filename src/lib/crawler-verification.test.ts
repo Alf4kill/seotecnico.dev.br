@@ -4,7 +4,9 @@ import { parseDictionary, serializeInnerList, type InnerList } from 'structured-
 import {
   clearVerificationCaches,
   inCidr,
+  ipOwner,
   ipToBigInt,
+  OWNER_FEEDS,
   parseCidr,
   signerHost,
   verifyCrawler,
@@ -385,6 +387,54 @@ describe('verifyCrawler — Web Bot Auth', () => {
     })
     const result = await verifyCrawler(req, null, null, deps)
     expect(result.verdict).toBe('unknown-agent')
+  })
+})
+
+describe('ipOwner — identity by address, whatever the claim (H16)', () => {
+  const AGENTS_FEED = 'https://developers.google.com/static/crawling/ipranges/user-triggered-agents.json'
+  // Every feed readable and empty, except the ones a case fills in.
+  function allFeeds(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return Object.fromEntries([
+      ...OWNER_FEEDS.map(([, url]) => [url, { prefixes: [] }]),
+      ...Object.entries(overrides),
+    ])
+  }
+
+  it('labels an address inside a published feed with that feed', async () => {
+    const deps = makeDeps({
+      feeds: allFeeds({ [AGENTS_FEED]: { prefixes: [{ ipv6Prefix: '2001:4860:c::/124' }] } }),
+    })
+    expect(await ipOwner('2001:4860:c::5', deps)).toBe('google-user-triggered-agents')
+    clearVerificationCaches()
+    expect(await ipOwner('20.15.240.7', makeDeps({
+      feeds: allFeeds({ [GPTBOT_FEED]: { prefixes: [{ ipv4Prefix: '20.15.240.0/20' }] } }),
+    }))).toBe('openai-gptbot')
+  })
+
+  it('says none only when every feed was read', async () => {
+    expect(await ipOwner('203.0.113.9', makeDeps({ feeds: allFeeds() }))).toBe('none')
+    clearVerificationCaches()
+    const partial = allFeeds()
+    delete partial[AGENTS_FEED]
+    expect(await ipOwner('203.0.113.9', makeDeps({ feeds: partial }))).toBe('unknown')
+    clearVerificationCaches()
+    expect(await ipOwner('203.0.113.9', makeDeps({ failFeeds: true }))).toBe('unknown')
+    expect(await ipOwner(null, makeDeps({ feeds: allFeeds() }))).toBe('unknown')
+  })
+
+  it('fetches a feed shared by several labels once', async () => {
+    const deps = makeDeps({ feeds: allFeeds() })
+    await ipOwner('203.0.113.9', deps)
+    expect(new Set(deps.feedFetches).size).toBe(deps.feedFetches.length)
+  })
+
+  it('verifies a declared Google-Agent against its own file', async () => {
+    const deps = makeDeps({
+      feeds: { [AGENTS_FEED]: { prefixes: [{ ipv6Prefix: '2001:4860:c::/124' }] } },
+    })
+    const result = await verifyCrawler(plainRequest(), 'Google-Agent', '2001:4860:c::5', deps)
+    expect(result.verdict).toBe('verified-ip')
+    expect(result.evidence).toBe(AGENTS_FEED)
   })
 })
 
