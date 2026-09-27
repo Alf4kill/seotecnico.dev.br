@@ -126,7 +126,7 @@ not finished processing. Read at face value, it would have reported five
 instrument misses. Rule: wait until the day has been closed for 24 hours
 ([`measurement-plan.md`](measurement-plan.md)).
 
-**Re-confirmation due:** the 5/5 export was taken on 2026-09-25 as well, a few hours after the 3/2 one, so by the rule this very lesson produced it is not final. The same query is re-exported on or after 2026-09-27, once the day has been closed for 24 hours. Counts can only grow, so the verdict can only change if an extra hit appears in some round while another round shows none.
+**Re-confirmed on 2026-09-27.** The 5/5 export above was also taken on 2026-09-25, a few hours after the 3/2 one, so by the rule this very lesson produced it was not final. The same query, re-exported on 2026-09-27 with the day closed for more than 24 hours, returns exactly the same five rows and 13 events: ChatGPT-User 5, Claude-User 5 (all `verified-ip`), the owner's page view, the Discord preview and the owner's `/c` fetch. The verdict stands.
 
 ### Perplexity — diagnostics outside the protocol
 
