@@ -126,7 +126,7 @@ not finished processing. Read at face value, it would have reported five
 instrument misses. Rule: wait until the day has been closed for 24 hours
 ([`measurement-plan.md`](measurement-plan.md)).
 
-**Re-confirmation due:** the 5/5 export was taken on 2026-09-25 as well, a few hours after the 3/2 one, so by the rule this very lesson produced it is not final. The same query is re-exported on or after 2026-09-27, once the day has been closed for 24 hours. Counts can only grow, so the verdict can only change if an extra hit appears in some round while another round shows none.
+**Re-confirmed on 2026-09-27.** The 5/5 export above was also taken on 2026-09-25, a few hours after the 3/2 one, so by the rule this very lesson produced it was not final. The same query, re-exported on 2026-09-27 with the day closed for more than 24 hours, returns exactly the same five rows and 13 events: ChatGPT-User 5, Claude-User 5 (all `verified-ip`), the owner's page view, the Discord preview and the owner's `/c` fetch. The verdict stands.
 
 ### Perplexity — diagnostics outside the protocol
 
@@ -391,40 +391,275 @@ code with no hit on that assistant's probe is an **instrument miss**.
 
 ## Export (on or after the second day after the rounds)
 
-Explore → free form, event `ai_crawler_hit`, filter `lab_probe` exactly
-matches each of `gemini`, `deepseek`, `grok`, `owner`, metric **Event count**,
-the round day as the range. GA4 takes five row dimensions per table, so four
-tables, all joined on (`lab_probe`, `lab_round`):
+Explore → free form, event `ai_crawler_hit`, filter `lab_probe` matching
+`gemini|deepseek|grok|owner`, metric **Event count**, the round day as the
+range, **Show rows = 500**. GA4 takes five row dimensions per table.
 
-| Table | Rows |
-|---|---|
-| A | `lab_probe`, `lab_round`, `lab_endpoint`, `bot_name`, `bot_verified` |
-| B | `lab_probe`, `lab_round`, `lab_ip_owner`, `lab_country`, `ua_class` |
-| C | `lab_probe`, `lab_round`, `lab_ua_1`, `lab_ua_2`, `lab_accept_lang` |
-| D | `lab_probe`, `lab_round`, `lab_accept`, `has_sec_fetch`, `Date hour and minute` |
+**Revised 2026-09-27, after the rounds and before any export existed.** The
+first version joined four tables on (`lab_probe`, `lab_round`). That key is
+ambiguous when a round has several hits (Realtime showed 11 on the Grok probe
+in one round): it cannot say whether a user agent and an IP feed came from the
+same request. Each question below is now answered inside one table, and
+`lab_ua_1` anchors the two tables that have no round.
+
+| Table | Rows | Answers |
+|---|---|---|
+| 1 Instrument | `lab_probe`, `lab_round`, `lab_endpoint`, `bot_name`, `bot_verified` | A hit behind every correct code; any declared agent |
+| 2 Identity | `lab_probe`, `lab_round`, `lab_ua_1`, `lab_ua_2`, `lab_ip_owner` | G2, G3, X2: token and published range in the same hit |
+| 3 JavaScript | `lab_probe`, `lab_round`, `lab_endpoint`, `lab_ua_1`, `lab_ip_owner` | Which fetcher requested `/c` |
+| 4 Browser shape | `lab_probe`, `lab_ua_1`, `has_sec_fetch`, `lab_accept_lang`, `lab_endpoint` | X3: a browser user agent without browser headers |
+| 5 Accept, country | `lab_probe`, `lab_ua_1`, `lab_accept`, `lab_country`, `lab_endpoint` | Request shape and origin per fetcher |
+| 6 Timing | `lab_probe`, `lab_round`, `lab_endpoint`, `Date hour and minute`, `ua_class` | Hits per round, delay after the prompt, unexplained revisits |
 
 No table uses `page_path`, so no export contains a slug. The CSVs still stay
 out of the repository; this file gets the summary.
 
 ## Records
 
-Slug rotated: _pending_. Instrument deploy: _pending_. Owner pre-flight:
-_pending_.
+All rounds on **2026-09-27**. Times are UTC; the owner is at UTC−3. All
+three accounts were on the **free plan**. The model labels are what each
+interface showed, the same in all five rounds of each assistant: Gemini 3
+Flash; DeepSeek with **Search** on (DeepThink off); Grok "Fast".
+
+- **Slug rotated** before the merge of PR #73 (2026-09-27T18:31:20Z); the exact
+  time was not recorded.
+- **Instrument deploy:** 2026-09-27T18:32:10Z (merge commit `bb13195`).
+- **Owner pre-flight:** about 19:20, roughly 30 minutes before round 16, read
+  off Realtime. The page showed `SRV-`, `UC-` and, after the fetch, `JS-`.
+  Realtime showed the two expected hits (`lab_probe = owner`, `page` and
+  `js`) with `lab_ua_1` and `lab_ip_owner` filled.
 
 | Round | Assistant | Plan / model | Prompt sent (UTC) | SRV | UC | LD | JS |
 |---|---|---|---|---|---|---|---|
-| 16 | Gemini | | | | | | |
-| 17 | DeepSeek | | | | | | |
-| 18 | Grok | | | | | | |
-| 19 | Gemini | | | | | | |
-| 20 | DeepSeek | | | | | | |
-| 21 | Grok | | | | | | |
-| 22 | Gemini | | | | | | |
-| 23 | DeepSeek | | | | | | |
-| 24 | Grok | | | | | | |
-| 25 | Gemini | | | | | | |
-| 26 | DeepSeek | | | | | | |
-| 27 | Grok | | | | | | |
-| 28 | Gemini | | | | | | |
-| 29 | DeepSeek | | | | | | |
-| 30 | Grok | | | | | | |
+| 16 | Gemini | free / Gemini 3 Flash | 19:49 | correct | correct | absent | absent |
+| 17 | DeepSeek | free / "Search" mode | 19:53 ‡ | correct | correct | absent | **correct** |
+| 18 | Grok | free / "Fast" | 19:58 | correct | correct | absent | **correct** |
+| 19 | Gemini | free / Gemini 3 Flash | 20:05 | correct | correct | absent | absent |
+| 20 | DeepSeek | free / "Search" mode | 20:09 | correct | correct | absent | **correct** |
+| 21 | Grok | free / "Fast" | 20:15 | correct | correct | **correct** | **correct** |
+| 22 | Gemini | free / Gemini 3 Flash | 20:20 | correct | correct | absent | absent |
+| 23 | DeepSeek | free / "Search" mode | 20:24 | correct | correct | absent | absent |
+| 24 | Grok | free / "Fast" | 20:29 | correct | correct | **correct** | **correct** |
+| 25 | Gemini | free / Gemini 3 Flash | 20:39 | correct | correct | absent | absent |
+| 26 | DeepSeek | free / "Search" mode | 20:44 | correct | correct | absent | absent |
+| 27 | Grok | free / "Fast" | 20:49 | correct | correct | absent | **correct** |
+| 28 | Gemini | free / Gemini 3 Flash | 20:56 | correct | correct | absent | absent |
+| 29 | DeepSeek | free / "Search" mode | 21:00 | correct | correct | absent | **correct** |
+| 30 | Grok | free / "Fast" | 21:05 | correct | correct | absent | **correct** |
+
+‡ The owner's note read "6:53"; the owner confirmed 16:53 local (19:53 UTC).
+
+**Scoring totals:** 60 codes asked for across 15 rounds, **0 wrong**.
+
+| Assistant | SRV | UC | LD | JS |
+|---|---|---|---|---|
+| Gemini | 5/5 | 5/5 | 0/5 | 0/5 |
+| DeepSeek | 5/5 | 5/5 | 0/5 | 3/5 (rounds 17, 20, 29) |
+| Grok | 5/5 | 5/5 | 2/5 (rounds 21, 24) | 5/5 |
+
+One-sided 95% exact bounds: 5/5 → ≥ 55%; 0/5 → ≤ 45%; 3/5 → 19%–92%;
+2/5 → 8%–81%. Five rounds say which behaviours exist, not how often they
+happen.
+
+### Instrument — preliminary, from Realtime
+
+Realtime during rounds 16–18 showed 2 hits with `lab_endpoint = js` against 2
+correct `JS-` codes, one `lab_ua_1` equal to `Google` and nothing else, and 11
+hits on the Grok probe for its first round, with Chrome-on-Mac,
+Safari-on-Mac and Chrome-on-Linux user agents. These are not results.
+Realtime cannot join a hit to its round or probe, and the verdicts wait for
+the export below, taken on or after 2026-09-29.
+
+### Answers, verbatim
+
+The owner's time annotations are removed (the times are in the table).
+Gemini prefixed two answers with an interface citation marker
+(`[source: N]`), also removed. Probe URLs are replaced by `<probe>`.
+
+#### Round 16 — Gemini
+
+> Na página informada, foram encontrados os seguintes códigos e suas respectivas localizações:
+>
+> * **Código do servidor:** `SRV-6M3C-2VW2` (encontrado no corpo principal da página, na seção *"Código do servidor"*).
+> * **Código do componente cliente:** `UC-8Y18-9JJG` (encontrado no corpo principal da página, na seção *"Código do componente cliente"*).
+>
+> ---
+>
+> **Códigos não encontrados:**
+>
+> * **`LD-`**: Não foi encontrado nenhum código que comece com `LD-`.
+> * **`JS-`**: Não foi encontrado nenhum código que comece com `JS-` (o trecho referente ao código carregado via scripts no navegador exibe apenas a mensagem *"carregando…"* no HTML processado).
+
+#### Round 17 — DeepSeek
+
+> Encontrei os seguintes códigos na página:
+>
+> - **SRV-7P9F-8YBF** — aparece na seção "Rodada 17", na linha logo abaixo do texto "Código do servidor:".
+> - **UC-GBXC-H8H1** — aparece na seção "Rodada 17", na linha logo abaixo do texto "Código do componente cliente:".
+> - **JS-DM8P-K6AM** — aparece na seção "Rodada 17", na linha logo abaixo do texto "Código carregado no navegador:".
+>
+> Não encontrei nenhum código começando com **LD-** nesta página.
+
+#### Round 18 — Grok
+
+> Aqui estão os códigos encontrados **exatamente como aparecem** na página:
+>
+> - **SRV-CTBV-P8C9** — na seção “Código do servidor:”
+> - **UC-9N3A-24T0** — na seção “Código do componente cliente:”
+> - **JS-A81T-912P** — na seção “Código carregado no navegador:”
+>
+> Não encontrei nenhum código que comece com **LD-**.
+
+#### Round 19 — Gemini
+
+> Aqui estão os códigos encontrados na página indicada:
+>
+> * **SRV-2W17-7JTR**: Localizado no corpo principal da página, no trecho "Código do servidor".
+> * **UC-KX8K-CERZ**: Localizado no corpo principal da página, no trecho "Código do componente cliente".
+> * **LD-**: Não foi encontrado.
+> * **JS-**: Não foi encontrado (no trecho "Código carregado no navegador", consta apenas a mensagem *"carregando…"*).
+
+#### Round 20 — DeepSeek
+
+> Encontrei os seguintes códigos na página, exatamente como aparecem:
+>
+> - **SRV-YERG-VEGD** — na seção **"Código do servidor:"**, após o texto "Código do servidor:"
+> - **UC-3Y58-14N5** — na seção **"Código do componente cliente:"**, após o texto "Código do componente cliente:"
+> - **JS-XWXJ-365E** — na seção **"Código carregado no navegador:"**, após o texto "Código carregado no navegador:"
+>
+> Não encontrei nenhum código começando com **LD-** nesta página.
+
+#### Round 21 — Grok
+
+> Aqui estão **exatamente** os códigos encontrados na página, como aparecem e em que parte:
+>
+> **SRV-BDX7-BV1X**
+> - Aparece no texto visível da página, na linha:
+>   `Código do servidor: **SRV-BDX7-BV1X**`
+>
+> **UC-4ABV-KZAW**
+> - Aparece no texto visível da página, na linha:
+>   `Código do componente cliente: **UC-4ABV-KZAW**`
+>
+> **JS-ADJ8-5MCE**
+> - Aparece no texto visível da página, na linha:
+>   `Código carregado no navegador: **JS-ADJ8-5MCE**`
+>   (após o carregamento completo via JavaScript; inicialmente mostrava “carregando…”)
+>
+> **LD-WY10-SB53**
+> - Aparece dentro de um bloco `<script type="application/ld+json">` no HTML da página, no valor do campo `"identifier"`:
+>   `"identifier":"LD-WY10-SB53"`
+>
+> Não encontrei nenhum outro código que comece com SRV-, UC-, LD- ou JS- além desses quatro.
+
+#### Round 22 — Gemini
+
+> Aqui estão os códigos encontrados na página indicada (`[https://seotecnico.dev.br/lab/<probe>?r=22](https://seotecnico.dev.br/lab/<probe>?r=22)`), com suas respectivas localizações:
+>
+> ### Códigos encontrados
+>
+> * **SRV-1MAH-CPF9**
+> * **Localização:** No corpo principal da página (seção do laboratório), no parágrafo `Código do servidor: SRV-1MAH-CPF9`.
+>
+> * **UC-5A8C-DSB4**
+> * **Localização:** No corpo principal da página, no parágrafo `Código do componente cliente: UC-5A8C-DSB4`.
+>
+> ---
+>
+> ### Códigos não encontrados
+>
+> * **Códigos iniciados com `JS-`:** Não foram encontrados no conteúdo renderizado estaticamente (o trecho referente ao código carregado no navegador indicava apenas o texto *"carregando…"*).
+> * **Códigos iniciados com `LD-`:** Não foram encontrados na página.
+
+#### Round 23 — DeepSeek
+
+> Encontrei apenas dois dos quatro tipos de códigos solicitados nesta página:
+>
+> 1. **SRV-3FNQ-WPDG** — aparece na seção **"Código do servidor:"**, logo após o texto "Rodada 23. Os códigos abaixo mudam a cada rodada."
+>
+> 2. **UC-YJW1-89CJ** — aparece na seção **"Código do componente cliente:"**, logo abaixo do código do servidor.
+>
+> Não encontrei nenhum código começando com **LD-** nesta página.
+>
+> Não encontrei nenhum código começando com **JS-** nesta página.
+>
+> Observação: na seção "Código carregado no navegador:" aparece apenas o texto **"carregando…"**, sem nenhum código no momento da leitura.
+
+#### Round 24 — Grok
+
+> Encontrei os seguintes códigos na página (exatamente como aparecem):
+>
+> - **SRV-0FBJ-4JSS** — no texto visível da página, na linha/parágrafo “Código do servidor: **SRV-0FBJ-4JSS**”.
+> - **UC-1RZF-XX3D** — no texto visível da página, na linha/parágrafo “Código do componente cliente: **UC-1RZF-XX3D**”.
+> - **LD-87D1-YZ55** — no HTML da página, dentro de um script JSON-LD (`<script type="application/ld+json">`), no campo `"identifier":"LD-87D1-YZ55"`.
+> - **JS-QG9M-F47Z** — no texto visível da página, na linha/parágrafo “Código carregado no navegador: **JS-QG9M-F47Z**”.
+
+#### Round 25 — Gemini
+
+> Aqui estão os códigos encontrados na página indicada:
+>
+> * **SRV-5J6R-8F0M** — Encontrado no corpo principal da página, no parágrafo `Código do servidor: SRV-5J6R-8F0M`.
+> * **UC-DTGA-WFMS** — Encontrado no corpo principal da página, no parágrafo `Código do componente cliente: UC-DTGA-WFMS`.
+>
+> ---
+>
+> **Códigos não encontrados:**
+>
+> * **LD-** — Não foi encontrado na página.
+> * **JS-** — Não foi encontrado na página (no local do código do navegador consta apenas `carregando...`, pois este é injetado via JavaScript executado no cliente).
+
+#### Round 26 — DeepSeek
+
+> Não encontrei nenhum código que comece com `LD-` ou `JS-` nesta página.
+>
+> Os códigos com os prefixos pedidos que aparecem são:
+>
+> - **SRV-8TA2-G8K9** — aparece na seção de conteúdo, na linha identificada como "Código do servidor:".
+> - **UC-D8WT-WY8W** — aparece na seção de conteúdo, na linha identificada como "Código do componente cliente:".
+>
+> Além disso, há uma linha "Código carregado no navegador: carregando…", mas ela não contém nenhum código com os prefixos solicitados — apenas o texto "carregando…".
+
+#### Round 27 — Grok
+
+> Aqui estão os códigos encontrados na página, exatamente como aparecem:
+>
+> - **SRV-CPBH-HZJ0** — na linha “Código do servidor: SRV-CPBH-HZJ0”
+> - **UC-J97B-D9AB** — na linha “Código do componente cliente: UC-J97B-D9AB”
+> - **JS-YVEZ-Y5NG** — na linha “Código carregado no navegador: JS-YVEZ-Y5NG”
+>
+> Não encontrei nenhum código que comece com **LD-**.
+
+#### Round 28 — Gemini
+
+> Após acessar e analisar a página informada, aqui estão os códigos encontrados e as respectivas partes da página em que estavam localizados:
+>
+> * **SRV-SGQ6-0NZG**
+> * **Localização:** No corpo principal da página (`<main>`), no trecho *"Código do servidor:"*.
+>
+> * **UC-2CT7-G3FY**
+> * **Localização:** No corpo principal da página (`<main>`), no trecho *"Código do componente cliente:"*.
+>
+> ---
+>
+> * **LD-**: **Não encontrado** na página.
+> * **JS-**: **Não encontrado** na página (no trecho *"Código carregado no navegador:"*, constava apenas o texto *"carregando…"*).
+
+#### Round 29 — DeepSeek
+
+> Encontrei os seguintes códigos na página, exatamente como aparecem:
+>
+> - **SRV-W8VN-CP47** — na seção de texto principal, logo após a frase "Código do servidor:".
+> - **UC-CSNF-BJ6X** — na seção de texto principal, logo após a frase "Código do componente cliente:".
+> - **JS-VKAC-PE20** — na seção de texto principal, logo após a frase "Código carregado no navegador:".
+>
+> Não encontrei nenhum código começando com **LD-** nesta página.
+
+#### Round 30 — Grok
+
+> Aqui estão os códigos encontrados na página, exatamente como aparecem:
+>
+> - **SRV-MMK4-JQ5N** — aparece na linha "Código do servidor: **SRV-MMK4-JQ5N**"
+> - **UC-11TZ-W2KB** — aparece na linha "Código do componente cliente: **UC-11TZ-W2KB**"
+> - **JS-A6K4-AM3K** — aparece na linha "Código carregado no navegador: **JS-A6K4-AM3K**"
+>
+> Não encontrei nenhum código que comece com **LD-**.
