@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto'
+import { createHmac, randomBytes } from 'node:crypto'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sondas de laboratório com slug secreto (docs/detection-experiment.md §4.5,
@@ -114,6 +114,17 @@ function clip(value: string | null, from = 0): string {
 }
 
 /**
+ * `lab_hit`: chave de uma requisição, `2026-09-28T14:05:09Z-a3f9`. O GA4 não
+ * tem chave de linha, então sem isto duas tabelas do Explore não dizem quais
+ * linhas são o mesmo hit; e o Explore não desce abaixo da hora, então o
+ * segundo vem aqui. Hora + 4 hex aleatórios, nada tirado da requisição:
+ * identifica o hit, nunca quem o fez (docs/measurement-plan.md).
+ */
+export function labHitId(now: number = Date.now(), random: () => string = () => randomBytes(2).toString('hex')): string {
+  return `${new Date(now).toISOString().slice(0, 19)}Z-${random()}`
+}
+
+/**
  * Os parâmetros `lab_*` do `ai_crawler_hit` numa sonda (H16, §4.7;
  * docs/measurement-plan.md). Cabeçalhos brutos, e SÓ aqui: estas URLs são
  * secretas e só os assistentes testados e o dono as recebem, então os
@@ -124,10 +135,12 @@ export function labHitParams(
   probe: ControlProbe & { endpoint: 'page' | 'js' },
   url: URL,
   headers: Headers,
-  ipOwner: string
+  ipOwner: string,
+  hitId: string = labHitId()
 ): Record<string, string> {
   const ua = headers.get('user-agent')
   return {
+    lab_hit: hitId,
     lab_probe: probe.name,
     lab_round: normalizeRound(url.searchParams.get('r') ?? undefined),
     lab_endpoint: probe.endpoint,

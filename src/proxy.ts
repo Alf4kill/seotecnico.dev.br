@@ -4,7 +4,7 @@ import { ipOwner, signerHost, verifyCrawler, type VerificationResult } from '@/l
 import { netId } from '@/lib/net-id'
 import { trapChannel } from '@/lib/lab-traps'
 import { acceptsMarkdown } from '@/lib/content-negotiation'
-import { controlProbeForPath, isControlPath, labHitParams } from '@/lib/lab-probes'
+import { controlProbeForPath, isControlPath, labHitId, labHitParams } from '@/lib/lab-probes'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Telemetria de requisições (docs/measurement-plan.md → `ai_crawler_hit`;
@@ -122,6 +122,9 @@ function botPolicy(crawler: AiCrawler, pathname: string): 'allowed' | 'disallowe
 }
 
 async function reportHit(request: NextRequest): Promise<void> {
+  // Antes de qualquer await: a hora do `lab_hit` é a da chegada, não a de
+  // depois da busca das listas de IP (até 3s num cold start).
+  const hitId = labHitId()
   const url = sinkUrl()
   if (!url) return
 
@@ -155,7 +158,8 @@ async function reportHit(request: NextRequest): Promise<void> {
       probe,
       request.nextUrl,
       request.headers,
-      await ipOwner(clientIp).catch(() => 'unknown')
+      await ipOwner(clientIp).catch(() => 'unknown'),
+      hitId
     )
 
   // Um "usuário" por crawler declarado; para o resto, um por rede (net_id
