@@ -409,7 +409,19 @@ same request. Each question below is now answered inside one table, and
 | 3 JavaScript | `lab_probe`, `lab_round`, `lab_endpoint`, `lab_ua_1`, `lab_ip_owner` | Which fetcher requested `/c` |
 | 4 Browser shape | `lab_probe`, `lab_ua_1`, `has_sec_fetch`, `lab_accept_lang`, `lab_endpoint` | X3: a browser user agent without browser headers |
 | 5 Accept, country | `lab_probe`, `lab_ua_1`, `lab_accept`, `lab_country`, `lab_endpoint` | Request shape and origin per fetcher |
-| 6 Timing | `lab_probe`, `lab_round`, `lab_endpoint`, `Date hour and minute`, `ua_class` | Hits per round, delay after the prompt, unexplained revisits |
+| 6 Timing | `lab_probe`, `lab_round`, `lab_endpoint`, `Date + hour (YYYYMMDDHH)`, `ua_class` | Hits per round, unexplained revisits |
+
+**Revised again 2026-09-28:** Explore offers no minute dimension (minutes exist
+only in the BigQuery export and the Data API), so table 6 uses the hour. The
+property's time zone is UTC−5, so hour 14 is 19:00–19:59 UTC. No H16
+prediction needs the minute: rounds are joined by `lab_round`, which a late
+fetch or a revisit also carries. What is lost is the delay of each fetch after
+its prompt, reported as a limitation.
+
+**From the `lab_hit` deploy on (diagnostics, round 31 up),** every table adds
+`lab_hit` as its first dimension. It is unique per request and carries the
+UTC time to the second, so the tables join row by row and the delay after the
+prompt becomes measurable.
 
 No table uses `page_path`, so no export contains a slug. The CSVs still stay
 out of the repository; this file gets the summary.

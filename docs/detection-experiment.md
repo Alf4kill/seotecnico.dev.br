@@ -620,6 +620,7 @@ also carries:
 | `lab_accept_lang` | the `Accept-Language` header, first 100 characters, or `(none)` | §2.2: a browser always sends it, a bare HTTP client rarely does |
 | `lab_ip_owner` | the published feed containing the address, e.g. `google-user-triggered-agents`, `openai-chatgpt-user`, or `none`; `unknown` when a feed could not be read and none matched | Identity by address, **whatever the user agent says**. Until now only a declared token triggered an IP check, which is exactly the case an undeclared agent never hits |
 | `lab_country` | Vercel's `x-vercel-ip-country` | Where the fetch left from. A country, not an address |
+| `lab_hit` | UTC time to the second + 4 random hex, e.g. `2026-09-28T14:05:09Z-a3f9` | Added 2026-09-28, after round 30: a row key (GA4 has none, so tables could not be joined per request) and the time to the second (Explore stops at the hour). Carries nothing from the request |
 
 The address itself still never leaves the server. `lab_ip_owner` is computed
 the way `verified-ip` is, in memory, against every feed in §5 plus Google's
