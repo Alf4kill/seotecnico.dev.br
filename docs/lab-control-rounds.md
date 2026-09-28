@@ -426,6 +426,31 @@ prompt becomes measurable.
 No table uses `page_path`, so no export contains a slug. The CSVs still stay
 out of the repository; this file gets the summary.
 
+### Analysis measures, fixed before the final export (2026-09-28)
+
+Written after the owner's same-day preview export of 2026-09-27 (not a
+result: it was missing hits Realtime had shown) and before the final one.
+They add measures; no registered prediction in the H16 row changes.
+
+1. **"Ran JavaScript" and "delivered the `JS-` code" are two measures.** H15
+   never separated them because they never disagreed. Here they can:
+   - *ran JavaScript* = at least one hit with `lab_endpoint = js` in the
+     round. Observed by the server, independent of the answer.
+   - *delivered* = the answer reports the correct `JS-` code.
+
+   P2 as registered ("`JS-` never reported and `/c` never fetched") is scored
+   on both, and each is reported separately.
+2. **Fetchers are grouped into families** by `lab_ua_1`: browser or client
+   name, engine and operating system (for example "Chrome on macOS",
+   "HeadlessChrome on Linux", "bare `Google`"). Per assistant and round: hits
+   per family, which families request `/c`, and the countries per family.
+   The `JS-` code is attributed to the family that requested `/c`.
+3. **G2 depends on diagnostic A.** `lab_ip_owner = none` falsifies G2 only if
+   the field is shown to return a positive label in production: one
+   ChatGPT request to the `h15` probe must read `openai-chatgpt-user`. If it
+   does not, G2 is reported as **not tested**, and `lab_ip_owner` is
+   withdrawn from every H16 verdict.
+
 ## Records
 
 All rounds on **2026-09-27**. Times are UTC; the owner is at UTC−3. All
