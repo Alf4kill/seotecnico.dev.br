@@ -10,6 +10,7 @@ import {
   controlProbeForPath,
   controlSlug,
   isControlPath,
+  labHitId,
   labHitParams,
   normalizeRound,
   probeSlug,
@@ -142,9 +143,11 @@ describe('labHitParams', () => {
         'accept-language': 'en-US,en;q=0.9',
         'x-vercel-ip-country': 'US',
       }),
-      'none'
+      'none',
+      'HIT'
     )
     expect(params).toEqual({
+      lab_hit: 'HIT',
       lab_probe: 'grok',
       lab_round: '18',
       lab_endpoint: 'page',
@@ -159,8 +162,9 @@ describe('labHitParams', () => {
   })
 
   it('marks absent headers as (none) and omits an empty second half', () => {
-    const params = labHitParams({ ...grok, endpoint: 'js' }, new URL('https://x.test/lab/p'), new Headers({ 'user-agent': 'curl/8.7.1' }), 'unknown')
+    const params = labHitParams({ ...grok, endpoint: 'js' }, new URL('https://x.test/lab/p'), new Headers({ 'user-agent': 'curl/8.7.1' }), 'unknown', 'HIT')
     expect(params).toEqual({
+      lab_hit: 'HIT',
       lab_probe: 'grok',
       lab_round: '00',
       lab_endpoint: 'js',
@@ -177,6 +181,24 @@ describe('labHitParams', () => {
     const long = 'x'.repeat(450)
     const params = labHitParams(grok, url, new Headers({ 'user-agent': long, accept: long, 'accept-language': long }), 'none')
     for (const value of Object.values(params)) expect(value.length).toBeLessThanOrEqual(100)
+  })
+})
+
+describe('labHitId', () => {
+  it('is the UTC time to the second plus four random hex characters', () => {
+    expect(labHitId(Date.UTC(2026, 8, 28, 14, 5, 9, 987), () => 'a3f9')).toBe('2026-09-28T14:05:09Z-a3f9')
+    expect(labHitId()).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z-[0-9a-f]{4}$/)
+  })
+
+  it('tells apart two hits in the same second', () => {
+    const now = Date.now()
+    const ids = new Set(Array.from({ length: 20 }, () => labHitId(now)))
+    expect(ids.size).toBeGreaterThan(1)
+  })
+
+  it('is sent on every probe hit by default', () => {
+    const probe = { name: 'owner' as const, slug: probeSlug(SLUG, 'owner'), endpoint: 'page' as const }
+    expect(labHitParams(probe, new URL('https://x.test/'), new Headers(), 'none').lab_hit).toMatch(/Z-[0-9a-f]{4}$/)
   })
 })
 
