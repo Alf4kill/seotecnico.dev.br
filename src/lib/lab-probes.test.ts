@@ -157,6 +157,7 @@ describe('labHitParams', () => {
       lab_accept_lang: 'en-US,en;q=0.9',
       lab_ip_owner: 'none',
       lab_country: 'US',
+      lab_fetch_mode: '(none)',
     })
     expect(params.lab_ua_1 + params.lab_ua_2).toBe(CHROME)
   })
@@ -173,6 +174,7 @@ describe('labHitParams', () => {
       lab_accept_lang: '(none)',
       lab_ip_owner: 'unknown',
       lab_country: '(none)',
+      lab_fetch_mode: '(none)',
     })
     expect(labHitParams(grok, url, new Headers(), 'none').lab_ua_1).toBe('(none)')
   })
@@ -181,6 +183,19 @@ describe('labHitParams', () => {
     const long = 'x'.repeat(450)
     const params = labHitParams(grok, url, new Headers({ 'user-agent': long, accept: long, 'accept-language': long }), 'none')
     for (const value of Object.values(params)) expect(value.length).toBeLessThanOrEqual(100)
+  })
+})
+
+describe('lab_fetch_mode', () => {
+  const probe = { name: 'chatgpt' as const, slug: probeSlug(SLUG, 'chatgpt'), endpoint: 'js' as const }
+  const mode = (h: Record<string, string>) =>
+    labHitParams(probe, new URL('https://x.test/'), new Headers(h), 'none', 'HIT').lab_fetch_mode
+
+  it('tells a script fetch from a tool opening the URL', () => {
+    expect(mode({ 'sec-fetch-mode': 'cors', 'sec-fetch-dest': 'empty' })).toBe('cors/empty')
+    expect(mode({ 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' })).toBe('navigate/document')
+    expect(mode({})).toBe('(none)')
+    expect(mode({ 'sec-fetch-mode': 'cors' })).toBe('cors/-')
   })
 })
 
@@ -215,28 +230,48 @@ describe('scripts/lab-control-codes.mjs', () => {
     expect(output.trim()).toBe(expected)
   })
 
-  it('prints each probe path and its scheduled rounds exactly as the site serves them', () => {
-    const script = path.resolve(__dirname, '../../scripts/lab-control-codes.mjs')
-    const output = execFileSync(process.execPath, [script, '--probes'], {
-      env: { ...process.env, LAB_PROBE_CONTROL_SLUG: SLUG },
-      encoding: 'utf8',
-    })
-    const schedule: Record<(typeof DERIVED_PROBES)[number], number[]> = {
-      owner: [0],
+  // The protocol's schedules (docs/lab-control-rounds.md, rounds 2 and 3).
+  const SCHEDULES: Record<string, Partial<Record<(typeof DERIVED_PROBES)[number], number[]>>> = {
+    h16: {
       gemini: [16, 19, 22, 25, 28],
       deepseek: [17, 20, 23, 26, 29],
       grok: [18, 21, 24, 27, 30],
-    }
-    const expected = DERIVED_PROBES.flatMap((name) => {
-      const slug = probeSlug(SLUG, name)
-      return [
-        `# ${name}\t/lab/${slug}`,
-        ...schedule[name].map((r) => {
-          const round = String(r).padStart(2, '0')
-          return [round, ...CONTROL_KINDS.map((kind) => controlCode(slug, round, kind))].join('\t')
-        }),
-      ]
-    }).join('\n')
-    expect(output.trim()).toBe(expected)
+      owner: [0],
+    },
+    h17: {
+      gemini: [42, 47, 52, 57, 62, 67],
+      deepseek: [43, 48, 53, 58, 63, 68],
+      grok: [44, 49, 54, 59, 64, 69],
+      chatgpt: [40, 45, 50, 55, 60, 65],
+      claude: [41, 46, 51, 56, 61, 66],
+    },
+  }
+
+  for (const [name, schedule] of Object.entries(SCHEDULES)) {
+    it(`prints the ${name} probe paths and rounds exactly as the site serves them`, () => {
+      const script = path.resolve(__dirname, '../../scripts/lab-control-codes.mjs')
+      const output = execFileSync(process.execPath, [script, '--probes', name], {
+        env: { ...process.env, LAB_PROBE_CONTROL_SLUG: SLUG },
+        encoding: 'utf8',
+      })
+      const expected = DERIVED_PROBES.filter((probe) => schedule[probe])
+        .flatMap((probe) => {
+          const slug = probeSlug(SLUG, probe)
+          return [
+            `# ${probe}\t/lab/${slug}`,
+            ...schedule[probe]!.map((r) => {
+              const round = String(r).padStart(2, '0')
+              return [round, ...CONTROL_KINDS.map((kind) => controlCode(slug, round, kind))].join('\t')
+            }),
+          ]
+        })
+        .join('\n')
+      expect(output.trim()).toBe(expected)
+    })
+  }
+
+  it('gives each assistant in round 3 one round per block, conditions alternating', () => {
+    const rounds = Object.values(SCHEDULES.h17).flat().sort((a, b) => a - b)
+    expect(rounds).toEqual(Array.from({ length: 30 }, (_, i) => 40 + i))
   })
 })
