@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto'
+import { createHmac, randomBytes } from 'node:crypto'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sondas de laboratório com slug secreto (docs/detection-experiment.md §4.5,
@@ -58,12 +58,13 @@ export function controlPaths(slug: string) {
 }
 
 /**
- * Uma sonda por assistente da rodada 2 (H16, §4.7), mais a do dono para o
- * teste prévio. Para um agente que não se declara, a URL é a única identidade
- * que ele não escolhe: um hit na sonda do Grok só pode vir de quem recebeu a
- * URL do Grok, diga o user agent o que disser.
+ * Uma sonda por assistente testado (H16, §4.7; ChatGPT e Claude desde a H17,
+ * §4.8), mais a do dono para o teste prévio. Para um agente que não se
+ * declara, a URL é a única identidade que ele não escolhe: um hit na sonda do
+ * Grok só pode vir de quem recebeu a URL do Grok, diga o user agent o que
+ * disser. Acrescentar no FIM: a ordem é a do script de códigos.
  */
-export const DERIVED_PROBES = ['gemini', 'deepseek', 'grok', 'owner'] as const
+export const DERIVED_PROBES = ['gemini', 'deepseek', 'grok', 'owner', 'chatgpt', 'claude'] as const
 export type ProbeName = 'h15' | (typeof DERIVED_PROBES)[number]
 
 /**
@@ -114,6 +115,17 @@ function clip(value: string | null, from = 0): string {
 }
 
 /**
+ * `lab_hit`: chave de uma requisição, `2026-09-28T14:05:09Z-a3f9`. O GA4 não
+ * tem chave de linha, então sem isto duas tabelas do Explore não dizem quais
+ * linhas são o mesmo hit; e o Explore não desce abaixo da hora, então o
+ * segundo vem aqui. Hora + 4 hex aleatórios, nada tirado da requisição:
+ * identifica o hit, nunca quem o fez (docs/measurement-plan.md).
+ */
+export function labHitId(now: number = Date.now(), random: () => string = () => randomBytes(2).toString('hex')): string {
+  return `${new Date(now).toISOString().slice(0, 19)}Z-${random()}`
+}
+
+/**
  * Os parâmetros `lab_*` do `ai_crawler_hit` numa sonda (H16, §4.7;
  * docs/measurement-plan.md). Cabeçalhos brutos, e SÓ aqui: estas URLs são
  * secretas e só os assistentes testados e o dono as recebem, então os
@@ -124,10 +136,12 @@ export function labHitParams(
   probe: ControlProbe & { endpoint: 'page' | 'js' },
   url: URL,
   headers: Headers,
-  ipOwner: string
+  ipOwner: string,
+  hitId: string = labHitId()
 ): Record<string, string> {
   const ua = headers.get('user-agent')
   return {
+    lab_hit: hitId,
     lab_probe: probe.name,
     lab_round: normalizeRound(url.searchParams.get('r') ?? undefined),
     lab_endpoint: probe.endpoint,
@@ -138,5 +152,18 @@ export function labHitParams(
     lab_accept_lang: clip(headers.get('accept-language')),
     lab_ip_owner: ipOwner,
     lab_country: clip(headers.get('x-vercel-ip-country')),
+    lab_fetch_mode: fetchMode(headers),
   }
+}
+
+/**
+ * `Sec-Fetch-Mode/Sec-Fetch-Dest` (H17, §4.8): o `fetch()` do script da
+ * página chega como `cors/empty`; uma ferramenta que abre a URL do `/c`
+ * direto chega como `navigate/document` ou sem nenhum dos dois.
+ */
+function fetchMode(headers: Headers): string {
+  const mode = headers.get('sec-fetch-mode')
+  const dest = headers.get('sec-fetch-dest')
+  if (!mode && !dest) return '(none)'
+  return clip(`${mode || '-'}/${dest || '-'}`)
 }
