@@ -409,10 +409,47 @@ same request. Each question below is now answered inside one table, and
 | 3 JavaScript | `lab_probe`, `lab_round`, `lab_endpoint`, `lab_ua_1`, `lab_ip_owner` | Which fetcher requested `/c` |
 | 4 Browser shape | `lab_probe`, `lab_ua_1`, `has_sec_fetch`, `lab_accept_lang`, `lab_endpoint` | X3: a browser user agent without browser headers |
 | 5 Accept, country | `lab_probe`, `lab_ua_1`, `lab_accept`, `lab_country`, `lab_endpoint` | Request shape and origin per fetcher |
-| 6 Timing | `lab_probe`, `lab_round`, `lab_endpoint`, `Date hour and minute`, `ua_class` | Hits per round, delay after the prompt, unexplained revisits |
+| 6 Timing | `lab_probe`, `lab_round`, `lab_endpoint`, `Date + hour (YYYYMMDDHH)`, `ua_class` | Hits per round, unexplained revisits |
+
+**Revised again 2026-09-28:** Explore offers no minute dimension (minutes exist
+only in the BigQuery export and the Data API), so table 6 uses the hour. The
+property's time zone is UTC−5, so hour 14 is 19:00–19:59 UTC. No H16
+prediction needs the minute: rounds are joined by `lab_round`, which a late
+fetch or a revisit also carries. What is lost is the delay of each fetch after
+its prompt, reported as a limitation.
+
+**From the `lab_hit` deploy on (diagnostics, round 31 up),** every table adds
+`lab_hit` as its first dimension. It is unique per request and carries the
+UTC time to the second, so the tables join row by row and the delay after the
+prompt becomes measurable.
 
 No table uses `page_path`, so no export contains a slug. The CSVs still stay
 out of the repository; this file gets the summary.
+
+### Analysis measures, fixed before the final export (2026-09-28)
+
+Written after the owner's same-day preview export of 2026-09-27 (not a
+result: it was missing hits Realtime had shown) and before the final one.
+They add measures; no registered prediction in the H16 row changes.
+
+1. **"Ran JavaScript" and "delivered the `JS-` code" are two measures.** H15
+   never separated them because they never disagreed. Here they can:
+   - *ran JavaScript* = at least one hit with `lab_endpoint = js` in the
+     round. Observed by the server, independent of the answer.
+   - *delivered* = the answer reports the correct `JS-` code.
+
+   P2 as registered ("`JS-` never reported and `/c` never fetched") is scored
+   on both, and each is reported separately.
+2. **Fetchers are grouped into families** by `lab_ua_1`: browser or client
+   name, engine and operating system (for example "Chrome on macOS",
+   "HeadlessChrome on Linux", "bare `Google`"). Per assistant and round: hits
+   per family, which families request `/c`, and the countries per family.
+   The `JS-` code is attributed to the family that requested `/c`.
+3. **G2 depends on diagnostic A.** `lab_ip_owner = none` falsifies G2 only if
+   the field is shown to return a positive label in production: one
+   ChatGPT request to the `h15` probe must read `openai-chatgpt-user`. If it
+   does not, G2 is reported as **not tested**, and `lab_ip_owner` is
+   withdrawn from every H16 verdict.
 
 ## Records
 
@@ -663,3 +700,87 @@ Gemini prefixed two answers with an interface citation marker
 > - **JS-A6K4-AM3K** — aparece na linha "Código carregado no navegador: **JS-A6K4-AM3K**"
 >
 > Não encontrei nenhum código que comece com **LD-**.
+
+---
+
+# Round 3 — hinted prompts, five assistants (H17)
+
+Design: [`detection-experiment.md`](detection-experiment.md) §4.8.
+Hypothesis: H17 in [`experiment-log.md`](experiment-log.md). Written on
+2026-09-28, before any round-3 code ships and before any round. Runs only
+after H16 is closed and diagnostics A and B are done.
+
+## Setup (owner)
+
+1. Register the custom dimensions `lab_hit` and `lab_fetch_mode` **before**
+   the merge that ships them.
+2. After the deploy, print the round-3 URLs and codes locally:
+   `LAB_PROBE_CONTROL_SLUG=<slug> node scripts/lab-control-codes.mjs --probes h17`
+   (PowerShell: set `$env:LAB_PROBE_CONTROL_SLUG` first). The output stays out
+   of the repository and out of every other place.
+3. **Account memory off.** In each assistant, turn memory or personalisation
+   off, or use its temporary chat where one exists. Record which, per
+   assistant.
+
+## Protocol (fixed before the first round)
+
+- **30 rounds, 40–69.** Six blocks of five, one round per assistant per
+  block, always in the order ChatGPT, Claude, Gemini, DeepSeek, Grok. Blocks
+  alternate the condition, so no condition owns a time of day:
+
+  | Block | Rounds | Condition |
+  |---|---|---|
+  | 1 | 40–44 | 1, location hint |
+  | 2 | 45–49 | 2, explicit address |
+  | 3 | 50–54 | 1 |
+  | 4 | 55–59 | 2 |
+  | 5 | 60–64 | 1 |
+  | 6 | 65–69 | 2 |
+
+  So ChatGPT gets 40, 50, 60 (condition 1) and 45, 55, 65 (condition 2);
+  Claude 41, 51, 61 and 46, 56, 66; Gemini 42, 52, 62 and 47, 57, 67;
+  DeepSeek 43, 53, 63 and 48, 58, 68; Grok 44, 54, 64 and 49, 59, 69.
+- Each assistant always receives **its own** probe URL.
+- Same accounts, plans and modes as round 2 (DeepSeek with Search on and
+  DeepThink off). ChatGPT and Claude: the default model; record its name.
+- One new conversation per round, at least 3 minutes between rounds, no
+  retries, no follow-ups. Record the UTC time sent, the model name, any "thought
+  for N s" the interface shows, and the answer verbatim, before looking at GA4.
+
+**Condition 1 prompt, verbatim** (only the URL changes):
+
+> Abra esta página e me diga, exatamente como aparecem, todos os códigos que
+> começam com SRV-, UC-, LD- ou JS- que você encontrar nela, e em que parte
+> da página cada um estava. Se não encontrar algum, diga que não encontrou —
+> não invente.
+> Atenção: o código LD- fica dentro do JSON-LD da página (o bloco
+> `<script type="application/ld+json">`), e o código JS- só aparece depois que
+> o JavaScript da página roda e busca o valor.
+> https://seotecnico.dev.br/lab/<probe>?r=NN
+
+**Condition 2 prompt, verbatim**: the condition 1 prompt with one more line
+after the page URL:
+
+> O valor do JS- também pode ser lido diretamente, em JSON, neste endereço:
+> https://seotecnico.dev.br/lab/<probe>/c?r=NN
+
+Scoring is round 1's, per code: **correct**, **absent** or **wrong**. A
+wrong code is a hallucination and is reported as one.
+
+## Export
+
+Only after the round day has been closed for 24 hours. Explore → free form,
+event `ai_crawler_hit`, filter `lab_probe` matching
+`chatgpt|claude|gemini|deepseek|grok`, the round day, **Show rows = 500**.
+Every table starts with `lab_hit`, which is unique per request, so the tables
+join row by row:
+
+| Table | Rows |
+|---|---|
+| 1 | `lab_hit`, `lab_probe`, `lab_round`, `lab_endpoint`, `lab_fetch_mode` |
+| 2 | `lab_hit`, `lab_ua_1`, `lab_ip_owner`, `lab_country`, `bot_name` |
+| 3 | `lab_hit`, `lab_accept`, `lab_accept_lang`, `has_sec_fetch`, `bot_verified` |
+
+## Records
+
+_Pending: the rounds run after H16 is closed._
