@@ -621,6 +621,7 @@ also carries:
 | `lab_ip_owner` | the published feed containing the address, e.g. `google-user-triggered-agents`, `openai-chatgpt-user`, or `none`; `unknown` when a feed could not be read and none matched | Identity by address, **whatever the user agent says**. Until now only a declared token triggered an IP check, which is exactly the case an undeclared agent never hits |
 | `lab_country` | Vercel's `x-vercel-ip-country` | Where the fetch left from. A country, not an address |
 | `lab_hit` | UTC time to the second + 4 random hex, e.g. `2026-09-28T14:05:09Z-a3f9` | Added 2026-09-28, after round 30: a row key (GA4 has none, so tables could not be joined per request) and the time to the second (Explore stops at the hour). Carries nothing from the request |
+| `lab_fetch_mode` | `<Sec-Fetch-Mode>/<Sec-Fetch-Dest>`, or `(none)` | Added 2026-09-28 for H17 (§4.8): tells a script's `fetch()` of `/c` (`cors/empty`) from a tool opening the URL (`navigate/document` or `(none)`) |
 
 The address itself still never leaves the server. `lab_ip_owner` is computed
 the way `verified-ip` is, in memory, against every feed in §5 plus Google's
@@ -648,6 +649,56 @@ request shape. A missing token from a vendor that publishes nothing is
 **undeclared**, not concealed, unless the request also claims to be something
 else (for example a browser user agent with no browser headers). Then the
 write-up says that, and only that.
+
+### 4.8 Positive control, round 3 — does a hint change what an assistant reads? [designed 2026-09-28]
+
+Rounds 1 and 2 measured each assistant's **default**: a neutral prompt, and
+whatever its fetch tool did with the page. They cannot tell "the tool cannot
+reach this data" from "the assistant does not go after it". Round 3, the
+owner's question, tells the assistant where the data is and watches what
+changes. It runs after H16 is closed and its diagnostics are done.
+
+**Three prompt conditions**, the page and the request for the codes unchanged:
+
+| Condition | What the prompt adds | What it separates |
+|---|---|---|
+| 0, neutral | nothing: the prompt of rounds 1 and 2, whose results are the baseline | the default |
+| 1, location hint | the `LD-` code is inside the page's JSON-LD block, and the `JS-` code appears only after the page's JavaScript runs and fetches it | whether knowing *where* makes the assistant read the raw HTML or wait for JavaScript |
+| 2, explicit address | condition 1, plus the direct URL of the JSON endpoint, `/lab/<probe>/c?r=NN` | "cannot execute JavaScript" from "does not fetch the data". Any assistant that fetches URLs can read that JSON; one that does not fetch it is limited by policy or product, not by rendering |
+
+**Five assistants**: ChatGPT, Claude, Gemini, DeepSeek and Grok, each on its
+own derived probe (`chatgpt` and `claude` join the probe list, so the URL is
+the identity for all five). Perplexity is left out: on the free plan it never
+fetched in round 1, so a hint has nothing to act on.
+
+**What "effort" means here, and how each part is observed:**
+- *Requests per round* (server): more page fetches, a direct `/c` fetch or a
+  new render, compared with the same assistant's baseline rounds.
+- *How `/c` was fetched* (server): a script's `fetch()` sends
+  `Sec-Fetch-Mode: cors`; a tool opening the URL sends `navigate` or no
+  `Sec-Fetch-*` at all. One new probe-only parameter, `lab_fetch_mode`
+  (`<mode>/<dest>`, or `(none)`), records it. It also separates "rendered"
+  from "fetched directly" for Grok and DeepSeek.
+- *Time and stated effort* (owner): the interface's "thought for N s" or
+  equivalent, and any sentence where the assistant says it tried another way.
+- *Hallucination under pressure* (answer): a prompt that asserts a code exists
+  invites the assistant to produce one. Rounds 1 and 2 had 0 wrong codes in
+  120; condition 1 and 2 are the first real test of that.
+
+**The free-plan limit, stated before the rounds.** Every account is on the
+free plan. If a hint changes the behaviour, the free plan was not what
+prevented it. If nothing changes, "cannot" and "the plan does not allow it"
+remain indistinguishable, because separating them needs a paid account of the
+same assistant, which this round does not have. The write-up says which of
+the two happened and claims nothing beyond it.
+
+**Account memory.** ChatGPT, Gemini and Grok can carry context between
+conversations, and a condition-2 hint remembered in a later condition-1 round
+would contaminate it. Rounds run with memory or personalisation off, or in a
+temporary chat where the product offers one, and the owner records which.
+
+Protocol, prompts and schedule: [`lab-control-rounds.md`](lab-control-rounds.md)
+(round 3). Hypothesis: H17 in [`experiment-log.md`](experiment-log.md).
 
 ## 5. Identity verification — how a claim becomes an identity
 

@@ -39,7 +39,7 @@ custom dimensions `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`,
 `page_path`, `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`,
 `net_id`, `is_trap`, `trap_channel`, — since 2026-09-13 — `bot_signer` and —
 **before the H14 deploy** — `accept_md` and — **before the H16 deploy** — the nine
-`lab_*` parameters and — **before the `lab_hit` deploy** — `lab_hit` (Admin → Custom definitions).
+`lab_*` parameters and — **before the `lab_hit` deploy** — `lab_hit` and `lab_fetch_mode` (Admin → Custom definitions).
 `page_location` needs no registration — GA4 reads it into the built-in page
 dimensions.
 
@@ -260,6 +260,7 @@ is scoped to these paths and nothing else.
 | `lab_ip_owner` | label of the published feed containing the address (e.g. `google-user-triggered-agents`); `none` when every feed was read and none matched; `unknown` when none matched and at least one feed was unreadable |
 | `lab_country` | `x-vercel-ip-country`, or `(none)` |
 | `lab_hit` | one value per request: the UTC time to the second plus 4 random hex characters, e.g. `2026-09-28T14:05:09Z-a3f9`. Added 2026-09-28 |
+| `lab_fetch_mode` | `Sec-Fetch-Mode` and `Sec-Fetch-Dest` as `<mode>/<dest>` (e.g. `navigate/document`, `cors/empty`), `-` for a missing half, `(none)` when both are absent. Added 2026-09-28 for H17: a script's `fetch()` of `/c` is `cors/empty`, a tool opening the URL is `navigate/document` or `(none)` |
 
 - **Register all nine as event-scoped custom dimensions before the deploy.**
   Registration is not retroactive, and the owner's pre-flight check must
