@@ -251,13 +251,13 @@ is scoped to these paths and nothing else.
 
 | Parameter | Values |
 |---|---|
-| `lab_probe` | `h15` / `gemini` / `deepseek` / `grok` / `owner` |
+| `lab_probe` | `h15` / `gemini` / `deepseek` / `grok` / `owner`; since H17 also `chatgpt` / `claude` / `grok2` |
 | `lab_round` | the round from `?r=`, normalised (`00` when absent) |
 | `lab_endpoint` | `page` / `js` |
 | `lab_ua_1` / `lab_ua_2` | `User-Agent`, characters 1–100 / 101–200 (`(none)` when absent; `lab_ua_2` omitted when empty) |
 | `lab_accept` | `Accept`, first 100 characters, or `(none)` |
 | `lab_accept_lang` | `Accept-Language`, first 100 characters, or `(none)` |
-| `lab_ip_owner` | label of the published feed containing the address (e.g. `google-user-triggered-agents`); `none` when every feed was read and none matched; `unknown` when none matched and at least one feed was unreadable |
+| `lab_ip_owner` | label of the published feed containing the address (e.g. `google-user-triggered-agents`), crawler files first; since diagnostic B (2026-09-30) also `google-cloud` (a Google Cloud customer range) and `google-owned` (Google's network outside it), checked last; `none` when every feed was read and none matched; `unknown` when none matched and at least one feed was unreadable |
 | `lab_country` | `x-vercel-ip-country`, or `(none)` |
 | `lab_hit` | one value per request: the UTC time to the second plus 4 random hex characters, e.g. `2026-09-28T14:05:09Z-a3f9`. Added 2026-09-28 |
 | `lab_fetch_mode` | `Sec-Fetch-Mode` and `Sec-Fetch-Dest` as `<mode>/<dest>` (e.g. `navigate/document`, `cors/empty`), `-` for a missing half, `(none)` when both are absent. Added 2026-09-28 for H17: a script's `fetch()` of `/c` is `cors/empty`, a tool opening the URL is `navigate/document` or `(none)` |

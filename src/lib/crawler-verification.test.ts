@@ -411,6 +411,22 @@ describe('ipOwner — identity by address, whatever the claim (H16)', () => {
     }))).toBe('openai-gptbot')
   })
 
+  it('tells a Google Cloud tenant from Google itself, and lets a crawler file win', async () => {
+    const CLOUD = 'https://www.gstatic.com/ipranges/cloud.json'
+    const GOOG = 'https://www.gstatic.com/ipranges/goog.json'
+    // goog.json aggregates; cloud.json is a subset of it, as in the real files.
+    const feeds = allFeeds({
+      [GOOG]: { prefixes: [{ ipv4Prefix: '34.0.0.0/8' }, { ipv6Prefix: '2001:4860::/32' }] },
+      [CLOUD]: { prefixes: [{ ipv4Prefix: '34.1.208.0/20', service: 'Google Cloud', scope: 'africa-south1' }] },
+      [AGENTS_FEED]: { prefixes: [{ ipv6Prefix: '2001:4860:c::/124' }] },
+    })
+    expect(await ipOwner('34.1.210.4', makeDeps({ feeds }))).toBe('google-cloud')
+    clearVerificationCaches()
+    expect(await ipOwner('34.96.0.1', makeDeps({ feeds }))).toBe('google-owned')
+    clearVerificationCaches()
+    expect(await ipOwner('2001:4860:c::5', makeDeps({ feeds }))).toBe('google-user-triggered-agents')
+  })
+
   it('says none only when every feed was read', async () => {
     expect(await ipOwner('203.0.113.9', makeDeps({ feeds: allFeeds() }))).toBe('none')
     clearVerificationCaches()

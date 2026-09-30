@@ -63,8 +63,11 @@ export function controlPaths(slug: string) {
  * declara, a URL é a única identidade que ele não escolhe: um hit na sonda do
  * Grok só pode vir de quem recebeu a URL do Grok, diga o user agent o que
  * disser. Acrescentar no FIM: a ordem é a do script de códigos.
+ * `grok2` é a sonda do Grok na H17: a URL de `grok` chegou à OpenAI no
+ * diagnóstico A (2026-09-30), e a sonda antiga continua no ar para a checagem
+ * de revisitas.
  */
-export const DERIVED_PROBES = ['gemini', 'deepseek', 'grok', 'owner', 'chatgpt', 'claude'] as const
+export const DERIVED_PROBES = ['gemini', 'deepseek', 'grok', 'owner', 'chatgpt', 'claude', 'grok2'] as const
 export type ProbeName = 'h15' | (typeof DERIVED_PROBES)[number]
 
 /**
