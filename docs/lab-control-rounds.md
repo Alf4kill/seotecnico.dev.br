@@ -603,6 +603,46 @@ The answer, verbatim (the URL replaced by `<probe>`):
 
 It is H15's pattern again: server text, no JSON-LD, no JavaScript.
 
+The owner checked both codes against the script's round-31 line for the Grok
+probe: both correct.
+
+### Diagnostic B — where in Google's network is Gemini's fetcher? (pre-registered 2026-09-30)
+
+Hypothesis: diagnostic B in [`experiment-log.md`](experiment-log.md). Written
+before the change ships and before any round. This is a diagnostic, not a
+round: it is not scored into H16.
+
+**The change.** `lab_ip_owner` also checks Google's two network-wide lists,
+after every crawler file:
+
+| Label | Source | Meaning |
+|---|---|---|
+| `google-cloud` | `https://www.gstatic.com/ipranges/cloud.json` | a Google Cloud customer range: any tenant, not proof of Google |
+| `google-owned` | `https://www.gstatic.com/ipranges/goog.json`, not in `cloud.json` | Google's own network (Google's rule: the first list minus the second) |
+
+**Protocol.**
+
+- **Rounds 32, 33, 34**, all to Gemini, after the deploy of this change. Same
+  account, free plan and model as H16 (record the model name). One new
+  conversation per round, at least 3 minutes apart, no retries, no follow-ups.
+- **The prompt**: H16's, verbatim, with the Gemini probe URL and `?r=32`, `33`,
+  `34`.
+- **Printing the URL**:
+  `node scripts/lab-control-codes.mjs --probe gemini 32 34` (slug set as in
+  round 2's setup). Copy the URL from the line headed `# gemini`, and check the
+  name before pasting. Diagnostic A went to the wrong probe because a URL was
+  taken from the wrong line.
+- **Recording**: the UTC time sent and the answer verbatim, before looking at
+  GA4.
+
+**Export** (after the day has been closed for 24 hours). Explore, event
+`ai_crawler_hit`, filter `lab_probe` exactly `gemini`, the round day:
+
+| Table | Rows |
+|---|---|
+| 1 | `lab_hit`, `lab_round`, `lab_endpoint`, `lab_ip_owner`, `lab_fetch_mode` |
+| 2 | `lab_hit`, `lab_ua_1`, `lab_accept`, `lab_accept_lang`, `lab_country` |
+
 ### Exploratory — robots.txt (not a prediction)
 
 This check ran on the 2026-09-28 preview with `net_id` (a salted hash of the
@@ -831,7 +871,8 @@ after H16 is closed and diagnostics A and B are done.
 2. After the deploy, print the round-3 URLs and codes locally:
    `LAB_PROBE_CONTROL_SLUG=<slug> node scripts/lab-control-codes.mjs --probes h17`
    (PowerShell: set `$env:LAB_PROBE_CONTROL_SLUG` first). The output stays out
-   of the repository and out of every other place.
+   of the repository and out of every other place. Copy each URL from the line
+   headed with that assistant's name, and check the name before pasting.
 3. **Account memory off.** In each assistant, turn memory or personalisation
    off, or use its temporary chat where one exists. Record which, per
    assistant.
@@ -854,7 +895,9 @@ after H16 is closed and diagnostics A and B are done.
   So ChatGPT gets 40, 50, 60 (condition 1) and 45, 55, 65 (condition 2);
   Claude 41, 51, 61 and 46, 56, 66; Gemini 42, 52, 62 and 47, 57, 67;
   DeepSeek 43, 53, 63 and 48, 58, 68; Grok 44, 54, 64 and 49, 59, 69.
-- Each assistant always receives **its own** probe URL.
+- Each assistant always receives **its own** probe URL. Grok's is `grok2`
+  (amended 2026-09-30, before any round): diagnostic A sent the `grok` URL to
+  OpenAI, so it no longer identifies xAI alone.
 - Same accounts, plans and modes as round 2 (DeepSeek with Search on and
   DeepThink off). ChatGPT and Claude: the default model; record its name.
 - One new conversation per round, at least 3 minutes between rounds, no
@@ -885,7 +928,8 @@ wrong code is a hallucination and is reported as one.
 
 Only after the round day has been closed for 24 hours. Explore → free form,
 event `ai_crawler_hit`, filter `lab_probe` matching
-`chatgpt|claude|gemini|deepseek|grok`, the round day, **Show rows = 500**.
+`chatgpt|claude|gemini|deepseek|grok2` (a full match, so the old `grok` probe
+is left out), the round day, **Show rows = 500**.
 Every table starts with `lab_hit`, which is unique per request, so the tables
 join row by row:
 

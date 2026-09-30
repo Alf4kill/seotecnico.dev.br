@@ -620,7 +620,7 @@ also carries:
 
 | Parameter | Values | Why |
 |---|---|---|
-| `lab_probe` | `h15` / `gemini` / `deepseek` / `grok` / `owner` | The attribution. It also lets every query leave `page_path` out, so exports carry no slug and can be summarised in the repository |
+| `lab_probe` | `h15` / `gemini` / `deepseek` / `grok` / `owner` (H17 adds `chatgpt`, `claude`, `grok2`) | The attribution. It also lets every query leave `page_path` out, so exports carry no slug and can be summarised in the repository |
 | `lab_round` | `00`–`999`, from `?r=` | Joins a hit to a round without the time dimension |
 | `lab_endpoint` | `page` / `js` | `js` is the `/c` fetch: JavaScript ran |
 | `lab_ua_1`, `lab_ua_2` | the `User-Agent`, characters 1–100 and 101–200 | GA4 caps a parameter value at 100 characters, and a Chrome user agent is longer. The raw user agent is the answer to "does it declare itself" |
@@ -634,7 +634,11 @@ also carries:
 The address itself still never leaves the server. `lab_ip_owner` is computed
 the way `verified-ip` is, in memory, against every feed in §5 plus Google's
 five published files (the three user-triggered ones, special crawlers, and
-common crawlers, which carry Googlebot).
+common crawlers, which carry Googlebot). Since diagnostic B (2026-09-30) it
+also checks, last, Google's two network-wide lists: `cloud.json`, labelled
+`google-cloud` (a Google Cloud customer range, so any tenant), and `goog.json`,
+labelled `google-owned` (Google's own network, which by Google's rule is
+`goog.json` minus `cloud.json`).
 
 **3. `Google-Agent` joins the registry** as a `user-triggered` agent with its
 published file, so a Gemini fetch that declares it gets `bot_name` and a
@@ -677,7 +681,10 @@ changes. It runs after H16 is closed and its diagnostics are done.
 **Five assistants**: ChatGPT, Claude, Gemini, DeepSeek and Grok, each on its
 own derived probe (`chatgpt` and `claude` join the probe list, so the URL is
 the identity for all five). Perplexity is left out: on the free plan it never
-fetched in round 1, so a hint has nothing to act on.
+fetched in round 1, so a hint has nothing to act on. *Amended 2026-09-30,
+before any round:* Grok runs on a new probe, `grok2`. Diagnostic A sent the
+`grok` URL to ChatGPT, so from then on a hit there no longer identifies xAI
+alone. The old probe stays live for the revisit check.
 
 **What "effort" means here, and how each part is observed:**
 - *Requests per round* (server): more page fetches, a direct `/c` fetch or a
