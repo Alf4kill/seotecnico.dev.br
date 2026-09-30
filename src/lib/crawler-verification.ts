@@ -125,6 +125,13 @@ export const OWNER_FEEDS: ReadonlyArray<readonly [label: string, url: string]> =
   ['google-special-crawlers', `${GOOGLE_RANGES}special-crawlers.json`],
   // Googlebot and the other common crawlers (the old googlebot.json redirects here).
   ['google-common-crawlers', `${GOOGLE_RANGES}common-crawlers.json`],
+  // Google's network-wide lists, last so a crawler file always wins (H16
+  // diagnostic B). cloud.json holds the ranges Google Cloud customers use, so
+  // a match there means "some Google Cloud tenant", not Google. goog.json holds
+  // every Google range; checked after cloud.json, a match is Google's own
+  // network, which is Google's rule: subtract the second list from the first.
+  ['google-cloud', 'https://www.gstatic.com/ipranges/cloud.json'],
+  ['google-owned', 'https://www.gstatic.com/ipranges/goog.json'],
 ]
 
 /**
