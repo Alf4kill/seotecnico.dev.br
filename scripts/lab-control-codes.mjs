@@ -26,16 +26,17 @@ const SCHEDULES = {
     owner: [0],
   },
   // Round 3: six blocks of five (ChatGPT, Claude, Gemini, DeepSeek, Grok),
-  // conditions alternating by block from 40.
+  // conditions alternating by block from 40. Grok on `grok2`: the `grok` URL
+  // reached OpenAI in diagnostic A.
   h17: {
     gemini: [42, 47, 52, 57, 62, 67],
     deepseek: [43, 48, 53, 58, 63, 68],
-    grok: [44, 49, 54, 59, 64, 69],
     chatgpt: [40, 45, 50, 55, 60, 65],
     claude: [41, 46, 51, 56, 61, 66],
+    grok2: [44, 49, 54, 59, 64, 69],
   },
 }
-const PROBES = ['gemini', 'deepseek', 'grok', 'owner', 'chatgpt', 'claude']
+const PROBES = ['gemini', 'deepseek', 'grok', 'owner', 'chatgpt', 'claude', 'grok2']
 
 function code(slug, round, kind) {
   const digest = createHmac('sha256', slug).update(`${round}:${kind}`).digest()
