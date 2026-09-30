@@ -577,6 +577,14 @@ timestamp. Protocol, the fixed prompt and the round records:
 
 ### 4.7 Positive control, round 2 — assistants that publish less [designed 2026-09-27]
 
+> **Run 2026-09-27, closed 2026-09-30.** The instrument recorded every round (0 misses). None of the three declares itself in a way a site can verify:
+>
+> - **Gemini** sends the bare user agent `Google`, which Google does not document, from outside all five of its published IP files. It never runs JavaScript.
+> - **DeepSeek**, predicted not to fetch at all, renders the page in a Firefox from Hong Kong.
+> - **Grok** sends no vendor token. Its requests are, by user agent and headers, indistinguishable from a person's browser: 44 macOS Chrome and Safari requests from 11 countries, plus a `HeadlessChrome` that runs the JavaScript. By the wording rule below that is **undeclared**, not concealed.
+>
+> DeepSeek and Grok read JavaScript-rendered content; Gemini, like ChatGPT and Claude, does not. Verdicts in [`experiment-log.md`](experiment-log.md) (H16); records in [`lab-control-rounds.md`](lab-control-rounds.md).
+
 §4.6 tested three vendors that publish a user-triggered agent and its IP
 ranges. For those, a correct answer, a declared user agent and a
 `verified-ip` verdict told one story. Round 2 tests three assistants where
