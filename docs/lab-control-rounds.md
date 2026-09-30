@@ -507,6 +507,120 @@ Safari-on-Mac and Chrome-on-Linux user agents. These are not results.
 Realtime cannot join a hit to its round or probe, and the verdicts wait for
 the export below, taken on or after 2026-09-29.
 
+### Instrument — final export (2026-09-30)
+
+The six tables above, range 2026-09-27 to 2026-09-28 (property days, UTC−5),
+filter `lab_probe` matching `gemini|deepseek|grok|owner`, taken on 2026-09-30
+with both days closed for more than 24 hours. **75 events**: the 73 of the
+preview of 2026-09-28 (71 vendor hits and the owner's round 00), identical row
+for row, plus the owner's `lab_hit` pre-flight (round 01, two events, on
+the evening of 2026-09-28 in the property's time zone). Nothing arrived late.
+
+| Probe | Round | `page` | `js` (`/c`) | Hour (UTC−5) |
+|---|---|---|---|---|
+| gemini | 16, 19, 22, 25, 28 | 1 each | 0 | the prompt's hour |
+| deepseek | 17, 20, 23, 26, 29 | 1 each | 1 each | the prompt's hour |
+| grok | 18 / 21 / 24 / 27 / 30 | 10 / 9 / 11 / 10 / 10 | 1 / 1 / 2 / 1 / 1 | the prompt's hour |
+| owner | 00, 01 | 1 each | 1 each | not a round |
+
+**Zero instrument misses.** Every round has hits on its own probe and round,
+and every correct `JS-` has a `/c` request behind it in the same round. Every
+hit fell in the hour its prompt was sent, and no probe was requested again
+through the end of 2026-09-28, about 32 hours after round 30. `bot_name` and
+`bot_verified` are `(not set)` on all 71 vendor hits: no request declared a
+registered agent.
+
+### Fetchers by family (analysis measure 2)
+
+Families by `lab_ua_1`, with the headers and countries of the same hits. All
+71 vendor hits have `lab_ip_owner = none`.
+
+| Assistant | Family | Hits | `/c` | `Sec-Fetch-*` | `Accept` (page) | `Accept-Language` | Country |
+|---|---|---|---|---|---|---|---|
+| Gemini | bare `Google` | 5 (1 per round) | 0 | no | `*/*` | `(none)` | US |
+| DeepSeek | Firefox 149, Linux | 10 (1 page + 1 `/c` per round) | 5 | yes | Firefox's navigation `Accept` | `zh-CN,zh;q=0.9` | HK |
+| Grok | Chrome 142/143 and Safari 26, macOS | 44 (9, 8, 9, 9, 9) | 0 | yes | each browser's own navigation `Accept` | `en-US,en;q=0.9` | 11 countries: US 20, BR 8, PL 4, CA 3, AR 2, PT 2, CL, GB, NL, RU, UA 1 each |
+| Grok | `HeadlessChrome/148`, Linux | 10 (1 page + 1 `/c` per round) | 5 | yes | Chrome's navigation `Accept` | `en-US,en;q=0.9` | US |
+| Grok | Chrome 152, Windows | 2 (round 24 only) | 1 | yes | Chrome's navigation `Accept` | `en-US,en;q=0.9` | US |
+
+Every `/c` request carried `Accept: */*`, the default of a script's
+`fetch()`.
+
+- **No hit from any of the three has §2.2's spoofed-browser signature.** Every
+  browser user agent came with `Sec-Fetch-*` and `Accept-Language`, and the
+  Safari user agents with Safari's `Accept`, not Chrome's.
+- **Grok's `JS-` code is attributed to `HeadlessChrome`**, the only family that
+  requested `/c` in every round. In round 24 the Windows Chrome also requested
+  it, and that round's attribution is ambiguous between the two. The macOS
+  family never ran the page's JavaScript.
+- **Grok's two `LD-` codes (rounds 21 and 24)** cannot be attributed to a
+  family: round 21 had no extra fetcher, and every family requested the page
+  in both rounds.
+- **DeepSeek ran JavaScript in 5/5 rounds and delivered `JS-` in 3/5** (17, 20,
+  29). In rounds 23 and 26 the `/c` request reached the server, and the answer
+  still read "carregando…". The text that reached the model was taken before
+  the value arrived. How long after the page each `/c` came is not measurable
+  here: these rounds predate `lab_hit`, and Explore stops at the hour.
+
+### Diagnostic A — does `lab_ip_owner` ever return a label? (2026-09-30)
+
+Required by analysis measure 3 before any `none` could count against G2. Not
+a round and not scored.
+
+- **Sent:** ChatGPT, free plan, 2026-09-30 about 13:43 UTC, the round-1 prompt
+  with `?r=31`.
+- **Hit:** one request, `lab_hit` `2026-09-30T13:43:18Z-6CE6`, `lab_ip_owner` =
+  **`openai-chatgpt-user`** (read off Realtime).
+
+The field returns a positive label in production, so the 71 `none` values of
+H16 are readings, not a defect.
+
+**Deviation: the wrong probe.** The protocol named the `h15` probe. The URL
+sent was the **Grok** probe (Realtime: `lab_probe = grok`). The test is not
+affected, because `lab_ip_owner` depends on the request's address and not on
+the path. The Grok probe is:
+
+- **H16:** unaffected, since all 56 of its H16 hits precede this one.
+- **Revisit check:** from 2026-09-30T13:43:18Z the Grok URL is also known to
+  OpenAI. The later revisit check excludes this hit, and any later request on
+  the Grok probe from an OpenAI agent is reported against this exposure, not as
+  a revisit by xAI.
+- **H17:** Grok needs a probe no other vendor has received. It moves to a new
+  derived probe before round 40, in the same PR as diagnostic B.
+
+The answer, verbatim (the URL replaced by `<probe>`):
+
+> Encontrei estes códigos na página da rodada 31:
+>
+> | Código          | Parte da página                  |
+> | --------------- | -------------------------------- |
+> | `SRV-YBGD-H2GC` | **Código do servidor**           |
+> | `UC-6FPA-F40S`  | **Código do componente cliente** |
+> | `LD-**`         | **Não encontrei**                |
+> | `JS-**`         | **Não encontrei**                |
+>
+> O `JS-` não aparece porque a página mostra apenas **“Código carregado no navegador: carregando…”**; o `LD-` também não foi retornado pelo conteúdo textual que consegui ler. ([seotecnico.dev.br](https://seotecnico.dev.br/lab/<probe>?r=31))
+
+It is H15's pattern again: server text, no JSON-LD, no JavaScript.
+
+### Exploratory — robots.txt (not a prediction)
+
+This check ran on the 2026-09-28 preview with `net_id` (a salted hash of the
+/24, see [`measurement-plan.md`](measurement-plan.md)). None of the 54 networks
+behind the H16 fetchers requested `/robots.txt` at any time between
+2026-09-01 and 2026-09-27:
+
+- 43 networks for Grok's macOS family;
+- 3 for `HeadlessChrome`;
+- 1 for the Windows Chrome;
+- 5 for DeepSeek;
+- 2 for Gemini.
+
+In the same period, 77 other networks requested it 626 times, and the declared
+agents, Claude-User among them, read it regularly. This is consistent with
+user-triggered fetching that does not consult robots.txt. Test E (a `Disallow`
+on the probe paths) would turn it into a prediction.
+
 ### Answers, verbatim
 
 The owner's time annotations are removed (the times are in the table).
