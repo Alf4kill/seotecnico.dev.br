@@ -643,6 +643,72 @@ after every crawler file:
 | 1 | `lab_hit`, `lab_round`, `lab_endpoint`, `lab_ip_owner`, `lab_fetch_mode` |
 | 2 | `lab_hit`, `lab_ua_1`, `lab_accept`, `lab_accept_lang`, `lab_country` |
 
+#### Records
+
+All on **2026-09-30**, UTC (the owner's notes were in UTC−3 and are
+converted here). Gemini, free plan; the model name was not recorded (a
+deviation, as for ChatGPT and Claude in H15).
+
+**Void attempts, rounds 32 and 33 (17:44 and 17:47).** The slug the owner
+pasted into the script that afternoon was not the production one. The
+printed Gemini path did not start like the one used in H16, and nobody
+checked it before sending. The URL sent did not exist, so the page returned
+404:
+
+- **Answer:** both attempts got the same failure. The round-33 answer,
+  verbatim: "Não foi possível acessar diretamente o link fornecido para
+  extrair os códigos." It continues with an offer to read the page if pasted
+  into the chat.
+- **Server:** Realtime showed 2 `ai_crawler_hit` events, 3 minutes apart and
+  at the attempt times, **without any `lab_*` parameter**. The path was not a
+  probe, so the proxy recorded an ordinary hit. So Gemini did try to fetch
+  both times, and the failure was the URL's, not Gemini's.
+- **Firewall ruled out:** both requests reached the proxy, so nothing in
+  front of the site blocked them.
+
+The attempts are not scored. Round 34 was never sent. Rounds 35–37 used the
+production slug, after the owner checked that the Gemini path started like
+H16's. The rule this produced is in round 3's setup: before any session of
+rounds, open the `owner` probe in a browser and see the codes.
+
+| Round | Prompt sent | Hit (`lab_hit`) | SRV | UC | LD | JS |
+|---|---|---|---|---|---|---|
+| 35 | 22:43 | `22:43:28Z` | correct | correct | absent | absent |
+| 36 | 22:51 | `22:51:10Z` | correct | correct | absent | absent |
+| 37 | 22:55 | `22:55:28Z` | correct | correct | absent | absent |
+
+**Export** of 2026-10-02 (day closed for more than 24 hours): 3 events on the
+Gemini probe that day, one per round. Every one has the same values:
+
+| `lab_endpoint` | `lab_ip_owner` | `lab_fetch_mode` | `lab_ua_1` | `lab_accept` | `lab_accept_lang` | `lab_country` |
+|---|---|---|---|---|---|---|
+| `page` | **`google-owned`** | `(none)` | `Google` | `*/*` | `(none)` | BE (round 35), US (36, 37) |
+
+**Result.**
+
+- **B1 confirmed, 3/3 hits.** The fetcher behind Gemini's bare `Google` user
+  agent leaves from Google's own network: in `goog.json`, not in `cloud.json`.
+  That is not where Google's documented crawlers and fetchers leave from (G2),
+  and not a range any Google Cloud customer could rent.
+- **B2 confirmed, 3/3 rounds.** One page request per round, no `Sec-Fetch-*`
+  mode or destination, no `/c`, `SRV-` and `UC-` correct, `LD-` and `JS-`
+  absent, 0 wrong codes. H16's Gemini behaviour replicates.
+- **Delay, first measurement.** Each request arrived 10–28 seconds into the
+  minute the prompt was sent, so the fetch follows the prompt within at most
+  28 s (10 s in round 36). The send time was recorded to the minute, which is
+  the bound on this number.
+- **Round 35 came from Belgium.** All H16 hits came from the US, so the fetch
+  does not always leave from the same region.
+
+**What this changes in the reading of H16.** G2 stays falsified as
+registered: no file of Google's crawlers or fetchers contains these
+addresses. They are Google's, though. So the fetcher is the one H16 described:
+it **names the company in its user agent and comes from the company's
+network**. It is neither a documented agent nor in a list a site is told to
+verify against. A site can check the address against `goog.json` minus
+`cloud.json`. Nothing tells it to, and doing so would also admit every other
+Google service on that network.
+
 ### Exploratory — robots.txt (not a prediction)
 
 This check ran on the 2026-09-28 preview with `net_id` (a salted hash of the
@@ -876,6 +942,11 @@ after H16 is closed and diagnostics A and B are done.
 3. **Account memory off.** In each assistant, turn memory or personalisation
    off, or use its temporary chat where one exists. Record which, per
    assistant.
+4. **Pre-flight before every session of rounds** (added 2026-10-02, after
+   diagnostic B's void attempts). Open the `owner` probe from the same output
+   in a browser, with an unused round number, and see the codes. A wrong slug
+   gives a 404 there, before any assistant receives a URL that does not
+   exist.
 
 ## Protocol (fixed before the first round)
 
