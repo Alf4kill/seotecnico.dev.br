@@ -579,7 +579,7 @@ timestamp. Protocol, the fixed prompt and the round records:
 
 > **Run 2026-09-27, closed 2026-09-30.** The instrument recorded every round (0 misses). None of the three declares itself in a way a site can verify:
 >
-> - **Gemini** sends the bare user agent `Google`, which Google does not document, from outside all five of its published IP files. It never runs JavaScript.
+> - **Gemini** sends the bare user agent `Google`, which Google does not document, from outside all five of its published IP files. It never runs JavaScript. Diagnostic B (closed 2026-10-02) placed the addresses in Google's own network (`goog.json` minus `cloud.json`), not in a Google Cloud customer range.
 > - **DeepSeek**, predicted not to fetch at all, renders the page in a Firefox from Hong Kong.
 > - **Grok** sends no vendor token. Its requests are, by user agent and headers, indistinguishable from a person's browser: 44 macOS Chrome and Safari requests from 11 countries, plus a `HeadlessChrome` that runs the JavaScript. By the wording rule below that is **undeclared**, not concealed.
 >
