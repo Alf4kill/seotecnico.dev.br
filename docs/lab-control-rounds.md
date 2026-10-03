@@ -57,7 +57,9 @@ A round with any **correct** code and **no** request on `/lab/<slug>` is an
 All rounds on **2026-09-25**. Times are UTC, and the owner is at UTC−3. The
 Perplexity account was on the **free plan**. The plan and model names of the
 ChatGPT and Claude accounts were **not recorded**, which is a deviation from
-the protocol above.
+the protocol above. *Plans confirmed by the owner on 2026-10-03:* ChatGPT
+**Go** and Claude **Pro**, both paid, the same accounts as H17. The model
+names remain unknown.
 
 The answers below are committed after round 15, with their codes (every round
 id changes every code, so a published code cannot answer a later round). The
@@ -567,7 +569,7 @@ Every `/c` request carried `Accept: */*`, the default of a script's
 Required by analysis measure 3 before any `none` could count against G2. Not
 a round and not scored.
 
-- **Sent:** ChatGPT, free plan, 2026-09-30 about 13:43 UTC, the round-1 prompt
+- **Sent:** ChatGPT (Go plan, see H17's records), 2026-09-30 about 13:43 UTC, the round-1 prompt
   with `?r=31`.
 - **Hit:** one request, `lab_hit` `2026-09-30T13:43:18Z-6CE6`, `lab_ip_owner` =
   **`openai-chatgpt-user`** (read off Realtime).
@@ -1024,18 +1026,20 @@ showed `SRV-`, `UC-` and, after the fetch, `JS-`, all matching the script.
 | Assistant | Plan | Model / mode | Memory, blocks 1–2 | Memory, blocks 3–6 |
 |---|---|---|---|---|
 | ChatGPT | **Go** (paid, the cheapest tier; also Go in H15, confirmed by the owner) | default; the interface shows no model name; Think off | **on** | off |
-| Claude | free | Opus 5.5 | **on** | off |
+| Claude | **Pro** (paid; also Pro in H15, confirmed by the owner) | Opus 5.5 | **on** | off |
 | Gemini | free | Flash | **on** | off |
 | DeepSeek | free | Search on, DeepThink off | no cross-chat memory | no cross-chat memory |
 | Grok | free | Fast | normal chat | **Private** chat |
 
 **Deviations:**
 
-1. **ChatGPT ran on Go, not on a free plan.** The setup assumed free plans for
-   all five. ChatGPT stayed on Go for all six blocks, so its conditions remain
-   comparable with each other and with H15, which was also Go. The free-plan
-   statement in H17 applies to the other four. For ChatGPT, a change under a
-   hint shows what Go allows.
+1. **ChatGPT ran on Go and Claude on Pro, not on free plans.** The setup
+   assumed free plans for all five. Both stayed on their paid plan for all six
+   blocks, so their conditions remain comparable with each other and with H15,
+   which used the same two accounts. The free-plan statement in H17 applies to
+   Gemini, DeepSeek and Grok only. For ChatGPT and Claude, a change under a
+   hint shows what Go and Pro allow, with Claude on Opus 5.5. These are the
+   owner's everyday accounts, not a sample of users.
 2. **Memory was on in blocks 1–2** for ChatGPT, Claude and Gemini, against
    setup step 3. It was found after block 2 and turned off before block 3.
    - Block 1 came before any H17 hint, so no H17 hint could have been
