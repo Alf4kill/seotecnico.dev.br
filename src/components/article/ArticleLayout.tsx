@@ -104,7 +104,11 @@ export function ArticleLayout({
   // Arte (docs/design-system.md → Arte): o artigo de blog ganha a cena do seu
   // eixo, na coluna direita e só a partir de lg; a pilar, que não tem eixo, a
   // marca central A3 atrás do cabeçalho. Nunca as duas, nunca atrás do corpo.
-  const scene = frontmatter.category ? sceneForPost(frontmatter.category, frontmatter.slug) : undefined
+  // Uma tradução usa a cena do original (pelo slug português), para o mesmo
+  // artigo ter a mesma arte nos dois idiomas, aqui e no cartão OG.
+  const scene = frontmatter.category
+    ? sceneForPost(frontmatter.category, frontmatter.translationOf ?? frontmatter.slug)
+    : undefined
   const updated = frontmatter.dateModified !== frontmatter.datePublished
 
   return (

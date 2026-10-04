@@ -49,6 +49,8 @@ const paths = [
   '/en/about',
   '/en/case-studies',
   '/en/case-studies/ai-crawler-detection',
+  // /en/blog/<slug>: the first English article adds its URL here, in the same
+  // PR that publishes it (the route has no page until then).
   '/design',
   '/en/design',
   '/sobre',

@@ -1,4 +1,4 @@
-import { getAllPosts, getGuide } from '@/lib/content'
+import { getAllEnglishPosts, getAllPosts, getGuide } from '@/lib/content'
 import { buildLlmsTxt } from '@/lib/llms-txt'
 
 // Rota estática, mesma decisão do feed.xml: o índice é gerado no build, e novo
@@ -6,7 +6,7 @@ import { buildLlmsTxt } from '@/lib/llms-txt'
 export const dynamic = 'force-static'
 
 export function GET() {
-  return new Response(buildLlmsTxt(getGuide(), getAllPosts(), getGuide('en')), {
+  return new Response(buildLlmsTxt(getGuide(), getAllPosts(), getGuide('en'), getAllEnglishPosts()), {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   })
 }
