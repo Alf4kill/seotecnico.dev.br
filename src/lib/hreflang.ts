@@ -74,6 +74,11 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/design',
     },
   },
+  // Artigos traduzidos, /blog/<slug> ↔ /en/blog/<slug-en>: um par por artigo,
+  // acrescentado no mesmo PR que publica a versão em inglês. O id é o slug
+  // português, o mesmo valor do `translationOf` do MDX inglês; o teste de
+  // unidade confere os dois lados. A lista é escrita à mão, e não lida do
+  // conteúdo, porque o seletor de idioma (Header) roda no cliente, sem fs.
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
