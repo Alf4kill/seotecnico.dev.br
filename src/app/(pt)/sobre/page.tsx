@@ -42,7 +42,8 @@ export default function SobrePage() {
         <div className="rich-text mt-10 max-w-[68ch]">
           <p>
             O <strong>SEO Técnico</strong> é um laboratório público de SEO
-            técnico para Next.js, feito por {site.author.name} —{' '}
+            técnico para sites modernos, com Next.js como implementação de
+            referência, feito por {site.author.name} —{' '}
             {site.author.jobTitle} e desenvolvedor web. A premissa é simples:
             em vez de repetir teoria, cada técnica documentada aqui é
             implementada neste próprio domínio e medida com dados reais do
@@ -69,8 +70,8 @@ export default function SobrePage() {
           <h2>O que você encontra aqui</h2>
           <ul>
             <li>
-              Guias e artigos de SEO técnico focados em Next.js (App Router),
-              sempre com código real;
+              Guias e artigos de SEO técnico, com implementação em Next.js (App
+              Router) e código real;
             </li>
             <li>
               <Link href="/ferramentas" title="Ferramentas gratuitas de SEO">

@@ -24,7 +24,7 @@ const BASELINES = `${site.repository}/tree/main/docs/baseline`
 export const metadata = buildMetadata({
   title: `${site.author.name} — ${site.author.jobTitle}`,
   description:
-    'A live technical SEO lab for Next.js: every technique implemented on this domain, gated in CI and measured with real Search Console data.',
+    'A live technical SEO lab for modern websites, with Next.js as the reference implementation, gated in CI and measured with real Search Console data.',
   path: PATH,
   lang: 'en',
 })
@@ -121,7 +121,7 @@ export default function EnglishHomePage() {
             {site.name} · a live technical SEO lab
           </p>
           <h1 className="max-w-[62rem] font-display text-[clamp(2.5rem,1.4rem+4.4vw,5rem)] font-bold leading-[0.98] tracking-[-0.03em] text-foreground">
-            Technical SEO for <span className="text-primary">Next.js</span>, implemented and
+            Technical SEO for <span className="text-primary">modern websites</span>, implemented and
             measured in public
           </h1>
           <p className="max-w-[46rem] text-lg leading-relaxed text-muted lg:text-xl">
