@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import sitemap from '../../src/app/sitemap'
-import { getAllPosts, getGuide } from '../../src/lib/content'
+import { getAllEnglishPosts, getAllPosts, getGuide } from '../../src/lib/content'
 import { site } from '../../src/lib/site'
 import { ALLOWED_AI_CRAWLERS, DISALLOWED_AI_CRAWLERS } from '../../src/lib/ai-crawlers'
 
@@ -34,6 +34,9 @@ const routes = [...sitemapPaths, ...noindexPaths]
 const postsBySlug = new Map(
   getAllPosts().map((post) => [post.frontmatter.slug, post.frontmatter])
 )
+const englishPostsBySlug = new Map(
+  getAllEnglishPosts().map((post) => [post.frontmatter.slug, post.frontmatter])
+)
 const guideFrontmatter = getGuide().frontmatter
 const guideEnFrontmatter = getGuide('en').frontmatter
 
@@ -51,6 +54,13 @@ function expectedJsonLdTypes(path: string): string[] {
   }
   if (path.startsWith('/en/case-studies/')) {
     return ['Article', 'BreadcrumbList', 'FAQPage']
+  }
+  if (path.startsWith('/en/blog/')) {
+    return [
+      'Article',
+      'BreadcrumbList',
+      ...faqTypes(englishPostsBySlug.get(path.slice('/en/blog/'.length))),
+    ]
   }
   if (path.startsWith('/en/guide/')) {
     return ['Article', 'BreadcrumbList', ...faqTypes(guideEnFrontmatter)]

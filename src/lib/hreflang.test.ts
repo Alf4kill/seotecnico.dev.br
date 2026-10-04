@@ -8,7 +8,7 @@ import {
   languageAlternatePaths,
   pairForPath,
 } from './hreflang'
-import { getGuide } from './content'
+import { getAllEnglishPosts, getGuide, getPostBySlug } from './content'
 import { buildMetadata } from './metadata'
 import { site } from './site'
 
@@ -41,6 +41,25 @@ describe('TRANSLATION_PAIRS', () => {
     expect(pairForPath('/en/guide/technical-seo-nextjs')?.id).toBe(en.translationOf)
     expect(en.lang).toBe('en')
     expect(pt.lang).toBe('pt-BR')
+  })
+
+  it('pairs every translated English article with its original, and only those', () => {
+    // Um artigo em /en/blog com `translationOf` precisa do par aqui; sem ele,
+    // as duas páginas saem sem hreflang e nada quebra. E um par de artigo sem
+    // MDX dos dois lados declararia um cluster que não existe.
+    const posts = getAllEnglishPosts()
+    for (const { frontmatter } of posts) {
+      if (!frontmatter.translationOf) continue
+      const pair = pairForPath(`/en/blog/${frontmatter.slug}`)
+      expect(pair?.id, `/en/blog/${frontmatter.slug} has no hreflang pair`).toBe(frontmatter.translationOf)
+      expect(pair?.paths['pt-BR']).toBe(`/blog/${frontmatter.translationOf}`)
+      expect(getPostBySlug(frontmatter.translationOf), `no Portuguese original "${frontmatter.translationOf}"`).toBeDefined()
+    }
+    for (const pair of TRANSLATION_PAIRS.filter((p) => p.paths.en.startsWith('/en/blog/'))) {
+      const slug = pair.paths.en.slice('/en/blog/'.length)
+      expect(posts.some((p) => p.frontmatter.slug === slug && p.frontmatter.translationOf === pair.id),
+        `pair "${pair.id}" points to an English article that does not declare it`).toBe(true)
+    }
   })
 })
 
