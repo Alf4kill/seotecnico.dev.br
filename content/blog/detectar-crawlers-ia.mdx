@@ -6,14 +6,14 @@ primaryQuery: "como saber se a ia usa meu conteudo"
 keywords: ['crawler de ia', 'bots de ia', 'gptbot', 'claudebot', 'user agent', 'robots.txt', 'honeypot', 'web bot auth', 'verificação de bot', 'tráfego de bots', 'scraping', 'llms.txt']
 lang: "pt-BR"
 category: medicao
-status: em-medicao
+status: fechado
 tldr: >-
   Provar que a IA não usa seu conteúdo é impossível. Dá para medir três coisas
   com os próprios logs: quais agentes buscam suas páginas, se a identidade que
   eles alegam é verdadeira (IP, DNS reverso, assinatura) e se respeitam o
   robots.txt (honeypot). Este site mede as três e publica os números.
 datePublished: "2026-09-13"
-dateModified: "2026-09-13"
+dateModified: "2026-10-04"
 faq:
   - question: "O user agent identifica um crawler de IA?"
     answer: "Não. O user agent é uma alegação: qualquer cliente pode enviar GPTBot no cabeçalho. Identidade só existe quando a requisição passa numa fonte publicada pelo fornecedor — faixa de IP, DNS reverso confirmado ou assinatura Web Bot Auth. Sem isso, o certo é dizer que a requisição alega ser aquele agente."
@@ -344,8 +344,8 @@ compatível com isso, e não é uma verificação.
 
 **O número que este artigo não publica:** a proporção de tráfego sem
 identificação sobre o total. A primeira leitura mostrou que ela estava
-inflada por navegação humana (próxima seção). A contagem corrigida começa em
-2026-09-13 e sai no artigo de resultados.
+inflada por navegação humana (próxima seção), e o motivo de ela continuar
+fora está em [o que o piloto mostrou](#o-que-o-piloto-mostrou).
 
 ## O que a primeira leitura revelou: três defeitos no próprio instrumento
 
@@ -400,8 +400,8 @@ plano de medição, com horário, antes do fim da sessão de trabalho.
 
 ## O que este site se proíbe de publicar
 
-As regras vieram antes dos dados, e valem para este artigo e para o de
-resultados:
+As regras vieram antes dos dados, e valem para este artigo inteiro,
+inclusive para os resultados da próxima seção:
 
 1. Um agente só é **nomeado** como autor de um comportamento com três provas
    juntas: identidade verificada, observação datada neste domínio e o
@@ -421,23 +421,74 @@ resultados:
 Ignorar o robots.txt não é crime: o arquivo é um pedido voluntário. Este site
 mede quem atende ao pedido, e não faz afirmação jurídica nenhuma.
 
-## O que vem depois
+## O que o piloto mostrou
 
-As hipóteses do experimento foram registradas antes dos dados, com janelas de
-90 dias que fecham por volta de 2026-10-23: se algum crawler cai no honeypot,
-se algum agente de treino verificado busca página proibida, se o tráfego sem
-identificação supera o declarado, se algum agente segue o `llms.txt`. O artigo
-de resultados publica todas — inclusive as que não se confirmarem, e com os
-números medidos pelo instrumento já corrigido.
+A rodada de medição foi encerrada em **20 de setembro de 2026**, com 57 dos
+90 dias previstos, e reclassificada como **piloto**. Os defeitos descritos
+acima foram achados com ela em andamento, e um instrumento corrigido no meio
+do caminho não mede a mesma coisa do começo ao fim. O encerramento coincidiu
+com a troca do visual do site, que mudou todas as páginas servidas.
 
-O instrumento descrito aqui ganhou um controle positivo em setembro: visitas
-de ChatGPT e Claude provocadas de propósito, com hora marcada, para conferir
-que cada uma aparece no registro. Todas apareceram, e o teste mostrou também
-[o que esses assistentes leem de uma página Next.js](/blog/chatgpt-le-javascript).
-Depois vieram Gemini, DeepSeek e Grok, três agentes que nem sempre se
-identificam, e [o teste de quais IAs executam
-JavaScript](/blog/quais-ias-executam-javascript) mostra como cada um aparece
-no servidor.
+Os vereditos cobrem 25/07 a 20/09: **5.480 eventos**, depois de excluir
+1.728 do próprio autor (24% de tudo o que foi registrado).
+
+| Hipótese, registrada antes dos dados | Veredito | O que sustenta |
+|---|---|---|
+| Algum crawler cai no honeypot do robots.txt | **Falsificada** | Zero acessos reais; os dois do período foram testes do próprio laboratório. Com 1.191 leituras do robots.txt, seguir a linha proibida acontece em no máximo 1 de cada 398 leituras |
+| Um agente de treino verificado busca uma página proibida | **Confirmada** | Em 30/07, o GPTBot, com IP dentro da lista que a OpenAI publica, buscou três caminhos proibidos: `/`, `/feed.xml` e `/politica-de-privacidade` |
+| O tráfego sem identificação supera o de agentes declarados e bloqueados | **Confirmada, com folga** | Sem identificação e sem cabeçalhos de navegador: 1.326 eventos de 436 redes. Declarados e bloqueados: 425 eventos de 7 redes. São **62 vezes mais redes** |
+| Requisições condicionais indicam um agente de busca | **Falsificada** | Claude-SearchBot e OAI-SearchBot não mandaram nenhuma (0 de 939 e 0 de 182). Quem manda é o Bingbot (52 de 96) e, sobretudo, o tráfego sem identificação: 762 das 814 |
+| Atualizar um artigo atrai mais leituras de agentes de busca | **Inconclusiva** | O teste pedia ao menos 5 leituras do artigo em 14 dias; o ritmo real foi de 0,47 por artigo a cada 14 dias, dez vezes menos |
+| Nenhum agente segue o `llms.txt` até o honeypot | **Sustentada, mas sem força** | Zero acessos, mas o `llms.txt` foi lido só 9 vezes em 57 dias. Com tão pouca exposição, "ninguém segue" não se distingue de "quase ninguém lê" |
+
+**A ressalva que acompanha o único caso confirmado.** O GPTBot não buscou o
+`/robots.txt` nenhuma vez no período. O dado sustenta "buscou caminhos
+proibidos sem ter lido a regra no período observado". Ele não sustenta
+"ignorou o robots.txt", e a diferença entre as duas frases é a diferença
+entre uma medição e uma acusação. A OpenAI documenta o GPTBot como agente de
+treino e orienta bloqueá-lo pelo robots.txt; a regra `Disallow: /` para ele
+estava no ar desde 25/07. Três requisições numa data provam que o caso
+existe, não com que frequência acontece.
+
+**Duas observações fora das hipóteses:**
+
+- **Requisições que se declaram ClaudeBot** buscaram o `/robots.txt` 424
+  vezes no período e **nenhuma página**. Até 13/09 a lista de IPs da
+  Anthropic não era consultada, então parte delas é alegação, não identidade
+  verificada. A Anthropic documenta que o ClaudeBot respeita o robots.txt, e
+  o que se observou é compatível com isso.
+- **Requisições que se declaram Claude-SearchBot** gastaram quase tudo no
+  sitemap e no robots.txt: 648 e 250 de 939, sobrando 41 leituras de página
+  em 58 dias. Vale a mesma ressalva sobre a verificação antes de 13/09.
+
+**Por que a proporção sobre o total continua fora.** O identificador de rede
+muda todo mês, por desenho, para não acumular histórico. Por isso excluir o
+tráfego do autor é uma operação mês a mês. Além disso, uma saída de VPN usada
+por ele só foi identificada para setembro. A exclusão ficou maior que a da
+primeira leitura e ainda não está completa. Uma porcentagem sobre o total
+carregaria um erro de tamanho desconhecido. A comparação da terceira
+hipótese não carrega: todo o tráfego do autor identificado depois tinha
+cabeçalhos de navegador, e o grupo comparado é o que não tem. Os números dela
+não mudaram com a correção.
+
+**A lição que mudou o resto do trabalho:** um zero sem controle positivo não é
+uma medição. O honeypot sem acessos e o `llms.txt` sem seguidores não diziam
+se o instrumento enxergaria um agente que viesse. Por isso o passo seguinte
+foram visitas provocadas de propósito, com hora marcada:
+
+- [o que ChatGPT e Claude leem de uma página Next.js](/blog/chatgpt-le-javascript);
+- [quais IAs executam JavaScript](/blog/quais-ias-executam-javascript), com
+  Gemini, DeepSeek e Grok, três agentes que nem sempre se identificam.
+
+O instrumento registrou todas as visitas provocadas.
+
+**O que não está em andamento.** Uma segunda versão do instrumento foi
+registrada em 20/09, com sete hipóteses novas: sinais de automação no
+navegador, canais de descoberta e um canário que só existe no repositório. Os
+instrumentos dela ainda não foram construídos, nenhuma janela está aberta, e
+este artigo não promete data. O registro completo, com os limites e as
+correções, está em
+[`docs/experiment-log.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/experiment-log.md).
 
 Para o lado técnico de como `robots.ts` e `sitemap.ts` são gerados neste site,
 veja o [artigo sobre sitemap e robots dinâmicos](/blog/sitemap-dinamico-nextjs);
