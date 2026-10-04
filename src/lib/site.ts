@@ -18,7 +18,7 @@ export const site = {
   name: 'SEO Técnico',
   url: process.env.NEXT_PUBLIC_DOMAIN ?? 'https://seotecnico.dev.br',
   description:
-    'Laboratório vivo de SEO técnico para desenvolvedores Next.js: guias práticos, ferramentas gratuitas e experimentos medidos com dados reais.',
+    'Laboratório vivo de SEO técnico para sites modernos, com Next.js como implementação de referência: guias, ferramentas e experimentos medidos.',
   locale: 'pt_BR',
   // O repositório é parte do portfólio (§14: público por design) — as páginas
   // em inglês apontam para ele como a prova verificável do que descrevem.

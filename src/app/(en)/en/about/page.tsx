@@ -55,7 +55,8 @@ export default function EnglishAboutPage() {
 
         <div className="rich-text mt-10 max-w-[68ch]">
           <p>
-            <strong>{site.name}</strong> is a public technical SEO laboratory for Next.js, built
+            <strong>{site.name}</strong> is a public technical SEO laboratory for modern websites, with Next.js as
+            its reference implementation, built
             and run by {site.author.name} — a web developer working in PHP, Next.js and Python
             who does technical SEO the way a developer does it: in the codebase, with tests, and
             with measurement.
