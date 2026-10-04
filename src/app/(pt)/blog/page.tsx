@@ -10,9 +10,9 @@ import { ToolsStrip } from '@/components/sections/ToolsStrip'
 import { CornerMark } from '@/components/art/Marks'
 
 export const metadata = buildMetadata({
-  title: 'Blog de SEO técnico para Next.js',
+  title: 'Blog de SEO técnico',
   description:
-    'Artigos práticos de SEO técnico para desenvolvedores Next.js: Metadata API, JSON-LD, sitemaps, Core Web Vitals e experimentos medidos.',
+    'Artigos de SEO técnico para sites modernos: como o Google e os assistentes de IA leem páginas, com código Next.js e experimentos medidos.',
   path: '/blog',
 })
 
@@ -58,8 +58,8 @@ export default function BlogPage() {
               Artigos de SEO técnico, medidos em produção.
             </h1>
             <p className="max-w-[39rem] text-lg leading-relaxed text-muted">
-              Cada artigo responde uma pergunta de SEO técnico para Next.js, com
-              o código do App Router e medições feitas neste próprio site.
+              Cada artigo responde uma pergunta de SEO técnico, com a implementação
+              em Next.js (App Router) e medições feitas neste próprio site.
               Quando o resultado é nulo, ele também é publicado.
             </p>
           </div>

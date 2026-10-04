@@ -20,7 +20,7 @@ export function GET() {
       <OgCard
         kicker="A live laboratory"
         title="Technical SEO for"
-        highlight="Next.js, implemented and measured"
+        highlight="modern websites, implemented and measured"
         subtitle="Guides, free tools and experiments measured with real Search Console data."
         art={{ kind: 'mark', variant: 'beam' }}
       />

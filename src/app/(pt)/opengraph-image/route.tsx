@@ -26,8 +26,8 @@ export function GET() {
     (
       <OgCard
         kicker="Laboratório vivo"
-        title="SEO técnico para desenvolvedores"
-        highlight="Next.js"
+        title="SEO técnico para quem desenvolve"
+        highlight="sites modernos"
         subtitle="Guias práticos, ferramentas gratuitas e experimentos medidos com dados reais."
         art={{ kind: 'mark', variant: 'beam' }}
       />
