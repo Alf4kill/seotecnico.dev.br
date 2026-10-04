@@ -79,6 +79,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
   // português, o mesmo valor do `translationOf` do MDX inglês; o teste de
   // unidade confere os dois lados. A lista é escrita à mão, e não lida do
   // conteúdo, porque o seletor de idioma (Header) roda no cliente, sem fs.
+  {
+    id: 'quais-ias-executam-javascript',
+    paths: {
+      'pt-BR': '/blog/quais-ias-executam-javascript',
+      en: '/en/blog/which-ai-assistants-run-javascript',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
