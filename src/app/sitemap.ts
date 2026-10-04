@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { site } from '@/lib/site'
-import { getAllPosts, getGuide, getEnglishCaseStudy } from '@/lib/content'
+import { getAllPosts, getAllEnglishPosts, getGuide, getEnglishCaseStudy } from '@/lib/content'
 import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
 import { CASE_STUDIES_REVISED } from '@/lib/case-studies'
 
@@ -83,5 +83,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
   }))
 
-  return [...staticPages, ...postPages]
+  // Artigos em inglês (/en/blog): entram sozinhos quando o MDX chega em
+  // content/en/blog, como os portugueses. O hreflang de cada tradução vai no
+  // <head> (lib/hreflang.ts); aqui é só descoberta e cobertura da suíte.
+  const englishPostPages: MetadataRoute.Sitemap = getAllEnglishPosts().map(({ frontmatter }) => ({
+    url: `${base}/en/blog/${frontmatter.slug}`,
+    lastModified: toDate(frontmatter.dateModified),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...staticPages, ...postPages, ...englishPostPages]
 }

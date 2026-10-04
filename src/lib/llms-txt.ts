@@ -62,7 +62,7 @@ function postLine(post: Post): string {
   return linkLine(`/blog/${slug}`, title, description)
 }
 
-export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post): string {
+export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn: Post[] = []): string {
   const sections = [
     `# ${site.name}`,
     '',
@@ -85,6 +85,15 @@ export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post): string
           `- [Case studies](${absoluteUrl('/en/case-studies')}): Four problems from this site, what was done in code and what was measured, each linked to its pull request and experiment-log entry.`,
           `- [Detecting AI crawlers on a live site](${absoluteUrl('/en/case-studies/ai-crawler-detection')}): A 57-day pilot of AI crawler telemetry with verified identities and honeypots, its six instrument defects, and a positive control with ChatGPT, Claude and Perplexity.`,
           `- [About ${site.author.name}](${absoluteUrl('/en/about')}): Who builds this site and how the work is done — hypothesis first, SEO as a merge gate, own field data.`,
+          ...postsEn.map(({ frontmatter }) =>
+            linkLine(
+              `/en/blog/${frontmatter.slug}`,
+              frontmatter.title,
+              frontmatter.translationOf
+                ? `${frontmatter.description} English translation of /blog/${frontmatter.translationOf}.`
+                : frontmatter.description
+            )
+          ),
           '',
         ]
       : []),
