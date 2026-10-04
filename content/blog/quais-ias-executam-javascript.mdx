@@ -1,6 +1,6 @@
 ---
 title: "Quais IAs executam JavaScript? Teste com 5 assistentes"
-description: "Grok e DeepSeek executam JavaScript; ChatGPT, Claude e Gemini leem só o HTML do servidor. 55 rodadas controladas, nenhum código inventado."
+description: "Grok e DeepSeek executam JavaScript; ChatGPT, Claude e Gemini leem só o HTML do servidor. 58 rodadas controladas, nenhum código inventado."
 slug: "quais-ias-executam-javascript"
 primaryQuery: "quais ias executam javascript"
 keywords: ['gemini', 'grok', 'deepseek', 'chatgpt', 'claude', 'javascript', 'json-ld', 'renderização', 'headless chrome', 'agente de ia', 'crawler de ia', 'aeo', 'geo', 'ia']
@@ -31,7 +31,7 @@ headless e usa o resultado. O DeepSeek também roda o JavaScript, mas o texto
 que chega ao modelo é capturado antes de o valor aparecer, e por isso a
 resposta muitas vezes não o traz. **ChatGPT, Claude e Gemini leem só o
 HTML que o servidor entrega.** Só o Grok leu o JSON-LD. E nenhum dos cinco
-inventou um código: foram 220 pedidos, e todo código que não chegou até o
+inventou um código: foram 232 pedidos, e todo código que não chegou até o
 assistente foi relatado como não encontrado.
 
 ## O resultado em uma tabela
@@ -218,8 +218,8 @@ Três leituras:
 
 1. **Saber onde o dado está não basta.** Com a localização,
    nenhuma requisição a mais chegou ao servidor. Claude e Gemini até tentaram:
-   o Claude disse ter usado um segundo método de extração e tentado baixar o
-   HTML bruto pelo terminal, bloqueado pela lista de rede do ambiente dele. O
+   o Claude disse ter usado um segundo método de extração e que não conseguia
+   baixar o HTML bruto pelo terminal, bloqueado pela lista de rede do ambiente dele. O
    Gemini escreveu e rodou um script Python para buscar a página, que falhou
    porque o ambiente dele não conseguia resolver o endereço do site. Nenhuma dessas tentativas
    chegou ao site.
@@ -245,18 +245,19 @@ com o registro do servidor, nem todas as explicações se sustentam:
 | Claude | a ferramenta não executa JavaScript e descarta `<script>` | uma requisição, sem `Sec-Fetch`; abriu o JSON quando recebeu o endereço | sim |
 | Grok | descreveu o texto depois do JavaScript e o JSON-LD, com atributos do HTML | Chrome headless que rodou o JavaScript em todas as rodadas | sim |
 | DeepSeek | "recebo o conteúdo já renderizado/extraído, sem executar o JS da página" | o JavaScript da página rodou em 11 de 11 rodadas | **não** |
-| Gemini | o JSON "não pôde ser acessado", e a página "não continha" JSON-LD | buscou o JSON nas 3 vezes; o JSON-LD está no HTML de toda resposta | **não** |
+| Gemini | o JSON "não pôde ser acessado", e o JSON-LD com o código não estava no HTML que recebeu | buscou o JSON nas 3 vezes; o JSON-LD com o código está no HTML de toda resposta | **não** |
 
 Nenhuma dessas frases é um código inventado, e nenhuma contamina a contagem.
 Mas mostram um limite prático: **a explicação que o assistente dá sobre a
 própria leitura é um palpite do modelo, não um relatório da ferramenta**. O
-Gemini afirmou cinco vezes que a página não tinha JSON-LD. Quem usasse essas
+Gemini afirmou cinco vezes que o JSON-LD com o código não estava no HTML que
+recebeu, e numa delas, que não havia JSON-LD nenhum. Quem usasse essas
 respostas para auditar o próprio site concluiria que o JSON-LD estava
 faltando.
 
 ## Ninguém inventou código
 
-Em 220 códigos pedidos, de 55 rodadas, nenhum assistente relatou um código
+Em 232 códigos pedidos, de 58 rodadas, nenhum assistente relatou um código
 errado. Todo código que não chegou à resposta foi declarado como não
 encontrado, mesmo quando o prompt afirmava que ele existia e dizia onde
 procurar. É o resultado mais estável das três baterias. A ressalva é a do
