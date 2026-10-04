@@ -58,8 +58,11 @@ All rounds on **2026-09-25**. Times are UTC, and the owner is at UTC−3. The
 Perplexity account was on the **free plan**. The plan and model names of the
 ChatGPT and Claude accounts were **not recorded**, which is a deviation from
 the protocol above. *Plans confirmed by the owner on 2026-10-03:* ChatGPT
-**Go** and Claude **Pro**, both paid, the same accounts as H17. The model
-names remain unknown.
+**Go** and Claude **Pro**, both paid, the same accounts as H17. *Claude's
+model confirmed by the owner on 2026-10-04:* **Opus 5.5**, the model the
+owner uses on that account for all general use. This is the owner's
+statement after the fact, not a note taken during the rounds. ChatGPT's
+model remains unknown (its interface shows no model name).
 
 The answers below are committed after round 15, with their codes (every round
 id changes every code, so a published code cannot answer a later round). The
@@ -1207,8 +1210,9 @@ Claude and Gemini, though none of it reached the server:
 
 **New identity facts:**
 
-- **Grok's renderer runs in Google Cloud.** All 30 of its requests are
-  `google-cloud`: a Google Cloud customer range, so the address says "a
+- **Grok's renderer runs in Google Cloud.** All 12 of its requests (2 per
+  round) are `google-cloud` (corrected on 2026-10-04 from "all 30", a
+  miscount). That is a Google Cloud customer range, so the address says "a
   Google Cloud tenant", not "Google". It is now `HeadlessChrome/154` (148 in
   H16). H16 recorded `none` for the same renderer because `cloud.json` was
   not checked before diagnostic B.
