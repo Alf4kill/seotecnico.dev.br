@@ -9,7 +9,8 @@
 ## 1. What this project is
 
 A **live, public technical SEO laboratory**: a Portuguese-first content site +
-free web tools focused on **technical SEO for Next.js developers**, built to
+free web tools focused on **technical SEO for developers who build modern
+websites**, with Next.js as the reference implementation, built to
 rank organically on Google and to serve as a verifiable portfolio piece for
 Technical SEO Specialist job applications.
 
@@ -17,8 +18,15 @@ The site itself is the experiment. The repository, the measurement plan, and
 the documented before/after results are the portfolio artifact.
 
 **Name / domain:** **SEO Técnico** — `seotecnico.dev.br`
-**Niche:** Technical SEO for Next.js developers (Portuguese-first, with
-selected pages in English under `/en` using hreflang).
+**Niche:** Technical SEO for developers who build modern websites (React,
+Next.js and equivalent stacks), with Next.js as the reference implementation.
+The differentiator is the method: public lab, pre-registered hypotheses, open
+code, measurement on this domain. Portuguese-first, with selected pages in
+English under `/en` using hreflang. *Widened from "Next.js developers" on
+2026-10-04 (owner decision): what the lab measures is a property of the HTML a
+server delivers, not of one framework, and Next.js-only queries in pt-BR carry
+almost no demand (288 Brazilian impressions for the whole site in three
+months, `docs/research/2026-09-13-page-creation.md`).*
 
 **Branding rules:**
 - Display brand: "SEO Técnico" (with accent, title case) — used in logo, OG
@@ -102,6 +110,18 @@ robots.txt                      → via app/robots.ts
 
 ### 5.2 Topic cluster (pillar + spokes)
 
+Content follows three layers:
+1. **Generic hubs and lab articles:** title without a framework; a closing
+   "No Next.js" section carries the real implementation from this repo.
+2. **Next.js implementation spokes:** framework in the title.
+3. **Next.js long-tail.**
+
+Examples in other stacks (React with Vite, WordPress, PHP) are marked as
+illustrative. Claims about them stay at the mechanism level (§10, claims
+policy) until measured. The no-hypothetical-production-code rule still
+applies. A generic page and a Next.js spoke never share an equivalent
+`primaryQuery`, and no published slug is renamed for this.
+
 **Pillar:** *Guia completo de SEO técnico para Next.js* — long, canonical,
 internally links to every spoke; every spoke links back to it.
 
@@ -155,6 +175,9 @@ Tools must work without login. No stored user data (LGPD simplicity).
 - OG image per page via `next/og` (dynamic generation).
 - All pages statically generated (SSG/ISR) unless a tool requires otherwise.
 - Internal links: every spoke ↔ pillar; every article links to ≥1 tool.
+  Generic hubs (§5.2, layer 1) link the Next.js pillar as the reference
+  implementation until a generic pillar exists; creating one is a separate
+  decision.
 - Images: `next/image`, explicit dimensions, descriptive `alt` in page language.
 - No orphan pages: everything reachable within 3 clicks from home.
 
@@ -361,6 +384,17 @@ faq:            # optional array → renders FAQPage JSON-LD
   index is derived from content (`lib/search-index.ts`) — publishing an article
   must never require editing a second file. Aim for ≥3 synonyms/abbreviations.
 
+**Claims policy.** Every claim in published content fits one of three levels:
+1. **Mechanism** (directional): follows from how browsers or crawlers process
+   HTML. No numbers. Example: "text rendered only after a client-side fetch
+   is not in the served HTML".
+2. **Conditional:** a context-dependent fix, framed as "if X, then Y".
+3. **Magnitude:** any number, rate or size of effect. Requires an actual
+   measurement with declared methodology.
+
+No fabricated metrics. No ranking promises. Claims about stacks this site does
+not run stay at level 1 until measured.
+
 ---
 
 ## 11. Build phases (roadmap)
@@ -416,7 +450,9 @@ A page or feature is DONE only when:
 - User accounts, logins, databases with personal data
 - Paid services of any kind beyond the domain
 - CMS integrations
-- Content outside the niche (general marketing SEO, news commentary)
+- Content outside the niche: content SEO, link building, general marketing,
+  news commentary, and any topic that is not about how machines (Googlebot,
+  AI assistants) fetch, render, read or index pages
 - Anything that doesn't map to an objective in section 3
 
 ---

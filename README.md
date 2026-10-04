@@ -1,7 +1,8 @@
 # SEO Técnico — seotecnico.dev.br
 
 A live, public **technical SEO laboratory**: Portuguese-first content and free
-web tools focused on technical SEO for Next.js developers. The site itself is
+web tools focused on technical SEO for developers who build modern websites,
+with Next.js as the reference implementation. The site itself is
 the experiment — every technique documented here is implemented on this very
 domain and measured with real Google Search Console and CrUX data.
 
