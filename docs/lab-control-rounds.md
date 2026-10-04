@@ -1137,6 +1137,101 @@ so these wait for the export:
   page requests) and not in 44 or 54. Blocks 5 and 6 were not read in
   Realtime.
 
+### Export and result (2026-10-04)
+
+**Export:** the three tables above, day 2026-10-02, taken on 2026-10-04 with
+the day closed for more than 24 hours. The owner's third table carried
+`lab_fetch_mode` in place of `has_sec_fetch`, which it implies. **97 events.**
+The three tables join on `lab_hit` with no orphan row, and every request
+carries a round from 40 to 69 and falls within about a minute of that
+round's recorded send time. **Instrument: 0 misses, 0 unexplained requests.**
+
+Per round:
+
+| Assistant | Condition 1: requests per round | Condition 2: requests per round | Fetcher, `lab_ip_owner`, country |
+|---|---|---|---|
+| ChatGPT | 1: page | 2: page + `/c`, same second | `ChatGPT-User`, `verified-ip`, `openai-chatgpt-user`, BR |
+| Claude | 1: page | 2: page, then `/c` 3–5 s later | `Claude-User`, `verified-ip`, `anthropic`, US |
+| Gemini | 1: page | 2: page + `/c`, same second | bare `Google`, `google-owned`, US and BE |
+| DeepSeek | 2: page, then `/c` by script (`cors/empty`) | 3: page + `/c` opened directly (`navigate/document`), then `/c` by script | Firefox 149 Linux, `none`, HK |
+| Grok | 2: renderer page, then `/c` by script | 11–19: the renderer's two, plus the macOS family | renderer `HeadlessChrome/154` Linux, **`google-cloud`**, US |
+
+`Sec-Fetch-*` mode: ChatGPT, Claude and Gemini sent none on any request; every
+request from a browser user agent sent one.
+
+**Verdicts:**
+
+- **C1 confirmed (9/9 rounds).** In condition 1, ChatGPT, Claude and Gemini
+  reported no `LD-` and no `JS-`, and none of them requested `/c`. Knowing
+  where the code is does not change what their fetch delivers.
+- **C2 confirmed for ChatGPT (3/3) and Claude (3/3).** Each opened `/c` itself
+  (`lab_endpoint = js`, no `Sec-Fetch-*`, so not a script's `fetch()`) and
+  reported `JS-` correctly. Against their H15 baseline of 0/5, a 3/3 shift
+  gives p = 0.018 each (Fisher, one-sided), as registered.
+- **C2 falsified for Gemini (0/3).** The server log shows **it fetched `/c` in
+  all three rounds**, in the same second as the page, from the same network
+  (`google-owned`). The server answered each request, and all three answers
+  still said the endpoint could not be accessed. The failure sits between
+  Gemini's fetch and its answer, not at the site or the network.
+- **D falsified (0/3).** In every condition-1 round DeepSeek's renderer
+  requested `/c` by script, and the answer still read "carregando…". In
+  condition 2 its `JS-` came with a **direct** `/c` request (`navigate/document`)
+  in all three rounds, and it was delivered 3/3. So DeepSeek's code comes
+  from opening the address, not from its render. Condition 1 vs condition 2
+  is 0/3 vs 3/3, p = 0.05.
+- **G confirmed (3/3).** Grok reported `LD-` in all three condition-1 rounds,
+  and in all three of condition 2. Against H16's 2/5 the difference is not
+  significant (p = 0.18), so this is a capability shown, not a change
+  measured.
+- **H confirmed:** 0 wrong codes in 120.
+
+**The free-plan statement**, as registered, applies to the three assistants
+on free plans:
+
+- **DeepSeek and Grok:** behaviour changed under a hint, so the plan was not
+  the constraint.
+- **Gemini:** the plan did not stop the fetch either. The fetch happened, so
+  "cannot reach" is ruled out, and what remains is the step from fetched data
+  to the answer.
+- **ChatGPT (Go) and Claude (Pro, Opus 5.5):** the result describes those
+  plans.
+
+**Effort, against the baseline.** Requests per round went from 1 to 2 for
+ChatGPT, Claude and Gemini only when the prompt carried the second URL; the
+location hint alone added none. Stated effort grew under both hints for
+Claude and Gemini, though none of it reached the server:
+
+- Claude tried a second extraction method, and its terminal was blocked by
+  its network allowlist.
+- Gemini ran a Python fetch, and its sandbox had no DNS.
+
+**New identity facts:**
+
+- **Grok's renderer runs in Google Cloud.** All 30 of its requests are
+  `google-cloud`: a Google Cloud customer range, so the address says "a
+  Google Cloud tenant", not "Google". It is now `HeadlessChrome/154` (148 in
+  H16). H16 recorded `none` for the same renderer because `cloud.json` was
+  not checked before diagnostic B.
+- **Grok's macOS family appeared in condition 2 only:** 16, 9 and 17
+  requests in rounds 49, 59 and 69, from 11 countries in all. It never
+  appeared in condition 1. In H16, with the neutral prompt, it appeared in
+  5/5 rounds and requested the page only. Here it opened `/c` directly in all
+  three condition-2 rounds, and in round 59 it requested nothing else. Round
+  49 also had one Linux Chrome 154 (not headless) from Israel, opening `/c`.
+  The family is undeclared, as in H16. What triggers it is not established:
+  the prompt's wording differs between the three settings, and so does the
+  number of URLs.
+- **Gemini** fetched from Google's own network again (diagnostic B), from
+  the US and Belgium.
+
+One request (round 49, macOS family) has `lab_ip_owner = unknown`: a feed
+was unreadable at that moment. No verdict depends on it.
+
+**Delay, prompt to first request:** under a minute in every round. The send
+times were noted to the minute, and round 42's first request came 5 s
+*before* its noted minute, so the notes are accurate to about a minute and
+no finer delay is claimed.
+
 ### Answers, verbatim
 
 The owner's time annotations are removed (the times are in the table). Probe
