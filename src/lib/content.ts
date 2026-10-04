@@ -221,6 +221,41 @@ export function getEnglishCaseStudy(slug: string): Post {
 }
 
 /**
+ * Articles in English (/en/blog/<slug>), newest first; [] while
+ * content/en/blog is empty. Same rules as the Portuguese blog (category
+ * required), plus `lang: en`. A translation declares `translationOf: <pt
+ * slug>`; its hreflang pair is declared in lib/hreflang.ts, and a unit test
+ * checks the two agree. These posts stay out of the Portuguese surfaces
+ * (/blog, search, feed): the site is Portuguese-first, and English exists for
+ * portfolio and distribution, not for ranking.
+ */
+export function getAllEnglishPosts(): Post[] {
+  const dir = path.join(CONTENT_DIR, 'en', 'blog')
+  if (!fs.existsSync(dir)) return []
+
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.mdx'))
+    .map((f) => {
+      const post = readMdxFile(path.join(dir, f))
+      if (!post.frontmatter.category) {
+        throw new Error(`[content] "en/blog/${f}": missing required frontmatter field "category"`)
+      }
+      if (post.frontmatter.lang !== 'en') {
+        throw new Error(`[content] "en/blog/${f}": lang must be "en"`)
+      }
+      return post
+    })
+    .sort((a, b) =>
+      b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
+    )
+}
+
+export function getEnglishPostBySlug(slug: string): Post | undefined {
+  return getAllEnglishPosts().find((p) => p.frontmatter.slug === slug)
+}
+
+/**
  * Até `limit` artigos para "Continue pelo mesmo eixo": primeiro os da mesma
  * categoria, depois os mais recentes — nunca o próprio artigo. Links internos
  * entre spokes, derivados em vez de curados à mão.
