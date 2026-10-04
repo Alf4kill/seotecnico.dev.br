@@ -1,0 +1,324 @@
+---
+title: "Quais IAs executam JavaScript? Teste com 5 assistentes"
+description: "Grok e DeepSeek executam JavaScript; ChatGPT, Claude e Gemini leem só o HTML do servidor. 55 rodadas controladas, nenhum código inventado."
+slug: "quais-ias-executam-javascript"
+primaryQuery: "quais ias executam javascript"
+keywords: ['gemini', 'grok', 'deepseek', 'chatgpt', 'claude', 'javascript', 'json-ld', 'renderização', 'headless chrome', 'agente de ia', 'crawler de ia', 'aeo', 'geo', 'ia']
+lang: "pt-BR"
+category: indexacao
+status: em-medicao
+tldr: >-
+  Das cinco testadas, duas: Grok e DeepSeek. O Grok executa e usa o
+  resultado; o DeepSeek executa, mas o texto chega ao modelo antes do valor.
+  ChatGPT, Claude e Gemini leem só o HTML do servidor. Só o Grok leu JSON-LD.
+  Nenhum dos cinco inventou código.
+datePublished: "2026-10-04"
+dateModified: "2026-10-04"
+faq:
+  - question: "O Gemini executa JavaScript?"
+    answer: "Não executou em nenhuma das 14 rodadas deste teste (setembro e outubro de 2026, plano gratuito). O fetcher dele faz uma única requisição pela página, com o user agent 'Google', e lê o texto do HTML servido. Quando recebeu o endereço direto de um JSON, buscou esse JSON nas três vezes, mas respondeu nas três que não conseguiu acessá-lo."
+  - question: "O Grok lê JSON-LD?"
+    answer: "Sim. Foi o único dos cinco assistentes a relatar um código que só existia dentro do JSON-LD: 2 de 5 rodadas com o pedido neutro e 6 de 6 quando o pedido dizia onde o código estava. O Grok renderiza a página num Chrome headless e lê o HTML completo, incluindo o conteúdo de tags script."
+  - question: "O DeepSeek executa JavaScript?"
+    answer: "Executa: em todas as 11 rodadas, o navegador dele (um Firefox) rodou o JavaScript da página e buscou o valor que ela carrega. Mas o texto que chega ao modelo é capturado cedo demais, e o valor apareceu em só 3 de 5 respostas com o pedido neutro e em 0 de 3 com a dica. Ele só entregou o valor sempre quando recebeu o endereço direto do JSON."
+  - question: "Mandar o link do JSON para a IA ajuda a ler o dado?"
+    answer: "Para ChatGPT (plano Go), Claude (plano Pro) e DeepSeek, sim: os três abriram o endereço e relataram o valor em 3 de 3 rodadas. Dizer só onde o dado está, sem o link, não mudou nada. O Gemini buscou o link e mesmo assim disse que não conseguiu."
+---
+
+Das cinco testadas neste site entre setembro e outubro de 2026, **duas executam
+JavaScript: o Grok e o DeepSeek**. O Grok renderiza a página num Chrome
+headless e usa o resultado. O DeepSeek também roda o JavaScript, mas o texto
+que chega ao modelo é capturado antes de o valor aparecer, e por isso a
+resposta muitas vezes não o traz. **ChatGPT, Claude e Gemini leem só o
+HTML que o servidor entrega.** Só o Grok leu o JSON-LD. E nenhum dos cinco
+inventou um código: foram 220 pedidos, e todo código que não chegou até o
+assistente foi relatado como não encontrado.
+
+## O resultado em uma tabela
+
+Cada assistente recebeu o mesmo pedido em rodadas separadas: abrir uma página
+e relatar quatro códigos, cada um entregue por um caminho de renderização
+diferente. A tabela mostra o pedido neutro, sem nenhuma dica.
+
+| Assistente (plano) | Texto do servidor | `'use client'` | Só no JSON-LD | Só depois do JavaScript | Rodou o JavaScript da página? |
+|---|---|---|---|---|---|
+| ChatGPT (Go) | 5 de 5 | 5 de 5 | 0 de 5 | 0 de 5 | não, 0 de 5 |
+| Claude (Pro, Opus 5.5) | 5 de 5 | 5 de 5 | 0 de 5 | 0 de 5 | não, 0 de 5 |
+| Gemini (grátis) | 8 de 8 | 8 de 8 | 0 de 8 | 0 de 8 | não, 0 de 8 |
+| DeepSeek (grátis) | 5 de 5 | 5 de 5 | 0 de 5 | **3 de 5** | **sim, 5 de 5** |
+| Grok (grátis) | 5 de 5 | 5 de 5 | **2 de 5** | **5 de 5** | **sim, 5 de 5** |
+
+A última coluna não vem da resposta, vem do servidor. "Rodou o JavaScript"
+quer dizer que o `fetch` que a página dispara no navegador chegou ao site
+naquela rodada. A diferença entre essa coluna e a anterior é o caso do
+DeepSeek: o JavaScript rodou nas cinco rodadas, e o valor chegou à resposta
+em três.
+
+ChatGPT e Claude foram testados em setembro, no [teste anterior sobre o que o
+ChatGPT lê](/blog/chatgpt-le-javascript). Gemini, DeepSeek e Grok entraram em
+setembro e outubro, com o mesmo pedido e a mesma página. Em outubro os cinco
+passaram por uma terceira bateria, com dicas, descrita mais abaixo.
+
+## Como o teste foi montado
+
+A página é uma rota Next.js com quatro códigos, que mudam a cada rodada:
+
+| Código | Onde ele existe | Se o assistente relatar, prova que… |
+|---|---|---|
+| `SRV-` | texto de um Server Component | leu o HTML servido |
+| `UC-` | texto de um componente `'use client'` no primeiro render | nada além do `SRV-`: também está no HTML |
+| `LD-` | só no campo `identifier` do JSON-LD | a leitura preserva o conteúdo de `<script type="application/ld+json">` |
+| `JS-` | buscado por um `fetch` dentro de `useEffect`, num endpoint JSON separado | o valor que só existe depois do JavaScript chegou ao modelo |
+
+Três detalhes tornam a medição confiável:
+
+- **Cada assistente recebe a própria URL secreta.** O endereço é derivado de
+  uma chave que só existe na produção, e cada assistente tem o seu. Um agente
+  que não se identifica no user agent ainda assim fica identificado: uma
+  requisição na URL do Grok só pode vir de quem recebeu a URL do Grok.
+- **Cada requisição ganha uma chave e um horário ao segundo.** Isso permite
+  juntar, pedido a pedido, o user agent, o país, a faixa de IP e o tipo de
+  busca.
+- **O servidor separa um script de uma ferramenta.** Quando o JavaScript de
+  uma página chama `fetch()`, o navegador envia `Sec-Fetch-Mode: cors`. Quando
+  uma ferramenta abre um endereço como página, envia `navigate`, ou não envia
+  nada. O código que registra isso, em
+  [`src/lib/lab-probes.ts`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/src/lib/lab-probes.ts):
+
+```ts
+function fetchMode(headers: Headers): string {
+  const mode = headers.get('sec-fetch-mode')
+  const dest = headers.get('sec-fetch-dest')
+  if (!mode && !dest) return '(none)'
+  return clip(`${mode || '-'}/${dest || '-'}`)
+}
+```
+
+`cors/empty` é o `fetch` de um script rodando dentro de um navegador.
+`navigate/document` é alguém abrindo o endereço. `(none)` é um cliente HTTP
+que não é navegador. Essa linha de código é o que diferencia "renderizou a
+página" de "abriu o JSON direto".
+
+O pedido neutro foi o mesmo em todas as rodadas, numa conversa nova, sempre
+no aplicativo web de cada assistente:
+
+> Abra esta página e me diga, exatamente como aparecem, todos os códigos que
+> começam com SRV-, UC-, LD- ou JS- que você encontrar nela, e em que parte da
+> página cada um estava. Se não encontrar algum, diga que não encontrou — não
+> invente.
+
+O protocolo, as respostas na íntegra e cada desvio estão em
+[`docs/lab-control-rounds.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/lab-control-rounds.md),
+e as previsões registradas antes de cada bateria estão em
+[`docs/experiment-log.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/experiment-log.md).
+
+## Três jeitos de ler uma página
+
+O registro do servidor mostra que os cinco assistentes usam três
+arquiteturas diferentes. Elas explicam a tabela inteira.
+
+<figure>
+  <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Três arquiteturas de leitura: extrator de texto, renderizador que captura cedo e renderizador completo">
+    <title>Três jeitos de um assistente ler uma página</title>
+    <desc>Extrator de texto (ChatGPT, Claude, Gemini): uma requisição pelo HTML, o texto é extraído sem rodar JavaScript e o JSON-LD é descartado; o modelo recebe SRV e UC. Renderizador que captura cedo (DeepSeek): um Firefox carrega a página e roda o JavaScript, que busca o JSON, mas o texto vai ao modelo antes de o valor chegar; o modelo recebe SRV, UC e às vezes JS. Renderizador completo (Grok): um Chrome headless carrega a página, roda o JavaScript e entrega o HTML completo; o modelo recebe SRV, UC, JS e às vezes LD.</desc>
+
+    <text x="20" y="28" fontSize="13" fill="var(--foreground)">Extrator de texto: ChatGPT, Claude, Gemini</text>
+    <rect x="20" y="40" width="190" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="115" y="66" textAnchor="middle" fontSize="12" fill="var(--foreground)">1 requisição pelo HTML,</text>
+    <text x="115" y="84" textAnchor="middle" fontSize="12" fill="var(--foreground)">sem navegador</text>
+    <line x1="210" y1="71" x2="240" y2="71" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="240" y="40" width="200" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="340" y="66" textAnchor="middle" fontSize="12" fill="var(--foreground)">extrai o texto e</text>
+    <text x="340" y="84" textAnchor="middle" fontSize="12" fill="var(--foreground)">descarta os scripts</text>
+    <line x1="440" y1="71" x2="470" y2="71" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="470" y="40" width="230" height="62" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="585" y="76" textAnchor="middle" fontSize="12" fill="var(--foreground)">o modelo recebe SRV e UC</text>
+
+    <text x="20" y="152" fontSize="13" fill="var(--foreground)">Renderizador que captura cedo: DeepSeek</text>
+    <rect x="20" y="164" width="190" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="115" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">Firefox carrega a</text>
+    <text x="115" y="208" textAnchor="middle" fontSize="12" fill="var(--foreground)">página e roda o JS</text>
+    <line x1="210" y1="195" x2="240" y2="195" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="240" y="164" width="200" height="62" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="340" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">o texto sai antes de</text>
+    <text x="340" y="208" textAnchor="middle" fontSize="12" fill="var(--foreground)">o valor do fetch chegar</text>
+    <line x1="440" y1="195" x2="470" y2="195" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="470" y="164" width="230" height="62" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="585" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">o modelo recebe SRV e UC,</text>
+    <text x="585" y="208" textAnchor="middle" fontSize="12" fill="var(--foreground)">às vezes JS</text>
+
+    <text x="20" y="276" fontSize="13" fill="var(--foreground)">Renderizador completo: Grok</text>
+    <rect x="20" y="288" width="190" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="115" y="314" textAnchor="middle" fontSize="12" fill="var(--foreground)">Chrome headless carrega</text>
+    <text x="115" y="332" textAnchor="middle" fontSize="12" fill="var(--foreground)">a página e roda o JS</text>
+    <line x1="210" y1="319" x2="240" y2="319" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="240" y="288" width="200" height="62" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="340" y="314" textAnchor="middle" fontSize="12" fill="var(--foreground)">entrega o HTML</text>
+    <text x="340" y="332" textAnchor="middle" fontSize="12" fill="var(--foreground)">completo, com scripts</text>
+    <line x1="440" y1="319" x2="470" y2="319" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="470" y="288" width="230" height="62" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="585" y="314" textAnchor="middle" fontSize="12" fill="var(--foreground)">o modelo recebe SRV, UC,</text>
+    <text x="585" y="332" textAnchor="middle" fontSize="12" fill="var(--foreground)">JS e às vezes LD</text>
+  </svg>
+  <figcaption>O que separa os três grupos não é o modelo de linguagem, é a ferramenta que busca a página. A caixa tracejada marca onde o DeepSeek perde o valor.</figcaption>
+</figure>
+
+Em texto, o que a figura mostra:
+
+| Arquitetura | Assistentes | O que o servidor registra por rodada | O que chega ao modelo |
+|---|---|---|---|
+| Extrator de texto | ChatGPT, Claude, Gemini | 1 requisição pela página, sem os cabeçalhos `Sec-Fetch` de um navegador | o texto do HTML; o JSON-LD é descartado e o JavaScript nunca roda |
+| Renderizador que captura cedo | DeepSeek | a página e, no mesmo segundo ou até 2 s depois, o `fetch` do script (`cors/empty`) | o texto, às vezes antes de o valor do `fetch` aparecer |
+| Renderizador completo | Grok | a página e o `fetch` do script, 1 s depois, de um `HeadlessChrome` | a página depois do JavaScript, e o HTML com os scripts |
+
+**Extrator de texto.** ChatGPT e Claude se identificam (`ChatGPT-User`,
+`Claude-User`) e saem de faixas de IP que a OpenAI e a Anthropic publicam. O
+Gemini envia o user agent `Google`, sem mais nada, de endereços da rede do
+próprio Google que não aparecem em nenhuma das listas de crawlers e fetchers
+que o Google publica. Os três mandam uma requisição e trabalham com o texto
+dela. O Claude descreve a própria ferramenta assim: baixa o HTML, converte em
+texto e descarta o conteúdo das tags `<script>`.
+
+**Renderizador que captura cedo.** O DeepSeek abre a página num Firefox
+saindo de Hong Kong, com todos os cabeçalhos de navegador. Em **11 de 11
+rodadas** o JavaScript da página rodou e buscou o valor. Mas, ao que tudo
+indica, o texto que vai para o modelo é capturado logo depois do
+carregamento: em boa parte das vezes a resposta dizia "carregando…", mesmo
+com o `fetch` registrado no servidor.
+Para quem constrói páginas, é o caso mais traiçoeiro. O conteúdo carregado no
+cliente **às vezes** chega, e às vezes não chega.
+
+**Renderizador completo.** O Grok usa um Chrome headless, hoje
+`HeadlessChrome/154`, rodando numa faixa de IP de clientes do Google Cloud.
+Ele carrega a página, espera o JavaScript e entrega o HTML inteiro. Foi o
+único a ler o JSON-LD, citando o bloco por inteiro em várias respostas. Em
+várias rodadas apareceu junto um grupo de 8 a 17 requisições com user agents
+de Chrome e Safari no macOS, saindo de vários países ao mesmo tempo, sem
+nenhuma identificação do Grok.
+
+## Dizer onde está o dado muda alguma coisa?
+
+A terceira bateria repetiu o pedido com dicas, 3 rodadas por assistente em
+cada condição:
+
+- **Condição 1, a localização:** o prompt acrescentava que o `LD-` fica no
+  JSON-LD e que o `JS-` só aparece depois de o JavaScript rodar.
+- **Condição 2, o endereço:** além disso, o prompt trazia a URL direta do
+  JSON que a página busca.
+
+| Assistente | Só a localização: `LD-` / `JS-` | Com o endereço: `LD-` / `JS-` | O que o servidor viu com o endereço |
+|---|---|---|---|
+| ChatGPT (Go) | 0 de 3 / 0 de 3 | 0 de 3 / **3 de 3** | abriu o JSON direto |
+| Claude (Pro) | 0 de 3 / 0 de 3 | 0 de 3 / **3 de 3** | abriu o JSON direto |
+| Gemini (grátis) | 0 de 3 / 0 de 3 | 0 de 3 / 0 de 3 | **abriu o JSON nas 3 vezes** |
+| DeepSeek (grátis) | 0 de 3 / 0 de 3 | 0 de 3 / **3 de 3** | abriu o JSON direto, além de renderizar |
+| Grok (grátis) | **3 de 3** / **3 de 3** | **3 de 3** / **3 de 3** | renderizou, e o grupo macOS abriu o JSON direto |
+
+Três leituras:
+
+1. **Saber onde o dado está não basta.** Com a localização,
+   nenhuma requisição a mais chegou ao servidor. Claude e Gemini até tentaram:
+   o Claude disse ter usado um segundo método de extração e tentado baixar o
+   HTML bruto pelo terminal, bloqueado pela lista de rede do ambiente dele. O
+   Gemini escreveu e rodou um script Python para buscar a página, que falhou
+   porque o ambiente dele não conseguia resolver o endereço do site. Nenhuma dessas tentativas
+   chegou ao site.
+2. **Um endereço direto muda o resultado.** ChatGPT e Claude
+   não renderizam, mas buscam qualquer URL que recebem. Com o endereço do
+   JSON, os dois o abriram e relataram o valor nas três rodadas, depois de 0
+   em 5 com o pedido neutro. O DeepSeek, que perdia o valor na renderização,
+   passou a entregá-lo sempre que abria o JSON direto.
+3. **O Gemini recebeu e disse que não recebeu.** Nas três rodadas
+   com o endereço, o fetcher do Gemini pediu a página e o JSON no mesmo
+   segundo, e o servidor respondeu os dois. As três respostas disseram que o
+   endereço não pôde ser acessado. O dado chegou à ferramenta e se perdeu
+   antes da resposta.
+
+## O que a IA diz que fez, e o que o servidor viu
+
+Quase todas as respostas explicam por que um código não apareceu. Comparadas
+com o registro do servidor, nem todas as explicações se sustentam:
+
+| Assistente | O que disse | O que o servidor registrou | Confere? |
+|---|---|---|---|
+| ChatGPT | não conseguiu confirmar `LD-` nem `JS-` no que a ferramenta expôs | uma requisição, sem `Sec-Fetch`; abriu o JSON quando recebeu o endereço | sim |
+| Claude | a ferramenta não executa JavaScript e descarta `<script>` | uma requisição, sem `Sec-Fetch`; abriu o JSON quando recebeu o endereço | sim |
+| Grok | descreveu o texto depois do JavaScript e o JSON-LD, com atributos do HTML | Chrome headless que rodou o JavaScript em todas as rodadas | sim |
+| DeepSeek | "recebo o conteúdo já renderizado/extraído, sem executar o JS da página" | o JavaScript da página rodou em 11 de 11 rodadas | **não** |
+| Gemini | o JSON "não pôde ser acessado", e a página "não continha" JSON-LD | buscou o JSON nas 3 vezes; o JSON-LD está no HTML de toda resposta | **não** |
+
+Nenhuma dessas frases é um código inventado, e nenhuma contamina a contagem.
+Mas mostram um limite prático: **a explicação que o assistente dá sobre a
+própria leitura é um palpite do modelo, não um relatório da ferramenta**. O
+Gemini afirmou cinco vezes que a página não tinha JSON-LD. Quem usasse essas
+respostas para auditar o próprio site concluiria que o JSON-LD estava
+faltando.
+
+## Ninguém inventou código
+
+Em 220 códigos pedidos, de 55 rodadas, nenhum assistente relatou um código
+errado. Todo código que não chegou à resposta foi declarado como não
+encontrado, mesmo quando o prompt afirmava que ele existia e dizia onde
+procurar. É o resultado mais estável das três baterias. A ressalva é a do
+[teste anterior](/blog/chatgpt-le-javascript): o pedido dizia "não invente", e
+foi com pedido aberto que um assistente preencheu a lacuna com uma análise
+deduzida da URL.
+
+## O que fazer num site Next.js
+
+- **O primeiro render é o único conteúdo que os cinco leem.** Texto de Server
+  Component e texto de Client Component no primeiro render chegaram a todos.
+  O que nasce num `useEffect` chegou ao Grok sempre, ao DeepSeek às vezes e
+  aos outros três nunca. A regra é a mesma que vale para o Googlebot, no
+  [artigo sobre SSR, SSG e ISR](/blog/ssr-ssg-isr-nextjs), só que mais dura.
+- **Repita no texto visível o que está no JSON-LD.** O JSON-LD continua sendo
+  o que o Google usa para resultados enriquecidos, e o [artigo sobre JSON-LD no
+  Next.js](/blog/json-ld-nextjs) mostra como gerá-lo. Mas só um dos cinco
+  assistentes o leu. Preço, data, autor e especificação precisam estar também
+  no texto.
+- **Confira o que um leitor sem JavaScript recebe.** Busque a página sem
+  executar nada e procure o trecho que importa:
+
+  ```bash
+  curl -s https://seusite.com.br/sua-pagina | grep -o "o trecho que precisa ser citado"
+  ```
+
+  Se o `grep` não acha, três dos cinco assistentes também não vão achar. O
+  [validador de meta tags](/ferramentas/validador-meta-tags) deste site faz a
+  mesma leitura do HTML cru para os metadados.
+- **Não audite o site pela explicação da IA.** Quando um assistente diz que a
+  página "não tem" algo, a frase descreve o que chegou até ele, quando muito.
+  Para saber o que a página tem, leia o HTML.
+
+## Os limites deste teste
+
+- **Cinco ou três rodadas por condição medem capacidade, não taxa.** "5 de 5"
+  quer dizer, com 95% de confiança, que o comportamento acontece em pelo menos
+  55% das vezes; "3 de 3", em pelo menos 37%. A mudança de ChatGPT e Claude de
+  0 em 5 para 3 em 3 com o endereço é estatisticamente significativa (teste
+  exato de Fisher, p = 0,018 para cada um). A do Grok no JSON-LD, de 2 em 5
+  para 6 em 6, não é (p = 0,06): mostra que ele consegue, não que a dica mudou
+  alguma coisa.
+- **Planos diferentes.** ChatGPT e Claude não foram testados no plano
+  gratuito: o ChatGPT rodou no plano Go, e o Claude no plano Pro, com o modelo
+  Opus 5.5. Gemini, DeepSeek e Grok foram testados no plano gratuito. Uma
+  conta gratuita do ChatGPT ou do Claude pode se comportar igual ou não, e
+  isso não foi medido.
+- **Uma página, poucas datas.** As baterias foram de 25 de setembro a 2 de
+  outubro de 2026. As ferramentas de leitura mudam sem aviso, e cada
+  afirmação vale pela data em que foi medida.
+- **Desvios registrados.** Na terceira bateria, a memória entre conversas
+  estava ligada em ChatGPT, Claude e Gemini nos dois primeiros blocos, e foi
+  desligada antes do terceiro. O Grok passou para o modo privado no terceiro
+  bloco. Os horários de envio foram anotados com precisão de um minuto. Todos
+  os desvios estão no registro público, com o que cada um afeta.
+
+As sondas continuam no ar depois das rodadas. Uma checagem de revisitas, que
+vai mostrar se algum desses assistentes ou seus indexadores voltaram aos
+endereços secretos sem ninguém pedir, **será acrescentada a este artigo** com
+os dados de outubro. O mesmo registro vai virar um guia de como identificar
+cada um desses agentes nos logs do seu site.
+
+Medir o que cada leitor recebe de verdade, em vez de supor, é o que o [guia
+de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) defende para o
+Googlebot, e o que este teste fez com cinco assistentes de IA.
