@@ -9,7 +9,7 @@ import { ToolsStrip } from '@/components/sections/ToolsStrip'
 import { CentralMark } from '@/components/art/Marks'
 
 export const metadata = buildMetadata({
-  title: 'SEO Técnico: guias e ferramentas de SEO para Next.js',
+  title: 'SEO Técnico: SEO medido para sites modernos',
   absoluteTitle: true,
   description: site.description,
   path: '/',
@@ -53,7 +53,7 @@ export default function HomePage() {
               Laboratório vivo · seotecnico.dev.br
             </p>
             <h1 className="font-display text-[clamp(2.75rem,1.5rem+5vw,5.5rem)] font-bold leading-[0.96] tracking-[-0.03em] text-foreground">
-              SEO técnico para desenvolvedores <span className="text-primary">Next.js</span>
+              SEO técnico para quem desenvolve <span className="text-primary">sites modernos</span>
             </h1>
             <p className="max-w-[42rem] text-lg leading-relaxed text-muted lg:text-xl">
               O <strong className="font-semibold text-foreground">SEO Técnico</strong> é um
