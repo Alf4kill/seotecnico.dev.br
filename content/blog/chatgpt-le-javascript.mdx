@@ -13,7 +13,7 @@ tldr: >-
   componente 'use client' chegou normalmente, porque também é renderizado no
   servidor. O Perplexity gratuito respondeu pelo índice, sem buscar a página.
 datePublished: "2026-09-25"
-dateModified: "2026-09-25"
+dateModified: "2026-10-04"
 faq:
   - question: "O ChatGPT executa JavaScript quando lê uma página?"
     answer: "Não executou em nenhuma das 5 rodadas deste teste, em setembro de 2026. O código que só existia depois de um fetch no navegador nunca foi relatado, e o endpoint que esse fetch chamaria não recebeu nenhuma requisição. O que o ChatGPT leu foi o texto do HTML que o servidor entregou."
@@ -305,6 +305,14 @@ paga pode buscar páginas ao vivo; isso não foi medido aqui.
   número de rodada da conferência inicial, e os nomes dos modelos do ChatGPT e
   do Claude não foram anotados. Nenhum dos dois desvios muda o resultado, e os
   dois estão no registro público do teste.
+- **Planos, confirmados depois.** ChatGPT e Claude não estavam no plano
+  gratuito: o ChatGPT rodou no plano Go, e o Claude no plano Pro. O resultado
+  vale para esses planos. (Nota de 4 de outubro de 2026.)
+
+**Continuação:** em outubro, o mesmo teste foi feito com Gemini, DeepSeek e
+Grok, e os cinco assistentes passaram por uma bateria com dicas. Dois deles
+executam JavaScript, e um lê o JSON-LD. O resultado está em [quais IAs
+executam JavaScript](/blog/quais-ias-executam-javascript).
 
 A pergunta que este teste responde é uma parte do que o [guia de SEO técnico
 para Next.js](/guia/seo-tecnico-nextjs) chama de medir em vez de supor: o que
