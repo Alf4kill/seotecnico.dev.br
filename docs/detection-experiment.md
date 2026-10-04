@@ -664,6 +664,16 @@ write-up says that, and only that.
 
 ### 4.8 Positive control, round 3 — does a hint change what an assistant reads? [designed 2026-09-28]
 
+> **Run 2026-10-02, closed 2026-10-04.**
+>
+> - **The location hint alone changed nothing** that reached the server. ChatGPT, Claude and Gemini read the same server text as before. DeepSeek still lost the value its own render fetched. Grok, which renders anyway, found everything.
+> - **The direct address changed what ChatGPT (Go) and Claude (Pro) delivered.** Both opened the JSON and reported it, 3/3. DeepSeek did the same and delivered 3/3.
+> - **Gemini fetched the JSON 3/3 and said 3/3 it could not.**
+> - **0 wrong codes in 120.**
+> - **Grok's renderer runs in a Google Cloud customer range.**
+>
+> Verdicts in [`experiment-log.md`](experiment-log.md) (H17); records in [`lab-control-rounds.md`](lab-control-rounds.md).
+
 Rounds 1 and 2 measured each assistant's **default**: a neutral prompt, and
 whatever its fetch tool did with the page. They cannot tell "the tool cannot
 reach this data" from "the assistant does not go after it". Round 3, the
