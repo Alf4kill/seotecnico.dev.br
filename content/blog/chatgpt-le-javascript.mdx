@@ -273,20 +273,12 @@ paga pode buscar páginas ao vivo; isso não foi medido aqui.
   Component e texto de Client Component no primeiro render chegam ao
   assistente. Conteúdo que depende de um `fetch` no navegador, de uma aba
   fechada que carrega sob demanda ou de um `useEffect` não chega.
-- **Não conte com o JSON-LD para ser citado.** Mantenha o JSON-LD para o
-  Google, e repita no texto visível qualquer fato que você quer ver numa
-  resposta de IA: preço, data, autor, especificação.
-- **Confira o que um leitor sem JavaScript recebe.** O jeito mais rápido é
-  buscar a página como um desses agentes busca, sem executar nada, e procurar
-  o trecho que importa:
-
-  ```bash
-  curl -s https://seusite.com.br/sua-pagina | grep -o "o trecho que precisa ser citado"
-  ```
-
-  Se o `grep` não acha, o assistente também não vai achar. O [validador de
-  meta tags](/ferramentas/validador-meta-tags) deste site faz a mesma leitura
-  do HTML cru para os metadados.
+- **O resto vale para qualquer site.** Repetir no texto visível o que está no
+  JSON-LD e conferir o HTML cru antes de confiar no que a IA diz: a regra
+  completa, medida depois com cinco assistentes, está em [o que fazer no seu
+  site](/blog/quais-ias-executam-javascript#o-que-fazer-no-seu-site). Para os
+  metadados, o [validador de meta tags](/ferramentas/validador-meta-tags)
+  deste site faz essa leitura do HTML cru.
 - **Para o Perplexity, o índice vem antes da pergunta.** Uma página só aparece
   no plano gratuito depois de o PerplexityBot rastreá-la. Deixe o agente
   liberado no robots.txt e a página no sitemap, e dê tempo.
