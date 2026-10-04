@@ -11,7 +11,7 @@ tldr: >-
   Das cinco testadas, duas: Grok e DeepSeek. O Grok executa e usa o
   resultado; o DeepSeek executa, mas o texto chega ao modelo antes do valor.
   ChatGPT, Claude e Gemini leem só o HTML do servidor. Só o Grok leu JSON-LD.
-  Nenhum dos cinco inventou código.
+  Com o pedido de não inventar, nenhum dos cinco inventou código.
 datePublished: "2026-10-04"
 dateModified: "2026-10-04"
 faq:
@@ -57,7 +57,10 @@ em três.
 ChatGPT e Claude foram testados em setembro, no [teste anterior sobre o que o
 ChatGPT lê](/blog/chatgpt-le-javascript). Gemini, DeepSeek e Grok entraram em
 setembro e outubro, com o mesmo pedido e a mesma página. Em outubro os cinco
-passaram por uma terceira bateria, com dicas, descrita mais abaixo.
+passaram por uma terceira bateria, com dicas, descrita mais abaixo. O
+Perplexity, testado na primeira bateria, não entrou nas seguintes: no plano
+gratuito ele não buscou a página nenhuma vez e respondeu pelo próprio índice,
+então uma dica não teria o que mudar.
 
 ## Como o teste foi montado
 
@@ -191,10 +194,13 @@ cliente **às vezes** chega, e às vezes não chega.
 **Renderizador completo.** O Grok usa um Chrome headless, hoje
 `HeadlessChrome/154`, rodando numa faixa de IP de clientes do Google Cloud.
 Ele carrega a página, espera o JavaScript e entrega o HTML inteiro. Foi o
-único a ler o JSON-LD, citando o bloco por inteiro em várias respostas. Em
-várias rodadas apareceu junto um grupo de 8 a 17 requisições com user agents
-de Chrome e Safari no macOS, saindo de vários países ao mesmo tempo, sem
-nenhuma identificação do Grok.
+único a ler o JSON-LD, citando o bloco por inteiro em várias respostas. Em 8
+das 11 rodadas na URL do Grok apareceu também um grupo de 8 a 17 requisições
+com user agents de Chrome e Safari no macOS, saindo de vários países, sem
+nenhuma identificação. Com o pedido neutro, esse grupo nunca pediu o JSON;
+com o endereço no prompt, abriu o JSON direto. O registro não permite dizer
+quem opera essas requisições nem por quê: a ligação com o Grok vem só da URL,
+que só o Grok recebeu.
 
 ## Dizer onde está o dado muda alguma coisa?
 
@@ -265,13 +271,15 @@ procurar. É o resultado mais estável das três baterias. A ressalva é a do
 foi com pedido aberto que um assistente preencheu a lacuna com uma análise
 deduzida da URL.
 
-## O que fazer num site Next.js
+## O que fazer no seu site
 
-- **O primeiro render é o único conteúdo que os cinco leem.** Texto de Server
-  Component e texto de Client Component no primeiro render chegaram a todos.
-  O que nasce num `useEffect` chegou ao Grok sempre, ao DeepSeek às vezes e
-  aos outros três nunca. A regra é a mesma que vale para o Googlebot, no
-  [artigo sobre SSR, SSG e ISR](/blog/ssr-ssg-isr-nextjs), só que mais dura.
+- **O HTML que o servidor entrega é o único conteúdo que os cinco leem.**
+  Texto que só aparece depois do carregamento chegou ao Grok sempre, ao
+  DeepSeek às vezes e aos outros três nunca. No Next.js, isso quer dizer que
+  texto de Server Component e de Client Component no primeiro render chega a
+  todos; o que nasce num `useEffect`, não. A regra é a mesma que vale para o
+  Googlebot, no [artigo sobre SSR, SSG e ISR](/blog/ssr-ssg-isr-nextjs), só
+  que mais dura.
 - **Repita no texto visível o que está no JSON-LD.** O JSON-LD continua sendo
   o que o Google usa para resultados enriquecidos, e o [artigo sobre JSON-LD no
   Next.js](/blog/json-ld-nextjs) mostra como gerá-lo. Mas só um dos cinco
@@ -295,7 +303,9 @@ deduzida da URL.
 
 - **Cinco ou três rodadas por condição medem capacidade, não taxa.** "5 de 5"
   quer dizer, com 95% de confiança, que o comportamento acontece em pelo menos
-  55% das vezes; "3 de 3", em pelo menos 37%. A mudança de ChatGPT e Claude de
+  55% das vezes; "3 de 3", em pelo menos 37%. São limites unilaterais exatos
+  (Clopper-Pearson); no intervalo bilateral de 95%, o "5 de 5" daria pelo
+  menos 48%. A mudança de ChatGPT e Claude de
   0 em 5 para 3 em 3 com o endereço é estatisticamente significativa (teste
   exato de Fisher, p = 0,018 para cada um). A do Grok no JSON-LD, de 2 em 5
   para 6 em 6, não é (p = 0,06): mostra que ele consegue, não que a dica mudou
@@ -313,6 +323,14 @@ deduzida da URL.
   desligada antes do terceiro. O Grok passou para o modo privado no terceiro
   bloco. Os horários de envio foram anotados com precisão de um minuto. Todos
   os desvios estão no registro público, com o que cada um afeta.
+- **O instrumento mudou durante o teste.** O valor de `Sec-Fetch-Mode` e a
+  chave por requisição que permite medir intervalos ao segundo passaram a ser
+  gravados em 29 de setembro. Nas rodadas neutras de 27 de setembro, o
+  registro guardava só se o cabeçalho existia, e a leitura de que o script
+  rodou veio da presença dele junto com `Accept: */*`, o padrão de um
+  `fetch()`. Na terceira bateria, com o valor gravado, o Grok e o DeepSeek
+  mostraram `cors/empty` nas 6 rodadas de cada um, e os intervalos citados
+  neste artigo vêm dela.
 
 As sondas continuam no ar depois das rodadas. Uma checagem de revisitas, que
 vai mostrar se algum desses assistentes ou seus indexadores voltaram aos
