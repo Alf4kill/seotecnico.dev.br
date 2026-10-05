@@ -1,0 +1,322 @@
+---
+title: "ChatGPT can't access your website: what the log shows"
+description: "When the assistant says it could not open the page, the server sometimes shows the opposite. Five causes, four seen in testing, and how to check the log."
+slug: "chatgpt-cant-access-website"
+primaryQuery: "chatgpt can't access website"
+keywords: ['english', 'inglês', 'chatgpt cannot open site', 'ai cannot access site', 'perplexity', 'gemini', 'claude', 'server log', 'access log', 'robots.txt', 'firewall', 'cdn', 'cloudflare', 'vercel', 'bot blocking', 'ai']
+lang: "en"
+translationOf: "ia-nao-consegue-acessar-site"
+category: indexacao
+basedOn: ['which-ai-assistants-run-javascript']
+tldr: >-
+  The sentence does not say what went wrong. This site's tests showed four
+  causes: an answer from an index without fetching, a sandbox that cannot
+  reach the site, content that only exists after JavaScript, and a resource
+  delivered that the answer said never arrived. Start with the server log.
+datePublished: "2026-10-05"
+dateModified: "2026-10-05"
+faq:
+  - question: "Why does ChatGPT say it can't access my website?"
+    answer: "Because the sentence does not say what the problem was. This site's tests showed four different causes: the assistant answered from an index without fetching the page, its environment could not reach the site, the content only existed after JavaScript, or the resource was delivered and the answer said otherwise. A fifth cause, blocking on your server or CDN, is possible but was not observed here. Check in this order: server log, HTTP status, robots.txt, firewall, and content in the first render."
+  - question: "Does Perplexity need to have indexed the page to read it?"
+    answer: "On the free plan, in this site's test in September 2026, it answered from its index and did not fetch the page live. Up to 25 September 2026, no request declaring itself Perplexity-User reached the server in two months of logs. That is 5 rounds on a single site: another plan or another moment may behave differently."
+  - question: "Can the AI say it did not access something it did access?"
+    answer: "Yes. On 2 October 2026, on the free plan, Gemini was given the address of a JSON file alongside the page's in 3 rounds. In all three, the server recorded the page and the JSON requested in the same second, and answered both. In all three, the answer said the JSON could not be accessed. The assistant's answer does not prove the request failed. The log proves whether it arrived."
+  - question: "How do I know if my firewall blocks the AI?"
+    answer: "Look in the log for the agent's requests with a 403 status or a challenge, or for their absence at the time someone asked the assistant for the page. If the block happens at the CDN, the origin server may record nothing. In that case, check the edge log and the bot rule in the CDN or firewall dashboard."
+---
+
+When ChatGPT, Gemini or Claude says it cannot access your website, that is a
+sentence from the model, not an error code. Both situations showed up in this
+site's tests: sometimes no request reached the server, and sometimes one did,
+was answered, and the assistant said it was not. That is why the first step
+is the log, not the answer. Check in this order: the server log, the HTTP
+status, robots.txt, the firewall or CDN, and whether the content exists in
+the first-render HTML, before any JavaScript.
+
+## Short answer: five causes and the sign of each in the log
+
+| Cause | What shows in the log | Seen in the tests? |
+|---|---|---|
+| The assistant answers from an index and does not fetch the page | No request from the on-demand agent at the time of the question | Yes: Perplexity free, Sep 2026 |
+| The tool received the resource, the model said it did not | A request at the time of the question, answered | Yes: Gemini free, Oct 2026 |
+| The assistant's environment cannot reach the site | No request | Yes: Claude and Gemini, Oct 2026 |
+| The content only exists after JavaScript | The request may be there; the passage is not in the served HTML | Yes: ChatGPT, Claude and Gemini, Sep–Oct 2026 |
+| Blocking on your server or CDN | 403 or a challenge, or nothing at the origin if the block is at the edge | No |
+
+Note that three causes leave the same trace in the origin log: nothing. An
+absent request does not say whether the assistant used an index, whether its
+environment never reached the internet, or whether a CDN stopped the request
+first. To tell those three apart, you also need to look at the layer in
+front of the server.
+
+A caveat on how I know who requested each page. In [this site's
+lab](/en/blog/which-ai-assistants-run-javascript), each assistant receives its
+own secret URL. When that URL shows up in the log, the identity comes from the
+URL, not from the user agent. Your log does not have that: you have a profile
+(user agent, IP, time) and need to verify identity by comparing the IP with
+the ranges the vendor publishes. The method is in the [AI crawler detection
+case study](/en/case-studies/ai-crawler-detection).
+
+<figure>
+  <svg viewBox="0 0 720 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Decision tree: did a request from the agent arrive, was the status 200, is the content in the served HTML">
+    <title>Did a request from the agent arrive?</title>
+    <desc>First question: did a request from the agent arrive at the time of the question? If not, the cause is an index, an assistant environment without access, or a block at the edge; check the CDN or firewall log. If so, was the status 200? If not, the problem is on the server: 403, a redirect loop or 5xx. If it was 200, is the content in the served HTML? If not, it depends on JavaScript. If it is, the server did its part and the problem is in the model's answer.</desc>
+
+    <rect x="20" y="20" width="300" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="170" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">1. Did a request from the agent</text>
+    <text x="170" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">arrive at the time of the question?</text>
+    <line x1="320" y1="48" x2="400" y2="48" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="40" textAnchor="middle" fontSize="12" fill="var(--foreground)">no</text>
+    <rect x="400" y="20" width="300" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="550" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">index, no network access, or</text>
+    <text x="550" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">an edge block: check the CDN</text>
+    <line x1="170" y1="76" x2="170" y2="130" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="182" y="108" fontSize="12" fill="var(--foreground)">yes</text>
+
+    <rect x="20" y="130" width="300" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="170" y="163" textAnchor="middle" fontSize="12" fill="var(--foreground)">2. Was the status 200?</text>
+    <line x1="320" y1="158" x2="400" y2="158" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="150" textAnchor="middle" fontSize="12" fill="var(--foreground)">no</text>
+    <rect x="400" y="130" width="300" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="550" y="154" textAnchor="middle" fontSize="12" fill="var(--foreground)">a server problem: 403,</text>
+    <text x="550" y="172" textAnchor="middle" fontSize="12" fill="var(--foreground)">a redirect loop, 5xx</text>
+    <line x1="170" y1="186" x2="170" y2="240" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="182" y="218" fontSize="12" fill="var(--foreground)">yes</text>
+
+    <rect x="20" y="240" width="300" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="170" y="264" textAnchor="middle" fontSize="12" fill="var(--foreground)">3. Is the content in the</text>
+    <text x="170" y="282" textAnchor="middle" fontSize="12" fill="var(--foreground)">served HTML?</text>
+    <line x1="320" y1="268" x2="400" y2="268" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="260" textAnchor="middle" fontSize="12" fill="var(--foreground)">no</text>
+    <rect x="400" y="240" width="300" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="550" y="264" textAnchor="middle" fontSize="12" fill="var(--foreground)">the content depends</text>
+    <text x="550" y="282" textAnchor="middle" fontSize="12" fill="var(--foreground)">on JavaScript</text>
+    <line x1="170" y1="296" x2="170" y2="350" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="182" y="328" fontSize="12" fill="var(--foreground)">yes</text>
+
+    <rect x="20" y="350" width="680" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="377" textAnchor="middle" fontSize="12" fill="var(--foreground)">4. The server did its part. The problem is in the model's answer,</text>
+    <text x="360" y="397" textAnchor="middle" fontSize="12" fill="var(--foreground)">as in the Gemini case: it received the JSON and said it did not</text>
+    <text x="20" y="450" fontSize="12" fill="var(--foreground)">The dashed boxes are the exits where there is something to fix on your side, or to check at the edge.</text>
+  </svg>
+  <figcaption>The first question is always the log's. The assistant's answer only enters at the last step.</figcaption>
+</figure>
+
+The tree above, as text:
+
+1. Did a request from the agent arrive at the time of the question? If
+   **not**, the cause is one of three: the assistant answered from an index,
+   its environment cannot reach the site, or there is a block at the edge.
+   Check for a 403 or a challenge in the CDN or firewall log.
+2. If **yes**, was the status 200? If not, the problem is on the server (403,
+   a redirect loop, 5xx).
+3. If it was 200, is the content in the served HTML? If not, it depends on
+   JavaScript.
+4. If it is, the server did its part. The problem is in the model's answer,
+   as in the Gemini case described below.
+
+## 1. The assistant answers from an index and does not fetch the page live
+
+Some assistants answer from their own index, built earlier by a crawler,
+instead of fetching the page when the question is asked. If the page is not
+in that index, there is nothing to answer from, and the server sees nothing.
+
+That is what I saw with Perplexity on the free plan, in 5 rounds on 25
+September 2026, in the [first control with ChatGPT, Claude and
+Perplexity](/en/case-studies/ai-crawler-detection). Up to 25 September 2026,
+in two months of logs, no request declaring itself Perplexity-User (the agent
+Perplexity documents for on-demand fetches) reached the server. In the same
+period, 6 requests declaring themselves PerplexityBot, the indexer, arrived,
+all from IPs in the ranges Perplexity publishes. When I asked about the home
+page, which had already been crawled, the answer came back correct without
+any request arriving.
+
+That is 5 rounds, on one site, on one plan. It does not say how Perplexity
+behaves on the paid plan, which I did not test.
+
+**In the log:** no request from the on-demand agent at the time of the
+question. Requests from the indexer, if any, show up on other days. If the
+indexer never visited the page, the page cannot be in its index. Then what you
+check is that nothing prevents crawling: robots.txt and the firewall, in the
+sections below.
+
+## 2. The tool received the resource, and the model said it did not
+
+This is the case that most justifies starting with the log. In the
+experiment [Which AI assistants run
+JavaScript?](/en/blog/which-ai-assistants-run-javascript), I gave Gemini, on
+the free plan, the address of the page and the direct address of a JSON file
+the page uses, in 3 rounds. In all three, the server recorded the page and the
+JSON requested in the same second, and answered both. Gemini reported the
+page's content, but all three answers said the JSON could not be accessed. In
+round 47, on 2 October 2026, the sentence was that it was "not possible to
+access the endpoint" (translated from Portuguese).
+
+The log does not explain why the answer contradicts the record, and I am not
+going to guess a reason. What the log shows is that, in this case, there was
+nothing to fix on the server. Other cases where the AI's explanation
+contradicts the server are in [SEO audit with
+ChatGPT](/en/blog/seo-audit-with-chatgpt).
+
+**In the log:** a request at the time of the question, answered. The next
+step is to confirm that the passage you want cited is in the served HTML
+(section 4). If it is, the server delivered what it should, and the problem
+is on the assistant's side.
+
+## 3. The assistant's environment cannot reach the site
+
+Some assistants, for some tasks, run code in an isolated environment with
+restricted network access. A failure there never touches your server.
+
+In the same experiment, in the condition where the prompt said where each
+piece of data was, Claude, on the Pro plan, said it could not download the
+raw HTML from the terminal because the domain was not on its environment's
+network allowlist (round 41, 2 October 2026). It repeated the explanation in
+all six rounds with a hint. In the same condition, Gemini, on the free plan,
+wrote and ran a Python script to fetch the page in rounds 42, 52 and 62, also
+on 2 October, and all three runs failed with a name-resolution error. No
+request from either path reached the server.
+
+An important distinction: the allowlist explanation is Claude's, not my log's.
+What the log confirms is only the part consistent with it, the absence of a
+request. An assistant's explanation is not data; it is included only because
+the server log is consistent with it.
+
+**In the log:** nothing. On its own, the origin log does not distinguish this
+case from the index (section 1) or from an edge block (section 5).
+
+## 4. The content only exists after JavaScript
+
+If the content is inserted in the browser after JavaScript runs, it is not in
+the HTML the server delivers. An assistant that reads only that HTML does not
+find the content, even with the request arriving and getting a 200.
+
+In the experiment, with the neutral prompt, three assistants never cited the
+code that existed only after JavaScript: ChatGPT (Go plan) 0 of 5, Claude (Pro
+plan) 0 of 5 and Gemini (free) 0 of 8, between 25 September and 2 October
+2026. Zero in five does not prove it never happens. It proves it did not
+happen in those rounds.
+
+**In the log:** the request may show up normally, with a 200 status. The
+server did its part; what is missing is in the HTML. To check, request the
+page without running JavaScript and look for the passage:
+
+```bash
+curl -s https://your-site.com/your-page | grep -o "the passage that needs to be cited"
+```
+
+If the command prints nothing, the passage is not in the served HTML. For
+title, description and Open Graph tags, the [meta tag
+validator](/ferramentas/validador-meta-tags) shows what the page delivers
+(its interface is in Portuguese; the report is readable regardless).
+
+## 5. Blocking on your server or CDN (not observed here)
+
+I **did not observe** this cause. During the tests, this site had Bot
+Protection off and the AI Bots rule on Allow in the Vercel firewall, a
+configuration checked on 25 September 2026 and again on 4 October 2026. What
+follows is conditional, not measurement.
+
+If a firewall rule, a security plugin or the CDN blocks the agent, the sign is
+a 403 or a challenge in the log of the layer that blocked it. If the block
+happens at the edge, the origin server may record nothing, and the case looks
+the same as sections 1 and 3 in the origin log. That is why it is worth
+opening the CDN's log and dashboard too.
+
+A concrete example of a default that changed in 2026: according to
+[Cloudflare's changelog of 1 July
+2026](https://developers.cloudflare.com/changelog/post/2026-07-01-ai-traffic-options/),
+domains onboarded to Cloudflare from 15 September 2026 get the Training and
+Agent categories blocked by default on pages that display ads. Agent, in
+Cloudflare's own definition, covers automated activity acting in real time on
+a person's behalf, such as chat fetch bots. If your domain is in that
+situation and the page carries ads, a request made by an assistant may be
+stopped before it reaches the origin. The setting is in the dashboard's
+security settings, under the AI bot policies
+([documentation](https://developers.cloudflare.com/bots/additional-configurations/block-ai-bots/)).
+
+robots.txt also belongs here, with a difference between vendors: the agents
+that fetch a page at a user's request do not all treat robots.txt the same
+way. In each vendor's documentation, consulted on 4 October 2026:
+
+- **OpenAI:** for ChatGPT-User, the [bots
+  page](https://developers.openai.com/api/docs/bots) says that because these
+  actions are initiated by a user, robots.txt rules may not apply.
+- **Perplexity:** the [bots documentation](https://docs.perplexity.ai/guides/bots)
+  says Perplexity-User, since a user requested the fetch, generally ignores
+  robots.txt rules.
+- **Anthropic:** the [help
+  centre](https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler)
+  says the company's bots honour robots.txt directives and that disabling
+  Claude-User prevents content from being retrieved in response to a user.
+
+In practice: a `Disallow` may explain one assistant's failure and not
+another's. I did not test any of these behaviours; this site's robots.txt
+allows all three agents.
+
+**In the log:** a 403 or a challenge in the layer that blocked it, or no
+request at the origin. Check the bot rule in the dashboard of every layer in
+front of the server.
+
+## How to check: a checklist, in order
+
+1. **Server log.** Look for the agent's requests at the time the question was
+   asked (example command right below the list).
+2. **HTTP status.** 200 means the server delivered. 403 points to a block.
+   3xx in sequence may be a redirect loop. 5xx is a server error.
+3. **robots.txt.** Check whether any rule hits the assistant's agent or
+   indexer.
+4. **Firewall and CDN.** Open the dashboard and the log of every layer in
+   front of the server. No request at the origin does not rule out an edge
+   block.
+5. **Content in the first render.** Run the `curl` from section 4 with the
+   passage that needs to be cited.
+
+For step 1, on an access log in combined format (Nginx or Apache), an
+illustrative command; adjust the file path:
+
+```bash
+grep -E "ChatGPT-User|Claude-User|Perplexity-User" /var/log/nginx/access.log \
+  | awk '{print $4, $9, $7}'
+```
+
+This lists date, status and path for requests that declare themselves with
+those tokens. A user agent can be faked: to state it was the agent, verify the
+IP against the ranges the vendor publishes. Not every assistant fetches with a
+token of its own, and the list above does not cover them all: in the
+experiment, Gemini presented itself only as `Google`.
+
+Only after these five steps does the assistant's answer become a clue. Before
+that, it is just a sentence.
+
+## In Next.js (and on Vercel)
+
+On Vercel, the two managed rule sets that matter most here are inactive by
+default, according to the [managed rulesets
+documentation](https://vercel.com/docs/vercel-firewall/vercel-waf/managed-rulesets).
+Bot Protection, when active in challenge mode, serves a JavaScript challenge
+to traffic that is unlikely to be a browser. AI Bots can only log or deny the
+traffic Vercel identifies as an AI bot. If you turned either on, it is the
+first rule to check in section 5. On this site, as I wrote above, both were
+permissive during the tests.
+
+In Next.js, the question in section 4 becomes: is the passage rendered on the
+server or fetched in the browser after hydration? What a Server Component
+renders goes into the HTML. What arrives through a fetch fired in the browser,
+inside a `useEffect` for example, does not. That is how I built the
+experiment's neutral condition: the code the assistants had to cite only
+appeared after JavaScript, on purpose. The same `curl` works to check any page
+of your project, in production or on a preview.
+
+## What is still in progress
+
+The Perplexity figures hold up to 25 September 2026. A revisit check on the
+experiment's addresses is scheduled for 8 October 2026; if it changes any
+number in this article, the update date will reflect it.
+
+For the full picture of crawling, rendering and indexing, see the [technical
+SEO guide for Next.js](/en/guide/technical-seo-nextjs).
+
+This is the English version of [an article first published in
+Portuguese](/blog/ia-nao-consegue-acessar-site); the two declare each other.

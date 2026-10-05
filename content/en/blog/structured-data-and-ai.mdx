@@ -1,0 +1,411 @@
+---
+title: "Structured data and AI: does JSON-LD reach ChatGPT?"
+description: "In a test with five AI assistants, only Grok read the JSON-LD. Schema still counts for Google, but the fact has to be in the visible text as well."
+slug: "structured-data-and-ai"
+primaryQuery: "structured data ai"
+keywords: ['english', 'inglês', 'json-ld', 'schema', 'schema.org', 'structured data', 'chatgpt', 'gemini', 'grok', 'ai', 'aeo', 'geo', 'rich results']
+lang: "en"
+translationOf: "dados-estruturados-ia"
+category: dados-estruturados
+basedOn: ['which-ai-assistants-run-javascript']
+tldr: >-
+  In this site's test, no: ChatGPT, Claude, Gemini and DeepSeek never reported
+  a code that existed only in the JSON-LD, and only Grok did. Keep the JSON-LD
+  for Google and write the important fact in the visible text as well.
+datePublished: "2026-10-05"
+dateModified: "2026-10-05"
+faq:
+  - question: "Does ChatGPT read structured data?"
+    answer: "In this site's test, between September and October 2026, on the Go plan, no: ChatGPT did not report a code that existed only in the JSON-LD in any of the 5 neutral rounds or the 6 rounds with a hint about where it was. That does not prove it never happens, but a fact that exists only in the schema should not depend on it. Repeat the fact in the visible text."
+  - question: "Did any AI read the JSON-LD in the test?"
+    answer: "Only Grok, on the free plan, between September and October 2026: it reported the code in 2 of 5 neutral prompts and in 6 of 6 when the prompt said where it was. The difference between the two situations is not statistically significant. ChatGPT (Go), Claude (Pro), Gemini and DeepSeek (free) did not report the code in any round."
+  - question: "Is JSON-LD worth using if most AIs do not read it?"
+    answer: "Yes. JSON-LD is the format Google recommends for structured data, and it is what makes a page eligible for rich results. Google's own documentation says there is no special markup for AI. What changes is where the important fact lives: in the schema and also in the text the reader sees."
+  - question: "Which schema data should be repeated in the text?"
+    answer: "The data someone may want to quote or check: price, availability, date, author, specification, contact details and opening hours. Fields such as keywords, about and the image URL can stay in the JSON-LD only. Google already requires marked-up content to be visible on the page, so mirroring these facts also follows the guideline."
+  - question: "Does asking the AI whether my page has schema work?"
+    answer: "Not as an audit. In this site's test, on 2 October 2026, Gemini on the free plan said in five rounds that the JSON-LD with the code was not in the HTML it received, and in one of them that there was no JSON-LD at all. The block was in every server response. Check with curl or the Rich Results Test."
+---
+
+In this site's test, run between September and October 2026 with five AI
+assistants, only Grok reported a code that existed solely in the page's
+JSON-LD. ChatGPT, Claude, Gemini and DeepSeek did not report it in any round.
+JSON-LD is still what Google uses for rich results, so there is no reason to
+remove it; the practical rule is a different one: the important fact must
+also be in the visible text.
+
+The numbers come from the experiment [Which AI assistants run
+JavaScript?](/en/blog/which-ai-assistants-run-javascript), where the full
+method is. Here I use only the part that answers one question: what happens
+to a piece of data that exists only inside a `<script
+type="application/ld+json">` block.
+
+Writing about "schema for AI" tends to mix two different things. One is what
+Google does with JSON-LD when it indexes the page. The other is what an
+assistant does when you paste a URL into the chat and it opens the page. The
+first is documented by Google. The second I measured.
+
+## What Google does with JSON-LD
+
+Google uses structured data to understand the page and to show rich results.
+The [official feature
+gallery](https://developers.google.com/search/docs/appearance/structured-data/search-gallery),
+in the version updated on 15 June 2026, lists the ones it shows, among them
+Article, Breadcrumb, Product, Local business, Event, Recipe and Video. The FAQ
+rich result is no longer on the list: according to the [documentation update
+log](https://developers.google.com/search/updates), it stopped appearing in
+Search on 7 May 2026.
+
+Two rules from the documentation matter for this article. The first: markup
+makes a page eligible for a feature, without guaranteeing it appears. The
+second is in the [general structured data
+guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies):
+do not mark up content that readers cannot see. If the JSON-LD describes a
+price, the body of the page must show the same price.
+
+On AI, Google's [guide to generative AI features in
+Search](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide),
+updated on 10 July 2026, says structured data is not required for generative
+AI search and that there is no special schema.org markup for it. It
+recommends continuing to use it, for rich-result eligibility. That guide
+covers the AI features of Google Search, such as AI Overviews and AI Mode. It
+does not describe what an assistant does when it opens a URL inside the chat.
+
+For that second case, I looked for official documentation from the vendors of
+the five assistants tested about the use of schema.org when opening a page.
+As of October 2026, I found none. What circulates are third-party guides
+claiming every assistant reads schema, without measuring the assistant.
+
+If you do not have the block on your page yet, this site's [JSON-LD
+generator](/ferramentas/gerador-json-ld) helps build it (its interface is in
+Portuguese; the output is plain JSON-LD). The App Router implementation is
+covered in the [technical SEO guide for
+Next.js](/en/guide/technical-seo-nextjs).
+
+## What the assistants did with it: the experiment
+
+The lab page has a JSON-LD block with a code starting with `LD-`. That code
+exists **only** in the JSON-LD's `identifier` field: it is not in the visible
+text and is not generated by JavaScript. The block ships in the HTML of every
+server response. Each assistant receives its own secret URL, and that is what
+identifies who made each request in the server log.
+
+The prompt varied across three conditions. In the neutral one, the assistant
+was asked to report the page's codes, with no hint about where to look. In
+the other two, the prompt said where the code was, with different levels of
+detail. The exact definition of each condition is in the [full
+experiment](/en/blog/which-ai-assistants-run-javascript).
+
+| Assistant (plan) | Neutral | With location | With address |
+|---|---|---|---|
+| ChatGPT (Go) | 0 of 5 | 0 of 3 | 0 of 3 |
+| Claude (Pro) | 0 of 5 | 0 of 3 | 0 of 3 |
+| Gemini (free) | 0 of 8 | 0 of 3 | 0 of 3 |
+| DeepSeek (free) | 0 of 5 | 0 of 3 | 0 of 3 |
+| Grok (free) | 2 of 5 | 3 of 3 | 3 of 3 |
+
+Rounds in which the assistant reported the `LD-` code, between 25 September
+and 2 October 2026.
+
+Four of the five did not report the code in any round. Zero in 11 rounds, for
+ChatGPT, Claude and DeepSeek, does not prove it never happens. It says that,
+if the real chance of reporting the code were higher than about one in four,
+it would most likely have appeared at least once. For Gemini, with 14 rounds,
+the bound drops to about one in five.
+
+Grok reported the code in 2 of 5 neutral prompts and in 6 of 6 with a hint.
+The difference is not statistically significant (p = 0.06). What the result
+shows is capability: Grok's tool can deliver the block's content to the
+model. It does not show that the hint caused the improvement.
+
+The neutral rounds for ChatGPT and Claude are those of the September control,
+described in the [AI crawler detection case
+study](/en/case-studies/ai-crawler-detection). The October rounds with hints
+did not change the zero for either.
+
+One reading detail: the experiment measures what the assistant **reported**,
+not what it received. "Never reported" is the data. "Never received" is a
+hypothesis, discussed in the next section.
+
+One design detail: in the lab, the code sits only in the JSON-LD on purpose,
+because that is what is being measured. On a real page, data that is marked
+up and hidden from the reader would already go against the Google guideline
+quoted above.
+
+## Why most do not read it: extractors discard `<script>`
+
+When you give an assistant a URL, the model does not open the page like a
+browser. A fetching tool downloads the HTML and converts it into something
+that fits in the model's context, usually text. In that conversion, elements
+that look like code rather than content tend to be discarded. JSON-LD is a
+`<script>` element. If the tool removes scripts, the block goes with them, and
+the fact that only existed there disappears before the model reads anything.
+
+Note that this has nothing to do with running JavaScript. The JSON-LD is
+already in the HTML the server delivers; it does not depend on rendering. The
+data is lost in text extraction, not in rendering.
+
+In one case, the mechanism was described by the assistant itself. In round
+41, on 2 October 2026, on the Pro plan, Claude explained that its tool
+converts the HTML to text and removes the `<script>` blocks, including the
+`application/ld+json` one. That is the assistant's explanation, not data. It
+is included here because the server log for that round is consistent with it.
+
+For ChatGPT, Gemini and DeepSeek, I have no explanation that matches the log.
+The same mechanism is the simplest hypothesis for the zero, but it is not
+confirmed. Nor do I know why Grok's tool keeps the block at least some of the
+time; that was not tested.
+
+<figure>
+  <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The same page read by two readers: Googlebot reads the text and the JSON-LD; a text extractor reads only the text and loses the JSON-LD">
+    <title>Same page, two readers</title>
+    <desc>On the left, Googlebot reads the visible text and the script block of type application/ld+json. On the right, a text extractor that removes scripts reads only the visible text; the JSON-LD block is left out. At the bottom, the rule: write the same fact in both places, so that a reader of only one still finds it.</desc>
+
+    <text x="20" y="26" fontSize="13" fill="var(--foreground)">Googlebot (Google Search)</text>
+    <rect x="20" y="40" width="320" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="180" y="66" textAnchor="middle" fontSize="12" fill="var(--foreground)">visible text:</text>
+    <text x="180" y="84" textAnchor="middle" fontSize="12" fill="var(--foreground)">read</text>
+    <rect x="20" y="112" width="320" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="180" y="138" textAnchor="middle" fontSize="12" fill="var(--foreground)">application/ld+json block:</text>
+    <text x="180" y="156" textAnchor="middle" fontSize="12" fill="var(--foreground)">read</text>
+
+    <text x="380" y="26" fontSize="13" fill="var(--foreground)">Extractor that removes scripts</text>
+    <rect x="380" y="40" width="320" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="540" y="66" textAnchor="middle" fontSize="12" fill="var(--foreground)">visible text:</text>
+    <text x="540" y="84" textAnchor="middle" fontSize="12" fill="var(--foreground)">read</text>
+    <rect x="380" y="112" width="320" height="60" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <line x1="392" y1="122" x2="688" y2="162" stroke="var(--color-accent)" strokeWidth="1.5" />
+    <text x="540" y="138" textAnchor="middle" fontSize="12" fill="var(--foreground)">application/ld+json block:</text>
+    <text x="540" y="156" textAnchor="middle" fontSize="12" fill="var(--color-diagram-accent-text)">discarded</text>
+
+    <line x1="20" y1="204" x2="700" y2="204" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <rect x="20" y="224" width="680" height="76" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="254" textAnchor="middle" fontSize="13" fill="var(--foreground)">The rule: the same fact in both places</text>
+    <text x="360" y="278" textAnchor="middle" fontSize="12" fill="var(--foreground)">whoever reads only the text, or only the schema, still finds the price, the date and the author</text>
+  </svg>
+  <figcaption>A fact that exists only in the JSON-LD reaches Googlebot and is lost in the extractor. Written in the text as well, it reaches both.</figcaption>
+</figure>
+
+The diagram summarises the difference between the two readers of the same
+page.
+
+| Reader | What it reads | What it loses |
+|---|---|---|
+| Googlebot (Google Search) | the HTML, including the JSON-LD block and the visible text | nothing that is in the delivered or rendered HTML |
+| An assistant's text extractor that removes `<script>` | the converted visible text | everything that exists only inside `<script>`, including the JSON-LD |
+| The practical rule | the important fact in the JSON-LD and in the text | nothing: a reader of only one of the two still finds the fact |
+
+## The Gemini case: when the AI says the schema does not exist
+
+Gemini, on the free plan, had more neutral rounds than the others, 8, and did
+not report the code in any of them. What stands out is what it said. On 2
+October 2026, in five rounds, the answer stated that the JSON-LD with the
+code was not in the HTML received. In one of them, round 62, it stated that
+there was no JSON-LD on the page at all.
+
+The block was in the HTML of every server response, and Grok read it in all
+six of its rounds that day.
+
+One possible reading is that Gemini's sentence faithfully describes what the
+tool delivered to the model and is false about the page. I cannot confirm
+that from the log. The practical consequence does not depend on that
+confirmation: asking an assistant whether your page has structured data is
+asking about its tool's output, not about the page. This and other cases
+where the AI's explanation contradicts the server are in [SEO audit with
+ChatGPT](/en/blog/seo-audit-with-chatgpt).
+
+The result also says nothing about what Google Search does with the same
+block. For that, the source is still the Rich Results Test and URL Inspection
+in Search Console.
+
+## The rule: write the fact twice
+
+The way out is not to drop JSON-LD. It is to write the important fact twice:
+in the schema, for Google, and in the visible text, for any reader that does
+not open the block. This asks for nothing Google's guideline does not already
+require; only the motivation changes.
+
+Not every field needs a mirror. The criterion I use is whether someone might
+want to quote or check that value.
+
+| Fact | Where it sits in the JSON-LD | Where it appears in the text | Mirror? |
+|---|---|---|---|
+| Price and availability | `offers.price`, `offers.availability` | product sheet | yes |
+| Publication and update date | `datePublished`, `dateModified` | byline | yes |
+| Author | `author` | byline | yes |
+| Technical specification | product properties | specification table | yes |
+| Contact details and opening hours | `telephone`, `openingHoursSpecification` | footer or contact page | yes |
+| Keywords and topic | `keywords`, `about` | not needed | no |
+| Main image | `image` | the image shows; the URL does not | no |
+
+A product example, illustrative. Before, the price exists only in the
+JSON-LD:
+
+```html
+<!-- illustrative: the price exists only in the JSON-LD -->
+<h1>FX-750 impact drill</h1>
+<p>750 W motor, 13 mm chuck.</p>
+<button type="button">Buy</button>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "FX-750 impact drill",
+  "offers": {
+    "@type": "Offer",
+    "price": "74.90",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+```
+
+After, the same price and availability appear on the product sheet:
+
+```html
+<!-- illustrative: the same fact in the text and in the JSON-LD -->
+<h1>FX-750 impact drill</h1>
+<p>750 W motor, 13 mm chuck.</p>
+<p>$74.90 · in stock</p>
+<button type="button">Buy</button>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "FX-750 impact drill",
+  "offers": {
+    "@type": "Offer",
+    "price": "74.90",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+```
+
+There is one case where the "after" is still not enough. If the visible price
+is inserted by JavaScript in the browser, and only the JSON-LD comes ready
+from the server, the price text is not in the initial HTML. An extractor that
+does not run JavaScript finds it in neither place. Which assistants run
+JavaScript, and under what conditions, is in the [same
+experiment](/en/blog/which-ai-assistants-run-javascript).
+
+An important caveat: I did not measure whether mirroring the fact increases
+how often assistants cite a page. What the experiment shows is the opposite
+side: the fact that existed only in the schema did not appear in the answers
+of four of the five. Mirroring removes that point of failure. It does not
+guarantee a citation.
+
+## How to check
+
+Three checks settle most cases. The commands below are illustrative.
+
+**Is the block in the server HTML?** Count the JSON-LD blocks in the
+response:
+
+```bash
+curl -s https://example.com/product | grep -c 'application/ld+json'
+```
+
+**Does the fact exist outside the scripts?** Remove every `<script>` block and
+look for the value in the format the reader sees it:
+
+```bash
+curl -s https://example.com/product \
+  | perl -0pe 's/<script\b.*?<\/script>//gs' \
+  | grep -c '\$74\.90'
+```
+
+This roughly simulates an extractor that discards scripts. If the result is
+0, the fact exists only inside some `<script>`: in the JSON-LD or in a
+JavaScript payload. The simulation has limits: it does not remove elements
+hidden by CSS, does not decode HTML entities and does not know that 74.90 and
+$74.90 are the same number. Look for the value as the reader would see it.
+
+**Does Google read the block?** The Rich Results Test validates the types
+that produce rich results; schema.org's Schema Markup Validator validates any
+type. URL Inspection in Search Console shows the HTML Google rendered. For the
+rest of the `<head>`, such as title, description and canonical, use the [meta
+tag validator](/ferramentas/validador-meta-tags).
+
+What is not on the list is asking the assistant. Given the Gemini case above,
+the answer describes its tool, not the page.
+
+## In Next.js: one frontmatter, two outputs
+
+On this site, every article is an MDX file with frontmatter. The same object
+feeds two outputs: the page the reader sees and the JSON-LD. Title, summary,
+short answer, dates and author go from the same field to both places.
+
+The article's JSON-LD is built from the frontmatter:
+
+```tsx
+// src/components/seo/JsonLd.tsx (lines 114–131)
+headline: frontmatter.title,
+description: frontmatter.description,
+// `abstract` é a resposta curta do frontmatter: a mesma frase que o leitor
+// vê no topo da página, disponível como dado para quem extrai.
+...(frontmatter.tldr ? { abstract: frontmatter.tldr } : {}),
+datePublished: frontmatter.datePublished,
+dateModified: frontmatter.dateModified,
+inLanguage: frontmatter.lang,
+url,
+mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+isPartOf: { '@id': WEBSITE_ID },
+image: `${site.url}${imagePath ?? '/opengraph-image'}`,
+// A ÚNICA query que a página persegue (CLAUDE.md §10) é também o assunto
+// dela — declarar as duas coisas pela mesma fonte impede que divirjam.
+keywords: frontmatter.primaryQuery,
+about: { '@type': 'Thing', name: frontmatter.primaryQuery },
+author: personSchema(),
+publisher: organizationSchema(),
+```
+
+The code comments are in Portuguese, as in the repository: the first says
+`abstract` is the same short answer the reader sees at the top of the page;
+the second, that the page's single target query is also its declared topic.
+
+On the page, the `<h1>` is the same `frontmatter.title`, the paragraph below it
+is the `description`, the "Short answer" box is the `tldr`, and the byline
+shows both dates.
+
+The FAQ follows the same pattern: a single array, `items`, produces the
+visible accordion and the `FAQPage` block.
+
+```tsx
+// src/components/sections/FaqSection.tsx (lines 98–106)
+__html: JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+}).replace(/</g, '\\u003c'),
+```
+
+The FAQ rich result left Search in May 2026, but `FAQPage` stays here because
+it comes from the same array as the accordion: there is no second place to
+maintain.
+
+I need to be honest about the reach of this. The mirroring guarantee on this
+site is by construction, not by test. There is no test comparing the JSON-LD
+with the rendered text; if someone changes one of the components to read
+another field, nothing in the build warns. And some fields live only in the
+JSON-LD: `keywords`, `about` and the `image` URL. That is acceptable under the
+criterion in the previous section, because none of them is a fact anyone
+needs to see quoted.
+
+In any App Router project, the principle is the same: if the server component
+that writes the `<script type="application/ld+json">` and the component that
+renders the text read the same source, mirroring comes for free. If each has
+its own copy of the data, the two versions will diverge at some point. The
+rest of technical SEO in the App Router is in the [technical SEO guide for
+Next.js](/en/guide/technical-seo-nextjs).
+
+This is the English version of [an article first published in
+Portuguese](/blog/dados-estruturados-ia); the two declare each other.

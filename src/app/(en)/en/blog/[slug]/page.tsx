@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { getAllEnglishPosts, getEnglishPostBySlug } from '@/lib/content'
+import { getAllEnglishPosts, getEnglishPostBySlug, resolveBasedOn } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { mdxOptions } from '@/lib/mdx'
 import { mdxComponents } from '@/components/mdx/mdx-components'
@@ -61,10 +61,16 @@ export default async function EnglishBlogPostPage({ params }: PageProps) {
 
   const { frontmatter, content } = post
   const path = `/en/blog/${frontmatter.slug}`
+  const basedOn = resolveBasedOn(post, getAllEnglishPosts(), '/en/blog')
 
   return (
     <>
-      <ArticleJsonLd frontmatter={frontmatter} path={path} imagePath={`${path}/opengraph-image`} />
+      <ArticleJsonLd
+        frontmatter={frontmatter}
+        path={path}
+        imagePath={`${path}/opengraph-image`}
+        basedOnPaths={basedOn.map((source) => source.path)}
+      />
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', path: '/en' },
@@ -77,6 +83,7 @@ export default async function EnglishBlogPostPage({ params }: PageProps) {
         lang="en"
         path={path}
         breadcrumbs={[{ name: 'Home', href: '/en' }]}
+        basedOn={basedOn}
         copyright={`© ${frontmatter.dateModified.slice(0, 4)} ${site.author.name}. All rights reserved. Short quotes with attribution and a link to this page are welcome.`}
       >
         <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />

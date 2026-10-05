@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import type { Post } from '@/lib/content'
+import { isExperiment } from '@/lib/categories'
 import { CategoryChip, StatusLabel } from '@/components/ui/CategoryMark'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Linha do índice cronológico: número grande à esquerda (hierarquia por
 // escala, escola suíça), título e resumo no meio, eixo e estado à direita.
 //
-// `data-category` é o gancho do filtro sem JavaScript da /blog (globals.css →
-// .category-filter). A linha é `grid` porque é esse o display que o filtro
+// `data-category` e `data-kind` são os ganchos do filtro sem JavaScript da
+// /blog (globals.css → .category-filter): o eixo e, para experimentos, o tipo. A linha é `grid` porque é esse o display que o filtro
 // devolve quando a categoria dela está selecionada.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,7 @@ export function PostRow({
   return (
     <li
       data-category={frontmatter.category}
+      data-kind={isExperiment(frontmatter.status) ? 'experimento' : undefined}
       className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4 gap-y-3 border-t border-gray py-7 md:grid-cols-[5rem_minmax(0,1fr)_12.5rem] md:gap-x-6"
     >
       <span className="pt-1 font-display text-[0.9375rem] font-bold tracking-[0.1em] text-primary">

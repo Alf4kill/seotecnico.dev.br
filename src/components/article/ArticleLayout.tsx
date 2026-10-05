@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import type { Post } from '@/lib/content'
+import type { BasedOnSource, Post } from '@/lib/content'
 import { getCategory, STATUSES } from '@/lib/categories'
 import type { Lang } from '@/lib/hreflang'
 import { absoluteUrl } from '@/lib/metadata'
@@ -35,6 +35,8 @@ const COPY = {
     updated: 'Atualizado',
     minutes: 'min',
     tldr: 'Resposta curta',
+    basedOn: 'Dados do laboratório',
+    basedOnLead: 'Os números deste artigo vêm de',
     status: 'Estado',
     share: 'Compartilhar',
     tool: 'Ferramenta citada',
@@ -51,6 +53,8 @@ const COPY = {
     updated: 'Updated',
     minutes: 'min',
     tldr: 'Short answer',
+    basedOn: 'Lab data',
+    basedOnLead: 'The numbers in this article come from',
     status: 'Status',
     share: 'Share',
     tool: 'Tool used',
@@ -85,6 +89,8 @@ export interface ArticleLayoutProps {
   beforeTitle?: ReactNode
   /** "Continue pelo mesmo eixo". Vazio na pilar. */
   related?: Post[]
+  /** Experimentos do `basedOn`, resolvidos — a caixa "Dados do laboratório". */
+  basedOn?: BasedOnSource[]
   /** Corpo MDX já renderizado. */
   children: ReactNode
 }
@@ -97,6 +103,7 @@ export function ArticleLayout({
   copyright,
   beforeTitle,
   related = [],
+  basedOn = [],
   children,
 }: ArticleLayoutProps) {
   const { frontmatter, derived } = post
@@ -198,6 +205,26 @@ export function ArticleLayout({
             <div className="container-xl mt-8">
               <InstrumentFrame label={copy.tldr} className="lg:w-9/12">
                 <p className="text-base leading-7 text-foreground lg:text-[1.0625rem]">{frontmatter.tldr}</p>
+              </InstrumentFrame>
+            </div>
+          )}
+
+          {/* Espelho visível do `isBasedOn` do JSON-LD: de qual experimento
+              deste site saem os números. */}
+          {basedOn.length > 0 && (
+            <div className="container-xl mt-4">
+              <InstrumentFrame label={copy.basedOn} corners="two" className="lg:w-9/12">
+                <p className="text-[0.9375rem] leading-relaxed text-muted">{copy.basedOnLead}:</p>
+                <ul className="mt-2 flex flex-col gap-2">
+                  {basedOn.map((source) => (
+                    <li key={source.path} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <Link href={source.path} className="text-[0.9375rem] font-medium text-primary underline underline-offset-[3px] hover:text-primary-hover">
+                        {source.title}
+                      </Link>
+                      <StatusLabel status={source.status} lang={lang} />
+                    </li>
+                  ))}
+                </ul>
               </InstrumentFrame>
             </div>
           )}
