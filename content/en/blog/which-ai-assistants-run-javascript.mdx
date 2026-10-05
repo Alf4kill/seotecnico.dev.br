@@ -187,8 +187,9 @@ and drops the content of `<script>` tags.
 **Early-capture renderer.** DeepSeek opens the page in a Firefox coming from
 Hong Kong, with every browser header. In **11 of 11 rounds** the page's
 JavaScript ran and fetched the value. But by all indications the text sent to
-the model is captured right after load: in many rounds the answer read
-"loading…", even with the `fetch` recorded on the server. For anyone building
+the model is captured right after load: in all 5 rounds where the value did
+not arrive, the answer read "loading…", even with the `fetch` recorded on the
+server. For anyone building
 pages, this is the most treacherous case. Content loaded on the client
 **sometimes** arrives, and sometimes does not.
 
@@ -258,8 +259,8 @@ Portuguese):
 None of these sentences is an invented code, and none of them affects the
 count. But they show a practical limit: **the explanation an assistant gives
 about its own reading is the model's guess, not a report from the tool**.
-Gemini said five times that the JSON-LD with the code was not in the HTML it
-received, and once that there was no JSON-LD at all. Anyone using those
+In five rounds, Gemini said the JSON-LD with the code was not in the HTML it
+received; in one of them, that there was no JSON-LD at all. Anyone using those
 answers to audit their own site would conclude the JSON-LD was missing.
 
 ## No one invented a code
