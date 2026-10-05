@@ -10,6 +10,7 @@ import { InstrumentFrame } from '@/components/ui/InstrumentFrame'
 import { CodeCopy } from '@/components/article/CodeCopy'
 import { CopyLinkButton } from '@/components/article/CopyLinkButton'
 import { sceneForPost } from '@/lib/art'
+import { citedToolLabel } from '@/lib/content-derived'
 import { Scene } from '@/components/art/Art'
 import { CentralMark } from '@/components/art/Marks'
 
@@ -286,7 +287,7 @@ export function ArticleLayout({
               <div className="flex flex-col gap-2 border-t border-gray pt-4">
                 <p className="eyebrow text-[0.625rem]">{copy.tool}</p>
                 <Link href={derived.citedTool.href} className="text-sm leading-normal text-foreground hover:text-primary">
-                  {derived.citedTool.title} <span aria-hidden="true">→</span>
+                  {citedToolLabel(derived.citedTool, lang)} <span aria-hidden="true">→</span>
                 </Link>
               </div>
             )}
