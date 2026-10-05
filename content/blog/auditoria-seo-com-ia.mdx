@@ -1,0 +1,309 @@
+---
+title: "Auditar SEO com ChatGPT: onde a explicação da IA erra"
+description: "Num teste controlado, um assistente disse cinco vezes que o JSON-LD não estava no HTML que recebeu. Estava. O que a IA audita e o que precisa vir do HTML."
+slug: "auditoria-seo-com-ia"
+primaryQuery: "auditoria seo com chatgpt"
+keywords: ['auditoria de seo', 'auditoria com ia', 'chatgpt', 'gemini', 'deepseek', 'perplexity', 'prompt', 'alucinação', 'json-ld', 'ia']
+lang: "pt-BR"
+category: medicao
+basedOn: ['quais-ias-executam-javascript', 'chatgpt-le-javascript']
+tldr: >-
+  Só para interpretar dados que você coletou. Num teste com cinco assistentes,
+  o Gemini disse cinco vezes que o JSON-LD não estava no HTML que recebeu, e o
+  bloco estava em toda resposta do servidor. Cole o HTML como texto e faça um
+  pedido fechado, que exige a fonte de cada valor.
+datePublished: "2026-10-05"
+dateModified: "2026-10-05"
+faq:
+  - question: "Posso usar o ChatGPT para auditar o SEO do meu site?"
+    answer: "Para interpretar dados que você coletou, sim. Como fonte do que a página contém, não: o assistente audita o que a ferramenta de busca dele entregou, não a página. Em testes de setembro e outubro de 2026, um assistente negou um JSON-LD que estava no HTML. Cole o HTML como texto e peça a interpretação."
+  - question: "Por que a IA diz que minha página não tem dados estruturados?"
+    answer: "Porque a ferramenta que baixa a página pode descartar blocos script antes de o modelo ler o conteúdo. No laboratório deste site, o Gemini disse em cinco rodadas que o JSON-LD não estava no HTML recebido, e o bloco estava em toda resposta do servidor. Confira com curl ou com o Teste de pesquisa aprimorada antes de mexer no código."
+  - question: "Como pedir uma auditoria sem receber informação inventada?"
+    answer: "Faça um pedido fechado: cole o HTML como texto, peça os valores exatos de cada tag, proíba deduzir ou completar e exija a fonte de cada afirmação. Pedidos abertos, como resumir uma URL, deixam o modelo preencher a resposta com texto plausível."
+---
+
+Dá para usar o ChatGPT, ou qualquer outro assistente, numa auditoria de SEO,
+mas só para interpretar dados que você coletou e entregou a ele. Como fonte do
+que a página contém, não: o assistente audita o que a ferramenta de busca dele
+trouxe, não a página, e quando essa ferramenta descarta alguma coisa, a
+explicação vem com a mesma confiança de uma resposta certa. No laboratório
+deste site, comparei o que cinco assistentes disseram com o que o servidor
+registrou, e as divergências aparecem exatamente nesse ponto.
+
+Os dados vêm de dois experimentos publicados: [ChatGPT lê
+JavaScript?](/blog/chatgpt-le-javascript) e [Quais IAs executam
+JavaScript?](/blog/quais-ias-executam-javascript). O método completo está lá.
+Aqui uso só os casos em que a explicação do assistente e o registro do servidor
+discordam, e o que isso muda na forma de pedir uma auditoria.
+
+Não é uma lista de defeitos de fornecedor. Cada caso abaixo vale para uma data,
+um plano e uma condição de teste. O que se repete entre eles é o mecanismo, e é
+o mecanismo que interessa para quem audita.
+
+## O caso: "o JSON-LD não estava ali"
+
+Numa das condições do experimento, a página do laboratório traz um bloco
+`<script type="application/ld+json">` com o código que o assistente precisa
+reportar. O bloco está no HTML de toda resposta do servidor. Não depende de
+JavaScript nem é injetado depois do carregamento.
+
+Em 2 de outubro de 2026, no plano gratuito, o Gemini disse em cinco rodadas
+que o JSON-LD com o código não estava no HTML que recebeu. Numa delas, a
+rodada 62, a resposta foi além e afirmou que "a resposta obtida da página não
+continha um bloco de script JSON-LD". Nenhum JSON-LD, portanto.
+
+Nas rodadas 47, 57 e 67, o padrão se repetiu com outro recurso: o endereço
+direto de um JSON, que o pedido trazia. Nas três, a resposta disse que o JSON
+não pôde ser acessado; na 47, nas palavras do Gemini, "não foi possível acessar
+o endpoint". O registro do servidor mostra o JSON pedido no mesmo segundo que a
+página, nas três rodadas, e respondido em todas.
+
+Cinco rodadas não bastam para comparar o Gemini com os outros assistentes, e
+esse não é o ponto. O ponto é que a resposta descreve a página como se o
+assistente a tivesse lido inteira, quando o que ele leu foi uma versão
+processada por uma ferramenta que ele não controla.
+
+## O outro caso: "sem executar o JS da página"
+
+Em outra condição, a página tem um script cuja execução fica registrada no
+servidor. Na rodada 43, em 2 de outubro de 2026, o DeepSeek, no plano
+gratuito, explicou que recebe o conteúdo "sem executar o JS da página". O
+servidor registrou o script rodando em 11 de 11 rodadas do DeepSeek.
+
+A frase é exatamente o que muita gente já acredita sobre IA e JavaScript, e
+por isso passa sem questionamento. No caso medido, ela estava errada sobre a
+própria ferramenta. Quem tomasse essa resposta como diagnóstico concluiria que
+o conteúdo renderizado por JavaScript é invisível para o DeepSeek, uma
+conclusão que o registro não sustenta para aquela página, naquele período.
+
+Que assistentes executam JavaScript, e em que condições, está medido em [Quais
+IAs executam JavaScript?](/blog/quais-ias-executam-javascript). Aqui importa
+outra coisa: a explicação errada veio do próprio assistente.
+
+<figure>
+  <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="O que cada assistente disse sobre a própria leitura e o que o servidor registrou: três explicações não conferem, as de ChatGPT, Claude e Grok conferem">
+    <title>O que a IA disse e o que o servidor viu</title>
+    <desc>Gemini disse que o JSON-LD não estava no HTML recebido; o servidor entregou o bloco em toda resposta; não confere. Gemini disse que o JSON não pôde ser acessado; o servidor respondeu o JSON nas 3 vezes; não confere. DeepSeek disse que não executa o JavaScript da página; o script rodou em 11 de 11 rodadas; não confere. ChatGPT, Claude e Grok descreveram a própria leitura de forma compatível com o registro; confere.</desc>
+
+    <text x="20" y="26" fontSize="13" fill="var(--foreground)">O que a IA disse</text>
+    <text x="440" y="26" fontSize="13" fill="var(--foreground)">O que o servidor viu</text>
+
+    <rect x="20" y="40" width="260" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="150" y="63" textAnchor="middle" fontSize="12" fill="var(--foreground)">Gemini: "o JSON-LD não</text>
+    <text x="150" y="81" textAnchor="middle" fontSize="12" fill="var(--foreground)">estava no HTML" (5 rodadas)</text>
+    <line x1="280" y1="68" x2="440" y2="68" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="360" y="60" textAnchor="middle" fontSize="12" fill="var(--color-diagram-accent-text)">não confere</text>
+    <rect x="440" y="40" width="260" height="56" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="570" y="63" textAnchor="middle" fontSize="12" fill="var(--foreground)">o bloco está no HTML</text>
+    <text x="570" y="81" textAnchor="middle" fontSize="12" fill="var(--foreground)">de toda resposta</text>
+
+    <rect x="20" y="116" width="260" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="150" y="139" textAnchor="middle" fontSize="12" fill="var(--foreground)">Gemini: o JSON "não pôde</text>
+    <text x="150" y="157" textAnchor="middle" fontSize="12" fill="var(--foreground)">ser acessado" (3 rodadas)</text>
+    <line x1="280" y1="144" x2="440" y2="144" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="360" y="136" textAnchor="middle" fontSize="12" fill="var(--color-diagram-accent-text)">não confere</text>
+    <rect x="440" y="116" width="260" height="56" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="570" y="139" textAnchor="middle" fontSize="12" fill="var(--foreground)">o JSON foi pedido e</text>
+    <text x="570" y="157" textAnchor="middle" fontSize="12" fill="var(--foreground)">respondido nas 3 vezes</text>
+
+    <rect x="20" y="192" width="260" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="150" y="215" textAnchor="middle" fontSize="12" fill="var(--foreground)">DeepSeek: "sem executar</text>
+    <text x="150" y="233" textAnchor="middle" fontSize="12" fill="var(--foreground)">o JS da página"</text>
+    <line x1="280" y1="220" x2="440" y2="220" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="360" y="212" textAnchor="middle" fontSize="12" fill="var(--color-diagram-accent-text)">não confere</text>
+    <rect x="440" y="192" width="260" height="56" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="570" y="215" textAnchor="middle" fontSize="12" fill="var(--foreground)">o script rodou em</text>
+    <text x="570" y="233" textAnchor="middle" fontSize="12" fill="var(--foreground)">11 de 11 rodadas</text>
+
+    <rect x="20" y="268" width="260" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="150" y="291" textAnchor="middle" fontSize="12" fill="var(--foreground)">ChatGPT, Claude e Grok:</text>
+    <text x="150" y="309" textAnchor="middle" fontSize="12" fill="var(--foreground)">descrevem a própria leitura</text>
+    <line x1="280" y1="296" x2="440" y2="296" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="288" textAnchor="middle" fontSize="12" fill="var(--foreground)">confere</text>
+    <rect x="440" y="268" width="260" height="56" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="570" y="291" textAnchor="middle" fontSize="12" fill="var(--foreground)">o registro é compatível</text>
+    <text x="570" y="309" textAnchor="middle" fontSize="12" fill="var(--foreground)">com a explicação</text>
+  </svg>
+  <figcaption>As linhas tracejadas marcam onde a explicação do assistente contradiz o registro do servidor. Nenhuma delas é um código errado: o erro está sempre na explicação.</figcaption>
+</figure>
+
+O diagrama resume o experimento de 58 rodadas, feito entre 25 de setembro e 2
+de outubro de 2026. Em três situações a explicação do assistente contradiz o
+registro do servidor; nas demais, a explicação confere.
+
+| Assistente (plano) | O que disse | O que o servidor registrou | Confere? |
+|---|---|---|---|
+| Gemini (grátis) | em cinco rodadas, que o JSON-LD com o código não estava no HTML recebido; na rodada 62, que não havia JSON-LD nenhum | o bloco está no HTML de toda resposta | não |
+| Gemini (grátis) | rodadas 47, 57 e 67: o JSON não pôde ser acessado | o JSON foi pedido nas 3 vezes, e respondido | não |
+| DeepSeek (grátis) | rodada 43: recebe o conteúdo "sem executar o JS da página" | o script rodou em 11 de 11 rodadas | não |
+| ChatGPT (Go), Claude (Pro), Grok (grátis) | ChatGPT: não confirmou o JSON-LD no que a ferramenta expôs; Claude: a ferramenta não roda JavaScript e descarta `<script>`; Grok: leu o texto depois do JavaScript e o JSON-LD | uma requisição sem JavaScript para ChatGPT e Claude; um Chrome headless que rodou o script para o Grok | sim |
+
+## Por que acontece: a explicação é palpite do modelo sobre a própria ferramenta
+
+Quando você pede a um assistente para auditar uma URL, entram em jogo duas
+peças. A primeira é a ferramenta de busca, que baixa a página e a converte em
+algo que cabe no contexto do modelo. A segunda é o modelo, que lê esse
+resultado e escreve a resposta. O modelo não vê a página original; vê o que a
+ferramenta entregou.
+
+Ferramentas de extração costumam converter HTML em texto e, nesse processo,
+podem descartar `<script>`, partes do `<head>` e outros trechos que não parecem
+conteúdo. Se o JSON-LD saiu nessa etapa, para o modelo ele nunca existiu. "Não
+há JSON-LD na página" passa a ser uma descrição fiel do que ele recebeu, e
+falsa sobre a página.
+
+O problema maior vem na explicação. O modelo não tem acesso ao código da
+própria ferramenta nem a um registro do que ela fez com a página. Quando
+explica por que algo não apareceu, ele produz a explicação mais plausível, no
+mesmo tom de uma resposta verificada. Provavelmente é por isso que o DeepSeek
+descreveu uma limitação que o servidor não confirmou: a frase era plausível,
+não observada.
+
+A regra que sai daí: a explicação de um assistente sobre a própria ferramenta
+não é dado. Ela só vale quando bate com algo que você consegue conferir fora
+dele, e a frase que você escrever deve dizer qual dos dois é a fonte.
+
+## A forma do pedido decide: fechado vs aberto
+
+Nos experimentos, o pedido ao assistente era fechado: reportar os códigos
+presentes na página e dizer "não encontrei" quando faltasse algum. Uma resposta
+assim é verificável, porque ou o código confere, ou não confere. Com pedido
+fechado, os cinco assistentes não devolveram nenhum código errado em 232.
+
+Zero em 232 não prova que o erro seja impossível. Pela regra de três, com 95%
+de confiança, a taxa real de código inventado nesse tipo de pedido fica abaixo
+de cerca de 1 a cada 77 respostas. Repare também onde ficaram as falhas dos
+dois casos anteriores: na explicação, não no código entregue.
+
+Pedido aberto é outra situação. Em 25 de setembro de 2026, numa conta gratuita
+do Perplexity, com a prévia da busca avançada que a interface oferecia, enviei
+o endereço de um artigo deste site com o pedido "abra esse site e me analise
+oque seria o conteudo que ela esta discutindo", escrito assim mesmo, às
+pressas. O artigo ainda não tinha sido visitado pelo indexador do Perplexity, e
+o servidor registrou 0 requisições. A resposta apresentou mesmo assim uma
+análise longa do conteúdo, montada com as palavras da URL e com 10 fontes de
+terceiros, nenhuma deste site. Só depois de uma primeira seção, que já tratava
+aquele conteúdo como o do artigo, veio uma única frase admitindo que a página
+não tinha sido aberta.
+
+A ressalva importa: é um caso, numa conta gratuita, numa função em prévia. Não
+descreve o Perplexity em geral nem os planos pagos. Descreve o que um pedido
+aberto permite. Com o pedido fechado do teste, o mesmo Perplexity admitiu a
+falha em 5 de 5 rodadas. Quando a pergunta aceita qualquer texto plausível como
+resposta, o modelo pode preencher a lacuna com o que sabe do tema, do título ou
+dos resultados de busca, e um resumo inventado não se distingue de um resumo
+real sem conferência.
+
+Numa auditoria, "analise o SEO desta URL" é um pedido aberto. "Copie do HTML
+abaixo o valor exato do `<title>`, da meta description e do canonical" é um
+pedido fechado.
+
+## Fluxo recomendado: coletar, entregar, pedir interpretação
+
+Se a informação chega ao modelo como texto que você mesmo colou, a ferramenta
+de busca do assistente sai do caminho, e com ela o filtro que produziu os erros
+acima. O fluxo que eu uso tem três passos.
+
+1. **Coletar com ferramenta.** Pegue o HTML como o servidor entrega, com `curl`
+   ou com "Exibir código-fonte" no navegador. O painel Elements do DevTools
+   mostra o DOM depois do JavaScript, que é outra coisa. Para as tags do
+   `<head>`, use o [validador de meta tags](/ferramentas/validador-meta-tags).
+   Para dados estruturados, o Teste de pesquisa aprimorada do Google; para a
+   versão que o Google renderizou, a Inspeção de URL no Search Console.
+2. **Entregar como texto.** Cole o HTML, ou os trechos relevantes, no chat. Não
+   passe a URL. Em páginas grandes, corte para o `<head>` e as seções que
+   interessam: um HTML longo demais pode ser truncado antes de chegar ao
+   modelo.
+3. **Pedir interpretação com pedido fechado.** Proíba inventar, exija a fonte
+   de cada afirmação e separe o que está no HTML do que é opinião.
+
+O prompt abaixo é ilustrativo. Ajuste os itens ao que você está auditando.
+
+```text
+Vou colar abaixo o HTML de uma página, exatamente como o servidor entrega.
+Use apenas esse HTML. Não acesse a URL e não use o que você sabe sobre o site.
+
+1. Copie, sem reescrever, o conteúdo de: title, meta description,
+   link rel="canonical", meta robots e cada bloco application/ld+json.
+2. Para cada item, indique o trecho do HTML de onde tirou o valor.
+3. Se um item não estiver no HTML, escreva "ausente no HTML colado".
+   Não deduza, não estime, não complete.
+4. Só depois disso, aponte problemas de SEO, citando o trecho que
+   sustenta cada um.
+
+HTML:
+[cole aqui]
+```
+
+Os passos 1 a 3 do prompt são verificáveis: dá para conferir cada valor contra
+o HTML em segundos. O passo 4 é onde o assistente agrega valor de verdade, e é
+onde ele deveria trabalhar, sobre dados que você controla.
+
+## O que dá errado numa auditoria por IA
+
+Nem tudo aqui tem o mesmo peso de evidência. A tabela separa o que foi medido
+do que é só hipótese.
+
+| Item auditado | Situação | O que fazer |
+|---|---|---|
+| Dados estruturados (JSON-LD) | medido: um assistente negou um bloco presente no HTML de toda resposta | conferir no HTML ou no Teste de pesquisa aprimorada |
+| Conteúdo gerado por JavaScript | medido: um assistente afirmou não executar JS, e o script rodou em 11 de 11 rodadas | conferir no registro do servidor ou numa medição controlada |
+| Acesso a um recurso | medido: um assistente disse não acessar um JSON que o servidor respondeu | conferir no registro do servidor |
+| Meta tags no `<head>` | hipótese, não medida | conferir no HTML antes de agir |
+
+Sobre dados estruturados, o detalhe por assistente está em [dados estruturados
+e IA](/blog/dados-estruturados-ia). Quando o assistente diz que não consegue
+abrir o site, as causas possíveis e como separá-las estão em [IA não consegue
+acessar o site](/blog/ia-nao-consegue-acessar-site).
+
+A linha das meta tags é deliberadamente uma hipótese. Se a ferramenta de
+extração converte só o corpo da página em texto, as tags do `<head>` também
+podem sumir antes de chegar ao modelo, e um assistente poderia relatar "página
+sem meta description" numa página que tem uma. Eu não testei isso, e não sei se
+acontece nem com quais assistentes. Enquanto não houver medição, trate qualquer
+afirmação de IA sobre meta tags como algo a conferir.
+
+## Como verificar o que a IA recebeu
+
+Quando um assistente afirmar algo sobre a sua página, três checagens resolvem a
+maior parte dos casos.
+
+**O dado está no HTML do servidor?** O comando abaixo é ilustrativo: conta
+quantos blocos JSON-LD a resposta do servidor contém.
+
+```bash
+curl -s https://exemplo.com.br/pagina | grep -c 'application/ld+json'
+```
+
+Se o resultado for maior que zero e o assistente disser que não há dados
+estruturados, o problema está no caminho entre a página e o modelo, não no seu
+código.
+
+**O Google vê o mesmo?** O Teste de pesquisa aprimorada mostra os dados
+estruturados que o Google extraiu, e a Inspeção de URL no Search Console mostra
+o HTML renderizado. Essas são as fontes que importam para o Google; a opinião
+de um assistente não entra nessa conta.
+
+**Houve requisição?** Procure no log do servidor o horário em que você fez a
+pergunta. Zero requisições seguidas de um resumo detalhado da página significam
+que o conteúdo veio de outro lugar. Uma diferença importa aqui: no laboratório,
+cada assistente recebe uma URL secreta, e é isso que identifica quem fez a
+requisição. No seu log você tem só um perfil, e o certo é escrever "requisições
+que se declaram ChatGPT", não "o ChatGPT acessou". Como separar perfil de
+identidade está no [piloto de detecção de crawlers de
+IA](/blog/detectar-crawlers-ia).
+
+## No Next.js
+
+No App Router, o JSON-LD costuma ser renderizado como um `<script
+type="application/ld+json">` dentro do HTML gerado no servidor. Neste site, é o
+que faz `src/components/seo/JsonLd.tsx`, num Server Component. O bloco está na
+resposta do servidor e não depende de hidratação, que é exatamente o tipo de
+bloco que o caso do Gemini mostrou ser negado.
+
+Se um assistente disser que a sua página Next.js não tem dados estruturados,
+rode o `curl` acima antes de mexer em qualquer componente. "Corrigir" um
+JSON-LD que já está no HTML só introduz risco de duplicar o bloco. O resto da
+implementação de SEO no App Router está no [guia de SEO técnico para
+Next.js](/guia/seo-tecnico-nextjs).
