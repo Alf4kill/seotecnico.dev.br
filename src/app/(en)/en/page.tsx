@@ -1,5 +1,5 @@
 import { WebSiteJsonLd, PersonJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd'
-import { getAllPosts } from '@/lib/content'
+import { getAllEnglishPosts, getAllPosts } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 import { ButtonLink, buttonClasses } from '@/components/ui/Button'
@@ -76,6 +76,15 @@ export default function EnglishHomePage() {
       href: '/en/guide/technical-seo-nextjs',
       cta: 'Read the guide',
     },
+    // Os artigos de laboratório em inglês (/en/blog), um cartão cada, até
+    // existir um índice /en/blog.
+    ...getAllEnglishPosts().map(({ frontmatter }) => ({
+      mark: 'bg-primary',
+      title: frontmatter.title,
+      description: frontmatter.description,
+      href: `/en/blog/${frontmatter.slug}`,
+      cta: 'Read the article',
+    })),
     {
       mark: 'bg-accent',
       title: 'Three free SEO tools',
