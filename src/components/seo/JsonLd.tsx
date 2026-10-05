@@ -95,12 +95,15 @@ export function ArticleJsonLd({
   frontmatter,
   path,
   imagePath,
+  basedOnPaths = [],
 }: {
   frontmatter: PostFrontmatter
   /** Path da página. Default: /blog/{slug}. */
   path?: string
   /** Rota da imagem OG da página. Default: o card da marca. */
   imagePath?: string
+  /** Caminhos dos experimentos do `basedOn`, já resolvidos (lib/content.ts). */
+  basedOnPaths?: string[]
 }) {
   const url = `${site.url}${path ?? `/blog/${frontmatter.slug}`}`
 
@@ -126,6 +129,11 @@ export function ArticleJsonLd({
     about: { '@type': 'Thing', name: frontmatter.primaryQuery },
     author: personSchema(),
     publisher: organizationSchema(),
+    // Os experimentos de onde vêm os dados, pelo @id do Article de cada um.
+    // A caixa "Dados do laboratório" no topo do artigo diz o mesmo em texto.
+    ...(basedOnPaths.length > 0
+      ? { isBasedOn: basedOnPaths.map((p) => ({ '@id': `${site.url}${p}#article` })) }
+      : {}),
   }
   return <JsonLdScript schema={schema} />
 }

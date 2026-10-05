@@ -116,3 +116,14 @@ export type PostStatus = keyof typeof STATUSES
 export function isPostStatus(value: unknown): value is PostStatus {
   return typeof value === 'string' && Object.hasOwn(STATUSES, value)
 }
+
+/**
+ * Experimento é o artigo que tem medição própria: estado em medição, fechado
+ * ou em regressão. "Referência" e a ausência de estado são guias. O tipo é
+ * derivado do estado, e não um campo a mais, para que publicar um experimento
+ * nunca exija lembrar de marcá-lo duas vezes. Alimenta o filtro "Experimentos"
+ * da /blog e o hub /laboratorio.
+ */
+export function isExperiment(status: PostStatus | undefined): boolean {
+  return status === 'em-medicao' || status === 'fechado' || status === 'regressao'
+}

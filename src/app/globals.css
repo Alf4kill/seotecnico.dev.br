@@ -403,7 +403,8 @@ h3 {
 .category-filter:has(input[value='cwv']:checked) [data-category='cwv'],
 .category-filter:has(input[value='indexacao']:checked) [data-category='indexacao'],
 .category-filter:has(input[value='dados-estruturados']:checked) [data-category='dados-estruturados'],
-.category-filter:has(input[value='medicao']:checked) [data-category='medicao'] {
+.category-filter:has(input[value='medicao']:checked) [data-category='medicao'],
+.category-filter:has(input[value='experimento']:checked) [data-kind='experimento'] {
   display: grid;
 }
 .category-filter input:focus-visible + span {

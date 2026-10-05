@@ -8,7 +8,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
-import { isCategorySlug, isPostStatus, type CategorySlug, type PostStatus } from '@/lib/categories'
+import { isCategorySlug, isExperiment, isPostStatus, type CategorySlug, type PostStatus } from '@/lib/categories'
 import { citedTool, extractHeadings, readingTime, type CitedTool, type Heading } from '@/lib/content-derived'
 
 export interface FaqItem {
@@ -57,6 +57,14 @@ export interface PostFrontmatter {
    * "em-medicao" promete uma volta com dado real.
    */
   status?: PostStatus
+  /**
+   * Experimentos deste site de onde o artigo tira os dados: slugs da MESMA
+   * coleção de idioma (um artigo inglês aponta para um experimento inglês).
+   * Vira `isBasedOn` no JSON-LD e a caixa "Dados do laboratório" no topo do
+   * artigo — o mesmo fato nas duas leituras. O build falha se um slug não
+   * existir ou não for experimento (lib/categories.ts → isExperiment).
+   */
+  basedOn?: string[]
 }
 
 /** Derivado do corpo no build (lib/content-derived.ts), nunca escrito à mão. */
@@ -138,6 +146,11 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
   if (data.status !== undefined && !isPostStatus(data.status)) {
     throw new Error(`[content] "${file}": unknown status "${String(data.status)}" (see lib/categories.ts)`)
   }
+  if (data.basedOn !== undefined) {
+    if (!Array.isArray(data.basedOn) || data.basedOn.some((s) => typeof s !== 'string' || s.trim() === '')) {
+      throw new Error(`[content] "${file}": basedOn must be a YAML list of slugs`)
+    }
+  }
 
   return {
     title,
@@ -155,7 +168,47 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
     faq: Array.isArray(data.faq) ? (data.faq as FaqItem[]) : undefined,
     category: data.category,
     status: data.status,
+    basedOn: Array.isArray(data.basedOn)
+      ? (data.basedOn as string[]).map((s) => s.trim())
+      : undefined,
   }
+}
+
+/**
+ * Confere o `basedOn` de cada post contra a própria coleção: o slug existe e é
+ * de um experimento. Feito depois de ler a coleção inteira, porque o
+ * experimento citado pode estar num arquivo lido depois. Exportada para teste.
+ */
+export function assertBasedOn(posts: Post[], collection: string): void {
+  const bySlug = new Map(posts.map((p) => [p.frontmatter.slug, p]))
+  for (const { frontmatter } of posts) {
+    for (const slug of frontmatter.basedOn ?? []) {
+      const source = bySlug.get(slug)
+      if (!source) {
+        throw new Error(`[content] "${collection}/${frontmatter.slug}": basedOn "${slug}" is not a post in ${collection}`)
+      }
+      if (!isExperiment(source.frontmatter.status)) {
+        throw new Error(`[content] "${collection}/${frontmatter.slug}": basedOn "${slug}" is not an experiment (status em-medicao, fechado or regressao)`)
+      }
+    }
+  }
+}
+
+/** O experimento de onde um artigo tira dados, já resolvido para exibição. */
+export interface BasedOnSource {
+  title: string
+  path: string
+  status: PostStatus
+}
+
+/** Resolve o `basedOn` de um post para título, caminho e estado. */
+export function resolveBasedOn(post: Post, collection: Post[], basePath: string): BasedOnSource[] {
+  return (post.frontmatter.basedOn ?? []).flatMap((slug) => {
+    const source = collection.find((p) => p.frontmatter.slug === slug)
+    return source?.frontmatter.status
+      ? [{ title: source.frontmatter.title, path: `${basePath}/${slug}`, status: source.frontmatter.status }]
+      : []
+  })
 }
 
 function readMdxFile(filePath: string): Post {
@@ -177,7 +230,7 @@ export function getAllPosts(): Post[] {
   const dir = path.join(CONTENT_DIR, 'blog')
   if (!fs.existsSync(dir)) return []
 
-  return fs
+  const posts = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.mdx'))
     .map((f) => {
@@ -190,6 +243,8 @@ export function getAllPosts(): Post[] {
     .sort((a, b) =>
       b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
     )
+  assertBasedOn(posts, 'blog')
+  return posts
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
@@ -233,7 +288,7 @@ export function getAllEnglishPosts(): Post[] {
   const dir = path.join(CONTENT_DIR, 'en', 'blog')
   if (!fs.existsSync(dir)) return []
 
-  return fs
+  const posts = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.mdx'))
     .map((f) => {
@@ -249,6 +304,8 @@ export function getAllEnglishPosts(): Post[] {
     .sort((a, b) =>
       b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
     )
+  assertBasedOn(posts, 'en/blog')
+  return posts
 }
 
 export function getEnglishPostBySlug(slug: string): Post | undefined {
