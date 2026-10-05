@@ -66,6 +66,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/about',
     },
   },
+  // Os índices do blog: a mesma função nos dois idiomas. O inglês lista só os
+  // artigos traduzidos e diz isso na página, com link para o índice completo.
+  {
+    id: 'blog',
+    paths: {
+      'pt-BR': '/blog',
+      en: '/en/blog',
+    },
+  },
   // O colofão do design: mesma página nos dois idiomas, texto traduzido.
   {
     id: 'design',

@@ -61,6 +61,7 @@ const MEASURED = [
 
 export default function EnglishHomePage() {
   const postCount = getAllPosts().length
+  const englishPostCount = getAllEnglishPosts().length
   const snapshot = new Date(`${SNAPSHOT_DATE}T00:00:00`).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
@@ -76,15 +77,16 @@ export default function EnglishHomePage() {
       href: '/en/guide/technical-seo-nextjs',
       cta: 'Read the guide',
     },
-    // Os artigos de laboratório em inglês (/en/blog), um cartão cada, até
-    // existir um índice /en/blog.
-    ...getAllEnglishPosts().map(({ frontmatter }) => ({
+    // Os artigos em inglês têm índice próprio (/en/blog): um cartão só, com a
+    // contagem do build, no lugar de um cartão por artigo.
+    {
       mark: 'bg-primary',
-      title: frontmatter.title,
-      description: frontmatter.description,
-      href: `/en/blog/${frontmatter.slug}`,
-      cta: 'Read the article',
-    })),
+      title: `${englishPostCount} lab articles in English`,
+      description:
+        'What AI assistants read, run and claim about a page, measured on this site: the lab experiments and the articles built on their data.',
+      href: '/en/blog',
+      cta: 'Browse the English blog',
+    },
     {
       mark: 'bg-accent',
       title: 'Three free SEO tools',
