@@ -99,3 +99,18 @@ export function citedTool(mdx: string): CitedTool | undefined {
   const tool = TOOLS.find((t) => t.href === match[1])
   return tool ? { title: tool.title, href: tool.href } : undefined
 }
+
+// As ferramentas só existem em português. Numa página inglesa, a margem dá o
+// nome em inglês e avisa a língua da interface, em vez de um rótulo português
+// solto numa página inglesa.
+const TOOL_TITLES_EN: Record<string, string> = {
+  '/ferramentas/gerador-json-ld': 'JSON-LD generator',
+  '/ferramentas/validador-meta-tags': 'Meta tag validator',
+  '/ferramentas/checador-cwv': 'Core Web Vitals checker',
+}
+
+/** O rótulo da ferramenta citada no idioma da página. */
+export function citedToolLabel(tool: CitedTool, lang: 'pt-BR' | 'en'): string {
+  if (lang === 'pt-BR') return tool.title
+  return `${TOOL_TITLES_EN[tool.href] ?? tool.title} (Portuguese interface)`
+}
