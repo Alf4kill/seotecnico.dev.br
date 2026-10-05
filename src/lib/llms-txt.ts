@@ -46,6 +46,12 @@ const TOOL_LINKS = [
 
 const ABOUT_LINKS = [
   {
+    path: '/laboratorio',
+    title: 'Laboratório',
+    description:
+      'Os experimentos deste site — hipótese registrada antes do dado, URL secreta por assistente, registro público — e os artigos que usam os resultados de cada um.',
+  },
+  {
     path: '/sobre',
     title: 'Sobre',
     description: `Quem escreve: ${site.author.name}, ${site.author.jobTitle}. Metodologia do laboratório e como cada resultado é medido.`,

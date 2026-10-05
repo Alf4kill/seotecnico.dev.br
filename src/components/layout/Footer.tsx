@@ -40,6 +40,7 @@ const COPY: Record<Lang, Copy> = {
         links: [
           { label: 'Guia de SEO técnico', href: '/guia/seo-tecnico-nextjs' },
           { label: 'Blog',                href: '/blog' },
+          { label: 'Laboratório',         href: '/laboratorio' },
           { label: 'Ferramentas',         href: '/ferramentas' },
         ],
       },

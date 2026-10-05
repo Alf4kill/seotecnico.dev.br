@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { site } from '@/lib/site'
 import { getAllPosts, getAllEnglishPosts, getGuide, getEnglishCaseStudy } from '@/lib/content'
+import { isExperiment } from '@/lib/categories'
 import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
 import { CASE_STUDIES_REVISED } from '@/lib/case-studies'
 
@@ -43,6 +44,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .map((p) => p.frontmatter.dateModified)
     .sort()
     .at(-1)
+  // /laboratorio lista os experimentos e os artigos que usam os dados deles:
+  // muda quando qualquer um dos dois muda (mesma conta da própria página).
+  const experimentSlugs = posts.filter((p) => isExperiment(p.frontmatter.status)).map((p) => p.frontmatter.slug)
+  const newestLab = posts
+    .filter((p) => experimentSlugs.includes(p.frontmatter.slug) || p.frontmatter.basedOn?.some((s) => experimentSlugs.includes(s)))
+    .map((p) => p.frontmatter.dateModified)
+    .sort()
+    .at(-1)
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: base, lastModified: toDate(newestContent), changeFrequency: 'weekly', priority: 1 },
@@ -67,6 +76,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/design`, lastModified: toDate(MANIFESTO_REVISED), changeFrequency: 'yearly', priority: 0.4 },
     { url: `${base}/en/design`, lastModified: toDate(MANIFESTO_REVISED), changeFrequency: 'yearly', priority: 0.4 },
     { url: `${base}/blog`, lastModified: newestPost ? toDate(newestPost) : undefined, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${base}/laboratorio`, lastModified: newestLab ? toDate(newestLab) : undefined, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${base}/ferramentas`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/ferramentas/gerador-json-ld`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/ferramentas/validador-meta-tags`, changeFrequency: 'monthly', priority: 0.8 },
