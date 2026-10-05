@@ -30,14 +30,14 @@ export const STATIC_SEARCH_ITEMS: SearchItem[] = [
   {
     id: 'home',
     title: 'Home',
-    description: 'SEO Técnico — guias e ferramentas de SEO para Next.js',
+    description: 'SEO Técnico — SEO medido para sites modernos',
     href: '/',
     category: 'pagina',
   },
   {
     id: 'blog',
     title: 'Blog',
-    description: 'Artigos práticos de SEO técnico para desenvolvedores Next.js',
+    description: 'Artigos de SEO técnico para sites modernos, com código Next.js e experimentos medidos',
     href: '/blog',
     category: 'pagina',
     keywords: ['artigos', 'posts'],
