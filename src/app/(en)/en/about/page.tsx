@@ -122,8 +122,16 @@ export default function EnglishAboutPage() {
             <Link href="/en/design" title="Site design: Swiss retro-futurism">
               design colophon
             </Link>
-            , which explains the visual system and its measured contrast. The articles and the
-            three free tools are in Portuguese; the guide links to them where they go deeper.
+            , which explains the visual system and its measured contrast. One lab article is
+            in English too:{' '}
+            <Link
+              href="/en/blog/which-ai-assistants-run-javascript"
+              title="Which AI assistants run JavaScript? A test with five"
+            >
+              which AI assistants run JavaScript
+            </Link>
+            . The other articles and the three free tools are in Portuguese; the guide links to
+            them where they go deeper.
           </p>
         </div>
 
