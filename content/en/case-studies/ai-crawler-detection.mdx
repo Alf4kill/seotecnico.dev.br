@@ -3,7 +3,7 @@ title: 'Detecting AI crawlers on a live site: a pilot and a control'
 description: 'AI crawler telemetry on a live Next.js site: verified identities, honeypots, six instrument defects and a positive control with ChatGPT and Claude.'
 slug: ai-crawler-detection
 datePublished: '2026-09-25'
-dateModified: '2026-09-27'
+dateModified: '2026-10-04'
 primaryQuery: 'ai crawler detection'
 keywords: ['english', 'inglês', 'ai crawlers', 'gptbot', 'claudebot', 'perplexity', 'chatgpt-user', 'claude-user', 'robots.txt', 'honeypot', 'web bot auth', 'bot verification', 'positive control', 'case study']
 lang: en
@@ -174,8 +174,11 @@ agent made zero requests to this domain in two months, against six verified
 fetches by its indexer. Asked about the home page, which the indexer had
 crawled, it answered correctly with no request reaching the server. Asked
 open-endedly about an article the indexer had never visited, it wrote a
-confident analysis inferred from the words in the URL, with the admission
-that it had not loaded the page buried in the middle.
+confident analysis inferred from the words in the URL, and admitted it had
+not loaded the page only after a first section that already presented the
+content as the article's. Two of the conversations showed the interface
+offering a free preview of the paid plan's advanced search; the account itself
+was on the free plan.
 
 **One more near-miss for the method.** An analytics export taken a few hours
 after the rounds showed 3 and 2 requests instead of 5 and 5. The property had
