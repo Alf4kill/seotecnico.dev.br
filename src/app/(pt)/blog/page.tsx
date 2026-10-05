@@ -84,6 +84,9 @@ export default function BlogPage() {
             <a href="/feed.xml" className={buttonClasses('outline', 'min-h-11')}>
               Assinar o RSS
             </a>
+            <Link href="/laboratorio" className="font-mono text-xs uppercase tracking-[0.12em] text-primary hover:text-primary-hover">
+              Ver os experimentos no laboratório <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
       </section>
