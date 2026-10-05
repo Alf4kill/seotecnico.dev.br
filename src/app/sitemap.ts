@@ -103,5 +103,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...postPages, ...englishPostPages]
+  // Índice /en/blog: muda quando um artigo inglês muda (mesma regra do /blog).
+  const newestEnglishPost = getAllEnglishPosts()
+    .map((p) => p.frontmatter.dateModified)
+    .sort()
+    .at(-1)
+  const englishBlogIndex: MetadataRoute.Sitemap = [
+    { url: `${base}/en/blog`, lastModified: newestEnglishPost ? toDate(newestEnglishPost) : undefined, changeFrequency: 'weekly', priority: 0.7 },
+  ]
+
+  return [...staticPages, ...englishBlogIndex, ...postPages, ...englishPostPages]
 }
