@@ -1,0 +1,313 @@
+---
+title: "IA não consegue acessar seu site: o que o log mostra"
+description: "Quando o assistente diz que não abriu a página, o servidor às vezes mostra o contrário. Cinco causas, quatro observadas em teste, e como conferir no log."
+slug: "ia-nao-consegue-acessar-site"
+primaryQuery: "chatgpt não consegue acessar site"
+keywords: ['chatgpt não abre site', 'ia não acessa site', 'perplexity', 'gemini', 'claude', 'log do servidor', 'access log', 'robots.txt', 'firewall', 'cdn', 'cloudflare', 'vercel', 'bloqueio de bot', 'ia']
+lang: "pt-BR"
+category: indexacao
+basedOn: ['quais-ias-executam-javascript', 'chatgpt-le-javascript']
+tldr: >-
+  A frase não diz qual foi o problema. Nos testes deste site apareceram quatro
+  causas: resposta por índice sem buscar a página, ambiente do assistente sem
+  acesso ao site, conteúdo que só existe depois do JavaScript e recurso
+  entregue que a resposta disse não ter recebido. Comece pelo log do servidor.
+datePublished: "2026-10-05"
+dateModified: "2026-10-05"
+faq:
+  - question: "Por que o ChatGPT diz que não consegue acessar meu site?"
+    answer: "Porque a frase não diz qual foi o problema. Nos testes deste site apareceram quatro causas diferentes: o assistente respondeu por um índice sem buscar a página, o ambiente dele não alcançou o site, o conteúdo só existia depois do JavaScript, ou o recurso foi entregue e a resposta disse o contrário. Uma quinta causa, bloqueio no seu servidor ou na CDN, é possível, mas não foi observada aqui. Confira nesta ordem: log do servidor, status HTTP, robots.txt, firewall e conteúdo no primeiro render."
+  - question: "O Perplexity precisa ter indexado a página para ler?"
+    answer: "No plano grátis, no teste deste site em setembro de 2026, ele respondeu pelo índice e não buscou a página ao vivo. Até 25 de setembro de 2026, nenhuma requisição se declarando Perplexity-User chegou ao servidor em dois meses de log. São 5 rodadas em um único site: outro plano ou outro momento pode se comportar diferente."
+  - question: "A IA pode dizer que não acessou mesmo tendo acessado?"
+    answer: "Sim. Em 2 de outubro de 2026, no plano grátis, o Gemini recebeu em 3 rodadas o endereço de um JSON junto com o da página. Nas três, o servidor registrou a página e o JSON pedidos no mesmo segundo, e respondeu os dois. Nas três, a resposta disse que o JSON não pôde ser acessado. A resposta do assistente não prova que a requisição falhou. O log prova se ela chegou."
+  - question: "Como saber se meu firewall bloqueia a IA?"
+    answer: "Procure no log requisições do agente com status 403 ou desafio, ou a ausência delas no horário em que alguém pediu a página ao assistente. Se o bloqueio acontece na CDN, o servidor de origem pode não registrar nada. Nesse caso, confira o log da borda e a regra de bots no painel da CDN ou do firewall."
+---
+
+Quando o ChatGPT, o Gemini ou o Claude diz que não consegue acessar seu site,
+isso é uma frase do modelo, não um código de erro. Nos testes deste site
+apareceram as duas situações: às vezes nenhuma requisição chegou ao servidor,
+e às vezes chegou, foi respondida, e o assistente disse que não. Por isso o
+primeiro passo é o log, não a resposta. Confira nesta ordem: o log do
+servidor, o status HTTP, o robots.txt, o firewall ou a CDN, e se o conteúdo
+existe no HTML do primeiro render, antes de qualquer JavaScript.
+
+## Resposta curta: cinco causas e o sinal de cada uma no log
+
+| Causa | O que aparece no log | Observada nos testes? |
+|---|---|---|
+| O assistente responde por um índice e não busca a página | Nenhuma requisição do agente sob demanda no horário da pergunta | Sim: Perplexity grátis, set/2026 |
+| A ferramenta recebeu o recurso, o modelo disse que não | Requisição no horário da pergunta, respondida | Sim: Gemini grátis, out/2026 |
+| O ambiente do assistente não alcança o site | Nenhuma requisição | Sim: Claude e Gemini, out/2026 |
+| O conteúdo só existe depois do JavaScript | A requisição pode estar lá; o trecho não está no HTML servido | Sim: ChatGPT, Claude e Gemini, set–out/2026 |
+| Bloqueio no seu servidor ou na CDN | 403 ou desafio, ou nada na origem se o bloqueio for na borda | Não |
+
+Repare que três causas deixam o mesmo rastro no log da origem: nada. Ausência
+de requisição não diz se o assistente usou um índice, se o ambiente dele não
+saiu para a internet ou se uma CDN barrou o pedido antes. Para separar essas
+três, você precisa olhar também a camada que fica na frente do servidor.
+
+Uma ressalva sobre como eu sei quem pediu cada página. No [laboratório deste
+site](/blog/quais-ias-executam-javascript), cada assistente recebe uma URL
+secreta própria. Quando essa URL aparece no log, a identidade vem da URL, não
+do user agent. O seu log não tem isso: você tem um perfil (user agent, IP,
+horário) e precisa verificar a identidade comparando o IP com as faixas que o
+fornecedor publica. Explico o método em [como detectar crawlers de IA no
+log](/blog/detectar-crawlers-ia).
+
+<figure>
+  <svg viewBox="0 0 720 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Árvore de decisão: chegou requisição do agente, o status foi 200, o conteúdo está no HTML servido">
+    <title>Chegou requisição do agente?</title>
+    <desc>Primeira pergunta: chegou requisição do agente no horário da pergunta? Se não, a causa é índice, ambiente do assistente sem acesso ou bloqueio na borda; confira o log da CDN ou do firewall. Se sim, o status foi 200? Se não, o problema está no servidor: 403, loop de redirecionamento ou 5xx. Se foi 200, o conteúdo está no HTML servido? Se não, ele depende de JavaScript. Se está, o servidor fez a parte dele e o problema está na resposta do modelo.</desc>
+
+    <rect x="20" y="20" width="300" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="170" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">1. Chegou requisição do agente</text>
+    <text x="170" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">no horário da pergunta?</text>
+    <line x1="320" y1="48" x2="400" y2="48" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="40" textAnchor="middle" fontSize="12" fill="var(--foreground)">não</text>
+    <rect x="400" y="20" width="300" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="550" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">índice, ambiente sem acesso ou</text>
+    <text x="550" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">bloqueio na borda: ver a CDN</text>
+    <line x1="170" y1="76" x2="170" y2="130" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="182" y="108" fontSize="12" fill="var(--foreground)">sim</text>
+
+    <rect x="20" y="130" width="300" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="170" y="163" textAnchor="middle" fontSize="12" fill="var(--foreground)">2. O status foi 200?</text>
+    <line x1="320" y1="158" x2="400" y2="158" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="150" textAnchor="middle" fontSize="12" fill="var(--foreground)">não</text>
+    <rect x="400" y="130" width="300" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="550" y="154" textAnchor="middle" fontSize="12" fill="var(--foreground)">problema no servidor: 403,</text>
+    <text x="550" y="172" textAnchor="middle" fontSize="12" fill="var(--foreground)">loop de redirecionamento, 5xx</text>
+    <line x1="170" y1="186" x2="170" y2="240" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="182" y="218" fontSize="12" fill="var(--foreground)">sim</text>
+
+    <rect x="20" y="240" width="300" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="170" y="264" textAnchor="middle" fontSize="12" fill="var(--foreground)">3. O conteúdo está no</text>
+    <text x="170" y="282" textAnchor="middle" fontSize="12" fill="var(--foreground)">HTML servido?</text>
+    <line x1="320" y1="268" x2="400" y2="268" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="360" y="260" textAnchor="middle" fontSize="12" fill="var(--foreground)">não</text>
+    <rect x="400" y="240" width="300" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="550" y="264" textAnchor="middle" fontSize="12" fill="var(--foreground)">o conteúdo depende</text>
+    <text x="550" y="282" textAnchor="middle" fontSize="12" fill="var(--foreground)">de JavaScript</text>
+    <line x1="170" y1="296" x2="170" y2="350" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="182" y="328" fontSize="12" fill="var(--foreground)">sim</text>
+
+    <rect x="20" y="350" width="680" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="377" textAnchor="middle" fontSize="12" fill="var(--foreground)">4. O servidor fez a parte dele. O problema está na resposta do modelo,</text>
+    <text x="360" y="397" textAnchor="middle" fontSize="12" fill="var(--foreground)">como no caso do Gemini: recebeu o JSON e disse que não recebeu</text>
+    <text x="20" y="450" fontSize="12" fill="var(--foreground)">As caixas tracejadas são as saídas em que há algo a corrigir do seu lado, ou a conferir na borda.</text>
+  </svg>
+  <figcaption>A primeira pergunta é sempre a do log. A resposta do assistente só entra no último passo.</figcaption>
+</figure>
+
+A árvore acima, em texto:
+
+1. Chegou requisição do agente no horário da pergunta? Se **não**, a causa é
+   uma de três: o assistente respondeu por um índice, o ambiente dele não
+   alcança o site, ou um bloqueio na borda. Confira se há 403 ou desafio no
+   log da CDN ou do firewall.
+2. Se **sim**, o status foi 200? Se não foi, o problema está no servidor (403,
+   redirecionamento em loop, 5xx).
+3. Se foi 200, o conteúdo está no HTML servido? Se não está, ele depende de
+   JavaScript.
+4. Se está, o servidor fez a parte dele. O problema está na resposta do
+   modelo, como no caso do Gemini descrito abaixo.
+
+## 1. O assistente responde por um índice e não busca a página ao vivo
+
+Alguns assistentes respondem a partir de um índice próprio, montado antes por
+um crawler, em vez de buscar a página no momento da pergunta. Se a página não
+está nesse índice, não há de onde tirar a resposta, e o servidor não vê nada.
+
+Foi o que eu vi com o Perplexity no plano grátis, em 5 rodadas em 25 de
+setembro de 2026, no experimento [ChatGPT lê
+JavaScript?](/blog/chatgpt-le-javascript). Até 25 de setembro de 2026, em dois
+meses de log, nenhuma requisição se declarando Perplexity-User (o agente que o
+Perplexity documenta para buscas sob demanda) chegou ao servidor. No mesmo
+período chegaram 6 requisições se declarando PerplexityBot, o indexador, todas
+de IPs nas faixas que o Perplexity publica. Quando perguntei sobre a home, que
+já tinha sido rastreada, a resposta veio certa sem nenhuma requisição chegar.
+
+São 5 rodadas, em um site, em um plano. Isso não diz como o Perplexity se
+comporta no plano pago, que eu não testei.
+
+**No log:** nenhuma requisição do agente sob demanda no horário da pergunta.
+Requisições do indexador, se existirem, aparecem em outros dias. Se o indexador
+nunca passou pela página, ela não tem como estar no índice dele. Aí o que você
+confere é se nada impede o rastreamento: robots.txt e firewall, nas seções
+abaixo.
+
+## 2. A ferramenta recebeu o recurso, e o modelo disse que não
+
+Este é o caso que mais justifica começar pelo log. No experimento [Quais IAs
+executam JavaScript?](/blog/quais-ias-executam-javascript), dei ao Gemini, no
+plano grátis, o endereço da página e o endereço direto de um JSON que ela usa,
+em 3 rodadas. Nas três, o servidor registrou a página e o JSON pedidos no mesmo
+segundo, e respondeu os dois. O Gemini relatou o conteúdo da página, mas as
+três respostas disseram que o JSON não pôde ser acessado. Na rodada 47, em 2 de
+outubro de 2026, a frase foi "não foi possível acessar o endpoint".
+
+O log não explica por que a resposta contradiz o registro, e eu não vou supor
+um motivo. O que o log mostra é que, nesse caso, não havia nada a corrigir no
+servidor. Outros casos em que a explicação da IA contradiz o servidor estão em
+[auditar SEO com ChatGPT](/blog/auditoria-seo-com-ia).
+
+**No log:** uma requisição no horário da pergunta, respondida. O passo
+seguinte é confirmar que o trecho que você quer ver citado está no HTML servido
+(seção 4). Se está, o servidor entregou o que devia, e o problema está do lado
+do assistente.
+
+## 3. O ambiente do assistente não alcança o site
+
+Alguns assistentes, em certas tarefas, rodam código num ambiente isolado com
+acesso de rede restrito. Uma falha ali não toca o seu servidor.
+
+No mesmo experimento, na condição em que o pedido dizia onde estava cada dado,
+o Claude, no plano Pro, disse que não conseguia baixar o HTML bruto pelo
+terminal porque o domínio não estava na lista de rede liberada do ambiente dele
+(rodada 41, em 2 de outubro de 2026). Repetiu a explicação nas seis rodadas com
+dica. Na mesma condição, o Gemini, no plano grátis, escreveu e rodou um script
+Python para buscar a página nas rodadas 42, 52 e 62, também em 2 de outubro, e
+as três execuções falharam com um erro de resolução de nome. Nenhuma requisição
+desses caminhos chegou ao servidor.
+
+Uma separação importante: a explicação sobre a lista de rede é do Claude, não
+do meu log. O que o log confirma é só a parte que bate com ela, a ausência de
+requisição. Explicação de assistente não é dado; só entra aqui porque o
+registro do servidor é compatível com ela.
+
+**No log:** nada. Sozinho, o log da origem não distingue este caso do índice
+(seção 1) nem de um bloqueio na borda (seção 5).
+
+## 4. O conteúdo só existe depois do JavaScript
+
+Se o conteúdo é inserido no navegador depois que o JavaScript roda, ele não
+está no HTML que o servidor entrega. Um assistente que lê só esse HTML não
+encontra o conteúdo, mesmo com a requisição chegando e recebendo 200.
+
+No experimento, com o pedido neutro, três assistentes não citaram em nenhuma
+rodada o código que só existia depois do JavaScript: ChatGPT (plano Go) 0 de 5,
+Claude (plano Pro) 0 de 5 e Gemini (grátis) 0 de 8, entre 25 de setembro e 2
+de outubro de 2026. Zero em cinco não prova que nunca acontece. Prova que não
+aconteceu nessas rodadas.
+
+**No log:** a requisição pode aparecer normalmente, com status 200. O servidor
+fez a parte dele; o que falta está no HTML. Para conferir, peça a página sem
+executar JavaScript e procure o trecho:
+
+```bash
+curl -s https://seusite.com.br/sua-pagina | grep -o "o trecho que precisa ser citado"
+```
+
+Se o comando não imprime nada, o trecho não está no HTML servido. Para title,
+description e tags Open Graph, o [validador de meta
+tags](/ferramentas/validador-meta-tags) mostra o que a página entrega.
+
+## 5. Bloqueio no seu servidor ou na CDN (não observado aqui)
+
+Esta causa eu **não observei**. Durante os testes, este site estava com o Bot
+Protection desligado e a regra de AI Bots em Allow no firewall da Vercel,
+configuração conferida em 25 de setembro de 2026 e de novo em 4 de outubro de
+2026. O que segue é condicional, não medição.
+
+Se uma regra de firewall, um plugin de segurança ou a CDN bloqueia o agente, o
+sinal é um 403 ou um desafio no log da camada que bloqueou. Se o bloqueio
+acontece na borda, o servidor de origem pode não registrar nada, e o caso fica
+igual às seções 1 e 3 no log da origem. Por isso vale abrir também o log e o
+painel da CDN.
+
+Um exemplo concreto de padrão que mudou em 2026: segundo o [changelog da
+Cloudflare de 1º de julho de
+2026](https://developers.cloudflare.com/changelog/post/2026-07-01-ai-traffic-options/),
+domínios que entram na Cloudflare a partir de 15 de setembro de 2026 recebem
+por padrão o bloqueio das categorias Training e Agent em páginas que exibem
+anúncios. Agent, na definição da própria Cloudflare, inclui atividade
+automatizada em tempo real em nome de uma pessoa, como os bots de busca dos
+chats. Se o seu domínio está nesse caso e a página tem anúncio, um pedido feito
+por um assistente pode ser barrado antes de chegar à origem. A configuração
+fica nas opções de segurança do painel, nas políticas de bots de IA
+([documentação](https://developers.cloudflare.com/bots/additional-configurations/block-ai-bots/)).
+
+O robots.txt também entra aqui, com uma diferença entre fornecedores: os
+agentes que buscam a página a pedido de um usuário não tratam o robots.txt do
+mesmo jeito. Na documentação de cada um, consultada em 4 de outubro de 2026:
+
+- **OpenAI:** sobre o ChatGPT-User, a [página de
+  bots](https://developers.openai.com/api/docs/bots) diz que, como as ações
+  partem de um usuário, as regras do robots.txt podem não se aplicar.
+- **Perplexity:** a [documentação de bots](https://docs.perplexity.ai/guides/bots)
+  diz que o Perplexity-User, por buscar a pedido de um usuário, em geral ignora
+  as regras do robots.txt.
+- **Anthropic:** a [central de
+  ajuda](https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler)
+  diz que os bots da empresa respeitam as diretivas do robots.txt e que
+  desabilitar o Claude-User impede que o conteúdo seja buscado em resposta a um
+  usuário.
+
+Na prática: um `Disallow` pode explicar a falha de um assistente e não a de
+outro. Eu não testei nenhum desses comportamentos; o robots.txt deste site
+libera os três agentes.
+
+**No log:** 403 ou desafio na camada que bloqueou, ou ausência de requisição na
+origem. Confira a regra de bots no painel de cada camada que fica na frente do
+servidor.
+
+## Como verificar: checklist em ordem
+
+1. **Log do servidor.** Procure requisições do agente no horário em que a
+   pergunta foi feita (exemplo de comando logo abaixo da lista).
+2. **Status HTTP.** 200 significa que o servidor entregou. 403 aponta bloqueio.
+   3xx em sequência pode ser loop de redirecionamento. 5xx é erro do servidor.
+3. **robots.txt.** Confira se alguma regra atinge o agente ou o indexador do
+   assistente.
+4. **Firewall e CDN.** Abra o painel e o log de cada camada na frente do
+   servidor. Ausência de requisição na origem não descarta bloqueio na borda.
+5. **Conteúdo no primeiro render.** Rode o `curl` da seção 4 com o trecho que
+   precisa ser citado.
+
+Para o passo 1, num access log no formato combined (Nginx ou Apache), um
+comando ilustrativo; ajuste o caminho do arquivo:
+
+```bash
+grep -E "ChatGPT-User|Claude-User|Perplexity-User" /var/log/nginx/access.log \
+  | awk '{print $4, $9, $7}'
+```
+
+Isso lista data, status e caminho das requisições que se declaram com esses
+tokens. User agent pode ser falsificado: para afirmar que foi o agente,
+verifique o IP contra as faixas publicadas pelo fornecedor. Nem todo assistente
+busca com um token próprio, e a lista acima não cobre todos: no experimento, o
+Gemini se apresentou só como `Google`.
+
+Só depois desses cinco passos a resposta do assistente vira pista. Antes, ela é
+só uma frase.
+
+## No Next.js (e na Vercel)
+
+Na Vercel, os dois conjuntos de regras gerenciadas que mais importam aqui ficam
+inativos por padrão, segundo a [documentação de managed
+rulesets](https://vercel.com/docs/vercel-firewall/vercel-waf/managed-rulesets).
+O Bot Protection, quando ativo em modo de desafio, serve um desafio em
+JavaScript ao tráfego que provavelmente não vem de um navegador. O AI Bots pode
+só registrar ou negar o tráfego que a Vercel identifica como bot de IA. Se você
+ativou um dos dois, é a primeira regra a conferir na seção 5. Neste site, como
+escrevi acima, os dois estavam permissivos durante os testes.
+
+No Next.js, a pergunta da seção 4 vira: o trecho é renderizado no servidor ou
+buscado no navegador depois da hidratação? O que um Server Component renderiza
+vai no HTML. O que chega por um fetch disparado no navegador, dentro de um
+`useEffect`, por exemplo, não vai. Foi assim que montei a condição neutra do
+experimento: o código que os assistentes precisavam citar só aparecia depois
+do JavaScript, de propósito. O mesmo `curl` serve para conferir qualquer página
+do seu projeto, em produção ou num preview.
+
+## O que ainda está em andamento
+
+Os números do Perplexity valem até 25 de setembro de 2026. Uma checagem de
+revisitas sobre os endereços do experimento está marcada para 8 de outubro de
+2026; se ela mudar algum número deste artigo, a data de atualização vai
+refletir isso.
+
+Para o quadro completo de rastreamento, renderização e indexação, veja o [guia
+de SEO técnico com Next.js](/guia/seo-tecnico-nextjs).

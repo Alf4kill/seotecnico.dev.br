@@ -86,6 +86,27 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/which-ai-assistants-run-javascript',
     },
   },
+  {
+    id: 'auditoria-seo-com-ia',
+    paths: {
+      'pt-BR': '/blog/auditoria-seo-com-ia',
+      en: '/en/blog/seo-audit-with-chatgpt',
+    },
+  },
+  {
+    id: 'dados-estruturados-ia',
+    paths: {
+      'pt-BR': '/blog/dados-estruturados-ia',
+      en: '/en/blog/structured-data-and-ai',
+    },
+  },
+  {
+    id: 'ia-nao-consegue-acessar-site',
+    paths: {
+      'pt-BR': '/blog/ia-nao-consegue-acessar-site',
+      en: '/en/blog/chatgpt-cant-access-website',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
