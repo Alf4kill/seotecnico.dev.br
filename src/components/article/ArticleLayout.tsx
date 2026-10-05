@@ -42,6 +42,7 @@ const COPY = {
     tool: 'Ferramenta citada',
     history: 'Histórico',
     related: 'Continue pelo mesmo eixo',
+    blog: '/blog',
     authorBio:
       'Publica aqui os testes que roda no próprio site, com o código aberto e a medição junto.',
     about: '/sobre',
@@ -60,6 +61,7 @@ const COPY = {
     tool: 'Tool used',
     history: 'History',
     related: 'Continue on the same axis',
+    blog: '/en/blog',
     authorBio:
       'Publishes here the tests run on this very site, with the code open and the measurement alongside.',
     about: '/en/about',
@@ -344,7 +346,7 @@ export function ArticleLayout({
             {related.map(({ frontmatter: fm, derived: d }) => (
               <li key={fm.slug}>
                 <Link
-                  href={`/blog/${fm.slug}`}
+                  href={`${copy.blog}/${fm.slug}`}
                   className="flex h-full flex-col gap-3.5 border border-gray bg-surface p-6 transition-colors hover:border-primary"
                 >
                   {fm.category && <CategoryChip category={fm.category} lang={lang} className="self-start" />}
