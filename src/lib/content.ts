@@ -315,10 +315,11 @@ export function getEnglishPostBySlug(slug: string): Post | undefined {
 /**
  * Até `limit` artigos para "Continue pelo mesmo eixo": primeiro os da mesma
  * categoria, depois os mais recentes — nunca o próprio artigo. Links internos
- * entre spokes, derivados em vez de curados à mão.
+ * entre spokes, derivados em vez de curados à mão. Cada idioma relaciona só
+ * com a própria coleção: um artigo inglês nunca sugere um português.
  */
-export function getRelatedPosts(slug: string, limit = 3): Post[] {
-  const posts = getAllPosts()
+export function getRelatedPosts(slug: string, limit = 3, lang: 'pt-BR' | 'en' = 'pt-BR'): Post[] {
+  const posts = lang === 'en' ? getAllEnglishPosts() : getAllPosts()
   const self = posts.find((p) => p.frontmatter.slug === slug)
   const others = posts.filter((p) => p.frontmatter.slug !== slug)
   const sameAxis = others.filter((p) => p.frontmatter.category === self?.frontmatter.category)

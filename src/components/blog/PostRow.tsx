@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Post } from '@/lib/content'
+import type { Lang } from '@/lib/hreflang'
 import { isExperiment } from '@/lib/categories'
 import { CategoryChip, StatusLabel } from '@/components/ui/CategoryMark'
 
@@ -16,10 +17,13 @@ export function PostRow({
   post,
   index,
   headingLevel = 'h3',
+  lang = 'pt-BR',
 }: {
   post: Post
   index: number
   headingLevel?: 'h2' | 'h3'
+  /** Idioma da listagem: define o caminho do link e os rótulos de eixo e estado. */
+  lang?: Lang
 }) {
   const { frontmatter, derived } = post
   const Heading = headingLevel
@@ -34,7 +38,7 @@ export function PostRow({
       </span>
       <div className="flex flex-col gap-3">
         <Heading className="font-display text-[1.375rem] font-bold leading-tight tracking-[-0.015em] md:text-[1.75rem]">
-          <Link href={`/blog/${frontmatter.slug}`} className="text-foreground transition-colors hover:text-primary">
+          <Link href={`${lang === 'en' ? '/en/blog' : '/blog'}/${frontmatter.slug}`} className="text-foreground transition-colors hover:text-primary">
             {frontmatter.title}
           </Link>
         </Heading>
@@ -44,8 +48,8 @@ export function PostRow({
         </p>
       </div>
       <div className="col-start-2 flex flex-wrap items-center gap-3 md:col-start-3 md:flex-col md:items-start">
-        {frontmatter.category && <CategoryChip category={frontmatter.category} />}
-        {frontmatter.status && <StatusLabel status={frontmatter.status} />}
+        {frontmatter.category && <CategoryChip category={frontmatter.category} lang={lang} />}
+        {frontmatter.status && <StatusLabel status={frontmatter.status} lang={lang} />}
       </div>
     </li>
   )
