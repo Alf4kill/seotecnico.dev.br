@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { getAllEnglishPosts, getEnglishPostBySlug, resolveBasedOn } from '@/lib/content'
+import { getAllEnglishPosts, getEnglishPostBySlug, getRelatedPosts, resolveBasedOn } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { mdxOptions } from '@/lib/mdx'
 import { mdxComponents } from '@/components/mdx/mdx-components'
@@ -16,11 +16,8 @@ import { site } from '@/lib/site'
 // não é meta). Mesmo formato do blog português — um MDX por artigo, o
 // ArticleLayout — com o slug em inglês, porque a URL de uma página inglesa
 // carrega a query inglesa. O par de hreflang de cada tradução fica em
-// lib/hreflang.ts.
-//
-// Sem índice /en/blog por enquanto: com um ou dois artigos, a trilha vai de
-// /en direto ao artigo, e um índice quase vazio não ajuda o leitor. O índice
-// entra quando houver artigos suficientes para ele ter função.
+// lib/hreflang.ts. A trilha passa pelo índice /en/blog, e os relacionados vêm
+// só da coleção inglesa, como no blog português.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface PageProps {
@@ -74,6 +71,7 @@ export default async function EnglishBlogPostPage({ params }: PageProps) {
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', path: '/en' },
+          { name: 'Blog', path: '/en/blog' },
           { name: frontmatter.title, path },
         ]}
       />
@@ -82,7 +80,11 @@ export default async function EnglishBlogPostPage({ params }: PageProps) {
         post={post}
         lang="en"
         path={path}
-        breadcrumbs={[{ name: 'Home', href: '/en' }]}
+        breadcrumbs={[
+          { name: 'Home', href: '/en' },
+          { name: 'Blog', href: '/en/blog' },
+        ]}
+        related={getRelatedPosts(frontmatter.slug, 3, 'en')}
         basedOn={basedOn}
         copyright={`© ${frontmatter.dateModified.slice(0, 4)} ${site.author.name}. All rights reserved. Short quotes with attribution and a link to this page are welcome.`}
       >
