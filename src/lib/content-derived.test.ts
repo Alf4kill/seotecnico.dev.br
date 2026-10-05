@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { citedTool, extractHeadings, readingTime } from '@/lib/content-derived'
+import { citedTool, citedToolLabel, extractHeadings, readingTime } from '@/lib/content-derived'
 import { getAllPosts, getGuide, getRelatedPosts } from '@/lib/content'
 import { CATEGORIES, getCategory, isCategorySlug, isPostStatus } from '@/lib/categories'
 
@@ -124,5 +124,20 @@ describe('conteúdo publicado', () => {
     related.slice(0, Math.min(sameAxis, 3)).forEach((p) =>
       expect(p.frontmatter.category).toBe(first.frontmatter.category)
     )
+  })
+})
+
+describe('citedToolLabel', () => {
+  it('keeps the Portuguese title on Portuguese pages and translates on English ones', () => {
+    const tool = citedTool('Veja o [validador](/ferramentas/validador-meta-tags).')!
+    expect(citedToolLabel(tool, 'pt-BR')).toBe(tool.title)
+    expect(citedToolLabel(tool, 'en')).toBe('Meta tag validator (Portuguese interface)')
+  })
+
+  it('names every tool in English', () => {
+    for (const href of ['/ferramentas/gerador-json-ld', '/ferramentas/validador-meta-tags', '/ferramentas/checador-cwv']) {
+      const tool = citedTool(`[x](${href})`)!
+      expect(citedToolLabel(tool, 'en')).not.toContain(tool.title)
+    }
   })
 })

@@ -23,8 +23,8 @@ const DESCRIPTION_MAX = 155
 // e pelo og:image abaixo (fonte única, módulo sem JSX).
 export const OG_SIZE = { width: 1200, height: 630 }
 export const OG_CONTENT_TYPE = 'image/png'
-export const OG_BRAND_ALT = `${site.name} — SEO técnico para desenvolvedores Next.js`
-export const OG_BRAND_ALT_EN = `${site.name} — technical SEO for Next.js developers`
+export const OG_BRAND_ALT = `${site.name} — SEO técnico para quem desenvolve sites modernos`
+export const OG_BRAND_ALT_EN = `${site.name} — technical SEO for modern websites, implemented and measured`
 
 /**
  * O que muda no Open Graph de uma página conforme o idioma dela. Uma página em

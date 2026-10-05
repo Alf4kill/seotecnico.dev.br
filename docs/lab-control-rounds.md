@@ -144,6 +144,15 @@ These are not rounds and are not scored. They were run to explain 0/5.
      both fetched 2026-09-25).
    - The one DDoS-mitigation challenge burst (13:45–14:00 UTC) started after
      the last Perplexity round.
+   - *Re-checked 2026-10-04 (~23:40 UTC, owner's screenshots, Hobby plan):*
+     Bot Protection off, AI Bots Allow, Attack Mode off, no custom rules, no
+     system bypass, no IP blocking; the OWASP managed ruleset is not available
+     on the plan; Vercel's own DDoS mitigation is active. Last 24 hours (the
+     only window the plan shows, no round in it): about 1.5k allowed, 12
+     denied, all by "DDoS Mitigation", none challenged. The 30-day history is
+     a paid feature, so the round days cannot be re-read in the dashboard; for
+     them the evidence is the instrument (every round's fetch reached the
+     proxy) and the checks of 2026-09-25 and 2026-09-30.
 2. **Two months of Perplexity on this domain** (2026-07-25 → 2026-09-25).
    - **PerplexityBot: 6 real hits, all `verified-ip`.** `/` ×2,
      `/robots.txt` ×2, `/guia/seo-tecnico-nextjs` ×1, and one article OG
@@ -156,7 +165,15 @@ These are not rounds and are not scored. They were run to explain 0/5.
    - The page was not opened.
    - Perplexity still wrote a long, confident "analysis" built from the words
      in the URL and from general material. The admission that it had not
-     loaded the page is one sentence in the middle.
+     loaded the page is one sentence, placed right after a first section
+     ("O que o artigo discute") that already presents the content as the
+     article's. *Corrected 2026-10-04 from "in the middle", after the owner's
+     screenshots.*
+   - The screenshots also show the material: the answer cites third-party
+     sources ("10 sources", among them inmotionhosting, conversion.com and
+     ferraoferrao.com), none of them this site.
+   - The prompt, verbatim (the owner's spelling): "abra esse site e me analise
+     oque seria o conteudo que ela esta discutindo" followed by the URL.
    - The protocol prompt ("do not invent") drew an honest refusal 5 times out
      of 5. **The same agent confabulates when the prompt leaves room.**
 4. **The home page, which PerplexityBot had visited** (2026-09-25 22:13 UTC).
@@ -171,6 +188,15 @@ These are not rounds and are not scored. They were run to explain 0/5.
 fetch the page. It answered correctly when PerplexityBot had crawled the page
 and failed when it had not. The claim is scoped to the **free plan**: a Pro
 account may behave differently, and that was not tested.
+
+*Caveat added 2026-10-04, from the owner's screenshots:* in diagnostics 3 and
+4 the interface showed a banner, "Pro — Free preview of advanced search
+enabled". The account was on the free plan, but a preview of the paid search
+may have been active. The round screenshots are cropped above that area, so
+whether it was on during rounds 03–15 is unknown. Wording for publication:
+"free account, with the advanced-search preview the interface was offering".
+The screenshots stay with the owner (they show the round-1 slug, now
+rotated); they are not committed.
 
 ### Answers, verbatim
 
