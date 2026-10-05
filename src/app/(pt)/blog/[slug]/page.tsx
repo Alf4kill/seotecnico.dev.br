@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { getAllPosts, getPostBySlug, getRelatedPosts } from '@/lib/content'
+import { getAllPosts, getPostBySlug, getRelatedPosts, resolveBasedOn } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { mdxOptions } from '@/lib/mdx'
 import { mdxComponents } from '@/components/mdx/mdx-components'
@@ -50,12 +50,14 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   const { frontmatter, content } = post
   const path = `/blog/${frontmatter.slug}`
+  const basedOn = resolveBasedOn(post, getAllPosts(), '/blog')
 
   return (
     <>
       <ArticleJsonLd
         frontmatter={frontmatter}
         imagePath={`/blog/${frontmatter.slug}/opengraph-image`}
+        basedOnPaths={basedOn.map((source) => source.path)}
       />
       <BreadcrumbJsonLd
         items={[
@@ -74,6 +76,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           { name: 'Blog', href: '/blog' },
         ]}
         related={getRelatedPosts(frontmatter.slug)}
+        basedOn={basedOn}
         copyright={`© ${frontmatter.dateModified.slice(0, 4)} ${site.author.name}. Todos os direitos reservados. Citações curtas com atribuição e link para o artigo original são bem-vindas.`}
       >
         <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />

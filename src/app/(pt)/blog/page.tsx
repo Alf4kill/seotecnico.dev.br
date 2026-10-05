@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getAllPosts } from '@/lib/content'
-import { CATEGORIES } from '@/lib/categories'
+import { CATEGORIES, isExperiment } from '@/lib/categories'
 import { buildMetadata } from '@/lib/metadata'
 import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 import { ButtonLink, buttonClasses } from '@/components/ui/Button'
@@ -28,6 +28,7 @@ export default function BlogPage() {
   const posts = getAllPosts()
   const [latest] = posts
   const measuring = posts.filter((p) => p.frontmatter.status === 'em-medicao').length
+  const experiments = posts.filter((p) => isExperiment(p.frontmatter.status)).length
   const lastUpdate = posts.map((p) => p.frontmatter.dateModified).sort().at(-1)
   const perAxis = CATEGORIES.map((c) => ({
     ...c,
@@ -69,6 +70,7 @@ export default function BlogPage() {
             <dl className="flex flex-col">
               {[
                 ['Artigos', String(posts.length), 'text-foreground'],
+                ['Experimentos', String(experiments), 'text-foreground'],
                 ['Em medição', String(measuring), 'text-accent'],
                 ['Última atualização', lastUpdate ?? '—', 'text-foreground'],
               ].map(([label, value, tone]) => (
@@ -153,9 +155,13 @@ export default function BlogPage() {
             Todos os artigos
           </h2>
           <fieldset>
-            <legend className="sr-only">Filtrar por eixo</legend>
+            <legend className="sr-only">Filtrar por tipo ou eixo</legend>
             <div className="flex flex-wrap gap-2.5">
-              {[{ slug: 'all', label: 'Todos' }, ...CATEGORIES.map((c) => ({ slug: c.slug, label: c.label['pt-BR'] }))].map(
+              {[
+                { slug: 'all', label: 'Todos' },
+                { slug: 'experimento', label: 'Experimentos' },
+                ...CATEGORIES.map((c) => ({ slug: c.slug, label: c.label['pt-BR'] })),
+              ].map(
                 ({ slug, label }) => (
                   <label key={slug} className="cursor-pointer">
                     <input
@@ -166,7 +172,9 @@ export default function BlogPage() {
                       className="peer sr-only"
                     />
                     <span className="inline-flex min-h-9 items-center gap-2 border border-gray-strong px-4 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted transition-colors hover:text-foreground">
-                      {slug !== 'all' && <CategoryMark category={slug as (typeof CATEGORIES)[number]['slug']} />}
+                      {slug !== 'all' && slug !== 'experimento' && (
+                        <CategoryMark category={slug as (typeof CATEGORIES)[number]['slug']} />
+                      )}
                       {label}
                     </span>
                   </label>
