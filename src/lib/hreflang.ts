@@ -116,6 +116,20 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/chatgpt-cant-access-website',
     },
   },
+  {
+    id: 'javascript-seo-google-vs-ia',
+    paths: {
+      'pt-BR': '/blog/javascript-seo-google-vs-ia',
+      en: '/en/blog/javascript-seo-google-vs-ai',
+    },
+  },
+  {
+    id: 'llms-txt-funciona',
+    paths: {
+      'pt-BR': '/blog/llms-txt-funciona',
+      en: '/en/blog/does-llms-txt-work',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
