@@ -3,6 +3,7 @@ import { classifyAiCrawler, isAllowed, type AiCrawler } from '@/lib/ai-crawlers'
 import { ipOwner, signerHost, verifyCrawler, type VerificationResult } from '@/lib/crawler-verification'
 import { netId } from '@/lib/net-id'
 import { trapChannel } from '@/lib/lab-traps'
+import { hasBrowserFetchMetadata } from '@/lib/fetch-metadata'
 import { acceptsMarkdown } from '@/lib/content-negotiation'
 import { controlProbeForPath, isControlPath, labHitId, labHitParams } from '@/lib/lab-probes'
 
@@ -104,7 +105,8 @@ type UaClass = 'declared-ai' | 'browser-like' | 'unknown'
  */
 function classifyUa(request: NextRequest, crawler: AiCrawler | undefined): UaClass {
   if (crawler) return 'declared-ai'
-  const hasSecFetch = request.headers.has('sec-fetch-mode')
+  // Mode + Dest: o `fetch` do Node manda só o Mode (lib/fetch-metadata.ts).
+  const hasSecFetch = hasBrowserFetchMetadata(request.headers)
   const acceptsHtml = request.headers.get('accept')?.includes('text/html') ?? false
   return hasSecFetch && acceptsHtml ? 'browser-like' : 'unknown'
 }
@@ -202,7 +204,9 @@ async function reportHit(request: NextRequest): Promise<void> {
             // site — não carrega nada além do que o cliente já pediu.
             page_location: href,
             ua_class: uaClass,
-            has_sec_fetch: String(request.headers.has('sec-fetch-mode')),
+            // Desde 2026-10-07, Mode E Dest (antes: só Mode). Corte em
+            // docs/experiment-log.md.
+            has_sec_fetch: String(hasBrowserFetchMetadata(request.headers)),
             req_conditional: String(
               request.headers.has('if-none-match') || request.headers.has('if-modified-since')
             ),

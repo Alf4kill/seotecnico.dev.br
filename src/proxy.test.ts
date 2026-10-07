@@ -132,16 +132,35 @@ describe('proxy — reporte de hit', () => {
         'user-agent': CHROME,
         accept: 'text/html,application/xhtml+xml',
         'sec-fetch-mode': 'navigate',
+        'sec-fetch-dest': 'document',
         'x-real-ip': '198.51.100.4',
       })
     )
 
     const event = onlyEvent()
     expect(event.params.ua_class).toBe('browser-like')
+    expect(event.params.has_sec_fetch).toBe('true')
     expect(event.params.bot_name).toBeUndefined()
     expect(event.params.bot_verified).toBeUndefined()
     // A invariante de privacidade e de custo: nada de DNS nem de feed para gente.
     expect(verifyCrawler).not.toHaveBeenCalled()
+  })
+
+  it("does not take Node's native fetch for a browser (Sec-Fetch-Mode without Dest)", async () => {
+    // O que o undici do Node 22 manda mesmo com Accept de HTML: só o Mode.
+    // Até 2026-10-07 isto virava `browser-like` (docs/experiment-log.md).
+    await run(
+      request('/', {
+        'user-agent': 'node',
+        accept: 'text/html,application/xhtml+xml',
+        'sec-fetch-mode': 'cors',
+        'x-real-ip': '198.51.100.5',
+      })
+    )
+
+    const event = onlyEvent()
+    expect(event.params.ua_class).toBe('unknown')
+    expect(event.params.has_sec_fetch).toBe('false')
   })
 
   it('verifies identity when a crawler claims one', async () => {
