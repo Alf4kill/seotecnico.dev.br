@@ -1,0 +1,357 @@
+---
+title: "llms.txt funciona? O que um site real mediu"
+description: "Em 57 dias, o llms.txt deste site foi lido 9 vezes e ninguém seguiu o link-armadilha dele. O que isso prova, o que não prova e o teste que veio depois."
+slug: "llms-txt-funciona"
+primaryQuery: "llms.txt"
+keywords: ['llms.txt', 'llms txt', 'llmstxt', 'arquivo para ia', 'markdown para ia', 'text/markdown', 'accept: text/markdown', 'robots.txt', 'crawler de ia', 'aeo', 'geo', 'ia']
+lang: "pt-BR"
+category: medicao
+status: em-medicao
+basedOn: ['detectar-crawlers-ia']
+tldr: >-
+  Neste site, quase ninguém o lê: 9 leituras em 57 dias, contra 1.191 do
+  robots.txt, e nenhum cliente seguiu o link que só existia dentro dele. Para o
+  Google Search, a documentação diz que o arquivo é ignorado. Se ele sai do
+  código que você já tem, mantê-lo custa pouco; não espere efeito.
+datePublished: "2026-10-06"
+dateModified: "2026-10-06"
+faq:
+  - question: "O que é llms.txt?"
+    answer: "É uma proposta de arquivo em Markdown, servido na raiz do site em /llms.txt, que resume o site e lista os links mais importantes para modelos de linguagem. Foi publicada por Jeremy Howard em 3 de setembro de 2024, em llmstxt.org, e não é um padrão ratificado."
+  - question: "Alguma IA lê o llms.txt?"
+    answer: "Neste site, o arquivo foi lido 9 vezes em 57 dias, entre julho e setembro de 2026, e nenhum cliente seguiu o link que só existia dentro dele. Num recorte de 28 dias, de 16 de agosto a 12 de setembro, nenhuma das 5 leituras vinha de um cliente que se declarasse agente de IA; a previsão registrada para isso fecha em 23 de outubro de 2026. Para o Google Search, a documentação oficial diz que o arquivo é ignorado."
+  - question: "Vale a pena criar um llms.txt?"
+    answer: "Depende do custo. Se o arquivo pode ser gerado por código a partir do conteúdo que o site já tem, mantê-lo é barato. Mas o dado deste site não mostra efeito, e o arquivo não substitui o conteúdo no HTML servido, que é de onde vieram as respostas dos assistentes testados aqui."
+  - question: "llms.txt substitui o robots.txt?"
+    answer: "Não. O robots.txt é uma diretiva de acesso: diz o que cada crawler pode ou não rastrear. O llms.txt é uma lista de conteúdo, sem efeito de permissão. Listar uma URL nele não libera o acesso, e deixar de listar não a protege."
+  - question: "Servir Markdown para IA ajuda?"
+    answer: "Ainda não há dado para responder. Este site está medindo, até 24 de dezembro de 2026, se algum cliente pede páginas com o cabeçalho Accept: text/markdown. A versão em Markdown só será construída se houver demanda medida."
+---
+
+O llms.txt é uma proposta de arquivo em Markdown, servido na raiz do site
+(`/llms.txt`), que resume o site e lista o conteúdo que modelos de linguagem
+deveriam ler. Neste site, entre 25 de julho e 20 de setembro de 2026, o
+arquivo foi lido 9 vezes, e nenhum cliente (navegador, crawler ou agente)
+seguiu o link que só existia dentro dele. Isso não prova que o llms.txt é
+inútil. Prova que, aqui, quase ninguém o lê.
+
+Para o Google Search, a pergunta já tem resposta oficial: ele ignora o
+arquivo. O resto deste artigo é sobre o que um site pequeno consegue medir por
+conta própria, onde o meu teste falhou e o que estou medindo agora.
+
+## O que é o llms.txt
+
+A proposta foi publicada por Jeremy Howard em 3 de setembro de 2024, em
+[llmstxt.org](https://llmstxt.org/). O formato é deliberadamente simples: um
+H1 com o nome do site, que é a única parte obrigatória, um resumo em
+blockquote, parágrafos opcionais e seções H2 com listas de links em Markdown.
+Uma seção chamada `Optional` marca o que pode ser descartado quando o contexto
+do modelo é curto.
+
+Dois detalhes da proposta costumam sumir nos resumos em português. O primeiro:
+o alvo declarado é a inferência, o momento em que um modelo responde a alguém,
+e não o treinamento. O segundo: a proposta também sugere servir uma versão em
+Markdown de cada página, no mesmo endereço com `.md` acrescentado ou no lugar
+da extensão. Essa segunda ideia volta mais adiante, na H14.
+
+O llms.txt não é uma diretiva. O robots.txt diz o que um crawler pode rastrear;
+o llms.txt só sugere o que ler. Listar uma URL nele não libera acesso, e deixar
+uma URL de fora não a protege.
+
+### O que os fornecedores documentam
+
+O Google tem posição escrita. O [guia oficial de otimização para recursos de
+IA generativa na
+Busca](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide),
+atualizado em 10 de julho de 2026, diz que não é preciso criar arquivos de
+texto para IA, Markdown ou marcação nova para aparecer na Busca, porque o
+Google Search os ignora. Manter um arquivo desses para outros serviços,
+segundo o mesmo guia, não ajuda nem atrapalha a visibilidade na Busca.
+
+Para OpenAI e Anthropic, nas páginas oficiais sobre os crawlers de cada uma,
+consultadas em outubro de 2026, não encontrei menção a leitura do llms.txt de
+sites de terceiros. A documentação da OpenAI publica o próprio llms.txt, o que
+mostra uso do formato como editor, não como leitor. Ausência de documentação
+não prova que não leiam. É só o que está escrito.
+
+## Como testei: um link que só existe no llms.txt
+
+Contar leituras do arquivo é fácil: basta filtrar as requisições a
+`/llms.txt`. O difícil é saber se alguém usa o que leu. Para isso, no piloto de
+detecção de crawlers que rodei neste site ([método completo e as seis
+hipóteses](/blog/detectar-crawlers-ia)), pus no llms.txt um link para uma URL
+que não existia em nenhum outro lugar do site: nenhuma página linkava para ela
+e ela não estava no sitemap. Chamei essa URL de armadilha B.
+
+A lógica é direta. Se um cliente lê o llms.txt e segue os links dele, em algum
+momento acessa a armadilha. Se a armadilha nunca é acessada, ninguém seguiu o
+arquivo, pelo menos não por esse link.
+
+O piloto estava planejado para 90 dias. Fechei em 57, de 25 de julho a 20 de
+setembro de 2026, no deploy do redesign do site. O fechamento antecipado e o
+motivo estão declarados no relato do piloto.
+
+## O resultado: 9 leituras, 0 cliques
+
+| Medida (25/07 a 20/09/2026) | Contagem |
+|---|---|
+| Leituras do `/llms.txt` | 9 |
+| Acessos à armadilha B (link só no llms.txt) | 0 |
+| Leituras do `/robots.txt`, mesmo período | 1.191 |
+
+A comparação com o robots.txt serve só como ordem de grandeza: no mesmo
+período, o arquivo de regras de acesso foi lido 1.191 vezes, e o llms.txt, 9.
+São duas ordens de grandeza de diferença no interesse dos clientes pelos dois
+arquivos.
+
+Zero em nove parece conclusivo, mas não é. Com zero acessos em n leituras, o
+limite superior unilateral de 95% para a taxa real de seguir o link é
+`1 − 0,05^(1/n)`. Para n = 9, isso dá 28%. Traduzindo: o resultado é
+compatível com até 28% das leituras seguindo o link. O veredito que registrei
+para a hipótese foi "sustentada, mas com um limite que não serve para muita
+coisa": com nove leituras, "nada segue o llms.txt" não se distingue de "quase
+nada o lê". O achado é a exposição, não o zero.
+
+### Quem leu
+
+O relato do piloto não identifica os leitores, e eu também não nomeio ninguém
+aqui. Existe uma leitura parcial: num levantamento intermediário de 28 dias, de 16
+de agosto a 12 de setembro de 2026, sem o tráfego da minha própria rede, o
+arquivo foi lido 5 vezes, todas por clientes que **não** se declaravam agentes
+de IA, e nenhuma por um agente de IA declarado.
+
+Isso conversa com uma previsão separada, registrada no dia em que o arquivo
+entrou no ar: **nenhuma leitura do `/llms.txt` por um agente de IA de um
+fornecedor grande em 90 dias**. A janela fecha em 23 de outubro de 2026, e o
+veredito entra neste artigo quando ela fechar. Até lá, as 5 leituras daquele
+recorte são uma observação intermediária, não um resultado.
+
+## Por que o teste não decide
+
+São dois problemas, e o segundo é pior que o primeiro.
+
+**Poder baixo.** Nove leituras é pouco. Uma conta simples mostra o tamanho do
+problema: se 1 em cada 10 leitores seguisse o link, a chance de ainda assim
+ver zero acessos em 9 leituras seria 0,9⁹, ou cerca de 39%. O teste tinha
+quase quatro chances em dez de dar zero mesmo com um efeito real.
+
+**Confusão com o repositório público.** O endereço da armadilha estava num
+arquivo versionado do repositório do site, que é público no GitHub. Qualquer
+acesso à armadilha poderia ter vindo de alguém, ou de algum robô, lendo o
+repositório, e não o llms.txt. Ou seja: mesmo que a armadilha tivesse sido
+acessada, isso não provaria que alguém segue o llms.txt. O desenho só
+conseguia dizer alguma coisa se desse zero, e zero, com 9 leituras, diz pouco.
+
+O erro foi meu, e conto porque é o tipo de erro que qualquer pessoa repete ao
+montar um teste desses num projeto com código aberto: o arquivo que você usa
+para configurar a armadilha também é um canal de descoberta.
+
+A lição que registrei no fechamento do piloto foi pré-registrar o poder, não
+só a hipótese. Outra hipótese do mesmo piloto, a H5, mostrou o problema no
+fechamento: precisava de cerca de dez vezes mais visitas de crawler do que o
+site recebia, e nenhuma extensão de prazo resolveria isso. Desde então, toda
+hipótese registrada aqui declara, junto da janela, o menor efeito que ela
+consegue detectar.
+
+<figure>
+  <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Três canais de descoberta das armadilhas e o que cada um prova: robots.txt, llms.txt e o repositório público, que confunde os dois primeiros">
+    <title>Três canais de descoberta e o que cada um prova</title>
+    <desc>Canal robots.txt leva à armadilha A, por um caminho em Disallow: 1.191 leituras e 0 acessos. Canal llms.txt leva à armadilha B, por um link: 9 leituras e 0 acessos. O repositório público no GitHub também continha os dois endereços, por isso confunde os dois canais: um acesso a qualquer armadilha não diria de onde veio.</desc>
+
+    <rect x="20" y="20" width="200" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="120" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">robots.txt</text>
+    <text x="120" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">1.191 leituras</text>
+    <rect x="260" y="20" width="200" height="56" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">llms.txt</text>
+    <text x="360" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">9 leituras</text>
+    <rect x="500" y="20" width="200" height="56" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="600" y="44" textAnchor="middle" fontSize="12" fill="var(--foreground)">repositório público</text>
+    <text x="600" y="62" textAnchor="middle" fontSize="12" fill="var(--foreground)">(GitHub)</text>
+
+    <line x1="120" y1="76" x2="120" y2="200" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="130" y="140" fontSize="12" fill="var(--foreground)">Disallow</text>
+    <line x1="360" y1="76" x2="360" y2="200" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="370" y="140" fontSize="12" fill="var(--foreground)">link</text>
+    <line x1="600" y1="76" x2="160" y2="200" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <line x1="600" y1="76" x2="400" y2="200" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="560" y="170" fontSize="12" fill="var(--color-diagram-accent-text)">confusão: os dois</text>
+    <text x="560" y="188" fontSize="12" fill="var(--color-diagram-accent-text)">endereços no repo</text>
+
+    <rect x="20" y="200" width="200" height="56" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="120" y="224" textAnchor="middle" fontSize="12" fill="var(--foreground)">armadilha A</text>
+    <text x="120" y="242" textAnchor="middle" fontSize="12" fill="var(--foreground)">0 acessos</text>
+    <rect x="260" y="200" width="200" height="56" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="224" textAnchor="middle" fontSize="12" fill="var(--foreground)">armadilha B</text>
+    <text x="360" y="242" textAnchor="middle" fontSize="12" fill="var(--foreground)">0 acessos</text>
+
+    <text x="20" y="300" fontSize="12" fill="var(--foreground)">Piloto de 25/07 a 20/09/2026. Acessos sintéticos do próprio teste excluídos.</text>
+  </svg>
+  <figcaption>As linhas tracejadas são o defeito do desenho: o repositório público dava um terceiro caminho para as duas armadilhas.</figcaption>
+</figure>
+
+| Canal | O que um acesso à armadilha provaria | Resultado (57 dias) |
+|---|---|---|
+| `robots.txt` → armadilha A (caminho em `Disallow`) | Que um cliente leu as regras e acessou um caminho proibido | 1.191 leituras; 0 acessos |
+| `llms.txt` → armadilha B (link) | Que um cliente leu o llms.txt e seguiu um link dele | 9 leituras; 0 acessos |
+| Repositório público (GitHub) → as duas | Nada isolado: os dois endereços estavam num arquivo versionado | Confunde os outros dois canais |
+
+## O que veio depois: pedir Markdown com `Accept: text/markdown`
+
+A segunda ideia da proposta, servir Markdown em vez de HTML, tem uma variante
+que dispensa URLs novas: a negociação de conteúdo. O cliente manda o cabeçalho
+`Accept: text/markdown`, e o servidor decide o formato da resposta. A
+Cloudflare documenta exatamente esse mecanismo no recurso [Markdown for
+Agents](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/),
+que converte HTML em Markdown na borda quando o cliente pede.
+
+Antes de construir qualquer coisa, quero saber se alguém pede. A H14 corre de
+25 de setembro a 24 de dezembro de 2026 e só mede: toda resposta continua
+sendo HTML. A hipótese é que pelo menos uma requisição real peça Markdown a
+uma página dentro da janela. Pelo volume do piloto, a janela deve ter perto de
+2.700 requisições que não vêm de navegador, então um zero limitaria a fatia
+que pede Markdown a cerca de 0,1% delas. A regra de decisão foi publicada
+antes de começar: servir Markdown só será construído se os pedidos vierem de
+pelo menos 5 redes distintas ou de 2 agentes com identidade verificada.
+
+Para ver o que o seu próprio servidor faz quando um cliente pede Markdown:
+
+```bash
+# ilustrativo: troque pelo seu domínio
+curl -s -o /dev/null -w "%{content_type}\n" \
+  -H "Accept: text/markdown" \
+  https://seu-dominio.com.br/
+```
+
+Se a resposta for `text/html`, o servidor ignora a preferência, que é o
+comportamento padrão da maioria dos sites e o deste durante a H14.
+
+Em paralelo, a segunda versão do instrumento de detecção, com as hipóteses H7
+a H13 pré-registradas, prevê canais de descoberta cujos endereços nunca entram
+num arquivo versionado, além de uma armadilha que só existe no repositório,
+para medir o tamanho do vazamento. É a correção direta da confusão da
+armadilha B. Ela está registrada, ainda não construída.
+
+## Vale criar um llms.txt?
+
+A resposta honesta é condicional.
+
+- **Se o arquivo pode ser gerado por código** a partir de algo que o site já
+  tem, como o índice de posts, o custo de mantê-lo é quase zero. Criar não
+  atrapalha: o próprio Google diz que o arquivo não ajuda nem prejudica na
+  Busca.
+- **Se ele depende de manutenção manual**, envelhece. Um llms.txt escrito à mão
+  e esquecido aponta para URLs que mudaram ou sumiram, e quem o seguir recebe
+  um mapa errado do site.
+- **Se a meta é aparecer em respostas de IA**, o arquivo não é o lugar do
+  esforço. Quando testei cinco assistentes entre setembro e outubro de 2026,
+  as respostas trouxeram o texto do HTML servido na página que eles abriram
+  ([o experimento, com datas, planos e
+  condições](/blog/quais-ias-executam-javascript)). O teste não ofereceu nem
+  mediu o llms.txt; o que ele mostra é que o HTML basta para ser lido.
+
+Este site continua servindo o arquivo. Ele é gerado por código e faz parte do
+instrumento de medição, então mantê-lo custa pouco e ainda produz dado.
+
+## No Next.js: como este site gera o arquivo
+
+O llms.txt deste site sai de `src/lib/llms-txt.ts`, a partir da mesma fonte do
+sitemap: o guia e a lista de posts lidos de `/content`. O cabeçalho do arquivo
+reaproveita `site.description`, a descrição central do site, em vez de um
+texto escrito à parte. Se a descrição mudar, o llms.txt muda junto.
+
+```ts
+// src/lib/llms-txt.ts (linhas 71–79)
+export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn: Post[] = []): string {
+  const sections = [
+    `# ${site.name}`,
+    '',
+    `> ${site.description} Conteúdo em português (pt-BR), escrito por ${site.author.name}. Cada técnica documentada aqui está implementada neste próprio domínio e medida com Google Search Console, CrUX e experimentos antes/depois — nada é publicado antes de ser implementado e medido.`,
+    '',
+    '## Guia (pilar)',
+    '',
+    linkLine('/guia/seo-tecnico-nextjs', guide.frontmatter.title, guide.frontmatter.description),
+```
+
+Quem serve o arquivo é um route handler estático,
+`src/app/llms.txt/route.ts`, gerado no build como o `feed.xml`: conteúdo novo
+chega por commit, que já dispara o deploy.
+
+```ts
+// src/app/llms.txt/route.ts (linhas 6–12)
+export const dynamic = 'force-static'
+
+export function GET() {
+  return new Response(buildLlmsTxt(getGuide(), getAllPosts(), getGuide('en'), getAllEnglishPosts()), {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  })
+}
+```
+
+O começo do arquivo que esse código gera, na versão de 6 de outubro de 2026:
+
+```md
+# SEO Técnico
+
+> Laboratório vivo de SEO técnico para sites modernos, com Next.js como implementação de referência: guias, ferramentas e experimentos medidos. Conteúdo em português (pt-BR), escrito por Henrique Lopes Souza. Cada técnica documentada aqui está implementada neste próprio domínio e medida com Google Search Console, CrUX e experimentos antes/depois — nada é publicado antes de ser implementado e medido.
+
+## Guia (pilar)
+
+- [Guia de SEO técnico para Next.js (App Router)](https://seotecnico.dev.br/guia/seo-tecnico-nextjs): O que é SEO técnico no Next.js e como implementar: metadados, JSON-LD, sitemaps, Core Web Vitals, hreflang e renderização — com código real.
+```
+
+O recorte para no primeiro bloco de links de propósito. Mais abaixo, o arquivo
+tem a seção da armadilha, e reproduzi-la aqui abriria um caminho novo até ela.
+Pelo mesmo motivo, este artigo não tem um link clicável para o arquivo: cada
+visita humana vinda daqui entraria na contagem de leituras que a previsão
+acima ainda está medindo.
+
+Para o resto da implementação de referência deste site, veja o [guia de SEO
+técnico no Next.js](/guia/seo-tecnico-nextjs).
+
+## Como verificar se alguém lê o seu llms.txt
+
+**1. Confirme que o arquivo responde.**
+
+```bash
+# ilustrativo: troque pelo seu domínio
+curl -sI https://seu-dominio.com.br/llms.txt
+```
+
+Espere status `200` e um `content-type` de texto. Um 404 aqui significa que
+todo o resto é teoria.
+
+**2. Conte as leituras no log de acesso**, filtrando o caminho `/llms.txt`, e
+compare com `/robots.txt` no mesmo período. A comparação dá a ordem de grandeza
+sem precisar de proporção sobre o total de requisições. Tire do conjunto as
+suas próprias requisições: no piloto, o tráfego da minha rede era 24% de tudo
+o que foi registrado.
+
+**3. Escreva os agentes com cuidado.** No seu log, o que existe é o user agent
+que a requisição declara. Sem verificar a identidade (faixas de IP publicadas
+pelo fornecedor, DNS reverso), a frase correta é "requisições que se declaram
+X", e não "o X leu meu arquivo". O [relato do piloto](/blog/detectar-crawlers-ia)
+mostra como fiz essa verificação.
+
+**4. Para saber se alguém segue o arquivo, use um link-armadilha**: uma URL que
+só existe no llms.txt. E aprenda com o meu erro. O endereço não pode estar em
+arquivo versionado de repositório público, nem no sitemap, nem em página
+nenhuma.
+
+**5. Antes de começar, calcule quantas leituras você precisa.** Com zero
+acessos, o limite superior de 95% é `1 − 0,05^(1/n)`:
+
+| Leituras do llms.txt (n) | Limite superior com 0 acessos |
+|---|---|
+| 9 | 28% |
+| 30 | 9,5% |
+| 59 | 5% |
+| 100 | 3% |
+
+No ritmo do piloto (9 leituras em 57 dias), chegar a 59 leituras levaria pouco
+mais de um ano. Num site pequeno, a pergunta "alguém segue o meu llms.txt?"
+provavelmente não tem resposta forte em poucos meses. Melhor saber disso antes
+de começar do que descobrir no fechamento, como eu.
+
+> Este artigo está em medição. Atualizo os números quando a previsão de 90
+> dias fechar, em 23 de outubro de 2026, e quando a H14 fechar, em 24 de
+> dezembro de 2026.
