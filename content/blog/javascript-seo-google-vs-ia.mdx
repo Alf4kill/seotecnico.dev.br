@@ -1,0 +1,398 @@
+---
+title: "JavaScript e SEO: o que o Google renderiza e a IA não"
+description: "O Googlebot renderiza JavaScript; em testes de 2026, três de cinco assistentes de IA não executaram o JS da página. Por que o primeiro render virou regra."
+slug: "javascript-seo-google-vs-ia"
+primaryQuery: "javascript seo"
+keywords: ['javascript', 'seo javascript', 'renderização', 'googlebot', 'csr', 'ssr', 'spa', 'react', 'vite', 'wordpress', 'use client', 'useEffect', 'primeiro render', 'chatgpt', 'gemini', 'deepseek', 'grok', 'ia']
+lang: "pt-BR"
+category: indexacao
+basedOn: ['quais-ias-executam-javascript', 'chatgpt-le-javascript']
+tldr: >-
+  O Googlebot renderiza JavaScript depois de uma fila sem prazo publicado. Nos
+  testes deste site, ChatGPT, Claude e Gemini não executaram o JavaScript da
+  página; o DeepSeek executou e às vezes perdeu o valor; o Grok o entregou
+  sempre. O texto visível do primeiro render chegou aos cinco.
+datePublished: "2026-10-06"
+dateModified: "2026-10-06"
+faq:
+  - question: "O Google lê conteúdo carregado por JavaScript?"
+    answer: "Sim. Segundo a documentação do Google Search Central (atualizada em março de 2026), o Googlebot coloca na fila de renderização as páginas com status 200, a não ser que uma tag ou cabeçalho robots peça para não indexar, executa o JavaScript num Chromium sempre atualizado e indexa o HTML renderizado. A documentação não dá prazo para essa fila: diz que pode levar alguns segundos ou mais."
+  - question: "As IAs leem conteúdo carregado por JavaScript?"
+    answer: "Depende do assistente. No teste deste site, entre setembro e outubro de 2026, ChatGPT (plano Go), Claude (Pro) e Gemini (grátis) não executaram o JavaScript da página em nenhuma rodada. O DeepSeek (grátis) executou em todas, mas entregou o valor carregado em 3 de 5 rodadas neutras; o Grok (grátis) entregou em 5 de 5."
+  - question: "Site em React prejudica o SEO?"
+    answer: "React em si não. O que pesa é o que está no HTML servido: se o conteúdo principal só aparece depois que o JavaScript roda, o Google depende da etapa de renderização e parte dos assistentes de IA testados não chega a ver esse conteúdo. Se o conteúdo já sai no primeiro render, via SSR ou pré-renderização, os dois tipos de leitor recebem o mesmo texto."
+  - question: "Client Component aparece para a IA?"
+    answer: "O que ele renderiza no primeiro render, sim. No Next.js, um componente com use client também é pré-renderizado no servidor. No teste deste site, entre setembro e outubro de 2026, o texto de um Client Component presente no primeiro render apareceu nas respostas dos cinco assistentes em todas as 28 rodadas neutras. O que fica de fora é o conteúdo que só existe depois de um efeito, como um fetch dentro de useEffect."
+---
+
+O Googlebot renderiza JavaScript: a documentação do Google descreve três
+etapas (rastreio, renderização e indexação), e o conteúdo montado pelo script
+entra no índice depois que a página passa pela fila de renderização.
+Assistentes de IA são outro leitor. No teste que rodei neste site entre
+setembro e outubro de 2026, ChatGPT (plano Go), Claude (Pro) e Gemini (grátis)
+não executaram o JavaScript da página em nenhuma rodada; o DeepSeek (grátis)
+executou em todas, mas entregou o valor carregado em 3 de 5, e o Grok
+(grátis) em 5 de 5. O único conteúdo que chegou aos cinco foi o texto visível
+que já estava no primeiro render.
+
+Por anos, "o Google renderiza JavaScript" foi o argumento para não se
+preocupar com o que o servidor entrega. Com assistentes de IA lendo páginas,
+esse argumento cobre só um dos leitores. Este artigo separa as duas coisas e
+diz de onde vem cada linha: o comportamento do Googlebot vem da documentação
+oficial; o dos assistentes vem da medição deste site.
+
+Um recorte antes de seguir: o que eu medi foram **assistentes respondendo a um
+pedido do usuário** que inclui o endereço de uma página, em planos e datas
+específicos. Não medi crawlers de treinamento (os que coletam páginas em
+massa), e o resultado não se transfere automaticamente para eles.
+
+## Como o Google trata JavaScript
+
+A página [JavaScript SEO
+basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
+do Google Search Central (atualizada em 4 de março de 2026) descreve o fluxo
+assim:
+
+1. **Rastreio.** O Googlebot busca a URL, confere o `robots.txt` e lê o HTML da
+   resposta. Links em `<a href>` já entram na fila de rastreio nessa etapa.
+2. **Renderização.** As páginas com status `200` vão para uma fila de
+   renderização, com ou sem JavaScript, a não ser que uma tag ou cabeçalho
+   robots peça para não indexar. Quando há recurso disponível, um Chromium
+   headless executa os scripts. A documentação diz que a página pode ficar na
+   fila por alguns segundos, mas que pode levar mais. Não há prazo publicado.
+3. **Indexação.** O Google usa o HTML renderizado para indexar e para descobrir
+   novos links.
+
+O Chromium do renderizador é "evergreen": acompanha a versão estável do
+navegador, em vez de ficar preso a uma versão antiga. Na prática, APIs
+modernas de JavaScript funcionam; o que a documentação pede é cuidado com
+recursos que não dá para usar sem polyfill.
+
+Três detalhes da mesma documentação importam para este artigo:
+
+- **A própria página recomenda renderização no servidor ou pré-renderização**,
+  porque deixa o site mais rápido para usuários e crawlers e porque nem todo
+  bot executa JavaScript.
+- **`noindex` no HTML original pode fazer o Google pular a renderização.** Um
+  script que remove o `noindex` depois pode simplesmente não ser executado.
+- **Canonical alterado por JavaScript** não deve apontar para algo diferente
+  do canonical do HTML original.
+
+A renderização dinâmica (servir HTML pré-renderizado só para bots) aparece
+hoje na documentação como [contorno, não como solução
+recomendada](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering):
+o Google indica SSR, renderização estática ou hidratação no lugar dela.
+
+## Como os assistentes de IA trataram
+
+O teste está descrito em detalhe em [Quais IAs executam
+JavaScript?](/blog/quais-ias-executam-javascript), a expansão do controle
+positivo publicado em [ChatGPT lê JavaScript?](/blog/chatgpt-le-javascript).
+Aqui vai o mínimo para ler os números.
+
+Uma página do laboratório exibe dois códigos. O primeiro, `UC-`, é texto que
+um Client Component renderiza já no primeiro render: ele está no HTML que o
+servidor entrega. O segundo, `JS-`, só existe depois que um `fetch` dentro de
+`useEffect` termina, ou seja, só aparece se alguém executar o JavaScript da
+página e esperar a resposta. Cada assistente recebe uma URL secreta própria,
+então a identidade de quem acessou vem da URL, não do user agent. O servidor
+registra se o endpoint do `fetch` foi chamado, o que diz se o script rodou
+independentemente do que o assistente responde.
+
+Nas rodadas neutras (pedido simples para ler a página, sem dica de onde está o
+valor), entre setembro e outubro de 2026:
+
+| Leitor | Até onde chegou | Código `UC-` (primeiro render) | Valor `JS-` na resposta | Script rodou (registro do servidor) | Fonte |
+|---|---|---|---|---|---|
+| Googlebot | Conteúdo final, depois da fila de renderização | — | — | — | Documentação do Google (mar/2026) |
+| ChatGPT (Go) | HTML servido | 5 de 5 | 0 de 5 | 0 de 5 | Medição deste site |
+| Claude (Pro) | HTML servido | 5 de 5 | 0 de 5 | 0 de 5 | Medição deste site |
+| Gemini (grátis) | HTML servido | 8 de 8 | 0 de 8 | 0 de 8 | Medição deste site |
+| DeepSeek (grátis) | Às vezes passa do `fetch` | 5 de 5 | 3 de 5 | 5 de 5 | Medição deste site |
+| Grok (grátis) | Conteúdo final | 5 de 5 | 5 de 5 | 5 de 5 | Medição deste site |
+
+<figure>
+  <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Linha do tempo de uma página, do HTML servido ao conteúdo final, e até onde cada leitor chegou">
+    <title>Até onde cada leitor chegou</title>
+    <desc>Quatro etapas da esquerda para a direita: HTML servido, hidratação, fetch e conteúdo final. O Googlebot chega ao conteúdo final, segundo a documentação, sem medição deste site. ChatGPT, Claude e Gemini param no HTML servido. O DeepSeek executa o script e às vezes passa do fetch, entregando o valor em 3 de 5 rodadas. O Grok chega ao conteúdo final em 5 de 5.</desc>
+
+    <rect x="200" y="20" width="125" height="40" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="262" y="45" textAnchor="middle" fontSize="12" fill="var(--foreground)">HTML servido</text>
+    <rect x="330" y="20" width="125" height="40" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="392" y="45" textAnchor="middle" fontSize="12" fill="var(--foreground)">hidratação</text>
+    <rect x="460" y="20" width="125" height="40" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="522" y="45" textAnchor="middle" fontSize="12" fill="var(--foreground)">fetch</text>
+    <rect x="590" y="20" width="125" height="40" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="652" y="45" textAnchor="middle" fontSize="12" fill="var(--foreground)">conteúdo final</text>
+
+    <text x="20" y="104" fontSize="12" fill="var(--foreground)">Googlebot</text>
+    <rect x="200" y="84" width="515" height="32" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <text x="457" y="105" textAnchor="middle" fontSize="12" fill="var(--foreground)">até o conteúdo final: documentação, não medição</text>
+
+    <text x="20" y="154" fontSize="12" fill="var(--foreground)">ChatGPT, Claude, Gemini</text>
+    <rect x="200" y="134" width="125" height="32" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="262" y="155" textAnchor="middle" fontSize="12" fill="var(--foreground)">param aqui</text>
+
+    <text x="20" y="204" fontSize="12" fill="var(--foreground)">DeepSeek</text>
+    <rect x="200" y="184" width="385" height="32" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="392" y="205" textAnchor="middle" fontSize="12" fill="var(--foreground)">roda o script; o valor chega às vezes (3 de 5)</text>
+
+    <text x="20" y="254" fontSize="12" fill="var(--foreground)">Grok</text>
+    <rect x="200" y="234" width="515" height="32" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="457" y="255" textAnchor="middle" fontSize="12" fill="var(--foreground)">até o conteúdo final (5 de 5)</text>
+
+    <line x1="20" y1="290" x2="715" y2="290" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="20" y="318" fontSize="12" fill="var(--foreground)">Assistentes: set–out/2026, planos na tabela. Googlebot: documentação do Google.</text>
+  </svg>
+  <figcaption>A caixa tracejada do Googlebot é documentação, não medição. As outras barras vêm do registro do servidor e das respostas, nas rodadas neutras.</figcaption>
+</figure>
+
+Duas leituras que a tabela não autoriza:
+
+**Zero não é "nunca".** Com 0 de 5, uma frequência real de quase metade das
+visitas ainda é compatível com o resultado (limite superior unilateral de
+95%). Com 0 de 8, no caso do Gemini, o teto cai para perto de um terço. O que
+dá para afirmar é o que aconteceu nessas rodadas, nesses planos, nessas datas.
+Um assistente pode mudar de comportamento na semana seguinte.
+
+**O resultado não diz por quê.** O Gemini é do mesmo grupo que o Googlebot e,
+mesmo assim, não executou o script em nenhuma das 8 rodadas. Eu não sei como é
+o pipeline de leitura do assistente, e a tabela não explica isso. O que ela
+mostra é que "o Google renderiza" e "o assistente do Google renderiza" foram,
+nesse teste, coisas diferentes.
+
+A conclusão prática é estreita e por isso confiável: o texto visível do HTML
+servido chegou a todos; o que dependia do `fetch` chegou a dois de cinco. Note
+o "visível": o JSON-LD também está no HTML servido, e só o Grok o leu, como
+mostra o artigo sobre [dados estruturados e IA](/blog/dados-estruturados-ia).
+
+## O caso intermediário: renderizar não basta
+
+O DeepSeek (grátis) é o resultado mais útil da tabela, porque separa duas
+coisas que costumam ser tratadas como uma só: executar o JavaScript e entregar
+o conteúdo que o JavaScript produz.
+
+Pelo registro do servidor, o script rodou em todas as 11 rodadas do DeepSeek,
+somando as três condições do experimento. Mesmo assim, o valor chegou à
+resposta só em parte delas:
+
+- **Rodadas neutras:** 3 de 5.
+- **Com uma dica de onde estava o valor:** 0 de 3.
+- **Com o endereço do endpoint no pedido:** 3 de 3.
+
+Nas 5 rodadas em que o valor não chegou, a resposta dizia que a página mostrava
+só "carregando…", o estado antes de o `fetch` terminar. Isso é compatível com
+uma captura do texto feita antes de o valor chegar, mas é uma interpretação
+minha, não algo que o registro prove. Com o endereço no pedido, o registro
+mostra outra coisa: além de renderizar a página, o DeepSeek abriu o endereço
+do JSON diretamente, como quem abre um link. Que a resposta tenha tirado o
+valor dessa abertura, e não da página montada, **é inferência**: o servidor
+registra as requisições, não a ordem interna de leitura.
+
+A lição para quem publica: mesmo diante de um leitor que executa JavaScript,
+conteúdo que depende de uma requisição assíncrona fica sujeito ao momento em
+que esse leitor decide que a página "terminou". O primeiro render não tem esse
+problema.
+
+## O que costuma ficar fora do primeiro render
+
+O único padrão que eu medi foi o `fetch` dentro de `useEffect`. Os demais itens
+desta lista vêm do mecanismo: se o conteúdo não está no HTML servido, ele
+depende de alguém executar o JavaScript. Não tenho números sobre eles.
+
+- **Dados buscados no cliente depois da montagem.** É o caso medido: `fetch` em
+  `useEffect`, SWR ou React Query sem dados iniciais vindos do servidor.
+- **Componentes carregados só no cliente.** No Next.js, `dynamic(() =>
+  import('./X'), { ssr: false })` tira o componente do HTML servido de
+  propósito.
+- **Conteúdo montado só depois de interação.** Abas, acordeões e modais que
+  **só montam** o conteúdo ao clicar não o têm no HTML. Se o conteúdo é
+  renderizado e apenas escondido com CSS, ele está lá.
+- **Listas com "carregar mais" ou rolagem infinita.** O primeiro lote pode
+  estar no HTML; os seguintes, não.
+- **Widgets de terceiros.** Avaliações, preços e estoque injetados por script
+  externo.
+- **Metadados e dados estruturados injetados por JavaScript.** O Google aceita
+  JSON-LD gerado por script, mas ele depende da renderização. Para os
+  assistentes, o JSON-LD já é um problema mesmo quando vem pronto do servidor;
+  trato disso em [dados estruturados e IA](/blog/dados-estruturados-ia).
+
+## Como garantir o primeiro render, stack por stack
+
+O objetivo é o mesmo em qualquer stack: o texto que importa precisa sair no
+HTML da resposta, antes de qualquer script. Os exemplos abaixo são
+ilustrativos; só o Next.js foi medido aqui.
+
+**Next.js (App Router).** Server Components já renderizam no servidor, e
+Client Components também são pré-renderizados no primeiro carregamento. O
+caminho é buscar os dados no servidor, em vez de no `useEffect`. A escolha
+entre SSR, SSG e ISR está em [SSR, SSG e ISR no
+Next.js](/blog/ssr-ssg-isr-nextjs). Um exemplo ilustrativo:
+
+```tsx
+// app/produto/[id]/page.tsx (ilustrativo)
+import { getProduto } from '@/lib/produtos'
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const produto = await getProduto(id)
+
+  return <p>{produto.descricao}</p>
+}
+```
+
+**WordPress e PHP.** O PHP monta a página no servidor, então o primeiro render
+vem de graça. Quem vem de hospedagem compartilhada, como eu, costuma
+subestimar essa vantagem. O risco aparece quando um plugin ou tema passa a
+buscar conteúdo via AJAX ou REST depois do carregamento. A diferença, em forma
+ilustrativa:
+
+```php
+<?php // ilustrativo: o preço sai no HTML servido ?>
+<p class="preco"><?= htmlspecialchars($produto['preco']) ?></p>
+
+<!-- ilustrativo: o preço só existe depois que o script roda -->
+<p class="preco" id="preco"></p>
+<script>
+  fetch('/wp-json/loja/v1/preco/123')
+    .then((r) => r.json())
+    .then((d) => (document.getElementById('preco').textContent = d.preco))
+</script>
+```
+
+**SPA React criada com Vite.** Por padrão, o HTML servido é uma casca vazia.
+Tudo que o usuário vê é montado pelo script:
+
+```html
+<!-- ilustrativo: o index.html que o build de uma SPA React com Vite serve -->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Minha loja</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/assets/index-a1b2c3.js"></script>
+  </body>
+</html>
+```
+
+Para um leitor que não executa JavaScript, essa página tem um título e nada
+mais. As saídas são pré-renderizar as rotas no build ou migrar as páginas que
+precisam ser lidas para um framework com SSR. Não medi uma SPA no laboratório,
+então aqui fico no mecanismo: não tenho dado sobre como cada assistente se
+comporta diante de uma página montada inteira no cliente.
+
+## Como conferir
+
+O teste é sempre o mesmo: o texto que importa está no HTML que o servidor
+entrega?
+
+1. **Busque o HTML cru.** Um `curl` mostra exatamente o que um leitor sem
+   JavaScript recebe:
+
+   ```bash
+   # ilustrativo: o texto aparece no HTML servido?
+   curl -s https://exemplo.com.br/produto/123 | grep -c "Frete grátis"
+   ```
+
+   Se o resultado for `0`, o texto não está no primeiro render.
+
+2. **Compare código-fonte e DOM.** O "Exibir código-fonte" do navegador
+   (Ctrl+U) mostra o HTML servido; a aba Elements do DevTools mostra o DOM
+   depois do JavaScript. O que aparece só na segunda depende de renderização.
+
+3. **Desative o JavaScript.** No DevTools, abra o menu de comandos
+   (Ctrl+Shift+P), rode "Disable JavaScript" e recarregue. O que sobra na tela
+   é o que um extrator recebe.
+
+4. **Confira os metadados.** O [validador de meta
+   tags](/ferramentas/validador-meta-tags) mostra se `title`, `description` e
+   canonical estão presentes no HTML que o servidor entrega.
+
+5. **Veja a versão do Google.** Na Inspeção de URL do Search Console, o teste
+   ao vivo da URL mostra, na página testada, o HTML renderizado pelo Google. É
+   a confirmação do lado do Googlebot, e só dele.
+
+6. **Automatize.** Neste site, um teste do Playwright confere os códigos do
+   laboratório no HTML servido, sem executar o JavaScript da página. Ele tira
+   todos os `<script>` e procura cada código no que sobra:
+
+```ts
+// tests/seo/lab-control.spec.ts (linhas 39–50)
+// O texto visível, sem nenhum <script> (JSON-LD e payload RSC incluídos).
+const text = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+expect(text).toContain(codes.SRV)
+expect(text).toContain(codes.UC)
+expect(text, 'LD- must not be in the visible text').not.toContain(codes.LD)
+
+const jsonLd = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+  .map((m) => JSON.parse(m[1]) as { identifier?: string })
+expect(jsonLd.map((node) => node.identifier)).toContain(codes.LD)
+
+// Nem no texto nem em script algum: o JS- só existe depois do fetch.
+expect(html, 'JS- must not be in the served HTML at all').not.toContain(codes.JS)
+```
+
+Um aviso sobre logs: no laboratório, a identidade de cada assistente vem da
+URL secreta. No log do seu servidor, você tem só um perfil de requisição. O
+máximo que dá para escrever é "requisições que se declaram X", e a explicação
+que um assistente dá sobre o que leu não substitui o registro do servidor.
+
+## No Next.js: os dois componentes da sonda
+
+A página do laboratório usa dois componentes lado a lado. Os dois são Client
+Components, no mesmo arquivo. A diferença está em **quando** o conteúdo
+existe:
+
+```tsx
+// src/components/lab/ControlCodes.tsx (linhas 19–44)
+export function RenderedByClientComponent({ code }: { code: string }) {
+  return (
+    <p>
+      Código do componente cliente: <strong>{code}</strong>
+    </p>
+  )
+}
+
+export function FetchedCode({ endpoint }: { endpoint: string }) {
+  const [code, setCode] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    fetch(endpoint, { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then((data: { code: string }) => setCode(data.code))
+      .catch(() => setFailed(true))
+  }, [endpoint])
+
+  return (
+    <p>
+      Código carregado no navegador:{' '}
+      <strong data-testid="fetched-code">{code ?? (failed ? 'indisponível' : 'carregando…')}</strong>
+    </p>
+  )
+}
+```
+
+O componente do `UC-` tem `'use client'`, mas o texto dele está no HTML
+servido, porque o Next.js pré-renderiza Client Components no servidor. Nas 28
+rodadas neutras, entre setembro e outubro de 2026, esse texto apareceu nas
+respostas dos cinco assistentes em todas. O componente do `JS-` monta o valor
+dentro de `useEffect`, que só roda no navegador depois da hidratação. Por
+isso, para um leitor que não executa o script, ele simplesmente não existe: o
+que fica no HTML é o "carregando…" que as respostas sem o valor relataram.
+
+A consequência para um projeto Next.js é direta: `'use client'` não é o
+problema. O problema é colocar o conteúdo que precisa ser lido atrás de um
+efeito, de um `dynamic` com `ssr: false` ou de uma interação.
+
+Fora do laboratório, nenhum texto das páginas deste site depende de JavaScript
+para existir: não uso `dynamic`, e os poucos `useEffect` que existem cuidam do
+banner de consentimento, da busca, do botão de copiar código e da medição de
+Web Vitals, nunca do conteúdo. A sonda existe justamente para medir o que
+acontece quando alguém faz o contrário.
+
+Para o quadro completo de SEO técnico em projetos Next.js, o ponto de partida
+é o [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs).
