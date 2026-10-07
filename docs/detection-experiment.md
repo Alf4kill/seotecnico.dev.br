@@ -913,7 +913,7 @@ that trade is accepted, because no crawler needs the RSC payload.
 | `bot_verified` | `verified-ip` / `verified-signature` / `verified-rdns` / `impersonated` / `unverifiable` / `unknown-agent` | Gates every attribution. Only computed for `declared-ai` or signed requests |
 | `bot_signer` | hostname from `Signature-Agent` (e.g. `chatgpt.com`) | The identity a `verified-signature` proves (§5). Sent only with that verdict. Added 2026-09-13 |
 | `req_conditional` | `true` / `false` | H4 |
-| `has_sec_fetch` | `true` / `false` | Axis A |
+| `has_sec_fetch` | `true` / `false` | Axis A. Since 2026-10-07 `true` requires both `Sec-Fetch-Mode` and `Sec-Fetch-Dest`; before, `Sec-Fetch-Mode` alone, which Node's native `fetch` sends (experiment-log, 2026-10-07) |
 | `net_id` | salted truncated /24 (v4) or /48 (v6) hash, monthly salt | Correlation without identification (§2.3) |
 | `is_trap` | `true` / `false` | §4 |
 | `trap_channel` | `robots` / `llms` | Which discovery vector produced the hit (§4). Absent off-trap |
