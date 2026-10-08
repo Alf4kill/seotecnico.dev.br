@@ -1,0 +1,436 @@
+---
+title: "Sec-Fetch-Mode: como saber se a visita rodou JavaScript"
+description: "O que Sec-Fetch-Mode e Sec-Fetch-Dest dizem sobre uma requisição, e como este site os usou para ver quais assistentes de IA executaram JavaScript."
+slug: "sec-fetch-mode"
+primaryQuery: "sec-fetch-mode"
+keywords: ['sec-fetch-mode', 'sec-fetch-dest', 'sec-fetch-site', 'fetch metadata', 'cabeçalhos sec-fetch', 'cors', 'navigate', 'javascript', 'crawler', 'bot', 'node fetch', 'undici', 'proxy', 'middleware']
+lang: "pt-BR"
+category: medicao
+basedOn: ['quais-ias-executam-javascript']
+tldr: >-
+  Sec-Fetch-Mode diz como o navegador fez uma requisição. Com
+  Sec-Fetch-Dest: empty, o valor cors é um fetch() de script dentro do
+  navegador; navigate com document é uma página aberta. Lidos em par e com o
+  horário, mostram se uma visita executou JavaScript. Sozinhos, são indício,
+  não identidade.
+datePublished: "2026-10-08"
+dateModified: "2026-10-08"
+faq:
+  - question: "O que significa Sec-Fetch-Mode cors?"
+    answer: "Significa que a requisição foi feita no modo CORS, que é o modo padrão de chamadas como fetch() e XMLHttpRequest, inclusive quando o destino é o mesmo domínio. Junto com Sec-Fetch-Dest: empty, indica que o pedido partiu de código rodando numa página dentro de um navegador, e não de uma navegação nem do carregamento de uma imagem, folha de estilo ou script."
+  - question: "Bots enviam cabeçalhos Sec-Fetch?"
+    answer: "Alguns. Navegadores automatizados, como um Chrome sem interface, enviam o conjunto completo como qualquer navegador. O curl não envia nenhum. O fetch nativo do Node envia Sec-Fetch-Mode: cors em toda requisição, sem Sec-Fetch-Dest. E qualquer cliente fora do navegador pode enviar esses cabeçalhos com o valor que quiser, então eles são indício sobre a requisição, não identidade."
+  - question: "Dá para saber pelos cabeçalhos se uma página executou JavaScript?"
+    answer: "Como evidência, sim; como prova sozinha, não. Se a página tem um script que chama um endpoint com fetch() e esse endpoint recebe Sec-Fetch-Mode: cors com Sec-Fetch-Dest: empty segundos depois de a página ser pedida, um navegador provavelmente abriu a página e rodou o script. Sem o horário e sem uma URL que identifique a visita, o cabeçalho sozinho diz pouco."
+  - question: "Os cabeçalhos Sec-Fetch aparecem em sites sem HTTPS?"
+    answer: "Não. Os navegadores só enviam os cabeçalhos Fetch Metadata para URLs potencialmente confiáveis, o que na prática significa HTTPS ou localhost. Num site servido em HTTP simples, a ausência dos cabeçalhos não indica que o cliente não é um navegador, e qualquer leitura baseada neles perde o sentido."
+---
+
+`Sec-Fetch-Mode` é um cabeçalho que o navegador envia em cada requisição para
+dizer como ela foi feita. O valor `cors`, com `Sec-Fetch-Dest: empty`, é um
+`fetch()` disparado por script dentro de um navegador; `navigate` com
+`document` é uma página sendo aberta. Sem o par Mode e Dest, a requisição não
+tem a forma de um navegador. Combinados com o horário da requisição, esses
+cabeçalhos mostram se uma visita executou JavaScript.
+
+Foi com eles que este site passou de "a resposta do assistente trouxe o valor"
+para "o servidor viu o script rodar", no
+[teste sobre quais IAs executam JavaScript](/blog/quais-ias-executam-javascript).
+Lá, o sinal ocupa uma seção. Aqui está a explicação completa: o que cada
+cabeçalho significa, para que foi criado, como o usei como instrumento de
+medição, onde ele deixa de valer e o defeito que a revisão deste artigo achou
+no próprio instrumento.
+
+## O que são os cabeçalhos Fetch Metadata
+
+Fetch Metadata é um grupo de quatro cabeçalhos de requisição com prefixo
+`Sec-Fetch-`, definidos numa
+[especificação do W3C](https://www.w3.org/TR/fetch-metadata/), hoje em
+Working Draft. O navegador preenche cada um sozinho, a partir do contexto em
+que a requisição nasceu.
+
+| Cabeçalho | O que informa | Valores mais comuns |
+|---|---|---|
+| `Sec-Fetch-Mode` | o modo da requisição | `navigate`, `cors`, `no-cors`, `same-origin`, `websocket` |
+| `Sec-Fetch-Dest` | onde a resposta vai ser usada | `document`, `empty`, `script`, `style`, `image`, `iframe` |
+| `Sec-Fetch-Site` | a relação entre quem pede e quem responde | `same-origin`, `same-site`, `cross-site`, `none` |
+| `Sec-Fetch-User` | se a navegação foi ativada pelo usuário | `?1`, ou ausente |
+
+Para medir execução de JavaScript, os que importam são Mode e Dest. Lidos
+juntos, separam três situações:
+
+| Mode / Dest | O que aconteceu no navegador |
+|---|---|
+| `navigate` / `document` | uma página foi aberta como documento principal |
+| `no-cors` / `script`, `style`, `image` | o navegador carregou um recurso referenciado no HTML |
+| `cors` / `empty` | código rodando na página fez uma chamada, como `fetch()` ou `XMLHttpRequest` |
+
+O destino `empty` é o das chamadas feitas por código, que não têm um destino
+próprio. E `cors` é o modo padrão de `fetch()`, inclusive para o mesmo
+domínio. Por isso um `fetch('/api/algo')` na própria página chega ao servidor
+como `cors/empty`, com `Sec-Fetch-Site: same-origin`.
+
+Dois detalhes da [referência do
+MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Mode)
+sustentam o resto do artigo. Primeiro, os cabeçalhos só são enviados para URLs
+potencialmente confiáveis: HTTPS ou localhost. Segundo, são cabeçalhos
+proibidos para o código da página: um script rodando no navegador não
+consegue criá-los nem alterá-los. Quanto ao suporte, todos os motores
+modernos enviam Mode e Dest juntos: Chrome desde a versão 76, Firefox desde a
+90 e Safari desde a 16.4, de março de 2023.
+
+## O uso original: segurança
+
+Os cabeçalhos foram criados para que o servidor saiba de onde veio uma
+requisição antes de processá-la. O padrão descrito no [artigo do web.dev
+sobre Fetch Metadata](https://web.dev/articles/fetch-metadata), chamado de
+Resource Isolation Policy, tem quatro regras e uma exceção opcional:
+
+1. aceitar requisições sem os cabeçalhos, porque vêm de navegadores que não
+   os enviam;
+2. aceitar `Sec-Fetch-Site` igual a `same-origin`, `same-site` ou `none`;
+3. aceitar navegações simples (`navigate` com `GET`), exceto as de `object` e
+   `embed`;
+4. opcionalmente, liberar os endpoints feitos para receber tráfego de outros
+   sites;
+5. recusar o resto, que é tráfego cross-site que não é navegação.
+
+A política barra ataques como CSRF e inclusão de script entre sites sem mexer
+no tráfego legítimo. O mesmo artigo pede que o servidor inclua
+`Sec-Fetch-Dest`, `Sec-Fetch-Mode` e `Sec-Fetch-Site` no cabeçalho `Vary` da
+resposta para que a proteção valha em requisições `GET`: a resposta depende
+desses cabeçalhos, e um cache precisa saber disso.
+
+Este site não bloqueia nada com eles. Só registra.
+
+## O uso aqui: medição
+
+O raciocínio é curto. Dentro de um navegador, só código consegue gerar
+`cors/empty`. Um cliente HTTP que baixa o HTML sem executá-lo não manda esse
+par: o curl não manda nenhum cabeçalho `Sec-Fetch`, e o `fetch` do Node manda
+o Mode sem o Dest (mais sobre isso abaixo). Então, se a página contém um
+script que chama um endpoint com `fetch()`, e o endpoint recebe `cors/empty`
+segundos depois de a página ser pedida, há evidência de que um navegador abriu
+a página e rodou o script.
+
+No laboratório do site, cada assistente recebe uma URL secreta só dele. A
+identidade da visita vem da URL, não do user agent, como descrevo no [relato
+do instrumento de detecção](/blog/detectar-crawlers-ia). A página do
+laboratório só mostra o valor que o teste procura depois que um script o busca
+num JSON separado, depois de a página carregar. Se o assistente responde com o
+valor, ou leu a página executada ou abriu o JSON por outro caminho, e é o
+servidor que diz qual dos dois aconteceu.
+
+A função que transforma os dois cabeçalhos num valor registrável está em
+`src/lib/lab-probes.ts`:
+
+```ts
+// src/lib/lab-probes.ts
+function fetchMode(headers: Headers): string {
+  const mode = headers.get('sec-fetch-mode')
+  const dest = headers.get('sec-fetch-dest')
+  if (!mode && !dest) return '(none)'
+  return clip(`${mode || '-'}/${dest || '-'}`)
+}
+```
+
+Ela produz três tipos de saída: `(none)` quando nenhum dos dois cabeçalhos
+veio, `modo/destino` quando os dois vieram, e um hífen no lugar do que faltar
+quando só um veio. O `clip()` corta o valor em 100 caracteres, o limite de
+um parâmetro de evento no GA4, e devolve `(none)` se sobrar uma string vazia.
+Gravar o par como uma string só facilita contar e comparar depois.
+
+O valor é calculado no proxy e só é montado quando a requisição é de uma sonda
+do laboratório:
+
+```ts
+// src/proxy.ts
+  // Sondas do controle positivo (H16, §4.7): quem buscou, pelo formato da
+  // requisição e pela lista pública em que o IP está, diga o UA o que disser.
+  // Só aqui: fora das sondas, nada disto é coletado (§2.3).
+  const probe = controlProbeForPath(pathname)
+  const lab =
+    probe &&
+    labHitParams(
+      probe,
+      request.nextUrl,
+      request.headers,
+      await ipOwner(clientIp).catch(() => 'unknown'),
+      hitId
+    )
+```
+
+No Next.js 16, o antigo Middleware se chama Proxy: o arquivo é `proxy.ts`, a
+função exportada é `proxy`, e ele roda no runtime Node.js, sem opção de trocar
+para Edge, segundo a [documentação do
+Next.js](https://nextjs.org/docs/app/api-reference/file-conventions/proxy).
+Quem ainda tem um `middleware.ts` pode migrar com o codemod oficial.
+
+### O que o servidor registrou
+
+Toda afirmação abaixo vale para a data e o plano indicados, não para o
+assistente em geral. As rodadas completas estão no [teste sobre quais IAs
+executam JavaScript](/blog/quais-ias-executam-javascript) e no [teste sobre o
+que o ChatGPT lê de uma página Next.js](/blog/chatgpt-le-javascript).
+
+| Visita | O que o servidor registrou | Leitura |
+|---|---|---|
+| Grok (grátis, 2/10/2026) | o renderizador pediu a página e depois o JSON com `cors/empty`, nas 6 rodadas da bateria com dicas | o script rodou |
+| ChatGPT (Go) e Claude (Pro), 2/10/2026 | uma requisição pela página, sem nenhum cabeçalho `Sec-Fetch`; com o endereço no prompt, uma segunda, ao JSON, também sem | cliente HTTP; o JSON foi aberto direto, não chamado por script |
+| DeepSeek (grátis, 2/10/2026), condição "o endereço" | o JSON chegou duas vezes por rodada: uma com `navigate/document`, outra com `cors/empty` | os cabeçalhos separam os dois caminhos |
+
+**Grok.** É o padrão de um navegador completo: primeiro o documento, depois a
+chamada do script. O renderizador é um `HeadlessChrome`, e o JSON chegou com
+`cors/empty` em todas as rodadas.
+
+**ChatGPT e Claude.** Sem `Sec-Fetch` em nenhuma requisição. É o perfil de um
+cliente HTTP que baixa o HTML e não executa nada. Quando receberam o endereço
+do JSON, abriram o JSON, e a requisição chegou como as outras: sem cabeçalho,
+portanto não era um script da página chamando o JSON.
+
+**DeepSeek.** É o caso que mostra o que o cabeçalho resolve e o que não
+resolve. Na condição "o endereço" (rodadas 48, 58 e 68), o JSON chegou duas
+vezes por rodada: uma com `navigate/document`, aberto diretamente como
+documento, e outra com `cors/empty`, chamado pelo script da página. Os
+cabeçalhos separam os dois caminhos com clareza. O que eles não dizem, sozinhos,
+é qual das duas respostas chegou ao modelo. Quem diz é a comparação com a
+outra condição: com só a localização (rodadas 43, 53 e 63), o script chamou o
+JSON com `cors/empty` nas três rodadas, e as três respostas leram
+"carregando…". O valor só chegou quando houve a abertura direta. A explicação
+que o próprio assistente deu sobre o que fez não entra como dado: ela dizia
+que ele não executava o JavaScript da página, e o servidor registrou o
+contrário.
+
+<figure>
+  <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Linhas do tempo de três clientes: um navegador pede a página e chama o JSON 2 segundos depois; o ChatGPT pede só a página, sem cabeçalhos Sec-Fetch; o fetch do Node manda o Mode sem o Dest">
+    <title>Três formas de pedir a mesma página</title>
+    <desc>Eixo em segundos, de 0 a 3. Navegador, no pré-voo do autor de 29 de setembro de 2026: a página com navigate/document em 0 s e o JSON com cors/empty em 2 s. ChatGPT, em 2 de outubro de 2026: a página sem cabeçalhos Sec-Fetch em 0 s e nenhuma chamada ao JSON depois. Fetch nativo do Node, em teste local: a página com cors e sem destino.</desc>
+
+    <text x="20" y="64" fontSize="12" fill="var(--foreground)">Navegador</text>
+    <circle cx="200" cy="60" r="6" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="40" fontSize="12" fill="var(--foreground)">página · navigate/document</text>
+    <line x1="206" y1="60" x2="514" y2="60" stroke="var(--color-accent)" strokeWidth="1.5" />
+    <text x="360" y="80" textAnchor="middle" fontSize="12" fill="var(--color-diagram-accent-text)">2 s</text>
+    <circle cx="520" cy="60" r="6" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="520" y="40" fontSize="12" fill="var(--foreground)">JSON · cors/empty</text>
+
+    <text x="20" y="144" fontSize="12" fill="var(--foreground)">ChatGPT (Go)</text>
+    <circle cx="200" cy="140" r="6" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="120" fontSize="12" fill="var(--foreground)">página · (none)</text>
+    <line x1="206" y1="140" x2="680" y2="140" stroke="var(--color-diagram-axis)" strokeWidth="1" strokeDasharray="4 4" />
+    <text x="440" y="162" textAnchor="middle" fontSize="12" fill="var(--foreground)">nenhuma chamada ao JSON</text>
+
+    <text x="20" y="224" fontSize="12" fill="var(--foreground)">fetch do Node</text>
+    <circle cx="200" cy="220" r="6" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="200" fontSize="12" fill="var(--foreground)">página · cors/- (Mode sem Dest)</text>
+
+    <line x1="200" y1="260" x2="680" y2="260" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="200" y1="256" x2="200" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="360" y1="256" x2="360" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="520" y1="256" x2="520" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="680" y1="256" x2="680" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">0 s</text>
+    <text x="360" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">1 s</text>
+    <text x="520" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">2 s</text>
+    <text x="680" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">3 s</text>
+    <text x="20" y="308" fontSize="11" fill="var(--foreground)">Navegador: pré-voo do autor, 29/09/2026. ChatGPT: bateria de 2/10/2026. Node: teste local.</text>
+  </svg>
+  <figcaption>Só o navegador produz o par completo. O ChatGPT não manda nenhum cabeçalho Sec-Fetch; o fetch do Node manda o Mode e deixa o Dest de fora.</figcaption>
+</figure>
+
+| Linha do tempo | t = 0 s | t = 2 s |
+|---|---|---|
+| Navegador (pré-voo do autor, 29/09/2026) | página, `navigate/document` | JSON, `cors/empty` |
+| ChatGPT (Go, 2/10/2026) | página, `(none)` | nenhuma requisição |
+| `fetch` do Node (teste local) | página, `cors/-` | nenhuma requisição |
+
+O exemplo do navegador é o pré-voo que faço antes de cada bateria, na sonda
+do próprio autor: a página às 01:23:33 UTC e o JSON às 01:23:35, cada
+requisição com a sua chave. É o único caso em que o intervalo entre página e
+script está registrado ao segundo com uma origem conhecida.
+
+## Quando o instrumento mudou no meio do teste
+
+O registro do valor completo não existia desde o começo. Nas rodadas de 27 de
+setembro de 2026, o site gravava só `has_sec_fetch`, um campo que dizia se
+havia cabeçalho `Sec-Fetch-Mode` na requisição, sem dizer qual.
+
+Naquelas rodadas, a conclusão "o script rodou" foi uma inferência: havia
+cabeçalho `Sec-Fetch` e o `Accept` era `*/*`, que é o valor padrão de um
+`fetch()`. Uma navegação pede `text/html` primeiro. A inferência era
+razoável, mas era inferência, e hoje sei de um cliente que a satisfaz sem
+navegador: o `fetch` do Node manda `Sec-Fetch-Mode: cors` e `Accept: */*`.
+O que a sustentava, além do cabeçalho, era o resto da requisição: user agents
+de navegador com o `Accept-Language` e o `Accept` de navegação de cada um.
+
+Em 29 de setembro de 2026, às 01:13:22 UTC, o PR #75 acrescentou dois campos
+de uma vez: `lab_fetch_mode`, com o par `modo/destino` que a função acima
+produz, e `lab_hit`, uma chave por requisição feita do horário UTC ao segundo
+mais quatro caracteres hexadecimais aleatórios. A chave identifica o pedido,
+nunca quem o fez, e é o que permite juntar as tabelas do GA4 linha a linha e
+medir intervalos ao segundo. A bateria com dicas, rodada depois disso, gravou
+`cors/empty` com o destino nas 6 rodadas do Grok e nas 6 do DeepSeek. Esse
+par o `fetch` do Node não produz, e a inferência de 27 de setembro ficou
+confirmada para esses dois.
+
+Conto a cronologia porque ela muda o peso das rodadas de 27/09. Elas
+continuam válidas, mas foram medidas com um instrumento mais fraco, e o artigo
+que as cita diz isso. A lição é dupla: gravar o valor, não só a presença, e
+datar cada mudança no instrumento para saber depois quais rodadas foram
+medidas com qual versão.
+
+## O defeito que este artigo achou
+
+Ao conferir este texto contra o código, testei o que o `fetch` nativo do Node
+(a biblioteca undici) manda numa requisição comum. No Node 22.16, ele
+acrescenta `Sec-Fetch-Mode: cors` a toda requisição e não manda
+`Sec-Fetch-Dest`, mesmo com um `Accept` de HTML definido à mão.
+
+O proxy deste site usava a presença de `Sec-Fetch-Mode`, sozinha, como sinal
+de navegador em dois campos que vão para todas as páginas: `has_sec_fetch` e
+`ua_class`, que marca `browser-like` quando há esse cabeçalho e o `Accept` pede
+HTML. Qualquer cliente feito com o `fetch` do Node que pedisse HTML era
+contado como navegador. Isso inclui a ferramenta deste próprio site: o
+[validador de meta tags](/ferramentas/validador-meta-tags) busca a URL que você
+cola com o `fetch` do Node e um `Accept` de HTML, e, quando a URL é deste
+site, chegava ao proxy com o formato de um navegador.
+
+O `lab_fetch_mode` não foi afetado: ele grava o par como string, então um
+`fetch` do Node sempre apareceu ali como `cors/-`, nunca como o `cors/empty`
+de um script de página. Os vereditos dos assistentes não mudam.
+
+A correção exige o par, num helper só, usado pelos dois campos:
+
+```ts
+// src/lib/fetch-metadata.ts
+/** A requisição traz o par Mode + Dest que um navegador sempre manda junto. */
+export function hasBrowserFetchMetadata(headers: Headers): boolean {
+  return headers.has('sec-fetch-mode') && headers.has('sec-fetch-dest')
+}
+```
+
+A ordem foi a do [método deste site](/blog/pre-registro-seo): o defeito entrou
+no log antes da correção, com a data de corte (o deploy de 7 de outubro de
+2026, às 23:56:38 UTC) e a regra de leitura dos dados anteriores escrita antes
+de qualquer releitura. Nenhum veredito fechado muda de direção. O teste
+unitário fixa o conjunto exato de cabeçalhos que o undici manda, para que a
+regra não volte.
+
+## Limites do sinal
+
+**Qualquer cliente pode enviar os cabeçalhos.** A proteção de "cabeçalho
+proibido" só vale dentro do navegador, contra o código da página. Fora do
+navegador, qualquer cliente HTTP pode mandar `Sec-Fetch-Mode` com o valor que
+quiser, e o Node manda sem que ninguém peça. Por isso `cors/empty` sozinho é
+evidência, não prova. No laboratório, o que dá força ao sinal é a
+combinação: URL secreta por assistente, a ordem página → JSON e um intervalo
+compatível com um navegador executando a página.
+
+**A ausência não prova que não é navegador.** Sem HTTPS, os navegadores não
+enviam os cabeçalhos. Navegadores anteriores ao suporte (Safari antes do
+16.4, Firefox antes do 90) também não. Num site em HTTPS e com tráfego atual
+isso pesa pouco, mas existe.
+
+**`cors/empty` mostra que um script chamou o endpoint, não o que aconteceu
+depois.** O caso do DeepSeek é o exemplo: o servidor sabe que a chamada
+aconteceu e, sozinho, não sabe se o resultado dela chegou ao modelo.
+
+**O sinal vale por requisição.** Ele diz como aquela requisição foi feita. Não
+diz se a página inteira foi renderizada, nem quanto do conteúdo foi lido.
+
+**No seu log comum, você só tem um perfil.** No laboratório, a URL secreta
+identifica quem visitou. No log de um site normal, não há isso: há um user
+agent declarado e um padrão de cabeçalhos. A frase correta, nesse caso, é
+"requisições que se declaram X executaram o script", e não "o X executa
+JavaScript". Nomear um agente exige identidade verificada, que é outro
+trabalho, descrito no [relato do instrumento](/blog/detectar-crawlers-ia).
+
+## Como registrar no seu servidor
+
+### No Next.js
+
+A implementação deste site está nos trechos acima: `fetchMode()` em
+`src/lib/lab-probes.ts` transforma os cabeçalhos numa string, e o `proxy.ts`
+decide quando registrá-la. O ponto de design que vale copiar é a separação
+por nível de detalhe. O par completo `modo/destino`, junto com user agent,
+`Accept` e país, só é gravado nas URLs de laboratório. Nas outras páginas, o
+proxy grava só um booleano, `has_sec_fetch`, ao lado do hash truncado da rede
+e da classe do cliente, e nunca o IP.
+
+Isso é uma escolha de privacidade, não de desempenho. Os cabeçalhos
+`Sec-Fetch` sozinhos dizem pouco sobre uma pessoa, mas registrados junto com
+IP, user agent e horário em todas as páginas viram um histórico de navegação.
+Quem for gravar no site inteiro deve decidir antes o que guarda junto e por
+quanto tempo.
+
+### Em PHP
+
+Para quem está em hospedagem compartilhada, o equivalente é ler as variáveis
+que o PHP expõe em `$_SERVER`. O PHP converte o nome do cabeçalho para
+maiúsculas, troca hífens por sublinhados e acrescenta o prefixo `HTTP_`.
+
+```php
+<?php
+// ilustrativo: registra o par modo/destino no log de erros do PHP
+$mode = $_SERVER['HTTP_SEC_FETCH_MODE'] ?? '';
+$dest = $_SERVER['HTTP_SEC_FETCH_DEST'] ?? '';
+
+if ($mode === '' && $dest === '') {
+    $fetchMode = '(none)';
+} else {
+    $fetchMode = ($mode !== '' ? $mode : '-') . '/' . ($dest !== '' ? $dest : '-');
+}
+
+error_log(date('c') . ' ' . $_SERVER['REQUEST_URI'] . ' ' . $fetchMode);
+```
+
+Coloque isso só no endpoint e na página que você quer medir, pelo mesmo
+motivo de privacidade. E leia `cors/-` como o que ele é: um cliente fora do
+navegador, não um script de página.
+
+## Como verificar
+
+**1. Veja os cabeçalhos no seu navegador.** Abra o seu site em HTTPS, abra o
+DevTools na aba Network e recarregue. Na requisição do documento, em Request
+Headers, devem aparecer `Sec-Fetch-Mode: navigate` e `Sec-Fetch-Dest:
+document`.
+
+**2. Dispare uma chamada pelo console.** No console da mesma página:
+
+```js
+// ilustrativo: rode no console do DevTools, na página do seu site
+fetch('/', { cache: 'no-store' })
+```
+
+A nova linha na aba Network deve mostrar `Sec-Fetch-Mode: cors`,
+`Sec-Fetch-Dest: empty` e `Sec-Fetch-Site: same-origin`. É exatamente o
+padrão que um script da página produz.
+
+**3. Faça duas requisições sem navegador.**
+
+```bash
+# ilustrativo: troque pelo seu domínio
+curl -s -o /dev/null https://seu-dominio.com.br/
+node -e "fetch('https://seu-dominio.com.br/')"
+```
+
+O curl não envia cabeçalhos `Sec-Fetch`, e o seu log deve registrar `(none)`.
+O Node envia só o Mode, e o log deve registrar `cors/-`.
+
+**4. Confira o log.** Se os casos aparecem como `navigate/document`,
+`cors/empty`, `(none)` e `cors/-`, o registro está funcionando. Se tudo
+aparece como `(none)`, verifique se o site está em HTTPS e se algum proxy ou
+CDN na frente do servidor não está removendo os cabeçalhos antes de eles
+chegarem à aplicação.
+
+## O que vem depois
+
+A próxima versão do instrumento de detecção, com as hipóteses H7 a H13
+pré-registradas, deixa de olhar um cabeçalho de cada vez e passa a medir a
+coerência do conjunto: se os cabeçalhos que uma requisição envia combinam
+entre si e com o cliente que ela diz ser. O defeito do Node é o exemplo de por
+que isso importa: um cabeçalho sozinho, lido como sinal, enganou o próprio
+instrumento que foi escrito para não se enganar. O método do piloto está no
+[relato do instrumento](/blog/detectar-crawlers-ia), e o resto da
+implementação de referência do site está no [guia de SEO técnico para
+Next.js](/guia/seo-tecnico-nextjs).
