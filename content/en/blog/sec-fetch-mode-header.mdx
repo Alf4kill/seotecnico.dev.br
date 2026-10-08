@@ -1,0 +1,445 @@
+---
+title: "Sec-Fetch-Mode: how to tell if a visit ran JavaScript"
+description: "What Sec-Fetch-Mode and Sec-Fetch-Dest say about a request, and how this site used them to see which AI assistants executed JavaScript."
+slug: "sec-fetch-mode-header"
+primaryQuery: "sec-fetch-mode"
+keywords: ['english', 'inglês', 'sec-fetch-mode', 'sec-fetch-dest', 'sec-fetch-site', 'fetch metadata', 'sec-fetch headers', 'cors', 'navigate', 'javascript', 'crawler', 'bot', 'node fetch', 'undici', 'proxy', 'middleware']
+lang: "en"
+translationOf: "sec-fetch-mode"
+category: medicao
+basedOn: ['which-ai-assistants-run-javascript']
+tldr: >-
+  Sec-Fetch-Mode says how the browser made a request. With
+  Sec-Fetch-Dest: empty, cors is a script's fetch() inside a browser;
+  navigate with document is a page being opened. Read as a pair, with the
+  timing, they show whether a visit ran JavaScript. Alone, they are
+  evidence, not identity.
+datePublished: "2026-10-08"
+dateModified: "2026-10-08"
+faq:
+  - question: "What does Sec-Fetch-Mode cors mean?"
+    answer: "It means the request was made in CORS mode, the default mode of calls such as fetch() and XMLHttpRequest, even when the target is the same origin. Together with Sec-Fetch-Dest: empty, it indicates the request came from code running in a page inside a browser, not from a navigation or from loading an image, stylesheet or script."
+  - question: "Do bots send Sec-Fetch headers?"
+    answer: "Some do. Automated browsers, such as headless Chrome, send the full set like any browser. curl sends none. Node's native fetch sends Sec-Fetch-Mode: cors on every request, without Sec-Fetch-Dest. And any client outside a browser can send these headers with whatever value it likes, so they are evidence about the request, not identity."
+  - question: "Can headers tell you whether a page executed JavaScript?"
+    answer: "As evidence, yes; as proof on their own, no. If a page has a script that calls an endpoint with fetch(), and that endpoint receives Sec-Fetch-Mode: cors with Sec-Fetch-Dest: empty seconds after the page was requested, a browser most likely opened the page and ran the script. Without the timing and without a URL that identifies the visit, the header alone says little."
+  - question: "Do Sec-Fetch headers appear on sites without HTTPS?"
+    answer: "No. Browsers only send Fetch Metadata headers to potentially trustworthy URLs, which in practice means HTTPS or localhost. On a site served over plain HTTP, the absence of the headers does not mean the client is not a browser, and any reading based on them loses its meaning."
+---
+
+`Sec-Fetch-Mode` is a header the browser sends with every request to say how
+it was made. The value `cors`, with `Sec-Fetch-Dest: empty`, is a `fetch()`
+fired by a script inside a browser; `navigate` with `document` is a page being
+opened. Without the Mode and Dest pair, a request does not have a browser's
+shape. Combined with the request's timing, these headers show whether a visit
+executed JavaScript.
+
+They are what took this site from "the assistant's answer contained the
+value" to "the server saw the script run", in the [test on which AI
+assistants run JavaScript](/en/blog/which-ai-assistants-run-javascript).
+There, the signal takes one section. Here is the full explanation: what each
+header means, what it was created for, how I used it as a measurement
+instrument, where it stops being valid, and the defect that reviewing this
+article found in the instrument itself.
+
+## What Fetch Metadata headers are
+
+Fetch Metadata is a group of four request headers prefixed `Sec-Fetch-`,
+defined in a [W3C specification](https://www.w3.org/TR/fetch-metadata/),
+currently a Working Draft. The browser fills each one in by itself, from the
+context the request was born in.
+
+| Header | What it tells | Most common values |
+|---|---|---|
+| `Sec-Fetch-Mode` | the request's mode | `navigate`, `cors`, `no-cors`, `same-origin`, `websocket` |
+| `Sec-Fetch-Dest` | where the response will be used | `document`, `empty`, `script`, `style`, `image`, `iframe` |
+| `Sec-Fetch-Site` | the relationship between requester and responder | `same-origin`, `same-site`, `cross-site`, `none` |
+| `Sec-Fetch-User` | whether a navigation was user-activated | `?1`, or absent |
+
+To measure JavaScript execution, Mode and Dest are the ones that matter. Read
+together, they separate three situations:
+
+| Mode / Dest | What happened in the browser |
+|---|---|
+| `navigate` / `document` | a page was opened as the main document |
+| `no-cors` / `script`, `style`, `image` | the browser loaded a resource referenced in the HTML |
+| `cors` / `empty` | code running in the page made a call, such as `fetch()` or `XMLHttpRequest` |
+
+The `empty` destination is the one for calls made by code, which have no
+destination of their own. And `cors` is `fetch()`'s default mode, even for the
+same origin. That is why a `fetch('/api/something')` in the page itself
+reaches the server as `cors/empty`, with `Sec-Fetch-Site: same-origin`.
+
+Two details from the [MDN
+reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Mode)
+carry the rest of this article. First, the headers are only sent to
+potentially trustworthy URLs: HTTPS or localhost. Second, they are forbidden
+headers for page code: a script running in the browser cannot create or
+change them. As for support, every modern engine sends Mode and Dest
+together: Chrome since version 76, Firefox since 90 and Safari since 16.4,
+from March 2023.
+
+## The original use: security
+
+The headers were created so a server can know where a request came from
+before processing it. The pattern described in [web.dev's article on Fetch
+Metadata](https://web.dev/articles/fetch-metadata), called a Resource
+Isolation Policy, has four rules and one optional exception:
+
+1. allow requests without the headers, because they come from browsers that
+   do not send them;
+2. allow `Sec-Fetch-Site` of `same-origin`, `same-site` or `none`;
+3. allow simple navigations (`navigate` with `GET`), except those to `object`
+   and `embed`;
+4. optionally, exempt endpoints meant to serve other sites;
+5. reject the rest, which is cross-site traffic that is not navigation.
+
+The policy blocks attacks such as CSRF and cross-site script inclusion without
+touching legitimate traffic. The same article asks servers to include
+`Sec-Fetch-Dest`, `Sec-Fetch-Mode` and `Sec-Fetch-Site` in the response's
+`Vary` header for the protection to hold on `GET` requests: the response
+depends on those headers, and a cache needs to know it.
+
+This site blocks nothing with them. It only records.
+
+## The use here: measurement
+
+The reasoning is short. Inside a browser, only code can produce `cors/empty`.
+An HTTP client that downloads the HTML without executing it does not send
+that pair: curl sends no `Sec-Fetch` header at all, and Node's `fetch` sends
+the Mode without the Dest (more on that below). So if a page contains a
+script that calls an endpoint with `fetch()`, and the endpoint receives
+`cors/empty` seconds after the page was requested, there is evidence that a
+browser opened the page and ran the script.
+
+In this site's lab, each assistant gets a secret URL of its own. The visit's
+identity comes from the URL, not the user agent, as described in the [AI
+crawler detection case study](/en/case-studies/ai-crawler-detection). The lab
+page only shows the value under test after a script fetches it from a
+separate JSON, once the page has loaded. If the assistant answers with the
+value, it either read the executed page or opened the JSON another way, and
+the server is what says which of the two happened.
+
+The function that turns the two headers into a recordable value lives in
+`src/lib/lab-probes.ts`:
+
+```ts
+// src/lib/lab-probes.ts
+function fetchMode(headers: Headers): string {
+  const mode = headers.get('sec-fetch-mode')
+  const dest = headers.get('sec-fetch-dest')
+  if (!mode && !dest) return '(none)'
+  return clip(`${mode || '-'}/${dest || '-'}`)
+}
+```
+
+It produces three kinds of output: `(none)` when neither header came,
+`mode/dest` when both came, and a hyphen in place of whichever is missing when
+only one came. `clip()` cuts the value at 100 characters, GA4's limit for an
+event parameter, and returns `(none)` if an empty string is left. Recording
+the pair as one string makes counting and comparing easier later.
+
+The value is computed in the proxy and only assembled when the request hits a
+lab probe:
+
+```ts
+// src/proxy.ts
+  // Sondas do controle positivo (H16, §4.7): quem buscou, pelo formato da
+  // requisição e pela lista pública em que o IP está, diga o UA o que disser.
+  // Só aqui: fora das sondas, nada disto é coletado (§2.3).
+  const probe = controlProbeForPath(pathname)
+  const lab =
+    probe &&
+    labHitParams(
+      probe,
+      request.nextUrl,
+      request.headers,
+      await ipOwner(clientIp).catch(() => 'unknown'),
+      hitId
+    )
+```
+
+The comments are in Portuguese, as in the repository. They say: positive
+control probes record who fetched, by the request's shape and by the public
+list the IP is in, whatever the user agent says; and only here, since none of
+this is collected outside the probes.
+
+In Next.js 16, the old Middleware is called Proxy: the file is `proxy.ts`, the
+exported function is `proxy`, and it runs on the Node.js runtime, with no
+option to switch to Edge, according to the [Next.js
+documentation](https://nextjs.org/docs/app/api-reference/file-conventions/proxy).
+If you still have a `middleware.ts`, the official codemod migrates it.
+
+### What the server recorded
+
+Every statement below holds for the date and plan given, not for the
+assistant in general. The full rounds are in the [test on which AI assistants
+run JavaScript](/en/blog/which-ai-assistants-run-javascript) and in the [AI
+crawler detection case study](/en/case-studies/ai-crawler-detection).
+
+| Visit | What the server recorded | Reading |
+|---|---|---|
+| Grok (free, 2 Oct 2026) | the renderer requested the page and then the JSON with `cors/empty`, in all 6 rounds of the hint battery | the script ran |
+| ChatGPT (Go) and Claude (Pro), 2 Oct 2026 | one request for the page, with no `Sec-Fetch` header; with the address in the prompt, a second one, to the JSON, also with none | HTTP client; the JSON was opened directly, not called by a script |
+| DeepSeek (free, 2 Oct 2026), "the address" condition | the JSON arrived twice per round: once with `navigate/document`, once with `cors/empty` | the headers separate the two paths |
+
+**Grok.** This is a full browser's pattern: the document first, then the
+script's call. The renderer is a `HeadlessChrome`, and the JSON arrived with
+`cors/empty` in every round.
+
+**ChatGPT and Claude.** No `Sec-Fetch` on any request. That is the profile of
+an HTTP client that downloads the HTML and executes nothing. When they were
+given the JSON's address, they opened the JSON, and the request arrived like
+the others: with no header, so it was not a page script calling the JSON.
+
+**DeepSeek.** This is the case that shows what the header solves and what it
+does not. In "the address" condition (rounds 48, 58 and 68), the JSON arrived
+twice per round: once with `navigate/document`, opened directly as a
+document, and once with `cors/empty`, called by the page's script. The headers
+separate the two paths cleanly. What they do not say, on their own, is which
+of the two responses reached the model. The comparison with the other
+condition does: with only the location hint (rounds 43, 53 and 63), the
+script called the JSON with `cors/empty` in all three rounds, and all three
+answers read "carregando…" ("loading…"). The value only arrived when there
+was a direct opening. The assistant's own account of what it did does not
+count as data: it said it did not execute the page's JavaScript, and the
+server recorded the opposite.
+
+<figure>
+  <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Timelines of three clients: a browser requests the page and calls the JSON 2 seconds later; ChatGPT requests only the page, with no Sec-Fetch headers; Node's fetch sends the Mode without the Dest">
+    <title>Three ways to request the same page</title>
+    <desc>Time axis in seconds, from 0 to 3. Browser, in the author's pre-flight on 29 September 2026: the page with navigate/document at 0 s and the JSON with cors/empty at 2 s. ChatGPT, on 2 October 2026: the page with no Sec-Fetch headers at 0 s and no call to the JSON afterwards. Node's native fetch, in a local test: the page with cors and no destination.</desc>
+
+    <text x="20" y="64" fontSize="12" fill="var(--foreground)">Browser</text>
+    <circle cx="200" cy="60" r="6" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="40" fontSize="12" fill="var(--foreground)">page · navigate/document</text>
+    <line x1="206" y1="60" x2="514" y2="60" stroke="var(--color-accent)" strokeWidth="1.5" />
+    <text x="360" y="80" textAnchor="middle" fontSize="12" fill="var(--color-diagram-accent-text)">2 s</text>
+    <circle cx="520" cy="60" r="6" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="520" y="40" fontSize="12" fill="var(--foreground)">JSON · cors/empty</text>
+
+    <text x="20" y="144" fontSize="12" fill="var(--foreground)">ChatGPT (Go)</text>
+    <circle cx="200" cy="140" r="6" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="120" fontSize="12" fill="var(--foreground)">page · (none)</text>
+    <line x1="206" y1="140" x2="680" y2="140" stroke="var(--color-diagram-axis)" strokeWidth="1" strokeDasharray="4 4" />
+    <text x="440" y="162" textAnchor="middle" fontSize="12" fill="var(--foreground)">no call to the JSON</text>
+
+    <text x="20" y="224" fontSize="12" fill="var(--foreground)">Node's fetch</text>
+    <circle cx="200" cy="220" r="6" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="200" fontSize="12" fill="var(--foreground)">page · cors/- (Mode without Dest)</text>
+
+    <line x1="200" y1="260" x2="680" y2="260" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="200" y1="256" x2="200" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="360" y1="256" x2="360" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="520" y1="256" x2="520" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="680" y1="256" x2="680" y2="264" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="200" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">0 s</text>
+    <text x="360" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">1 s</text>
+    <text x="520" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">2 s</text>
+    <text x="680" y="280" textAnchor="middle" fontSize="11" fill="var(--foreground)">3 s</text>
+    <text x="20" y="308" fontSize="11" fill="var(--foreground)">Browser: author's pre-flight, 29 Sep 2026. ChatGPT: battery of 2 Oct 2026. Node: local test.</text>
+  </svg>
+  <figcaption>Only the browser produces the full pair. ChatGPT sends no Sec-Fetch header at all; Node's fetch sends the Mode and leaves the Dest out.</figcaption>
+</figure>
+
+| Timeline | t = 0 s | t = 2 s |
+|---|---|---|
+| Browser (author's pre-flight, 29 Sep 2026) | page, `navigate/document` | JSON, `cors/empty` |
+| ChatGPT (Go, 2 Oct 2026) | page, `(none)` | no request |
+| Node's `fetch` (local test) | page, `cors/-` | no request |
+
+The browser example is the pre-flight I run before each battery, on the
+author's own probe: the page at 01:23:33 UTC and the JSON at 01:23:35, each
+request with its own key. It is the one case where the interval between page
+and script is recorded to the second with a known origin.
+
+## When the instrument changed mid-test
+
+Recording the full value did not exist from the start. In the rounds of 27
+September 2026, the site recorded only `has_sec_fetch`, a field that said
+whether a `Sec-Fetch-Mode` header was present, without saying which value.
+
+In those rounds, the conclusion "the script ran" was an inference: there was a
+`Sec-Fetch` header and the `Accept` was `*/*`, a `fetch()`'s default. A
+navigation asks for `text/html` first. The inference was reasonable, but it
+was inference, and today I know of a client that satisfies it without a
+browser: Node's `fetch` sends `Sec-Fetch-Mode: cors` and `Accept: */*`. What
+supported it, beyond the header, was the rest of the request: browser user
+agents with each browser's own `Accept-Language` and navigation `Accept`.
+
+On 29 September 2026, at 01:13:22 UTC, PR #75 added two fields at once:
+`lab_fetch_mode`, with the `mode/dest` pair the function above produces, and
+`lab_hit`, a per-request key made of the UTC time to the second plus four
+random hex characters. The key identifies the request, never who made it, and
+it is what lets the GA4 tables be joined row by row and intervals be measured
+to the second. The hint battery, run after that, recorded `cors/empty` with
+the destination in all 6 Grok rounds and all 6 DeepSeek rounds. Node's
+`fetch` does not produce that pair, and the 27 September inference was
+confirmed for those two.
+
+I tell the timeline because it changes the weight of the 27 September rounds.
+They remain valid, but they were measured with a weaker instrument, and the
+article that cites them says so. The lesson is twofold: record the value, not
+just its presence, and date every change to the instrument so you know later
+which rounds were measured with which version.
+
+## The defect this article found
+
+While checking this text against the code, I tested what Node's native
+`fetch` (the undici library) sends on an ordinary request. On Node 22.16, it
+adds `Sec-Fetch-Mode: cors` to every request and sends no `Sec-Fetch-Dest`,
+even with an HTML `Accept` set by hand.
+
+This site's proxy used the presence of `Sec-Fetch-Mode` alone as the browser
+signal in two fields recorded on every page: `has_sec_fetch` and `ua_class`,
+which marks `browser-like` when that header is there and `Accept` asks for
+HTML. Any client built on Node's `fetch` that asked for HTML was counted as a
+browser. That includes this site's own tool: the [meta tag
+validator](/ferramentas/validador-meta-tags) fetches the URL you paste with
+Node's `fetch` and an HTML `Accept` (its interface is in Portuguese), and when
+the URL was this site's, it reached the proxy shaped like a browser.
+
+`lab_fetch_mode` was not affected: it records the pair as a string, so a Node
+`fetch` always showed up there as `cors/-`, never as a page script's
+`cors/empty`. The assistants' verdicts do not change.
+
+The fix requires the pair, in one helper used by both fields:
+
+```ts
+// src/lib/fetch-metadata.ts
+/** A requisição traz o par Mode + Dest que um navegador sempre manda junto. */
+export function hasBrowserFetchMetadata(headers: Headers): boolean {
+  return headers.has('sec-fetch-mode') && headers.has('sec-fetch-dest')
+}
+```
+
+(The comment reads: "the request carries the Mode + Dest pair a browser
+always sends together".)
+
+The order followed [this site's method](/en/blog/seo-testing-pre-registration):
+the defect went into the log before the fix, with the cutoff date (the deploy
+of 7 October 2026, at 23:56:38 UTC) and the reading rule for earlier data
+written before any re-reading. No closed verdict changes direction. The unit
+test pins the header set undici sends, so the rule cannot come back.
+
+## Limits of the signal
+
+**Any client can send the headers.** The "forbidden header" protection only
+applies inside the browser, against page code. Outside the browser, any HTTP
+client can send `Sec-Fetch-Mode` with whatever value it likes, and Node sends
+it without being asked. That is why `cors/empty` alone is evidence, not
+proof. In the lab, what gives the signal its strength is the combination: a
+secret URL per assistant, the page → JSON order and an interval consistent
+with a browser executing the page.
+
+**Absence does not prove it is not a browser.** Without HTTPS, browsers do not
+send the headers. Browsers older than the support versions (Safari before
+16.4, Firefox before 90) do not either. On an HTTPS site with current traffic
+that weighs little, but it exists.
+
+**`cors/empty` shows a script called the endpoint, not what happened next.**
+DeepSeek is the example: the server knows the call happened and, on its own,
+does not know whether its result reached the model.
+
+**The signal is per request.** It says how that request was made. It does not
+say whether the whole page was rendered, nor how much of the content was
+read.
+
+**In an ordinary log, you only have a profile.** In the lab, the secret URL
+identifies the visitor. In a normal site's log there is no such thing: there
+is a declared user agent and a header pattern. The correct sentence in that
+case is "requests declaring X executed the script", not "X executes
+JavaScript". Naming an agent requires verified identity, which is separate
+work, described in the [AI crawler detection case
+study](/en/case-studies/ai-crawler-detection).
+
+## How to record it on your server
+
+### In Next.js
+
+This site's implementation is in the snippets above: `fetchMode()` in
+`src/lib/lab-probes.ts` turns the headers into a string, and `proxy.ts`
+decides when to record it. The design point worth copying is the split by
+level of detail. The full `mode/dest` pair, together with user agent,
+`Accept` and country, is only recorded on lab URLs. On every other page, the
+proxy records only a boolean, `has_sec_fetch`, next to a truncated network
+hash and the client class, and never the IP.
+
+That is a privacy choice, not a performance one. `Sec-Fetch` headers alone say
+little about a person, but recorded together with IP, user agent and time on
+every page they become a browsing history. If you record site-wide, decide
+first what you keep alongside them and for how long.
+
+### In PHP
+
+On shared hosting, the equivalent is reading the variables PHP exposes in
+`$_SERVER`. PHP uppercases the header name, replaces hyphens with underscores
+and adds the `HTTP_` prefix.
+
+```php
+<?php
+// illustrative: logs the mode/dest pair to PHP's error log
+$mode = $_SERVER['HTTP_SEC_FETCH_MODE'] ?? '';
+$dest = $_SERVER['HTTP_SEC_FETCH_DEST'] ?? '';
+
+if ($mode === '' && $dest === '') {
+    $fetchMode = '(none)';
+} else {
+    $fetchMode = ($mode !== '' ? $mode : '-') . '/' . ($dest !== '' ? $dest : '-');
+}
+
+error_log(date('c') . ' ' . $_SERVER['REQUEST_URI'] . ' ' . $fetchMode);
+```
+
+Put it only on the endpoint and the page you want to measure, for the same
+privacy reason. And read `cors/-` for what it is: a client outside a browser,
+not a page script.
+
+## How to check
+
+**1. See the headers in your browser.** Open your site over HTTPS, open
+DevTools on the Network tab and reload. On the document request, under
+Request Headers, you should see `Sec-Fetch-Mode: navigate` and
+`Sec-Fetch-Dest: document`.
+
+**2. Fire a call from the console.** In the same page's console:
+
+```js
+// illustrative: run in the DevTools console, on your site's page
+fetch('/', { cache: 'no-store' })
+```
+
+The new row on the Network tab should show `Sec-Fetch-Mode: cors`,
+`Sec-Fetch-Dest: empty` and `Sec-Fetch-Site: same-origin`. That is exactly
+the pattern a page script produces.
+
+**3. Make two requests without a browser.**
+
+```bash
+# illustrative: use your own domain
+curl -s -o /dev/null https://your-domain.com/
+node -e "fetch('https://your-domain.com/')"
+```
+
+curl sends no `Sec-Fetch` headers, and your log should record `(none)`. Node
+sends only the Mode, and your log should record `cors/-`.
+
+**4. Check the log.** If the cases show up as `navigate/document`,
+`cors/empty`, `(none)` and `cors/-`, recording works. If everything shows up
+as `(none)`, check that the site is on HTTPS and that no proxy or CDN in front
+of your server strips the headers before they reach the application.
+
+## What comes next
+
+The next version of the detection instrument, with hypotheses H7 to H13
+pre-registered, stops looking at one header at a time and measures the
+coherence of the set: whether the headers a request sends agree with each
+other and with the client it claims to be. The Node defect is the example of
+why that matters: one header, read as a signal, fooled the very instrument
+that was written not to be fooled. The pilot's method is in the [AI crawler
+detection case study](/en/case-studies/ai-crawler-detection), and the rest of
+this site's reference implementation is in the [technical SEO guide for
+Next.js](/en/guide/technical-seo-nextjs).
+
+This is the English version of [an article first published in
+Portuguese](/blog/sec-fetch-mode); the two declare each other.
