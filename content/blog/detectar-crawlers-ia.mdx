@@ -13,7 +13,7 @@ tldr: >-
   eles alegam é verdadeira (IP, DNS reverso, assinatura) e se respeitam o
   robots.txt (honeypot). Este site mede as três e publica os números.
 datePublished: "2026-09-13"
-dateModified: "2026-10-04"
+dateModified: "2026-10-08"
 faq:
   - question: "O user agent identifica um crawler de IA?"
     answer: "Não. O user agent é uma alegação: qualquer cliente pode enviar GPTBot no cabeçalho. Identidade só existe quando a requisição passa numa fonte publicada pelo fornecedor — faixa de IP, DNS reverso confirmado ou assinatura Web Bot Auth. Sem isso, o certo é dizer que a requisição alega ser aquele agente."
@@ -185,11 +185,18 @@ cliente HTTP cru quase nunca manda:
 // src/proxy.ts
 function classifyUa(request: NextRequest, crawler: AiCrawler | undefined): UaClass {
   if (crawler) return 'declared-ai'
-  const hasSecFetch = request.headers.has('sec-fetch-mode')
+  // Mode + Dest: o `fetch` do Node manda só o Mode (lib/fetch-metadata.ts).
+  const hasSecFetch = hasBrowserFetchMetadata(request.headers)
   const acceptsHtml = request.headers.get('accept')?.includes('text/html') ?? false
   return hasSecFetch && acceptsHtml ? 'browser-like' : 'unknown'
 }
 ```
+
+Até 7 de outubro de 2026, o sinal era só a presença de `Sec-Fetch-Mode`. O
+`fetch` nativo do Node manda esse cabeçalho sem `Sec-Fetch-Dest`, então um
+cliente feito com ele que pedisse HTML era contado como navegador. A correção
+passou a exigir o par, e a data de corte está no log. O caso está no
+[artigo sobre Sec-Fetch-Mode](/blog/sec-fetch-mode).
 
 Nenhum endereço IP, cabeçalho bruto ou user agent completo sai do servidor.
 Para correlacionar requisições da mesma rede sem identificar ninguém, a

@@ -130,6 +130,20 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/does-llms-txt-work',
     },
   },
+  {
+    id: 'pre-registro-seo',
+    paths: {
+      'pt-BR': '/blog/pre-registro-seo',
+      en: '/en/blog/seo-testing-pre-registration',
+    },
+  },
+  {
+    id: 'sec-fetch-mode',
+    paths: {
+      'pt-BR': '/blog/sec-fetch-mode',
+      en: '/en/blog/sec-fetch-mode-header',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
