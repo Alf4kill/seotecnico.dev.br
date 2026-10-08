@@ -1,0 +1,474 @@
+---
+title: "Teste de SEO com pré-registro: como não se enganar"
+description: "Hipótese antes do dado, poder estatístico, controle positivo e defeitos publicados: o método que este site usa para medir SEO sem se enganar."
+slug: "pre-registro-seo"
+primaryQuery: "teste de seo"
+keywords: ['teste de seo', 'experimento de seo', 'pré-registro', 'pre-registro', 'teste a/b seo', 'poder estatístico', 'controle positivo', 'clopper-pearson', 'teste exato de fisher', 'método', 'resultado negativo']
+lang: "pt-BR"
+category: medicao
+status: referencia
+basedOn: ['detectar-crawlers-ia', 'chatgpt-le-javascript', 'quais-ias-executam-javascript']
+tldr: >-
+  Pré-registrar um teste de SEO é escrever hipótese, previsão, janela e
+  critério de falha antes de existir o dado. Este site faz isso num log
+  público, calcula o poder antes da janela, testa o instrumento com controle
+  positivo e publica defeitos, desvios e resultados negativos.
+datePublished: "2026-10-08"
+dateModified: "2026-10-08"
+faq:
+  - question: "O que é pré-registro de um experimento?"
+    answer: "É escrever, com data e antes de coletar o dado, a hipótese, a previsão, a janela de medição, o método de análise e o que contaria como falha. Na ciência isso vai para um registro com data que não pode ser alterado. Neste site vai para um log público no repositório, e o resultado é preenchido depois, na mesma entrada."
+  - question: "Dá para fazer teste de SEO num site pequeno?"
+    answer: "Dá, desde que o poder seja calculado antes. Perguntas de existência, como alguém pediu isto pelo menos uma vez, funcionam com pouco volume. Perguntas de taxa precisam de volume que um site novo não tem. A H5 deste site precisava de 5 leituras de um artigo em 14 dias, e o site recebe 0,47: o teste não podia funcionar, e isso dava para saber antes."
+  - question: "O que é controle positivo?"
+    answer: "É provocar de propósito um evento que se sabe que aconteceu, num horário conhecido, e conferir se o instrumento o registra. Sem isso, um zero não distingue nada aconteceu de o instrumento não vê. Neste site, 10 visitas provocadas de ChatGPT e Claude em setembro de 2026 apareceram todas no registro, com identidade verificada."
+  - question: "Por que publicar resultado negativo?"
+    answer: "Porque um método que só publica acerto não pode ser conferido: ninguém sabe quantas hipóteses falharam para cada uma que deu certo. Neste site, das seis hipóteses do piloto de detecção, duas foram falsificadas, uma ficou inconclusiva e uma se sustentou sem força, e as quatro estão publicadas ao lado das duas confirmadas."
+  - question: "Quanto tempo esperar antes de analisar dados do GA4?"
+    answer: "Neste site, o dia fechado mais 24 horas. Uma exportação do Explore feita no próprio dia mostrou 3 e 2 visitas onde havia 5 e 5, porque o GA4 ainda não tinha processado o dia. Lida ao pé da letra, teria reportado cinco falhas do instrumento que não aconteceram."
+---
+
+Um teste de SEO só prova alguma coisa se a hipótese, a previsão, a janela de
+medição e o que contaria como falha estiverem escritos **antes** de o dado
+existir. Isso é pré-registrar. Sem esse registro, qualquer resultado vira
+confirmação: o tráfego que subiu prova que a mudança funcionou, e o que caiu
+foi sazonalidade. Neste site, cada mudança deliberada ganha uma entrada num
+[log público](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/experiment-log.md)
+antes do resultado, e os veredictos são publicados, inclusive os negativos.
+
+Na ciência, pré-registro é especificar com antecedência como os dados serão
+coletados e analisados, num registro com data que não pode ser alterado. Serve
+para [separar a pesquisa que testa hipóteses da que gera
+hipóteses](https://rdm.vu.nl/tools/osf/preregistration.html): o mesmo dado
+não pode servir para inventar a hipótese e para confirmá-la. Em SEO a
+tentação é maior, porque o dado chega sozinho todo dia no Search Console e
+sempre tem alguma curva subindo.
+
+Este artigo é o método deste site. Cada seção é uma regra, e cada regra vem
+com um experimento que a aplicou ou que mostrou o custo de não aplicá-la.
+
+## O ciclo de um teste
+
+<figure>
+  <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ciclo de um teste de SEO pré-registrado em oito etapas, da hipótese à próxima hipótese">
+    <title>O ciclo de um teste pré-registrado</title>
+    <desc>Oito etapas em duas linhas. Na de cima, da esquerda para a direita: hipótese e previsão, poder, registro e coleta. Na de baixo, da direita para a esquerda: controle positivo, veredito, defeitos e desvios, próxima hipótese. Uma seta tracejada leva da próxima hipótese de volta à primeira etapa: a lição vira regra antes do próximo registro.</desc>
+
+    <rect x="60" y="30" width="145" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="132" y="56" textAnchor="middle" fontSize="12" fill="var(--foreground)">1. Hipótese</text>
+    <text x="132" y="76" textAnchor="middle" fontSize="11" fill="var(--foreground)">previsão e falha</text>
+    <rect x="223" y="30" width="145" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="295" y="56" textAnchor="middle" fontSize="12" fill="var(--foreground)">2. Poder</text>
+    <text x="295" y="76" textAnchor="middle" fontSize="11" fill="var(--foreground)">a janela detecta?</text>
+    <rect x="386" y="30" width="145" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="458" y="56" textAnchor="middle" fontSize="12" fill="var(--foreground)">3. Registro</text>
+    <text x="458" y="76" textAnchor="middle" fontSize="11" fill="var(--foreground)">com data, no log</text>
+    <rect x="549" y="30" width="145" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="621" y="56" textAnchor="middle" fontSize="12" fill="var(--foreground)">4. Coleta</text>
+    <text x="621" y="76" textAnchor="middle" fontSize="11" fill="var(--foreground)">sem olhar o parcial</text>
+
+    <line x1="205" y1="62" x2="217" y2="62" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="223,62 215,58 215,66" fill="var(--color-diagram-axis)" />
+    <line x1="368" y1="62" x2="380" y2="62" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="386,62 378,58 378,66" fill="var(--color-diagram-axis)" />
+    <line x1="531" y1="62" x2="543" y2="62" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="549,62 541,58 541,66" fill="var(--color-diagram-axis)" />
+    <line x1="621" y1="94" x2="621" y2="164" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="621,172 617,164 625,164" fill="var(--color-diagram-axis)" />
+
+    <rect x="549" y="172" width="145" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="621" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground)">5. Controle positivo</text>
+    <text x="621" y="218" textAnchor="middle" fontSize="11" fill="var(--foreground)">o instrumento vê?</text>
+    <rect x="386" y="172" width="145" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="458" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground)">6. Veredito</text>
+    <text x="458" y="218" textAnchor="middle" fontSize="11" fill="var(--foreground)">com o limite</text>
+    <rect x="223" y="172" width="145" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="295" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground)">7. Defeitos, desvios</text>
+    <text x="295" y="218" textAnchor="middle" fontSize="11" fill="var(--foreground)">publicados</text>
+    <rect x="60" y="172" width="145" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="132" y="198" textAnchor="middle" fontSize="12" fill="var(--foreground)">8. Próxima hipótese</text>
+    <text x="132" y="218" textAnchor="middle" fontSize="11" fill="var(--foreground)">a lição vira regra</text>
+
+    <line x1="549" y1="204" x2="537" y2="204" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="531,204 539,200 539,208" fill="var(--color-diagram-axis)" />
+    <line x1="386" y1="204" x2="374" y2="204" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="368,204 376,200 376,208" fill="var(--color-diagram-axis)" />
+    <line x1="223" y1="204" x2="211" y2="204" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="205,204 213,200 213,208" fill="var(--color-diagram-axis)" />
+
+    <polyline points="60,204 30,204 30,62 52,62" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
+    <polygon points="60,62 52,58 52,66" fill="var(--color-accent)" />
+
+    <line x1="20" y1="270" x2="700" y2="270" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <text x="20" y="298" fontSize="12" fill="var(--color-diagram-accent-text)">Tracejado: a lição de um teste entra no registro do próximo, antes do dado.</text>
+  </svg>
+  <figcaption>Etapas de 1 a 4 acontecem antes do resultado; de 5 a 8, depois. A seta tracejada é o que faz o método melhorar de um teste para o outro.</figcaption>
+</figure>
+
+Em texto, o que a figura mostra:
+
+| Etapa | Regra | Exemplo neste site |
+|---|---|---|
+| Hipótese e previsão | o critério de sucesso e de falha é escrito antes do deploy | LCP da home: render delay ≤ 1,0 s, registrado antes |
+| Poder | a janela precisa conseguir detectar o efeito previsto | H5: precisava de 5 leituras em 14 dias, o site recebe 0,47 |
+| Registro | a entrada vai para o log com data, antes do dado | `docs/experiment-log.md` |
+| Coleta | o instrumento roda sem ninguém olhar o resultado parcial | piloto de detecção, 57 dias |
+| Controle positivo | um evento provocado prova que o instrumento enxerga | 10 de 10 visitas de ChatGPT e Claude registradas |
+| Veredito | confirmada, falsificada ou inconclusiva, com o limite estatístico | H1 e H4 falsificadas |
+| Defeitos e desvios | o que deu errado no instrumento e no protocolo é publicado | seis defeitos silenciosos; memória ligada em parte de uma bateria |
+| Próxima hipótese | a lição vira regra antes do próximo registro | regra de poder, regra das 24 horas do GA4 |
+
+## O que vai num registro
+
+Uma entrada útil tem quatro colunas, e a última fica em branco até a janela
+fechar:
+
+```markdown
+<!-- ilustrativo: o formato de uma linha do log deste site -->
+| Data | Mudança | Hipótese | Resultado |
+|---|---|---|---|
+| AAAA-MM-DD | o que muda, em qual URL, em qual commit | previsão com número, janela, critério de falha e o menor efeito que a janela detecta | em branco até a janela fechar |
+```
+
+A coluna que importa é a terceira. "Melhorar o LCP" não é hipótese, porque
+nenhum resultado a contradiz. "O render delay cai para 1,0 s ou menos" é,
+porque 1,1 s a falsifica. O log deste site é escrito em inglês. Este é um
+recorte literal da entrada da H17, registrada em 28 de setembro de 2026,
+antes da bateria que ela previa:
+
+> **ChatGPT, Claude, Gemini** (baseline: server text only, `LD-` 0/15,
+> `JS-` 0/15): (C1) condition 1 changes nothing, `LD-` and `JS-` 0/3 each and
+> no `/c` request, because their tools extract text and drop `<script>` and a
+> hint does not change the tool; falsified by any correct `LD-` or `JS-`, or
+> any `/c` request, in condition 1. [...] **Power statement:** 3 rounds per
+> cell is a capability check: 3/3 bounds the per-round rate at ≥ 37% and 0/3
+> at ≤ 63% (one-sided 95%, exact). Against a 0/5 baseline, only a 3/3 shift
+> reaches p < 0.05 (Fisher, one-sided, p = 0.018); a 2/3 shift does not
+> (p = 0.11).
+
+Estão ali as três coisas que um registro precisa: a previsão com número
+("0/3 each"), o que a falsifica ("any correct `LD-` or `JS-`") e o que a
+janela consegue detectar (só uma mudança de 3 em 3 chega a p < 0,05). O
+resultado veio depois, na mesma entrada: a previsão se confirmou em 9 de 9
+rodadas, e está no
+[teste sobre quais IAs executam JavaScript](/blog/quais-ias-executam-javascript).
+
+## Hipótese e previsão antes do deploy
+
+Em julho de 2026 a home deste site tinha LCP de 4,9 s no PageSpeed Insights
+mobile. O elemento LCP era texto, o parágrafo do hero, então nenhum conselho
+sobre imagem se aplicava: 1.280 ms eram render delay, segurados pela folha de
+estilo e por uma fonte no caminho crítico. O diagnóstico está
+no [artigo sobre como melhorar o LCP no Next.js](/blog/melhorar-lcp-nextjs).
+
+Antes do deploy da correção, a previsão foi para o log: render delay de 1,0 s
+ou menos e LCP de laboratório abaixo de 2,0 s, que é o budget que o CI deste
+site impõe a si mesmo. Não é o limiar de "bom" do Google, que é 2,5 s no dado
+de campo; é uma régua de laboratório mais apertada que o site escolheu.
+
+O resultado em produção foi LCP de 0,9 s, com o render delay caindo de
+1.280 ms para 530 ms. O número bonito não é o ponto. O ponto é que, se o
+render delay tivesse parado em 1,1 s, a entrada diria "falhou", mesmo com o
+LCP muito melhor que antes. O critério estava fixado antes de alguém ver o
+gráfico. O caso completo, com o pull request, está nos
+[case studies em inglês](/en/case-studies).
+
+Esses números são de laboratório. O dado de campo, que é o que o Google usa,
+vem do CrUX, e na época da correção o site não tinha tráfego suficiente para
+aparecer nele. Uma previsão sobre o campo só pode ser registrada quando o
+domínio tem dado de campo. Para saber se o seu já tem, o [checador de Core
+Web Vitals](/ferramentas/checador-cwv) consulta o CrUX pela URL ou pela
+origem.
+
+## Poder antes da janela
+
+Uma hipótese bem escrita ainda pode ser um teste que não tinha como funcionar.
+A H5 do piloto de detecção previa que atualizar o `dateModified` de um artigo
+atrairia mais leituras de agentes de busca nos 14 dias seguintes. A regra de
+análise pedia pelo menos 5 leituras do artigo na janela para haver veredito.
+
+Este site recebe 0,47 leitura de agente por artigo a cada 14 dias. O teste
+estava subdimensionado em cerca de 10 vezes, e nenhuma janela razoável
+salvaria isso. O pior: o volume já estava na propriedade do GA4 quando a
+hipótese foi registrada. Dava para saber antes.
+
+A H5 tem uma segunda lição. A primeira tentativa nem rodou: o estímulo seria
+uma seção nova de dados de campo no próprio artigo-alvo, o de
+[INP no Next.js](/blog/inp-nextjs), e essa seção não foi escrita no prazo.
+Sem a seção, não houve atualização nenhuma. Uma entrada que depende de um
+trabalho de outra frente precisa de uma checagem explícita de pré-condição,
+senão uma mudança que nunca aconteceu aparece no log igual a uma mudança que
+aconteceu e não teve efeito.
+
+Desde então, toda hipótese registrada aqui declara, ao lado da janela, o menor
+efeito ou a menor contagem que a janela consegue detectar com o tráfego já
+observado. Isso muda o tipo de pergunta que um site pequeno faz:
+
+- **Perguntas de taxa** ("o CTR subiu?", "os agentes voltam mais?") precisam
+  de volume que um site novo não tem.
+- **Perguntas de existência** ("alguém pediu isto pelo menos uma vez?")
+  funcionam com pouco volume. A H14, aberta até 24 de dezembro de 2026,
+  pergunta se algum cliente pede Markdown a este site com
+  `Accept: text/markdown`. A regra de decisão já está publicada: servir
+  Markdown só será construído se o pedido vier de pelo menos cinco redes
+  distintas ou de dois agentes verificados.
+
+## Controle positivo: um zero só vale se o instrumento enxerga
+
+O piloto de detecção tinha dois honeypots, URLs que só existiam num canal
+cada, e os dois terminaram com zero acessos reais. Um zero desses tem duas
+explicações que os dados não separam: nada veio, ou o instrumento não vê o
+que vem. Sem um controle, as duas são a mesma observação.
+
+O controle veio em setembro de 2026. Uma página em URL secreta, guardada só
+numa variável de ambiente, recebia códigos novos a cada rodada, e cada código
+só existia neste servidor. Em 15 rodadas em 25 de setembro, pedi a ChatGPT
+(plano Go), Claude (plano Pro) e Perplexity (plano gratuito) que abrissem a
+página e relatassem os códigos. Toda resposta certa exigia uma requisição a
+este servidor.
+
+O instrumento registrou **10 de 10** visitas de ChatGPT e Claude, todas com
+identidade verificada pelas faixas de IP que a OpenAI e a Anthropic publicam.
+O Perplexity gratuito não buscou a página nenhuma vez e não relatou nenhum
+código certo, então o zero dele é um zero de verdade, não uma falha do
+registro. O teste está no
+[artigo sobre o que o ChatGPT lê de uma página Next.js](/blog/chatgpt-le-javascript).
+
+A partir desse controle, um zero no instrumento passou a significar alguma
+coisa. Antes dele, não significava.
+
+## Defeitos do instrumento também são resultado
+
+Nenhum dos defeitos abaixo gerou erro. Cada um foi achado lendo exportação à
+mão ou estranhando um número. São os seis defeitos silenciosos do piloto de
+detecção:
+
+1. **O assinante não era registrado.** Uma assinatura Web Bot Auth válida
+   prova que o dono de um domínio assinou; o domínio é a identidade, e ele
+   nunca chegou ao GA4.
+2. **O formato novo de assinatura era rejeitado.** O verificador só aceitava
+   a forma antiga do cabeçalho `Signature-Agent`.
+3. **Navegação humana contava como automação.** O Next.js pré-carrega os
+   links visíveis com requisições que não pedem HTML. Dos eventos da rede do
+   próprio autor, 994 de 1.041 eram esses prefetches.
+4. **O repositório público virou canal de descoberta.** Os endereços dos
+   honeypots estavam em arquivos versionados, e o histórico do Git é
+   permanente: o confundidor pode ser delimitado, nunca removido.
+5. **Uma conexão gerava vários identificadores de rede.** O sal do
+   identificador muda todo mês, e a exclusão do tráfego do autor pegou só um
+   deles.
+6. **Imagens de compartilhamento contavam como leitura de página.** Isso
+   inflou as contagens de leitura, e é por isso que o 0,47 da H5 é uma
+   estimativa por cima.
+
+A lista não fechou com o piloto. Em 7 de outubro de 2026, conferindo o
+rascunho de um artigo, achei mais um: o `fetch` nativo do Node manda
+`Sec-Fetch-Mode` sem `Sec-Fetch-Dest`, e o instrumento contava esses clientes
+como navegadores. O defeito foi registrado no log antes da correção, com a
+data de corte e a regra de leitura dos dados anteriores. O caso está no
+[artigo sobre Sec-Fetch-Mode](/blog/sec-fetch-mode).
+
+O mesmo vale para o instrumento que mede o próprio código. O gate de CI deste
+site deveria rodar a suíte de SEO em todo pull request, e um filtro de branch
+fazia os pull requests empilhados rodarem zero testes. Um deles mudou os
+budgets e os testes sem nenhuma execução. Foi corrigido no #61, e o buraco
+está publicado no [case study do gate](/en/case-studies#ci-gate), não
+escondido.
+
+E vale para a ferramenta de leitura. No controle de setembro, a exportação
+do Explore feita no mesmo dia mostrou 3 e 2 visitas, não 5 e 5. O GA4 ainda
+não tinha processado o dia. Lida ao pé da letra, aquela tabela teria
+reportado cinco falhas do instrumento que nunca aconteceram. A regra desde
+então: nenhuma exportação é analisada antes de o dia fechar e passarem mais
+24 horas.
+
+Um defeito publicado vem com data de corte. O dado anterior à correção é lido
+por uma regra escrita **antes** da releitura, para que a correção não vire uma
+segunda chance de achar o resultado que se queria.
+
+## Desvios registrados, não escondidos
+
+Um desvio é o protocolo que não foi seguido. Ele não invalida o teste por si
+só; invalida quando fica escondido, porque aí ninguém consegue avaliar o que
+ele afeta. A bateria com dicas do
+[teste sobre quais IAs executam JavaScript](/blog/quais-ias-executam-javascript)
+registrou os seus, cada um com o alcance:
+
+- **Planos pagos em dois assistentes.** O protocolo previa planos gratuitos
+  para os cinco, e ChatGPT e Claude rodaram nos planos Go e Pro. Como ficaram
+  no mesmo plano em todos os blocos, as condições continuam comparáveis entre
+  si, e a conclusão sobre plano gratuito vale só para os outros três.
+- **Memória entre conversas ligada** em ChatGPT, Claude e Gemini nos dois
+  primeiros blocos, contra o protocolo. Foi desligada antes do terceiro.
+- **Grok em modo privado** a partir do terceiro bloco, porque ele não mostra
+  configuração de memória.
+
+O registro do desvio de memória, como está no repositório:
+
+> 2. **Memory was on in blocks 1–2** for ChatGPT, Claude and Gemini, against
+>    setup step 3. It was found after block 2 and turned off before block 3.
+>    - Block 1 came before any H17 hint, so no H17 hint could have been
+>      remembered in it.
+>    - Block 2 gave the `/c` address in the prompt itself, so memory adds
+>      nothing there.
+
+O desvio não é escondido nem descartado: o registro diz por que ele não muda
+os dois blocos afetados.
+
+Mudança de instrumento entre baterias é outra coisa, e também vai para o
+registro. O valor de `Sec-Fetch-Mode` e uma chave por requisição só passaram a
+ser gravados em 29 de setembro, depois da bateria neutra de 27 de setembro e
+antes da bateria com dicas. As rodadas de 27 de setembro foram analisadas como
+registradas, e o que elas não permitem medir está dito como não medido.
+
+## Contagem e limite, não porcentagem
+
+Com cinco rodadas, "100%" é uma frase falsa. O que cinco de cinco dizem, com
+95% de confiança, é que o comportamento acontece em **pelo menos 55%** das
+vezes. É o limite unilateral exato de Clopper-Pearson, o
+[intervalo para proporções binomiais](https://doi.org/10.2307/2331986)
+publicado em 1934, que garante a cobertura declarada mesmo com amostra
+minúscula.
+
+O mesmo vale para o zero. A H6 do piloto previa que nenhum agente seguiria os
+links do `llms.txt` até o honeypot. Nenhum seguiu, mas o arquivo foi lido só
+9 vezes em 57 dias. Zero de 9 diz que a taxa é de **no máximo 28%**. A
+hipótese se sustentou, sem força: com tão pouca exposição, "ninguém segue" e
+"quase ninguém lê" não se separam.
+
+Para comparar dois grupos pequenos, este site usa o teste exato de Fisher,
+que calcula a probabilidade exata de cada tabela 2×2 com os mesmos totais e
+não depende de aproximação, por isso
+[serve para amostras pequenas](https://library.soton.ac.uk/fishers-exact-test).
+Os dois resultados abaixo saem da mesma bateria e dizem coisas diferentes:
+
+| Comparação | Antes | Depois | p (Fisher, unilateral) | Leitura |
+|---|---|---|---|---|
+| ChatGPT e Claude, valor carregado por JavaScript, com o endereço no prompt | 0 de 5 | 3 de 3 | 0,018 cada | a dica mudou o resultado |
+| Grok, código do JSON-LD | 2 de 5 | 6 de 6 | 0,06 | mostra capacidade, não mostra que a dica mudou algo |
+
+As contas cabem em quatro linhas:
+
+```python
+# ilustrativo: limites e p-valor com SciPy
+from scipy.stats import beta, fisher_exact
+
+print(beta.ppf(0.05, 5, 1))  # 5 de 5: limite inferior ≈ 0,549
+print(beta.ppf(0.95, 1, 9))  # 0 de 9: limite superior ≈ 0,283
+print(fisher_exact([[3, 0], [0, 5]], alternative="greater").pvalue)  # ≈ 0,018
+```
+
+## Publicar o negativo
+
+O piloto de detecção registrou seis hipóteses antes do primeiro dado e
+publicou as seis, no
+[artigo sobre como saber se a IA usa seu conteúdo](/blog/detectar-crawlers-ia):
+duas confirmadas, duas falsificadas, uma inconclusiva e uma sustentada sem
+força.
+
+- **H1, falsificada.** Nenhum crawler caiu no honeypot do robots.txt. Os dois
+  acessos do período foram testes do próprio laboratório.
+- **H4, falsificada.** Requisições condicionais não indicaram agentes de
+  busca de IA: as requisições que se declaram Claude-SearchBot e
+  OAI-SearchBot não mandaram nenhuma, e quem mais mandou foi o tráfego sem
+  identificação.
+- **H5, inconclusiva**, pelo motivo da seção sobre poder.
+
+E a confirmada mais delicada precisa da frase exata. A H2 previa que um agente
+de treino verificado buscaria uma página proibida. Em 30 de julho de 2026, o
+GPTBot, de um IP dentro da faixa que a OpenAI publica, buscou três caminhos
+que o robots.txt deste site proibia para ele. A OpenAI documenta o GPTBot como
+crawler de treino. Mas o GPTBot não buscou o `/robots.txt` nenhuma vez na
+janela. O dado sustenta "**buscou sem ter lido a diretiva aqui**". Não
+sustenta "ignorou o robots.txt". A diferença entre as duas frases é a
+diferença entre uma medição e uma acusação.
+
+Publicar o negativo não é humildade. É o que permite conferir o método: um
+site que só publica acerto não deixa ninguém saber quantas hipóteses falharam
+para cada uma que deu certo.
+
+## Quando não dá para pré-registrar
+
+Nas contas de clientes que eu acompanho no Search Console, o trabalho de Core
+Web Vitals quase nunca vai sozinho: entra junto com conteúdo, links internos
+e correções de indexação. Quando o tráfego sobe, não há como atribuir a
+subida ao CWV, e eu não publico ganho de cliente como resultado de CWV.
+
+Nesses casos o método encolhe, mas não some:
+
+- **Registre a mudança e a data mesmo assim.** Sem o registro, daqui a três
+  meses ninguém lembra o que mudou em qual semana.
+- **Escreva a previsão no nível do mecanismo.** "Se o render delay cair, o LCP
+  de laboratório cai junto" é verificável. "O tráfego vai subir por causa do
+  LCP" não é, quando três coisas mudaram ao mesmo tempo.
+- **Guarde um controle.** Páginas que não receberam a mudança, comparadas
+  na mesma janela, separam a mudança da sazonalidade melhor que qualquer
+  antes e depois. É o desenho que a H5 usou, com quatro artigos de controle.
+- **Diga o que não dá para atribuir.** Uma frase como "o CWV veio junto com
+  conteúdo novo, então o ganho não é atribuível" vale mais que um gráfico
+  sem ressalva.
+
+## Como conferir um teste de SEO
+
+Para um teste seu ou de outra pessoa, seis perguntas:
+
+1. A previsão tem data anterior ao dado, num lugar que não pode ser editado
+   sem rastro?
+2. O critério de falha estava escrito, com número?
+3. A janela tinha poder para detectar o efeito previsto, com o volume real
+   do site?
+4. Houve um controle positivo antes de interpretar um zero?
+5. Os defeitos do instrumento e os desvios do protocolo estão listados, com o
+   que cada um afeta?
+6. As hipóteses que falharam estão publicadas ao lado das que deram certo?
+
+Um "não" em qualquer uma não torna o resultado falso. Torna o resultado
+impossível de distinguir de sorte.
+
+## No Next.js
+
+O terceiro defeito da lista é o que mais vale conhecer para quem mede tráfego
+num site Next.js. Todo navegador que abre uma página pré-carrega os links
+visíveis com requisições RSC: elas levam o cabeçalho `rsc: 1` (ou
+`next-router-prefetch`) e não pedem HTML. Um proxy que classifica clientes
+pelo `Accept` conta cada uma como um cliente que não é navegador. No piloto,
+as seis páginas mais "acessadas" por clientes sem identificação a partir da
+rede do autor eram exatamente os links do cabeçalho e do rodapé.
+
+A correção não mexe na classificação. Ela tira essas requisições do proxy
+antes de qualquer contagem, no próprio matcher:
+
+```ts
+// src/proxy.ts
+export const config = {
+  matcher: [
+    {
+      source:
+        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*/opengraph-image$|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+      missing: [
+        { type: 'header', key: 'rsc' },
+        { type: 'header', key: 'next-router-prefetch' },
+      ],
+    },
+  ],
+}
+```
+
+O `missing` faz o proxy não rodar quando a requisição traz qualquer um dos
+dois cabeçalhos. O trecho `.*/opengraph-image$` é o sexto defeito corrigido:
+antes dele, só o cartão de compartilhamento da raiz ficava de fora.
+
+O ponto de método é a data. As duas linhas mudaram o que é contado, então
+cada uma é uma data de corte no log, e os números de antes e de depois não se
+somam. Se você mede tráfego num proxy do Next.js e não tem o `missing`, os
+seus números de "não navegador" incluem a navegação dos seus visitantes.
+
+## O que está registrado agora
+
+Antes de qualquer dado: a segunda versão do instrumento de detecção, com as
+hipóteses H7 a H13 escritas antes do código; a H14, sobre pedidos de
+Markdown; e a checagem de revisitas às URLs secretas do teste com cinco
+assistentes. Os veredictos vão para o mesmo log, quando as janelas fecharem.
+Para o panorama de SEO técnico que esses testes servem, o
+[guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) é o ponto de
+partida.
