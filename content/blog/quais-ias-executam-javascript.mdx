@@ -6,14 +6,14 @@ primaryQuery: "quais ias executam javascript"
 keywords: ['gemini', 'grok', 'deepseek', 'chatgpt', 'claude', 'javascript', 'json-ld', 'renderização', 'headless chrome', 'agente de ia', 'crawler de ia', 'aeo', 'geo', 'ia']
 lang: "pt-BR"
 category: indexacao
-status: em-medicao
+status: fechado
 tldr: >-
   Das cinco testadas, duas: Grok e DeepSeek. O Grok executa e usa o
   resultado; o DeepSeek executa, mas o texto chega ao modelo antes do valor.
   ChatGPT, Claude e Gemini leem só o HTML do servidor. Só o Grok leu JSON-LD.
   Com o pedido de não inventar, nenhum dos cinco inventou código.
 datePublished: "2026-10-04"
-dateModified: "2026-10-04"
+dateModified: "2026-10-13"
 faq:
   - question: "O Gemini executa JavaScript?"
     answer: "Não executou em nenhuma das 14 rodadas deste teste (setembro e outubro de 2026, plano gratuito). O fetcher dele faz uma única requisição pela página, com o user agent 'Google', e lê o texto do HTML servido. Quando recebeu o endereço direto de um JSON, buscou esse JSON nas três vezes, mas respondeu nas três que não conseguiu acessá-lo."
@@ -332,11 +332,34 @@ deduzida da URL.
   mostraram `cors/empty` nas 6 rodadas de cada um, e os intervalos citados
   neste artigo vêm dela.
 
-As sondas continuam no ar depois das rodadas. Uma checagem de revisitas, que
-vai mostrar se algum desses assistentes ou seus indexadores voltaram aos
-endereços secretos sem ninguém pedir, **será acrescentada a este artigo** com
-os dados de outubro. O mesmo registro vai virar um guia de como identificar
-cada um desses agentes nos logs do seu site.
+## Alguém voltou aos endereços secretos?
+
+Não. As sondas ficaram no ar depois das rodadas. Cada endereço secreto só
+existia na conversa com um assistente, então um pedido fora de uma rodada
+significaria que a empresa guardou o endereço e voltou a ele sem ninguém
+pedir. Conferi os registros do servidor até 11 de outubro de 2026, e **todos
+os 172 pedidos às sondas caíram dentro de uma rodada registrada**. Nenhum
+veio depois.
+
+| Sonda | Recebida por | Último pedido | Dias sem pedidos até 11/10 |
+|---|---|---|---|
+| Grok (2ª bateria) | xAI; OpenAI desde 30/09 | 30 de setembro | cerca de 11 |
+| Gemini | Google | 2 de outubro | cerca de 9 |
+| DeepSeek | DeepSeek | 2 de outubro | cerca de 9 |
+| Grok (3ª bateria) | xAI | 2 de outubro | cerca de 9 |
+| ChatGPT | OpenAI | 2 de outubro | cerca de 9 |
+| Claude | Anthropic | 2 de outubro | cerca de 9 |
+
+O primeiro endereço do Grok também chegou à OpenAI num diagnóstico de 30 de
+setembro, e a OpenAI não voltou a ele. Esse zero vale para uma janela de 9 a
+12 dias: diz que nenhuma das seis empresas revisitou um endereço recebido
+numa conversa nesse período, não que elas nunca façam isso. A primeira
+bateria, com ChatGPT, Claude e Perplexity em 25 de setembro, usou um
+endereço que foi trocado antes deste instrumento existir, e não entra nessa
+conta. O registro completo, com as tabelas exportadas, está no [registro
+público das rodadas](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/lab-control-rounds.md).
+O mesmo registro vai virar um guia de como identificar cada um desses
+agentes nos logs do seu site.
 
 Medir o que cada leitor recebe de verdade, em vez de supor, é o que o [guia
 de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) defende para o

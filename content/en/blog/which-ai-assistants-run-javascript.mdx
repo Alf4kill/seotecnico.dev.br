@@ -7,14 +7,14 @@ keywords: ['english', 'inglês', 'gemini', 'grok', 'deepseek', 'chatgpt', 'claud
 lang: "en"
 translationOf: "quais-ias-executam-javascript"
 category: indexacao
-status: em-medicao
+status: fechado
 tldr: >-
   Two of the five tested: Grok and DeepSeek. Grok runs it and uses the result;
   DeepSeek runs it, but the text reaches the model before the value does.
   ChatGPT, Claude and Gemini read only the server HTML. Only Grok read
   JSON-LD. Told not to invent, none of the five invented a code.
 datePublished: "2026-10-04"
-dateModified: "2026-10-04"
+dateModified: "2026-10-13"
 faq:
   - question: "Does Gemini run JavaScript?"
     answer: "It did not in any of the 14 rounds of this test (September and October 2026, free plan). Its fetcher makes a single request for the page, with the user agent 'Google', and reads the text of the served HTML. When it was given the direct address of a JSON file, it fetched that JSON all three times, and all three answers said it could not be accessed."
@@ -334,10 +334,31 @@ gap with an analysis inferred from the URL.
   and DeepSeek showed `cors/empty` in all 6 of their rounds each, and the
   intervals quoted in this article come from it.
 
-The probes stay live after the rounds. A revisit check, which will show
-whether any of these assistants or their indexers came back to the secret
-addresses without anyone asking, **will be added to this article** with the
-October data.
+## Did anyone come back to the secret addresses?
+
+No. The probes stayed live after the rounds. Each secret address existed only
+in a conversation with one assistant, so a request outside a round would
+mean the company kept the address and came back to it without anyone asking.
+I checked the server records up to 11 October 2026, and **all 172 requests
+to the probes fell inside a recorded round**. None came afterwards.
+
+| Probe | Received by | Last request | Days without requests to 11 Oct |
+|---|---|---|---|
+| Grok (2nd round) | xAI; OpenAI since 30 Sep | 30 September | about 11 |
+| Gemini | Google | 2 October | about 9 |
+| DeepSeek | DeepSeek | 2 October | about 9 |
+| Grok (3rd round) | xAI | 2 October | about 9 |
+| ChatGPT | OpenAI | 2 October | about 9 |
+| Claude | Anthropic | 2 October | about 9 |
+
+Grok's first address also reached OpenAI in a diagnostic on 30 September,
+and OpenAI did not come back to it. This zero holds for a window of 9 to 12
+days: it says that none of the six companies revisited an address received
+in a conversation in that period, not that they never do. The first round,
+with ChatGPT, Claude and Perplexity on 25 September, used an address that
+was replaced before this instrument existed, and is not part of this count.
+The full record, with the exported tables, is in the [public record of the
+rounds](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/lab-control-rounds.md).
 
 This is the English version of [an article first published in
 Portuguese](/blog/quais-ias-executam-javascript); the two declare each other.
