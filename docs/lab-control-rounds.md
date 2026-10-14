@@ -1864,3 +1864,107 @@ them.
 > - **JS-PCAZ-T24G**
 >   Aparece no texto visível da página (depois que o JavaScript roda), na linha “Código carregado no navegador: **JS-PCAZ-T24G**”.
 >   Também pode ser lido diretamente no endpoint JSON: `{"code":"JS-PCAZ-T24G"}`.
+
+---
+
+# Revisit check — the probes after the rounds (2026-10-13)
+
+Announced in the round-2 record (diagnostic A, 2026-09-30) and in the results
+article. The question is whether any assistant, indexer or third party
+requested a probe URL **outside a recorded round**. A probe URL is linked from
+nowhere and is known only to the vendor whose assistant received it in a
+chat, so a request outside a round would mean the vendor kept the URL and came
+back unprompted. No numeric prediction was registered. The reading is
+existence only.
+
+**Planned** for 2026-10-08 over property days 2026-09-25 → 2026-10-06.
+**Done** on 2026-10-13, five days late, and the range was extended to
+2026-10-11 (the last day closed for more than 24 hours). The tables carry the
+date and `lab_hit`, so both the planned and the extended range can be read
+from the same export.
+
+## Export
+
+GA4 crawler property → Explore → free form, event `ai_crawler_hit`, metric
+Event count, Show rows = 500. Filter on every `rev` table: `lab_probe`
+matches `h15|gemini|deepseek|grok|grok2|chatgpt|claude`. The only probe left
+out is `owner`, the owner's own traffic.
+
+| Table | Rows |
+|---|---|
+| rev-1 | `lab_probe`, `lab_round`, `lab_endpoint`, `Date + hour (YYYYMMDDHH)`, `bot_name` |
+| rev-2 | `lab_hit`, `lab_probe`, `lab_round`, `lab_ua_1`, `lab_ip_owner` |
+| rev-3 | `lab_hit`, `lab_country`, `lab_fetch_mode`, `lab_accept_lang`, `bot_verified` |
+| perp-1 | no `lab_probe` filter. `bot_name` contains `Perplexity`. Rows: `bot_name`, `bot_verified`, `page_path`, `Date` |
+
+**Deviation:** all four tables were exported over property days
+2026-08-25 → 2026-10-11, not from 2026-09-25 (`rev`) or 2026-07-25 (perp-1).
+This changes nothing. No request carries `lab_*` before the H16 instrument
+deploy (2026-09-27T18:32:10Z). For Perplexity, the period before 2026-08-25
+is already covered by the 2026-09-25 diagnostics (two months of logs). The
+CSVs stay outside the repository. No `rev` table contains a slug.
+
+## Result: 172 requests, 0 outside a round
+
+| Batch | Requests | Matches |
+|---|---|---|
+| H16, rounds 16–30 (2026-09-27, before `lab_hit`) | 71 | Gemini 5, DeepSeek 10, Grok 56: the H16 totals exactly |
+| Diagnostic A, round 31 (2026-09-30T13:43:18Z) | 1 | The ChatGPT-User request on the `grok` probe *is* the diagnostic |
+| Diagnostic B, rounds 35–37 (2026-09-30, 22:43–22:55Z) | 3 | Gemini, `google-owned` |
+| H17, rounds 40–69 (2026-10-02T22:13Z → 2026-10-03T01:03Z) | 97 | The H17 total exactly |
+| **Total** | **172** | **0 unexplained** |
+
+A revisit carries the round number of the URL it re-requests, so it would
+show up as an old round at a later date or hour. None does. Every hour in
+rev-1 is the hour of its round (property time, UTC−5), and every `lab_hit` in
+rev-2 falls within about a minute of its round's recorded send time. The
+three tables join on `lab_hit` without an orphan row.
+
+Last request on each probe, and the silence after it up to the end of the
+export (property day 2026-10-11 = 2026-10-12T05:00Z):
+
+| Probe | Known to | Last request | Silence |
+|---|---|---|---|
+| `grok` | xAI; OpenAI from diagnostic A | 2026-09-30T13:43:18Z | ≈11.6 days |
+| `gemini` | Google | 2026-10-03T00:56:19Z | ≈9.2 days |
+| `deepseek` | DeepSeek | 2026-10-03T01:00:08Z | ≈9.2 days |
+| `grok2` | xAI | 2026-10-03T01:03:53Z | ≈9.2 days |
+| `chatgpt` | OpenAI | 2026-10-03T00:50:22Z | ≈9.2 days |
+| `claude` | Anthropic | 2026-10-03T00:53:27Z | ≈9.2 days |
+| `h15` (rotated slug) | nobody | never requested | — |
+
+**OpenAI did not come back to the `grok` probe** after diagnostic A. This was
+the exposure the round-2 record singled out.
+
+**What the zero means:** 6 secret URLs and 7 vendor exposures, with a silence
+of 9 to 12 days each. None of the six vendors re-requested a URL its
+assistant had been given in a chat, inside that window. It does not say they
+never do, and it gives no rate.
+
+**Limit: the H15 URL is not covered.** The H15 slug, which ChatGPT, Claude
+and Perplexity received on 2026-09-25, was rotated before the H16 instrument
+deploy. The `lab_*` parameters only exist from that deploy on. A request for
+the old H15 URL therefore carries no `lab_probe` and falls outside this
+filter. Covering it needs `page_path`, which these tables avoid by design. The
+check was not run, so the claim above is scoped to the H16/H17 probes and the
+two diagnostics.
+
+## Perplexity, 2026-08-25 → 2026-10-11
+
+| Day (property) | Path | Agent | Verified |
+|---|---|---|---|
+| 2026-09-01 | `/`, `/guia/seo-tecnico-nextjs`, `/robots.txt` | PerplexityBot | `verified-ip` ×3 |
+| 2026-09-25 | `/`, `/robots.txt` | PerplexityBot | `verified-ip` ×2 |
+| **2026-10-10** | **`/robots.txt`, `/en/blog/chatgpt-cant-access-website`** | PerplexityBot | `verified-ip` ×2 |
+
+- **Perplexity-User: 0 requests.** Together with the 2026-09-25 record, the
+  on-demand agent has never reached this server since the instrument went
+  live on 2026-07-25.
+- **PerplexityBot: 2 new requests since 2026-09-25**, both on 2026-10-10. One
+  was its first fetch of an article since 2026-09-01, and that article was
+  the English version of the page about assistants that cannot open a site.
+  There were no requests to `/blog/detectar-crawlers-ia` (the page of
+  open-ended diagnostic d) and none to any `/lab/` path.
+- The Perplexity figures in `/blog/ia-nao-consegue-acessar-site` and its
+  English version hold through 2026-10-11. Nothing the articles state
+  changes.

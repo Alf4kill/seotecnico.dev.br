@@ -13,7 +13,7 @@ tldr: >-
   acesso ao site, conteúdo que só existe depois do JavaScript e recurso
   entregue que a resposta disse não ter recebido. Comece pelo log do servidor.
 datePublished: "2026-10-05"
-dateModified: "2026-10-05"
+dateModified: "2026-10-13"
 faq:
   - question: "Por que o ChatGPT diz que não consegue acessar meu site?"
     answer: "Porque a frase não diz qual foi o problema. Nos testes deste site apareceram quatro causas diferentes: o assistente respondeu por um índice sem buscar a página, o ambiente dele não alcançou o site, o conteúdo só existia depois do JavaScript, ou o recurso foi entregue e a resposta disse o contrário. Uma quinta causa, bloqueio no seu servidor ou na CDN, é possível, mas não foi observada aqui. Confira nesta ordem: log do servidor, status HTTP, robots.txt, firewall e conteúdo no primeiro render."
@@ -302,12 +302,18 @@ experimento: o código que os assistentes precisavam citar só aparecia depois
 do JavaScript, de propósito. O mesmo `curl` serve para conferir qualquer página
 do seu projeto, em produção ou num preview.
 
-## O que ainda está em andamento
+## O que a checagem de outubro mostrou
 
-Os números do Perplexity valem até 25 de setembro de 2026. Uma checagem de
-revisitas sobre os endereços do experimento está marcada para 8 de outubro de
-2026; se ela mudar algum número deste artigo, a data de atualização vai
-refletir isso.
+Os números do Perplexity acima foram medidos até 25 de setembro de 2026. Uma
+checagem dos registros até 11 de outubro não mudou nenhum deles. Nenhuma
+requisição se declarando Perplexity-User chegou ao servidor em todo o
+período. O PerplexityBot voltou uma vez, em 10 de outubro: buscou o
+`robots.txt` e a [versão em inglês deste
+artigo](/en/blog/chatgpt-cant-access-website), e não pediu nenhum dos
+endereços do experimento. Nos testes com ChatGPT, Claude, Gemini, DeepSeek e
+Grok, nenhum assistente voltou aos endereços secretos da segunda e da terceira
+bateria fora das rodadas
+([resultado completo](/blog/quais-ias-executam-javascript)).
 
 Para o quadro completo de rastreamento, renderização e indexação, veja o [guia
 de SEO técnico com Next.js](/guia/seo-tecnico-nextjs).

@@ -14,7 +14,7 @@ tldr: >-
   reach the site, content that only exists after JavaScript, and a resource
   delivered that the answer said never arrived. Start with the server log.
 datePublished: "2026-10-05"
-dateModified: "2026-10-05"
+dateModified: "2026-10-13"
 faq:
   - question: "Why does ChatGPT say it can't access my website?"
     answer: "Because the sentence does not say what the problem was. This site's tests showed four different causes: the assistant answered from an index without fetching the page, its environment could not reach the site, the content only existed after JavaScript, or the resource was delivered and the answer said otherwise. A fifth cause, blocking on your server or CDN, is possible but was not observed here. Check in this order: server log, HTTP status, robots.txt, firewall, and content in the first render."
@@ -309,11 +309,16 @@ experiment's neutral condition: the code the assistants had to cite only
 appeared after JavaScript, on purpose. The same `curl` works to check any page
 of your project, in production or on a preview.
 
-## What is still in progress
+## What the October check showed
 
-The Perplexity figures hold up to 25 September 2026. A revisit check on the
-experiment's addresses is scheduled for 8 October 2026; if it changes any
-number in this article, the update date will reflect it.
+The Perplexity figures above were measured up to 25 September 2026. A check
+of the records up to 11 October changed none of them. No request declaring
+itself Perplexity-User reached the server in the whole period. PerplexityBot
+came back once, on 10 October: it fetched `robots.txt` and this article, and
+requested none of the experiment's addresses. In the tests with ChatGPT,
+Claude, Gemini, DeepSeek and Grok, no assistant made an unprompted request
+to the secret addresses of the second and third rounds ([full
+result](/en/blog/which-ai-assistants-run-javascript)).
 
 For the full picture of crawling, rendering and indexing, see the [technical
 SEO guide for Next.js](/en/guide/technical-seo-nextjs).
