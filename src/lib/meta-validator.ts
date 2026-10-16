@@ -154,6 +154,56 @@ function parseAttributes(tag: string): Map<string, string> {
   return attrs
 }
 
+interface HtmlTag {
+  /** Nome em minúsculas (`meta`, `title`…), sem a barra do fechamento. */
+  name: string
+  /** `true` para `</title>`, `false` para `<title>`. */
+  closing: boolean
+  /** A tag inteira, de `<` a `>` — o que o parseAttributes lê. */
+  tag: string
+  /** Índice do `<`. */
+  start: number
+  /** Índice logo depois do `>`. */
+  end: number
+}
+
+/**
+ * Cada tag `<…>` do documento, na ordem, cortada no primeiro `>`.
+ *
+ * Uma passada linear, e o motivo é segurança, não elegância. As quatro
+ * varreduras que isto substitui tinham a forma `/<meta\b[^>]*>/`: num documento
+ * onde `<meta` aparece muitas vezes e `>` nunca, `[^>]*` consome o resto do
+ * arquivo, falha ao exigir o `>` e recua um caractere por vez — em cada posição
+ * de início. É quadrático no tamanho da entrada, que nesta ferramenta é
+ * escolhida por quem chama. Medido em 2026-10-15 com 360 KB, abaixo do teto de
+ * 500 KB que a rota busca: 14,2s no `<title>`, 10,0s no `<html>`, 10,7s no
+ * `<meta>`, 10,2s no `<link>`, contra 0,3ms desta varredura. O `AbortSignal` da
+ * rota governa o fetch, não o parse que vem depois — não havia teto nenhum
+ * sobre esse tempo.
+ *
+ * O custo aceito do parse por regex (topo do arquivo) continua o mesmo: um `>`
+ * dentro de um valor entre aspas corta a tag cedo, como antes.
+ */
+function* eachTag(html: string): Generator<HtmlTag> {
+  const tagName = /^<\/?([a-zA-Z][a-zA-Z0-9-]*)/
+  let from = 0
+
+  for (;;) {
+    const start = html.indexOf('<', from)
+    if (start === -1) return
+    const gt = html.indexOf('>', start + 1)
+    // Tag que nunca fecha: não há mais nada legível depois dela.
+    if (gt === -1) return
+
+    const tag = html.slice(start, gt + 1)
+    const matched = tagName.exec(tag)
+    if (matched) {
+      yield { name: matched[1].toLowerCase(), closing: tag[1] === '/', tag, start, end: gt + 1 }
+    }
+    from = gt + 1
+  }
+}
+
 export function extractMeta(html: string): ExtractedMeta {
   const result: ExtractedMeta = {
     title: null,
@@ -168,35 +218,63 @@ export function extractMeta(html: string): ExtractedMeta {
     h1Count: (html.match(/<h1[\s>]/gi) ?? []).length,
   }
 
-  const htmlTag = /<html\b[^>]*>/i.exec(html)?.[0]
-  if (htmlTag) result.htmlLang = parseAttributes(htmlTag).get('lang') ?? null
+  // A primeira ocorrência vence em todo campo — o que o navegador faz, e o que
+  // os testes fixam. Para `<html>` e `<title>` isso vinha de graça de um
+  // `exec()` que rodava uma vez só; com uma varredura única, são estas travas.
+  let htmlSeen = false
+  let titleDone = false
+  let titleTextStart = -1
 
-  const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)
-  if (titleMatch) result.title = decodeEntities(titleMatch[1]) || null
-
-  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
-    const attrs = parseAttributes(tag)
-    const content = attrs.get('content') ?? ''
-    const name = attrs.get('name')?.toLowerCase()
-    const property = attrs.get('property')?.toLowerCase()
-
-    if (attrs.has('charset')) result.charset ??= attrs.get('charset') ?? null
-    if (name === 'description') result.description ??= content || null
-    if (name === 'robots') result.metaRobots ??= content || null
-    if (name === 'viewport') result.viewport ??= content || null
-    if (name === 'twitter:card') result.twitterCard ??= content || null
-    if (property?.startsWith('og:')) {
-      const key = property.slice(3) as keyof ExtractedMeta['og']
-      if (['title', 'description', 'image', 'url', 'type'].includes(key)) {
-        result.og[key] ??= content || undefined
+  for (const { name, closing, tag, start, end } of eachTag(html)) {
+    if (closing) {
+      // O texto do título é o que está entre a tag de abertura e esta.
+      if (name === 'title' && titleTextStart !== -1) {
+        result.title = decodeEntities(html.slice(titleTextStart, start)) || null
+        titleTextStart = -1
+        titleDone = true
       }
+      continue
     }
-  }
 
-  for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
-    const attrs = parseAttributes(tag)
-    if (attrs.get('rel')?.toLowerCase() === 'canonical') {
-      result.canonical ??= attrs.get('href') ?? null
+    switch (name) {
+      case 'html':
+        if (!htmlSeen) {
+          htmlSeen = true
+          result.htmlLang = parseAttributes(tag).get('lang') ?? null
+        }
+        break
+
+      case 'title':
+        if (!titleDone && titleTextStart === -1) titleTextStart = end
+        break
+
+      case 'meta': {
+        const attrs = parseAttributes(tag)
+        const content = attrs.get('content') ?? ''
+        const metaName = attrs.get('name')?.toLowerCase()
+        const property = attrs.get('property')?.toLowerCase()
+
+        if (attrs.has('charset')) result.charset ??= attrs.get('charset') ?? null
+        if (metaName === 'description') result.description ??= content || null
+        if (metaName === 'robots') result.metaRobots ??= content || null
+        if (metaName === 'viewport') result.viewport ??= content || null
+        if (metaName === 'twitter:card') result.twitterCard ??= content || null
+        if (property?.startsWith('og:')) {
+          const key = property.slice(3) as keyof ExtractedMeta['og']
+          if (['title', 'description', 'image', 'url', 'type'].includes(key)) {
+            result.og[key] ??= content || undefined
+          }
+        }
+        break
+      }
+
+      case 'link': {
+        const attrs = parseAttributes(tag)
+        if (attrs.get('rel')?.toLowerCase() === 'canonical') {
+          result.canonical ??= attrs.get('href') ?? null
+        }
+        break
+      }
     }
   }
 
