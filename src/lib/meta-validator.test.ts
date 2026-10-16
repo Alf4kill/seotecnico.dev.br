@@ -148,6 +148,57 @@ describe('extractMeta', () => {
     expect(extractMeta('<h1>a</h1><h1 class="x">b</h1>').h1Count).toBe(2)
     expect(extractMeta('<h2>não</h2>').h1Count).toBe(0)
   })
+
+  it('reads the title of a page whose head is malformed', () => {
+    // Formas que o corte de tag precisa tratar como o navegador trata, e que a
+    // varredura linear poderia ter mudado em relação ao regex que ela substitui.
+    expect(extractMeta('<title>sem fechamento').title).toBeNull()
+    // Mudança deliberada de comportamento: o regex anterior lia o `<title>` de
+    // dentro do comentário ("comentado"), porque para ele comentário não
+    // existia. A varredura corta `<!-- …>` como uma pseudo-tag e segue, que é o
+    // que o navegador faz — e o veredito da ferramenta tem de ser o do leitor.
+    expect(extractMeta('<!DOCTYPE html><!-- <title>comentado</title> --><title>real</title>').title).toBe('real')
+    expect(extractMeta('<title>a<title>b</title>').title).toBe('a<title>b')
+    expect(extractMeta('<TITLE>Caixa Alta</TITLE>').title).toBe('Caixa Alta')
+    expect(extractMeta('<title></title><title>segundo</title>').title).toBeNull()
+  })
+
+  it('parses hostile HTML in linear time', () => {
+    // A ferramenta busca até 500 KB de uma página escolhida por quem chama, e o
+    // `AbortSignal` da rota governa o fetch, não este parse. Com `[^>]*>`, uma
+    // abertura que nunca encontra `>` fazia o motor percorrer o resto do
+    // documento e recuar um caractere por vez, em cada posição de início.
+    // Medido em 2026-10-15, antes da varredura linear, com ~360 KB:
+    //   '<title' x60000   14,2s      '<meta ' x60000   10,7s
+    //   '<html ' x60000   10,0s      '<link ' x60000   10,2s
+    //   '<title>' x60000   6,2s  (fecha a tag, nunca o elemento)
+    // O teto de 1s é folgado de propósito: a varredura linear leva menos de um
+    // milissegundo, e o que ele separa é milissegundos de segundos.
+    const payloads: [string, string][] = [
+      ['<title sem `>`', '<title'.repeat(60_000)],
+      ['<html sem `>`', '<html '.repeat(60_000)],
+      ['<meta sem `>`', '<meta '.repeat(60_000)],
+      ['<link sem `>`', '<link '.repeat(60_000)],
+      // Tags fechadas, elemento nunca: o caso que percorre a varredura inteira.
+      ['<title> sem </title>', '<title>'.repeat(60_000)],
+      // Bem formado e grande: aqui o que se mede é a varredura em si.
+      ['tags bem formadas', '<meta name=x content=y>'.repeat(16_000)],
+    ]
+
+    for (const [label, hostile] of payloads) {
+      const started = performance.now()
+      const meta = extractMeta(hostile)
+      const elapsed = performance.now() - started
+
+      // Nenhum dos payloads tem título ou description legíveis — o que importa
+      // é que a resposta chegue, e chegue rápido.
+      expect(meta.title).toBeNull()
+      expect(
+        elapsed,
+        `${label} (${hostile.length} B) levou ${elapsed.toFixed(0)}ms`
+      ).toBeLessThan(1_000)
+    }
+  }, 30_000)
 })
 
 describe('runChecks', () => {

@@ -36,10 +36,19 @@ function newestPostSlug() {
     .at(0)?.slug
 }
 
+// One page per template, as the header says. Two were missing until 2026-10-15:
+// `/laboratorio` (its own template, shipped in PRs #92/#93) and `/en/blog` (the
+// English index, a different file from `/blog`). Both are in the sitemap and
+// both were covered by the Playwright suite, which derives its routes from
+// app/sitemap.ts — this list does not derive anything, so it had simply fallen
+// behind, and neither page had ever had its LCP, CLS or TBT measured. Same
+// shape as the stacked-pull-request hole in ci.yml: a missing check does not
+// resemble a failing one. Adding a template here is part of shipping it.
 const paths = [
   '/',
   '/guia/seo-tecnico-nextjs',
   '/blog',
+  '/laboratorio',
   '/ferramentas',
   '/ferramentas/gerador-json-ld',
   '/ferramentas/validador-meta-tags',
@@ -47,6 +56,7 @@ const paths = [
   '/en/guide/technical-seo-nextjs',
   '/en',
   '/en/about',
+  '/en/blog',
   '/en/case-studies',
   '/en/case-studies/ai-crawler-detection',
   '/en/blog/which-ai-assistants-run-javascript',
