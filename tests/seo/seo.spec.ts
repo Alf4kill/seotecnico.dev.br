@@ -28,7 +28,7 @@ const siteBase = site.url.replace(/\/$/, '')
 // Sitemap entries carry production-absolute URLs; tests run against localhost,
 // so only the pathname is kept.
 const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname)
-const noindexPaths = ['/busca']
+const noindexPaths = ['/busca', '/en/search']
 const routes = [...sitemapPaths, ...noindexPaths]
 
 const postsBySlug = new Map(

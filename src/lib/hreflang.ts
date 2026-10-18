@@ -92,6 +92,16 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/lab',
     },
   },
+  // A busca: a mesma página utilitária (noindex nos dois lados), cada uma com o
+  // índice do próprio idioma. O par existe para o seletor de idioma levar à
+  // busca do outro idioma, não para indexação.
+  {
+    id: 'search',
+    paths: {
+      'pt-BR': '/busca',
+      en: '/en/search',
+    },
+  },
   // A política de privacidade: o mesmo texto nos dois idiomas, com a mesma
   // data de atualização (lib/legal.ts).
   {

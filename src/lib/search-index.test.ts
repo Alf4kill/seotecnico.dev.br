@@ -3,7 +3,7 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { STATIC_SEARCH_ITEMS, type SearchItem } from './search-data'
 import { buildSearchIndex } from './search-index'
-import { getAllPosts, getGuide } from './content'
+import { getAllEnglishPosts, getAllPosts, getGuide } from './content'
 import { TRANSLATION_PAIRS } from './hreflang'
 
 // O índice de busca já foi o último espelho de /content mantido à mão. Agora
@@ -127,5 +127,45 @@ describe('buildSearchIndex', () => {
       (item) => item.href.startsWith('/blog/') || item.href.includes('guide') || item.href.startsWith('/guia/')
     )
     expect(derivable, 'articles and the pillar come from frontmatter').toEqual([])
+  })
+})
+
+// O índice inglês segue as mesmas regras sobre a coleção inglesa, e só ela: a
+// moldura inglesa nunca pode devolver um artigo português.
+describe("buildSearchIndex('en')", () => {
+  const indexEn = buildSearchIndex('en')
+
+  it('indexes every published English post, exactly once', () => {
+    const published = getAllEnglishPosts()
+      .map((post) => `/en/blog/${post.frontmatter.slug}`)
+      .sort()
+    const indexed = indexEn
+      .filter((item) => item.category === 'artigo')
+      .map((item) => item.href)
+      .sort()
+    expect(indexed).toEqual(published)
+  })
+
+  it('carries no Portuguese article or page', () => {
+    const portuguese = indexEn.filter(
+      (item) => item.category !== 'ferramenta' && !(item.href === '/en' || item.href.startsWith('/en/'))
+    )
+    expect(portuguese, 'only the tools (Portuguese-only) may leave /en').toEqual([])
+  })
+
+  it('points every shipped tool at its own page, and says the interface is Portuguese', () => {
+    const tools = indexEn.filter((item) => item.category === 'ferramenta')
+    for (const route of shippedToolRoutes()) {
+      const entry = tools.find((item) => item.href === route)
+      expect(entry, `${route} is live but has no English search entry`).toBeDefined()
+      expect(entry?.description).toMatch(/in Portuguese/)
+    }
+  })
+
+  it('never reuses an id or a route', () => {
+    const ids = indexEn.map((item) => item.id)
+    const hrefs = indexEn.map((item) => item.href)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(new Set(hrefs).size).toBe(hrefs.length)
   })
 })

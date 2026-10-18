@@ -1,6 +1,6 @@
-import { getAllPosts, getGuide, type Post } from './content'
-import { LANGS, TRANSLATION_PAIRS } from './hreflang'
-import { STATIC_SEARCH_ITEMS, type SearchItem } from './search-data'
+import { getAllEnglishPosts, getAllPosts, getGuide, type Post } from './content'
+import { LANGS, TRANSLATION_PAIRS, type Lang } from './hreflang'
+import { STATIC_SEARCH_ITEMS, STATIC_SEARCH_ITEMS_EN, type SearchItem } from './search-data'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Índice de busca — montado a partir do conteúdo, não digitado.
@@ -36,11 +36,25 @@ function guideItems(): SearchItem[] {
 }
 
 /**
- * Índice completo, na ordem em que foi montado (páginas, pilar, artigos,
- * ferramentas). A ordem é irrelevante para o resultado — o Fuse ordena por
- * score — mas ser determinística mantém o diff estável.
+ * Índice completo do idioma, na ordem em que foi montado (páginas, pilar,
+ * artigos, ferramentas). A ordem é irrelevante para o resultado — o Fuse ordena
+ * por score — mas ser determinística mantém o diff estável.
+ *
+ * O índice português segue com as duas versões da pilar (quem procura o guia
+ * em inglês na moldura portuguesa o encontra); o inglês traz só o conteúdo em
+ * inglês, mais as ferramentas, que existem só em português e dizem isso.
  */
-export function buildSearchIndex(): SearchItem[] {
+export function buildSearchIndex(lang: Lang = 'pt-BR'): SearchItem[] {
+  if (lang === 'en') {
+    const articles = getAllEnglishPosts().map((post) =>
+      itemFromPost(post, `/en/blog/${post.frontmatter.slug}`, 'artigo', `article-${post.frontmatter.slug}`)
+    )
+    const guide = guideItems().filter((item) => item.href.startsWith('/en/'))
+    const pages = STATIC_SEARCH_ITEMS_EN.filter((item) => item.category === 'pagina')
+    const tools = STATIC_SEARCH_ITEMS_EN.filter((item) => item.category === 'ferramenta')
+    return [...pages, ...guide, ...articles, ...tools]
+  }
+
   const articles = getAllPosts().map((post) =>
     itemFromPost(
       post,

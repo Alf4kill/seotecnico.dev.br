@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { site } from '@/lib/site'
 import { counterpartPath, type Lang } from '@/lib/hreflang'
 import { useSearchModal } from '@/components/search/SearchContext'
+import { SEARCH_COPY } from '@/lib/search-data'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -137,22 +138,20 @@ function LanguageToggle({ lang }: { lang: Lang }) {
 }
 
 /**
- * O botão de busca é um componente à parte porque `useSearchModal` exige o
- * SearchProvider, que só a moldura portuguesa monta. Um hook não pode ser
- * chamado condicionalmente; um componente pode ser renderizado condicionalmente.
- *
  * Tem cara de campo ("buscar…"), mas é botão: abre o modal, que é onde a
- * busca de verdade acontece (e o atalho Ctrl/⌘+K também leva até ele).
+ * busca de verdade acontece (e o atalho Ctrl/⌘+K também leva até ele). As duas
+ * molduras montam o SearchProvider, cada uma com o índice do próprio idioma.
  */
-function SearchButton({ variant, onBeforeOpen }: { variant: 'desktop' | 'mobile'; onBeforeOpen?: () => void }) {
+function SearchButton({ variant, lang, onBeforeOpen }: { variant: 'desktop' | 'mobile'; lang: Lang; onBeforeOpen?: () => void }) {
   const { openSearch } = useSearchModal()
+  const copy = SEARCH_COPY[lang]
 
   if (variant === 'mobile') {
     return (
       <button
         type="button"
         onClick={() => { onBeforeOpen?.(); openSearch() }}
-        aria-label="Abrir busca"
+        aria-label={copy.open}
         className="flex h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-primary"
       >
         <Search className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
@@ -164,10 +163,10 @@ function SearchButton({ variant, onBeforeOpen }: { variant: 'desktop' | 'mobile'
     <button
       type="button"
       onClick={openSearch}
-      aria-label="Abrir busca"
+      aria-label={copy.open}
       className="flex h-11 w-52 items-center justify-between border border-gray-control bg-surface px-3.5 font-mono text-[0.8125rem] text-muted transition-colors hover:border-primary hover:text-foreground"
     >
-      buscar…
+      {copy.button}
       <Search className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
     </button>
   )
@@ -177,7 +176,6 @@ export function Header({ lang }: { lang: Lang }) {
   const pathname        = usePathname()
   const [open, setOpen] = useState(false)
   const copy            = COPY[lang]
-  const withSearch      = lang === 'pt-BR'
 
   return (
     <header className="sticky top-0 z-9 w-full border-b border-gray bg-surface-chrome">
@@ -221,14 +219,14 @@ export function Header({ lang }: { lang: Lang }) {
 
         {/* ── Ações desktop ─────────────────────────────────────── */}
         <div className="hidden items-center gap-4 lg:flex">
-          {withSearch && <SearchButton variant="desktop" />}
+          <SearchButton variant="desktop" lang={lang} />
           <ThemeToggle lang={lang} />
           <LanguageToggle lang={lang} />
         </div>
 
         {/* ── Ações mobile ──────────────────────────────────────── */}
         <div className="flex items-center gap-1 lg:hidden">
-          {withSearch && <SearchButton variant="mobile" />}
+          <SearchButton variant="mobile" lang={lang} />
           <button
             type="button"
             className="flex h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-primary"
