@@ -12,7 +12,7 @@ tldr: >-
   History Change — mas ative ele ou o Enhanced Measurement do GA4, nunca os
   dois, ou cada pageview é contado duas vezes.
 datePublished: "2026-07-22"
-dateModified: "2026-09-13"
+dateModified: "2026-10-18"
 faq:
   - question: "Por que o pageview não dispara nas navegações do Next.js?"
     answer: "Porque as navegações de um app Next.js são history.pushState — a página não recarrega, então o evento de page load que alimenta o gatilho All Pages do GTM só acontece uma vez, no primeiro acesso. As navegações seguintes precisam de um gatilho próprio: o History Change, que escuta as mudanças na History API."
@@ -342,16 +342,12 @@ O evento `article_read` deste site dispara quando o leitor chega ao fim do
 artigo — um gatilho de **Element Visibility** apontado para um `id` estável:
 
 ```tsx
-// src/app/(pt)/blog/[slug]/page.tsx
-        {/* id estável: alvo do trigger de element visibility do evento
-            `article_read` no GTM (docs/measurement-plan.md). */}
-        <footer id="article-end" className="mt-10 border-t border-gray pt-4">
-          <p className="text-xs text-muted">
-            © {frontmatter.dateModified.slice(0, 4)} {site.author.name}. Todos
-            os direitos reservados. Citações curtas com atribuição e link para
-            o artigo original são bem-vindas.
-          </p>
-        </footer>
+// src/components/article/ArticleLayout.tsx
+            {/* id estável: alvo do trigger de element visibility do evento
+                `article_read` no GTM (docs/measurement-plan.md). */}
+            <footer id="article-end" className="mt-8 max-w-[68ch] border-t border-gray pt-4">
+              <p className="font-mono text-xs leading-6 text-label">{copyright}</p>
+            </footer>
 ```
 
 O detalhe que a SERP quase nunca menciona: numa navegação SPA o DOM é

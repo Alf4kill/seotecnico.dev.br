@@ -160,7 +160,7 @@ const CASES: CaseStudy[] = [
       { label: 'Follow-up: which AI assistants run JavaScript', href: '/en/blog/which-ai-assistants-run-javascript' },
       { label: 'Pull request #57', href: pr(57) },
       { label: 'Pilot verdicts', href: `${LOG}#pilot-closure-and-v2-pre-registration--2026-09-20` },
-      { label: 'Method article (in Portuguese)', href: '/blog/detectar-crawlers-ia', lang: 'pt-BR' },
+      { label: 'Method article', href: '/en/blog/detect-ai-crawlers' },
     ],
   },
   {
