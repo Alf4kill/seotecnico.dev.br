@@ -15,7 +15,13 @@
 // (2,5s / 200ms / 0,1) e não os orçamentos mais rígidos que este repo impõe ao
 // próprio build (CLAUDE.md §6) — comparar campo com orçamento de lab seria
 // ensinar o número errado.
+//
+// A ferramenta existe nos dois idiomas (/ferramentas/checador-cwv e
+// /en/tools/cwv-checker): mudam as mensagens de entrada e o separador decimal
+// (2,50 s / 2.50 s); limiares e leitura da resposta são os mesmos.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import type { Lang } from './hreflang'
 
 export type MetricRating = 'good' | 'needs-improvement' | 'poor'
 export type LcpBucket = MetricRating | 'no-data'
@@ -56,6 +62,21 @@ export function rate(spec: MetricSpec, p75: number): MetricRating {
 
 export type ParsedOrigin = { ok: true; origin: string } | { ok: false; error: string }
 
+const ORIGIN_ERRORS = {
+  'pt-BR': {
+    empty: 'Informe um endereço para consultar.',
+    invalid: 'Endereço inválido. Exemplo: exemplo.com.br',
+    credentials: 'Remova usuário e senha do endereço.',
+    notPublic: 'O CrUX só tem dados de sites públicos na internet.',
+  },
+  en: {
+    empty: 'Enter an address to check.',
+    invalid: 'Invalid address. Example: example.com',
+    credentials: 'Remove the username and password from the address.',
+    notPublic: 'CrUX only has data for public sites on the internet.',
+  },
+} as const
+
 /**
  * Normaliza o que o usuário digitou para uma ORIGEM no formato que o CrUX
  * espera (`https://host` ou `https://host:porta`, sem caminho).
@@ -64,9 +85,10 @@ export type ParsedOrigin = { ok: true; origin: string } | { ok: false; error: st
  * `https://www.exemplo.com` são origens diferentes, com conjuntos de dados
  * diferentes. "Ajudar" o usuário aqui devolveria dado de outro site.
  */
-export function parseOrigin(raw: string): ParsedOrigin {
+export function parseOrigin(raw: string, lang: Lang = 'pt-BR'): ParsedOrigin {
+  const copy = ORIGIN_ERRORS[lang]
   const trimmed = raw.trim()
-  if (!trimmed) return { ok: false, error: 'Informe um endereço para consultar.' }
+  if (!trimmed) return { ok: false, error: copy.empty }
 
   const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 
@@ -74,16 +96,16 @@ export function parseOrigin(raw: string): ParsedOrigin {
   try {
     url = new URL(withScheme)
   } catch {
-    return { ok: false, error: 'Endereço inválido. Exemplo: exemplo.com.br' }
+    return { ok: false, error: copy.invalid }
   }
 
   if (url.username || url.password) {
-    return { ok: false, error: 'Remova usuário e senha do endereço.' }
+    return { ok: false, error: copy.credentials }
   }
   // Sem ponto no host é `localhost` ou nome de rede interna: o CrUX nunca terá
   // dado, e a consulta só gastaria quota para devolver "não encontrado".
   if (!url.hostname.includes('.') || url.hostname.endsWith('.localhost')) {
-    return { ok: false, error: 'O CrUX só tem dados de sites públicos na internet.' }
+    return { ok: false, error: copy.notPublic }
   }
 
   return { ok: true, origin: url.port ? `${url.protocol}//${url.hostname}:${url.port}` : `${url.protocol}//${url.hostname}` }
@@ -195,9 +217,13 @@ export function parseCruxReport(
   }
 }
 
-/** Formata o p75 para leitura humana: ms viram segundos acima de 1s; CLS não tem unidade. */
-export function formatMetric(metric: MetricResult): string {
-  if (metric.unit === 'score') return metric.p75.toFixed(2).replace('.', ',')
-  if (metric.p75 >= 1000) return `${(metric.p75 / 1000).toFixed(2).replace('.', ',')} s`
+/**
+ * Formata o p75 para leitura humana: ms viram segundos acima de 1s; CLS não tem
+ * unidade. Vírgula decimal em pt-BR, ponto em inglês.
+ */
+export function formatMetric(metric: MetricResult, lang: Lang = 'pt-BR'): string {
+  const decimal = (n: number) => (lang === 'pt-BR' ? n.toFixed(2).replace('.', ',') : n.toFixed(2))
+  if (metric.unit === 'score') return decimal(metric.p75)
+  if (metric.p75 >= 1000) return `${decimal(metric.p75 / 1000)} s`
   return `${Math.round(metric.p75)} ms`
 }

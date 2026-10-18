@@ -143,10 +143,13 @@ export function SoftwareApplicationJsonLd({
   name,
   description,
   path,
+  lang = 'pt-BR',
 }: {
   name: string
   description: string
   path: string
+  /** Idioma da interface da ferramenta (/ferramentas/* ou /en/tools/*). */
+  lang?: 'pt-BR' | 'en'
 }) {
   const schema = {
     '@context': 'https://schema.org',
@@ -155,6 +158,7 @@ export function SoftwareApplicationJsonLd({
     name,
     description,
     url: `${site.url}${path}`,
+    inLanguage: lang,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Web',
     isAccessibleForFree: true,
