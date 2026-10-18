@@ -254,3 +254,22 @@ describe('runChecks', () => {
     expect(runChecks(URL_OK, meta).find((c) => c.id === 'h1')?.status).toBe('warning')
   })
 })
+
+describe('English version (/en/tools/meta-tag-validator)', () => {
+  it('reaches the same verdicts, explained in English', () => {
+    for (const doc of [PERFECT, '<html><head></head><body></body></html>', '<h1>a</h1><h1>b</h1>']) {
+      const pt = runChecks(URL_OK, extractMeta(doc))
+      const en = runChecks(URL_OK, extractMeta(doc), 'en')
+      expect(en.map((c) => [c.id, c.status])).toEqual(pt.map((c) => [c.id, c.status]))
+    }
+    const empty = runChecks(URL_OK, extractMeta('<html><head></head><body></body></html>'), 'en')
+    expect(empty.find((c) => c.id === 'title')?.detail).toMatch(/^Missing\./)
+    expect(empty.find((c) => c.id === 'lang')?.label).toBe('lang attribute')
+  })
+
+  it('refuses the same URLs, with the reason in English', () => {
+    expect(parseTargetUrl('ftp://example.com', 'en')).toEqual({ ok: false, error: 'Only http and https are supported.' })
+    expect(parseTargetUrl('http://localhost', 'en')).toEqual({ ok: false, error: 'Local addresses are not supported.' })
+    expect(parseTargetUrl('', 'en')).toEqual({ ok: false, error: 'Enter a URL.' })
+  })
+})

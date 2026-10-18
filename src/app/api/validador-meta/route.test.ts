@@ -96,6 +96,23 @@ describe('GET /api/validador-meta — cadeia de redirecionamento', () => {
     expect(state.fetched).toEqual(['https://publico.example/'])
   })
 
+  it('answers in English when the English page asks', async () => {
+    state.dns.set('publico.example', '93.184.216.34')
+    state.dns.set('interno.example', '169.254.169.254')
+    state.routes.set('https://publico.example/', () => redirectTo('http://interno.example/'))
+
+    const request = new NextRequest(
+      `https://seotecnico.dev.br/api/validador-meta?url=${encodeURIComponent('https://publico.example/')}&lang=en`,
+      { headers: { 'x-forwarded-for': '203.0.113.251' } }
+    )
+    const response = await route.GET(request)
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining('redirect pointed to an address that is not public'),
+    })
+  })
+
   it('never delegates redirect following to fetch', async () => {
     // Esta asserção é a que pega a regressão de uma palavra. Com `follow`, o
     // runtime segue a cadeia internamente e a rota nunca vê o 302 — logo nunca

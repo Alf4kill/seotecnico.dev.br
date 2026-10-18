@@ -172,3 +172,29 @@ describe('formatMetric', () => {
     expect(formatMetric(metric({ id: 'cls', unit: 'score', p75: 0.31 }))).toBe('0,31')
   })
 })
+
+describe('English version (/en/tools/cwv-checker)', () => {
+  const metric = (over: Partial<MetricResult>): MetricResult => ({
+    id: 'lcp',
+    label: 'LCP',
+    unit: 'ms',
+    core: true,
+    p75: 2900,
+    rating: 'needs-improvement',
+    goodMax: 2500,
+    poorMin: 4000,
+    distribution: { good: 0, needsImprovement: 0, poor: 0 },
+    ...over,
+  })
+
+  it('uses a decimal point instead of a comma', () => {
+    expect(formatMetric(metric({ p75: 2900 }), 'en')).toBe('2.90 s')
+    expect(formatMetric(metric({ id: 'cls', unit: 'score', p75: 0.31 }), 'en')).toBe('0.31')
+    expect(formatMetric(metric({ p75: 150 }), 'en')).toBe('150 ms')
+  })
+
+  it('explains a refused origin in English', () => {
+    expect(parseOrigin('', 'en')).toEqual({ ok: false, error: 'Enter an address to check.' })
+    expect(parseOrigin('intranet', 'en')).toEqual({ ok: false, error: 'CrUX only has data for public sites on the internet.' })
+  })
+})
