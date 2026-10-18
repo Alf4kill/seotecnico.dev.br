@@ -86,9 +86,10 @@ export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn
       ? [
           '## English version',
           '',
-          `- [${guideEn.frontmatter.title}](${absoluteUrl('/en/guide/technical-seo-nextjs')}): ${guideEn.frontmatter.description} English translation of the pillar guide above; the chapter articles remain in Portuguese.`,
+          `- [${guideEn.frontmatter.title}](${absoluteUrl('/en/guide/technical-seo-nextjs')}): ${guideEn.frontmatter.description} English translation of the pillar guide above; every chapter article has an English version, listed below.`,
           `- [${site.name} — English home](${absoluteUrl('/en')}): What this lab is, what has been measured so far, and where the evidence lives.`,
-          `- [Blog in English](${absoluteUrl('/en/blog')}): The English versions of the lab articles, with the same filter by kind and axis as the Portuguese blog.`,
+          `- [Blog in English](${absoluteUrl('/en/blog')}): The English versions of the articles, with the same filter by kind and axis as the Portuguese blog.`,
+          `- [Lab](${absoluteUrl('/en/lab')}): This site's experiments, with the hypothesis registered before the data, and the articles that use each one's results. English version of /laboratorio.`,
           `- [Case studies](${absoluteUrl('/en/case-studies')}): Four problems from this site, what was done in code and what was measured, each linked to its pull request and experiment-log entry.`,
           `- [Detecting AI crawlers on a live site](${absoluteUrl('/en/case-studies/ai-crawler-detection')}): A 57-day pilot of AI crawler telemetry with verified identities and honeypots, its six instrument defects, and a positive control with ChatGPT, Claude and Perplexity.`,
           `- [About ${site.author.name}](${absoluteUrl('/en/about')}): Who builds this site and how the work is done — hypothesis first, SEO as a merge gate, own field data.`,
