@@ -13,9 +13,9 @@ import { site } from '@/lib/site'
 // Case study em inglês: o piloto de detecção de crawlers + o controle positivo
 // (H15), para o leitor de portfólio e para distribuição fora do Brasil.
 //
-// Não é tradução: os dois artigos portugueses que ele resume
-// (/blog/detectar-crawlers-ia e /blog/chatgpt-le-javascript) têm outro recorte,
-// então não há par de hreflang. Mesmo formato do guia em inglês — um MDX, uma
+// Não é tradução: os dois artigos que ele resume (/blog/detectar-crawlers-ia e
+// /blog/chatgpt-le-javascript, com versões em inglês desde 2026-10-18) têm
+// outro recorte, então não há par de hreflang com eles. Mesmo formato do guia em inglês — um MDX, uma
 // rota, o ArticleLayout — e o cartão 3 de /en/case-studies aponta para cá.
 // ─────────────────────────────────────────────────────────────────────────────
 

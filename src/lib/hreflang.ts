@@ -230,6 +230,27 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/nextjs-redirects-canonicals',
     },
   },
+  {
+    id: 'gtm-nextjs',
+    paths: {
+      'pt-BR': '/blog/gtm-nextjs',
+      en: '/en/blog/nextjs-gtm',
+    },
+  },
+  {
+    id: 'chatgpt-le-javascript',
+    paths: {
+      'pt-BR': '/blog/chatgpt-le-javascript',
+      en: '/en/blog/does-chatgpt-read-javascript',
+    },
+  },
+  {
+    id: 'detectar-crawlers-ia',
+    paths: {
+      'pt-BR': '/blog/detectar-crawlers-ia',
+      en: '/en/blog/detect-ai-crawlers',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */

@@ -13,7 +13,7 @@ tldr: >-
   eles alegam é verdadeira (IP, DNS reverso, assinatura) e se respeitam o
   robots.txt (honeypot). Este site mede as três e publica os números.
 datePublished: "2026-09-13"
-dateModified: "2026-10-08"
+dateModified: "2026-10-18"
 faq:
   - question: "O user agent identifica um crawler de IA?"
     answer: "Não. O user agent é uma alegação: qualquer cliente pode enviar GPTBot no cabeçalho. Identidade só existe quando a requisição passa numa fonte publicada pelo fornecedor — faixa de IP, DNS reverso confirmado ou assinatura Web Bot Auth. Sem isso, o certo é dizer que a requisição alega ser aquele agente."
@@ -373,7 +373,7 @@ correção tira essas requisições do proxy antes de qualquer contagem:
   matcher: [
     {
       source:
-        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
+        '/((?!api/|_next/static|_next/image|images/|favicon.ico|icon.svg|opengraph-image|.*/opengraph-image$|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)',
       missing: [
         { type: 'header', key: 'rsc' },
         { type: 'header', key: 'next-router-prefetch' },
