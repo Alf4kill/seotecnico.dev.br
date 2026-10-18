@@ -42,7 +42,7 @@ function guideItems(): SearchItem[] {
  *
  * O índice português segue com as duas versões da pilar (quem procura o guia
  * em inglês na moldura portuguesa o encontra); o inglês traz só o conteúdo em
- * inglês, mais as ferramentas, que existem só em português e dizem isso.
+ * inglês, ferramentas incluídas.
  */
 export function buildSearchIndex(lang: Lang = 'pt-BR'): SearchItem[] {
   if (lang === 'en') {

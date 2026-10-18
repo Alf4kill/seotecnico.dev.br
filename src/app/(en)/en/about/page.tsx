@@ -126,9 +126,11 @@ export default function EnglishAboutPage() {
             <Link href="/en/blog" title="Technical SEO articles in English">
               English blog
             </Link>{' '}
-            carries the lab articles and the chapters of the Next.js guide. The articles not
-            yet translated and the three free tools are in Portuguese; the guide links to
-            them where they go deeper.
+            carries every article, the chapters of the Next.js guide included, and the{' '}
+            <Link href="/en/tools" title="Free technical SEO tools">
+              three free tools
+            </Link>{' '}
+            have English versions too.
           </p>
         </div>
 

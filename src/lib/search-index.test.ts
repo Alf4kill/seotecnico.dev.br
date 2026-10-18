@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { STATIC_SEARCH_ITEMS, type SearchItem } from './search-data'
 import { buildSearchIndex } from './search-index'
 import { getAllEnglishPosts, getAllPosts, getGuide } from './content'
-import { TRANSLATION_PAIRS } from './hreflang'
+import { counterpartPath, TRANSLATION_PAIRS } from './hreflang'
 
 // O índice de busca já foi o último espelho de /content mantido à mão. Agora
 // artigos e pilar são derivados do frontmatter (lib/search-index.ts), o que
@@ -146,19 +146,19 @@ describe("buildSearchIndex('en')", () => {
     expect(indexed).toEqual(published)
   })
 
-  it('carries no Portuguese article or page', () => {
-    const portuguese = indexEn.filter(
-      (item) => item.category !== 'ferramenta' && !(item.href === '/en' || item.href.startsWith('/en/'))
-    )
-    expect(portuguese, 'only the tools (Portuguese-only) may leave /en').toEqual([])
+  it('carries nothing outside /en', () => {
+    const portuguese = indexEn.filter((item) => !(item.href === '/en' || item.href.startsWith('/en/')))
+    expect(portuguese).toEqual([])
   })
 
-  it('points every shipped tool at its own page, and says the interface is Portuguese', () => {
-    const tools = indexEn.filter((item) => item.category === 'ferramenta')
+  it('points every shipped tool at its English page', () => {
+    // A rota inglesa de cada ferramenta vem do par de hreflang: uma ferramenta
+    // nova sem par, ou sem entrada inglesa, falha aqui.
+    const tools = indexEn.filter((item) => item.category === 'ferramenta').map((item) => item.href)
     for (const route of shippedToolRoutes()) {
-      const entry = tools.find((item) => item.href === route)
-      expect(entry, `${route} is live but has no English search entry`).toBeDefined()
-      expect(entry?.description).toMatch(/in Portuguese/)
+      const english = counterpartPath(route)?.path
+      expect(english, `${route} has no English pair`).toBeDefined()
+      expect(tools, `${english} is live but has no English search entry`).toContain(english)
     }
   })
 

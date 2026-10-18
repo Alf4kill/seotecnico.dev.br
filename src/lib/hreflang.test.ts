@@ -86,9 +86,11 @@ describe('pairForPath / langOfPath / counterpartPath', () => {
   })
 
   it('returns nothing for a route without a translation', () => {
-    expect(pairForPath('/ferramentas/checador-cwv')).toBeUndefined()
-    expect(langOfPath('/ferramentas')).toBeUndefined()
-    expect(counterpartPath('/ferramentas/gerador-json-ld')).toBeUndefined()
+    // Desde 2026-10-18 toda página portuguesa tem par; os estudos de caso
+    // ingleses são o que sobra sem tradução (são portfólio, só em inglês).
+    expect(pairForPath('/en/case-studies')).toBeUndefined()
+    expect(langOfPath('/en/case-studies/ai-crawler-detection')).toBeUndefined()
+    expect(counterpartPath('/en/case-studies')).toBeUndefined()
   })
 
   it('does not treat a path PREFIX as membership', () => {
@@ -131,7 +133,7 @@ describe('languageAlternatePaths', () => {
   })
 
   it('emits nothing for an untranslated route', () => {
-    expect(languageAlternatePaths('/ferramentas')).toBeUndefined()
+    expect(languageAlternatePaths('/en/case-studies')).toBeUndefined()
   })
 })
 
@@ -162,6 +164,6 @@ describe('buildMetadata hreflang integration', () => {
   })
 
   it('leaves untranslated routes without a languages block', () => {
-    expect(page('/ferramentas').alternates?.languages).toBeUndefined()
+    expect(page('/en/case-studies').alternates?.languages).toBeUndefined()
   })
 })
