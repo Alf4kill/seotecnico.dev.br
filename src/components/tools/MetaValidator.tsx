@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, Loader2, Search, XCircle } from 'lucide-react'
 import { pushEvent } from '@/lib/analytics'
 import type { CheckStatus, MetaCheck } from '@/lib/meta-validator'
+import type { Lang } from '@/lib/hreflang'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UI do Validador de meta tags (/ferramentas/validador-meta-tags).
+// UI do Validador de meta tags (/ferramentas/validador-meta-tags e
+// /en/tools/meta-tag-validator).
 //
 // Mesmo split do JsonLdGenerator: a lógica vive em @/lib/meta-validator e roda
 // no servidor (rota /api/validador-meta — CORS impede validar de dentro do
@@ -30,6 +32,45 @@ interface ValidationResponse {
   issuesFound: number
 }
 
+const COPY = {
+  'pt-BR': {
+    noTitle: 'Página sem title',
+    noDescription: 'Sem meta description — o Google montará um snippet por conta própria.',
+    empty: 'Informe uma URL para validar.',
+    failed: 'Não foi possível validar esta URL.',
+    network: 'Falha de rede ao validar. Tente novamente.',
+    inputLabel: 'URL da página para validar',
+    placeholder: 'https://seusite.com.br/pagina',
+    submit: 'Validar',
+    loading: 'Validando…',
+    previewTitle: 'Preview na busca',
+    previewIntro: 'Como a página tende a aparecer na SERP do Google',
+    redirectedTo: ' — a URL redirecionou para ',
+    checksTitle: 'Checagens',
+    errors: (n: number) => `${n} ${n === 1 ? 'erro' : 'erros'}`,
+    warnings: (n: number) => `${n} ${n === 1 ? 'aviso' : 'avisos'}`,
+    status: { ok: 'ok', warning: 'aviso', error: 'erro' },
+  },
+  en: {
+    noTitle: 'Page without a title',
+    noDescription: 'No meta description — Google will build a snippet on its own.',
+    empty: 'Enter a URL to validate.',
+    failed: 'This URL could not be validated.',
+    network: 'Network error while validating. Try again.',
+    inputLabel: 'URL of the page to validate',
+    placeholder: 'https://yoursite.com/page',
+    submit: 'Validate',
+    loading: 'Validating…',
+    previewTitle: 'Search preview',
+    previewIntro: "How the page is likely to appear in Google's results",
+    redirectedTo: ' — the URL redirected to ',
+    checksTitle: 'Checks',
+    errors: (n: number) => `${n} ${n === 1 ? 'error' : 'errors'}`,
+    warnings: (n: number) => `${n} ${n === 1 ? 'warning' : 'warnings'}`,
+    status: { ok: 'ok', warning: 'warning', error: 'error' },
+  },
+} as const
+
 const inputClass =
   // Borda --control (≥3:1, WCAG 1.4.11) e foco trocando a borda para o ciano.
   'w-full border border-gray-control bg-background px-3 py-2.5 text-sm text-foreground ' +
@@ -49,10 +90,10 @@ const statusClass: Record<CheckStatus, string> = {
   error: 'text-danger',
 }
 
-function SerpPreview({ data }: { data: ValidationResponse }) {
-  const title = data.meta.title ?? data.meta.ogTitle ?? 'Página sem title'
-  const description =
-    data.meta.description ?? data.meta.ogDescription ?? 'Sem meta description — o Google montará um snippet por conta própria.'
+function SerpPreview({ data, lang }: { data: ValidationResponse; lang: Lang }) {
+  const copy = COPY[lang]
+  const title = data.meta.title ?? data.meta.ogTitle ?? copy.noTitle
+  const description = data.meta.description ?? data.meta.ogDescription ?? copy.noDescription
   let host = ''
   let pathname = ''
   try {
@@ -77,7 +118,8 @@ function SerpPreview({ data }: { data: ValidationResponse }) {
   )
 }
 
-export function MetaValidator() {
+export function MetaValidator({ lang = 'pt-BR' }: { lang?: Lang }) {
+  const copy = COPY[lang]
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -86,17 +128,18 @@ export function MetaValidator() {
   async function validate() {
     const target = url.trim()
     if (!target) {
-      setError('Informe uma URL para validar.')
+      setError(copy.empty)
       return
     }
     setLoading(true)
     setError(null)
     setResult(null)
     try {
-      const res = await fetch(`/api/validador-meta?url=${encodeURIComponent(target)}`)
+      const langParam = lang === 'en' ? '&lang=en' : ''
+      const res = await fetch(`/api/validador-meta?url=${encodeURIComponent(target)}${langParam}`)
       const body = (await res.json()) as ValidationResponse & { error?: string }
       if (!res.ok || body.error) {
-        setError(body.error ?? 'Não foi possível validar esta URL.')
+        setError(body.error ?? copy.failed)
         return
       }
       setResult(body)
@@ -104,7 +147,7 @@ export function MetaValidator() {
       // nunca a URL.
       pushEvent({ event: 'tool_validate_meta', issues_found: body.issuesFound })
     } catch {
-      setError('Falha de rede ao validar. Tente novamente.')
+      setError(copy.network)
     } finally {
       setLoading(false)
     }
@@ -123,12 +166,12 @@ export function MetaValidator() {
         }}
       >
         <label className="flex-1">
-          <span className="sr-only">URL da página para validar</span>
+          <span className="sr-only">{copy.inputLabel}</span>
           <input
             type="text"
             inputMode="url"
             className={inputClass}
-            placeholder="https://seusite.com.br/pagina"
+            placeholder={copy.placeholder}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={loading}
@@ -144,7 +187,7 @@ export function MetaValidator() {
           ) : (
             <Search className="h-4 w-4" aria-hidden="true" />
           )}
-          {loading ? 'Validando…' : 'Validar'}
+          {loading ? copy.loading : copy.submit}
         </button>
       </form>
 
@@ -157,25 +200,24 @@ export function MetaValidator() {
       {result && (
         <div className="mt-8 space-y-8">
           <div>
-            <h2 className="font-display text-xl font-bold text-foreground">Preview na busca</h2>
+            <h2 className="font-display text-xl font-bold text-foreground">{copy.previewTitle}</h2>
             <p className="mt-1 text-sm text-muted">
-              Como a página tende a aparecer na SERP do Google
+              {copy.previewIntro}
               {result.redirected && (
-                <> — a URL redirecionou para <code className="break-all">{result.finalUrl}</code></>
+                <>{copy.redirectedTo}<code className="break-all">{result.finalUrl}</code></>
               )}
               .
             </p>
             <div className="mt-3">
-              <SerpPreview data={result} />
+              <SerpPreview data={result} lang={lang} />
             </div>
           </div>
 
           <div>
             <h2 className="font-display text-xl font-bold text-foreground">
-              Checagens{' '}
+              {copy.checksTitle}{' '}
               <span className="text-sm font-normal text-muted">
-                — {errors.length} {errors.length === 1 ? 'erro' : 'erros'},{' '}
-                {warnings.length} {warnings.length === 1 ? 'aviso' : 'avisos'}
+                — {copy.errors(errors.length)}, {copy.warnings(warnings.length)}
               </span>
             </h2>
             <ul className="mt-3 divide-y divide-gray border border-gray">
@@ -185,9 +227,7 @@ export function MetaValidator() {
                   <li key={check.id} className="flex gap-3 px-4 py-3">
                     <Icon
                       className={`mt-0.5 h-5 w-5 shrink-0 ${statusClass[check.status]}`}
-                      aria-label={
-                        check.status === 'ok' ? 'ok' : check.status === 'warning' ? 'aviso' : 'erro'
-                      }
+                      aria-label={copy.status[check.status]}
                     />
                     <div>
                       <p className="text-sm font-medium text-foreground">{check.label}</p>
