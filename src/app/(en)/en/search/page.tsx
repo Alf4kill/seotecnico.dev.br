@@ -1,0 +1,32 @@
+import { Suspense } from 'react'
+import { BuscaResults } from '@/components/search/BuscaResults'
+import { buildMetadata } from '@/lib/metadata'
+import { buildSearchIndex } from '@/lib/search-index'
+
+// /en/search — par de /busca (lib/hreflang.ts): a mesma página, com o índice
+// inglês. noindex como a portuguesa: é rota utilitária, não conteúdo.
+
+export const metadata = buildMetadata({
+  title: 'Search',
+  description: 'Search the articles, tools and pages of SEO Técnico.',
+  path: '/en/search',
+  lang: 'en',
+  noindex: true,
+})
+
+// Página estática: a query (?q=) é lida no cliente via useSearchParams,
+// dentro de <BuscaResults>, mantendo a rota 100% SSG.
+export default function EnglishSearchPage() {
+  return (
+    <section className="container-xl py-12 lg:py-16">
+      <p className="eyebrow mb-5 flex items-center gap-3.5 text-primary">
+        <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+        Site search
+      </p>
+      <h1 className="font-display text-[clamp(2.25rem,1.4rem+3.2vw,4rem)] font-bold leading-[1.02] tracking-[-0.025em] text-foreground">Search</h1>
+      <Suspense>
+        <BuscaResults initialQuery="" items={buildSearchIndex('en')} lang="en" />
+      </Suspense>
+    </section>
+  )
+}

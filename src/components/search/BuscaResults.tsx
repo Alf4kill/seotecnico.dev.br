@@ -7,19 +7,23 @@ import Fuse from 'fuse.js'
 import { Search } from 'lucide-react'
 import {
   fuseOptions,
-  categoryLabel,
+  SEARCH_COPY,
   type SearchCategory,
   type SearchItem,
 } from '@/lib/search-data'
+import type { Lang } from '@/lib/hreflang'
 
 interface BuscaResultsProps {
   /** Query inicial vinda do Server Component (searchParams.q) */
   initialQuery: string
   /** Índice montado no servidor (lib/search-index.ts), pelo mesmo motivo do modal. */
   items: SearchItem[]
+  /** Idioma da página: textos e rota de resultados (/busca ou /en/search). */
+  lang?: Lang
 }
 
-export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
+export function BuscaResults({ initialQuery, items, lang = 'pt-BR' }: BuscaResultsProps) {
+  const copy         = SEARCH_COPY[lang]
   const router       = useRouter()
   const searchParams = useSearchParams()
   const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -48,9 +52,9 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
     debounceRef.current = setTimeout(() => {
       const params = new URLSearchParams()
       if (value) params.set('q', value)
-      router.replace(`/busca${value ? `?${params}` : ''}`, { scroll: false })
+      router.replace(`${copy.path}${value ? `?${params}` : ''}`, { scroll: false })
     }, 300)
-  }, [router])
+  }, [router, copy.path])
 
   // Agrupa resultados por categoria
   const grouped = useMemo(() => {
@@ -72,9 +76,9 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
           type="search"
           value={query}
           onChange={e => handleChange(e.target.value)}
-          placeholder="Buscar artigos, ferramentas, páginas..."
+          placeholder={copy.placeholder}
           className="flex-1 bg-transparent font-mono text-sm text-foreground outline-none placeholder:text-label"
-          aria-label="Campo de busca"
+          aria-label={copy.input}
           autoFocus
           autoComplete="off"
         />
@@ -87,7 +91,7 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
             {Array.from(grouped.entries()).map(([cat, hits]) => (
               <section key={cat}>
                 <h2 className="eyebrow mb-4 text-primary">
-                  {categoryLabel[cat]}s
+                  {copy.categoryPlural[cat]}
                 </h2>
                 <ul className="flex flex-col gap-2">
                   {hits.map(({ item }) => (
@@ -111,12 +115,12 @@ export function BuscaResults({ initialQuery, items }: BuscaResultsProps) {
           </div>
         ) : (
           <p className="text-sm text-muted">
-            Nenhum resultado encontrado para &ldquo;{query}&rdquo;.
+            {copy.noResults} &ldquo;{query}&rdquo;.
           </p>
         )
       ) : (
         <p className="text-sm text-muted">
-          Digite ao menos 2 caracteres para buscar.
+          {copy.minChars}.
         </p>
       )}
     </div>

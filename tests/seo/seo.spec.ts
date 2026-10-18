@@ -28,7 +28,7 @@ const siteBase = site.url.replace(/\/$/, '')
 // Sitemap entries carry production-absolute URLs; tests run against localhost,
 // so only the pathname is kept.
 const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname)
-const noindexPaths = ['/busca']
+const noindexPaths = ['/busca', '/en/search']
 const routes = [...sitemapPaths, ...noindexPaths]
 
 const postsBySlug = new Map(
@@ -49,7 +49,7 @@ function expectedJsonLdTypes(path: string): string[] {
   // Both homes and both about pages: same entity graph in either language.
   if (path === '/' || path === '/en') return ['WebSite', 'Organization', 'Person']
   if (path === '/sobre' || path === '/en/about') return ['Person', 'BreadcrumbList']
-  if (path === '/design' || path === '/en/design' || path === '/en/case-studies' || path === '/laboratorio') {
+  if (path === '/design' || path === '/en/design' || path === '/en/case-studies' || path === '/laboratorio' || path === '/en/lab') {
     return ['WebPage', 'BreadcrumbList']
   }
   if (path.startsWith('/en/case-studies/')) {

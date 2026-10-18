@@ -106,12 +106,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }))
 
   // Índice /en/blog: muda quando um artigo inglês muda (mesma regra do /blog).
-  const newestEnglishPost = getAllEnglishPosts()
+  const englishPosts = getAllEnglishPosts()
+  const newestEnglishPost = englishPosts
+    .map((p) => p.frontmatter.dateModified)
+    .sort()
+    .at(-1)
+  // /en/lab: a mesma conta de /laboratorio, sobre a coleção inglesa.
+  const englishExperimentSlugs = englishPosts.filter((p) => isExperiment(p.frontmatter.status)).map((p) => p.frontmatter.slug)
+  const newestEnglishLab = englishPosts
+    .filter((p) => englishExperimentSlugs.includes(p.frontmatter.slug) || p.frontmatter.basedOn?.some((s) => englishExperimentSlugs.includes(s)))
     .map((p) => p.frontmatter.dateModified)
     .sort()
     .at(-1)
   const englishBlogIndex: MetadataRoute.Sitemap = [
     { url: `${base}/en/blog`, lastModified: newestEnglishPost ? toDate(newestEnglishPost) : undefined, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${base}/en/lab`, lastModified: newestEnglishLab ? toDate(newestEnglishLab) : undefined, changeFrequency: 'weekly', priority: 0.6 },
   ]
 
   return [...staticPages, ...englishBlogIndex, ...postPages, ...englishPostPages]

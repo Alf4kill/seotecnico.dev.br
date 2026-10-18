@@ -19,9 +19,10 @@ import { CategoryChip, StatusLabel } from '@/components/ui/CategoryMark'
 // - "artigos que usam estes dados" = posts cujo `basedOn` cita o experimento.
 // Publicar um experimento ou um artigo derivado nunca exige editar este arquivo.
 //
-// Sem par hreflang: /en/case-studies tem outra função (portfólio, e inclui
-// trabalho que não é experimento, como a correção de LCP e o gate de CI). O
-// link para lá vai no fim da página, marcado como inglês.
+// Par hreflang: /en/lab (lib/hreflang.ts), a mesma página derivada da coleção
+// inglesa. /en/case-studies tem outra função (portfólio, e inclui trabalho que
+// não é experimento, como a correção de LCP e o gate de CI); o link para lá vai
+// no fim da página, marcado como inglês.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PATH = '/laboratorio'

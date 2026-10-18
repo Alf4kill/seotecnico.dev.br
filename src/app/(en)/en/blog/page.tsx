@@ -72,12 +72,25 @@ export default function EnglishBlogPage() {
             </h1>
             <p className="max-w-[39rem] text-lg leading-relaxed text-muted">
               Each article answers one technical SEO question with measurements made on this
-              very site. When the result is null, it is published too. These are the English
-              versions of the lab articles; the{' '}
-              <Link href="/blog" hrefLang="pt-BR" prefetch={false} className={LINK}>
-                full blog, with {portugueseCount} articles, is in Portuguese
-              </Link>
-              .
+              very site. When the result is null, it is published too.{' '}
+              {posts.length >= portugueseCount ? (
+                <>
+                  Every article here also exists in Portuguese, the site&rsquo;s primary language,
+                  on the{' '}
+                  <Link href="/blog" hrefLang="pt-BR" prefetch={false} className={LINK}>
+                    Portuguese blog
+                  </Link>
+                  .
+                </>
+              ) : (
+                <>
+                  These are the English versions of the articles; the{' '}
+                  <Link href="/blog" hrefLang="pt-BR" prefetch={false} className={LINK}>
+                    full blog, with {portugueseCount} articles, is in Portuguese
+                  </Link>
+                  .
+                </>
+              )}
             </p>
           </div>
 
@@ -98,6 +111,9 @@ export default function EnglishBlogPage() {
             </dl>
             <Link href="/en/case-studies" className={buttonClasses('outline', 'min-h-11')}>
               See the case studies
+            </Link>
+            <Link href="/en/lab" className="font-mono text-xs uppercase tracking-[0.12em] text-primary hover:text-primary-hover">
+              See the experiments in the lab <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>

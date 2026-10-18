@@ -73,6 +73,7 @@ const COPY: Record<Lang, Copy> = {
           { label: 'Technical SEO guide', href: '/en/guide/technical-seo-nextjs' },
           { label: 'Blog',                href: '/en/blog' },
           { label: 'Case studies',        href: '/en/case-studies' },
+          { label: 'Lab',                 href: '/en/lab' },
           { label: 'Site in Portuguese',  href: '/', lang: 'pt-BR' },
         ],
       },

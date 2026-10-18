@@ -92,11 +92,9 @@ const mono = IBM_Plex_Mono({
 })
 
 export function RootShell({ lang, children }: { lang: Lang; children: React.ReactNode }) {
-  // A busca indexa o conteúdo em português. Oferecê-la nas páginas em inglês
-  // devolveria resultados num idioma que o leitor não escolheu — então a moldura
-  // inglesa não tem busca, nem o atalho Ctrl+K que abriria um modal inexistente.
-  const withSearch = lang === 'pt-BR'
-
+  // Cada moldura busca no próprio idioma: o índice inglês traz só o conteúdo em
+  // inglês (lib/search-index.ts), então o leitor nunca recebe resultados num
+  // idioma que não escolheu.
   const chrome = (
     <>
       <a href="#conteudo" className="skip-link">
@@ -131,14 +129,10 @@ export function RootShell({ lang, children }: { lang: Lang; children: React.Reac
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: consentDefaultScript }}
         />
-        {withSearch ? (
-          <SearchProvider>
-            {chrome}
-            <SearchModal items={buildSearchIndex()} />
-          </SearchProvider>
-        ) : (
-          chrome
-        )}
+        <SearchProvider>
+          {chrome}
+          <SearchModal items={buildSearchIndex(lang)} lang={lang} />
+        </SearchProvider>
         <ConsentBanner lang={lang} />
         <WebVitalsReporter />
         {site.gtmId && <GoogleTagManager gtmId={site.gtmId} />}
