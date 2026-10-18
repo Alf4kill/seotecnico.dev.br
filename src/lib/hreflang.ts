@@ -83,6 +83,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/design',
     },
   },
+  // A política de privacidade: o mesmo texto nos dois idiomas, com a mesma
+  // data de atualização (lib/legal.ts).
+  {
+    id: 'privacy-policy',
+    paths: {
+      'pt-BR': '/politica-de-privacidade',
+      en: '/en/privacy-policy',
+    },
+  },
   // Artigos traduzidos, /blog/<slug> ↔ /en/blog/<slug-en>: um par por artigo,
   // acrescentado no mesmo PR que publica a versão em inglês. O id é o slug
   // português, o mesmo valor do `translationOf` do MDX inglês; o teste de

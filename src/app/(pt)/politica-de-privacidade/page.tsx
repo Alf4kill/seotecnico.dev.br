@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
+import { PRIVACY_POLICY_UPDATED } from '@/lib/legal'
 import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
 
 export const metadata = buildMetadata({
   title: 'Política de privacidade',
   description:
-    'Como o SEO Técnico trata seus dados: analytics somente com consentimento, sem cadastro, sem venda de dados. Transparência conforme a LGPD.',
+    'Como o SEO Técnico trata seus dados: cookies de analytics somente com consentimento, sem cadastro, sem venda de dados. Transparência conforme a LGPD.',
   path: '/politica-de-privacidade',
 })
 
@@ -32,6 +33,10 @@ export default function PoliticaDePrivacidadePage() {
         Política de privacidade
       </h1>
 
+      <p className="mt-4 text-sm text-muted">
+        Atualizada em <time dateTime={PRIVACY_POLICY_UPDATED}>18 de outubro de 2026</time>.
+      </p>
+
       <div className="rich-text mt-10 max-w-[68ch]">
         <p>
           O {site.name} ({new URL(site.url).hostname}) é um site de conteúdo e
@@ -48,12 +53,16 @@ export default function PoliticaDePrivacidadePage() {
             e não guardam o que você digita nelas.
           </li>
           <li>
-            <strong>Medição de audiência (Google Analytics 4, via Google Tag
-            Manager):</strong> usada apenas para entender quais páginas e
-            ferramentas são úteis. Os cookies de analytics só são ativados{' '}
-            <strong>depois do seu consentimento</strong> no banner — o padrão é
-            negado (Consent Mode v2). Recusar não altera nenhuma funcionalidade
-            do site.
+            <strong>Medição de audiência e de desempenho (Google Analytics 4,
+            via Google Tag Manager):</strong> usada apenas para entender quais
+            páginas e ferramentas são úteis e quanto as páginas demoram para
+            carregar e responder (Core Web Vitals). Os cookies de analytics só
+            são ativados <strong>depois do seu consentimento</strong> no banner
+            — o padrão é negado (Consent Mode v2). Enquanto o consentimento
+            estiver negado, as tags do Google ainda enviam sinais{' '}
+            <strong>sem cookies</strong> e sem identificador guardado no seu
+            navegador (o modo &ldquo;avançado&rdquo; do Consent Mode). Recusar
+            não altera nenhuma funcionalidade do site.
           </li>
           <li>
             <strong>Não vendemos nem compartilhamos dados</strong> com terceiros
@@ -91,7 +100,8 @@ export default function PoliticaDePrivacidadePage() {
           (em <code>/lab/</code>), que existem para testar assistentes de IA,
           não têm link em lugar nenhum e só são enviadas pelo autor ao assistente
           testado. Nelas também são registrados o <em>user agent</em>, os
-          cabeçalhos <code>Accept</code> e <code>Accept-Language</code>, o
+          cabeçalhos <code>Accept</code>, <code>Accept-Language</code>,{' '}
+          <code>Sec-Fetch-Mode</code> e <code>Sec-Fetch-Dest</code>, o
           país de origem e o nome da lista pública de faixas de rede (de um
           fornecedor como Google ou OpenAI) em que o endereço está, se estiver
           em alguma. O endereço IP continua não sendo registrado.
@@ -109,7 +119,8 @@ export default function PoliticaDePrivacidadePage() {
           consentimento. A escolha fica registrada no seu navegador
           (localStorage) e pode ser revertida a qualquer momento limpando os
           dados do site no navegador — o banner será exibido novamente na
-          próxima visita.
+          próxima visita. O navegador guarda também o tema que você escolher
+          (claro ou escuro), só para manter a escolha entre as páginas.
         </p>
 
         <h2>Seus direitos (LGPD)</h2>
