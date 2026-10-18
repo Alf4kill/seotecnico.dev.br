@@ -86,7 +86,7 @@ describe('pairForPath / langOfPath / counterpartPath', () => {
   })
 
   it('returns nothing for a route without a translation', () => {
-    expect(pairForPath('/blog/inp-nextjs')).toBeUndefined()
+    expect(pairForPath('/ferramentas/checador-cwv')).toBeUndefined()
     expect(langOfPath('/ferramentas')).toBeUndefined()
     expect(counterpartPath('/laboratorio')).toBeUndefined()
   })
