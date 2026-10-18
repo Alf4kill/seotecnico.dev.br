@@ -14,7 +14,7 @@ tldr: >-
   ChatGPT, Claude and Gemini read only the server HTML. Only Grok read
   JSON-LD. Told not to invent, none of the five invented a code.
 datePublished: "2026-10-04"
-dateModified: "2026-10-13"
+dateModified: "2026-10-18"
 faq:
   - question: "Does Gemini run JavaScript?"
     answer: "It did not in any of the 14 rounds of this test (September and October 2026, free plan). Its fetcher makes a single request for the page, with the user agent 'Google', and reads the text of the served HTML. When it was given the direct address of a JSON file, it fetched that JSON all three times, and all three answers said it could not be accessed."
@@ -283,8 +283,8 @@ gap with an analysis inferred from the URL.
   applies to Googlebot, only stricter; the [technical SEO guide for
   Next.js](/en/guide/technical-seo-nextjs) covers rendering for Googlebot.
 - **Repeat in the visible text what is in the JSON-LD.** JSON-LD is still
-  what Google uses for rich results, and the [JSON-LD article](/blog/json-ld-nextjs)
-  (in Portuguese) shows how to generate it in Next.js. But only one of the
+  what Google uses for rich results, and the [JSON-LD article](/en/blog/nextjs-json-ld)
+  shows how to generate it in Next.js. But only one of the
   five assistants read it. Price, date, author and specification also need to
   be in the text.
 - **Check what a reader without JavaScript receives.** Fetch the page

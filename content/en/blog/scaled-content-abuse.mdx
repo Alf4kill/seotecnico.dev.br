@@ -161,7 +161,7 @@ The generative AI content guidance extends the review to metadata: `<title>`, me
 
 The canonicalization documentation describes the mechanism: when indexing, Google identifies the primary content of each page; when several have very similar primary content, it groups them, picks the most complete one as canonical and crawls the others less often.
 
-Duplicate content on its own does not violate the spam policies. The canonicalization page says so, and the SEO Starter Guide adds that it is inefficient but will not cause a manual action. Consolidating those URLs in practice is covered in [redirects and canonicals in Next.js](/blog/redirects-canonicals-nextjs) (in Portuguese).
+Duplicate content on its own does not violate the spam policies. The canonicalization page says so, and the SEO Starter Guide adds that it is inefficient but will not cause a manual action. Consolidating those URLs in practice is covered in [redirects and canonicals in Next.js](/en/blog/nextjs-redirects-canonicals).
 
 What can be stated is conditional. **If** the template's pages differ only by keyword or city, the part that varies is small next to the shared part, and the documented behaviour for very similar primary content is to cluster the pages and index one. Google has never written this about city pages; it is the general mechanism applied to the case.
 
@@ -309,7 +309,7 @@ Removing content is treated as a last resort. The same page says that if you are
 
 If I had to order the work, with the caveat that it depends on the site:
 
-- **Consolidate** the variation pages into one page per real service, redirecting the old URLs. In Next.js, `permanent: true` returns 308, not 301; details in [redirects and canonicals in Next.js](/blog/redirects-canonicals-nextjs) (in Portuguese).
+- **Consolidate** the variation pages into one page per real service, redirecting the old URLs. In Next.js, `permanent: true` returns 308, not 301; details in [redirects and canonicals in Next.js](/en/blog/nextjs-redirects-canonicals).
 - **Replace the city block** with real coverage information where it helps the reader, such as response time by region.
 - **Rewrite the titles** from distinct fields of each page, not from a mould with the keyword.
 
