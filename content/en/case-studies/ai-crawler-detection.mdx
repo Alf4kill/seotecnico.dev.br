@@ -3,7 +3,7 @@ title: 'Detecting AI crawlers on a live site: a pilot and a control'
 description: 'AI crawler telemetry on a live Next.js site: verified identities, honeypots, six instrument defects and a positive control with ChatGPT and Claude.'
 slug: ai-crawler-detection
 datePublished: '2026-09-25'
-dateModified: '2026-10-04'
+dateModified: '2026-10-18'
 primaryQuery: 'ai crawler detection'
 keywords: ['english', 'inglês', 'ai crawlers', 'gptbot', 'claudebot', 'perplexity', 'chatgpt-user', 'claude-user', 'robots.txt', 'honeypot', 'web bot auth', 'bot verification', 'positive control', 'case study']
 lang: en
@@ -163,9 +163,9 @@ reported as not found.
 from a `'use client'` component arrived every time, because client
 components are rendered on the server too. Neither the JSON-LD nor anything
 that required JavaScript ever arrived. Claude described its own tool: fetch
-the HTML, extract the text, drop `<script>` blocks. The full write-up is in
-Portuguese: [what ChatGPT reads from a Next.js
-page](/blog/chatgpt-le-javascript). The follow-up, with Gemini, DeepSeek and
+the HTML, extract the text, drop `<script>` blocks. The full write-up is
+[what ChatGPT reads from a Next.js
+page](/en/blog/does-chatgpt-read-javascript). The follow-up, with Gemini, DeepSeek and
 Grok added and a round with hints, is in English: [which AI assistants run
 JavaScript](/en/blog/which-ai-assistants-run-javascript).
 
@@ -200,6 +200,6 @@ figure was re-confirmed on 2026-09-27, row for row.
 
 The method, the verification code and every registered hypothesis are in the
 [repository](https://github.com/Alf4kill/seotecnico.dev.br). The method
-article, in Portuguese, is [how to know whether AI uses your
-content](/blog/detectar-crawlers-ia). The other case studies are on the [case
+article is [how to know whether AI uses your
+content](/en/blog/detect-ai-crawlers). The other case studies are on the [case
 studies page](/en/case-studies).
