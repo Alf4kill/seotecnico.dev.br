@@ -160,6 +160,76 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/scaled-content-abuse',
     },
   },
+  {
+    id: 'metadata-api-nextjs',
+    paths: {
+      'pt-BR': '/blog/metadata-api-nextjs',
+      en: '/en/blog/nextjs-metadata-api',
+    },
+  },
+  {
+    id: 'json-ld-nextjs',
+    paths: {
+      'pt-BR': '/blog/json-ld-nextjs',
+      en: '/en/blog/nextjs-json-ld',
+    },
+  },
+  {
+    id: 'sitemap-dinamico-nextjs',
+    paths: {
+      'pt-BR': '/blog/sitemap-dinamico-nextjs',
+      en: '/en/blog/nextjs-dynamic-sitemap',
+    },
+  },
+  {
+    id: 'ssr-ssg-isr-nextjs',
+    paths: {
+      'pt-BR': '/blog/ssr-ssg-isr-nextjs',
+      en: '/en/blog/nextjs-ssr-ssg-isr',
+    },
+  },
+  {
+    id: 'melhorar-lcp-nextjs',
+    paths: {
+      'pt-BR': '/blog/melhorar-lcp-nextjs',
+      en: '/en/blog/improve-lcp-nextjs',
+    },
+  },
+  {
+    id: 'lcp-alto-next-js',
+    paths: {
+      'pt-BR': '/blog/lcp-alto-next-js',
+      en: '/en/blog/nextjs-high-lcp',
+    },
+  },
+  {
+    id: 'inp-nextjs',
+    paths: {
+      'pt-BR': '/blog/inp-nextjs',
+      en: '/en/blog/nextjs-inp',
+    },
+  },
+  {
+    id: 'next-image-seo',
+    paths: {
+      'pt-BR': '/blog/next-image-seo',
+      en: '/en/blog/next-image-seo',
+    },
+  },
+  {
+    id: 'hreflang-nextjs',
+    paths: {
+      'pt-BR': '/blog/hreflang-nextjs',
+      en: '/en/blog/nextjs-hreflang',
+    },
+  },
+  {
+    id: 'redirects-canonicals-nextjs',
+    paths: {
+      'pt-BR': '/blog/redirects-canonicals-nextjs',
+      en: '/en/blog/nextjs-redirects-canonicals',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
