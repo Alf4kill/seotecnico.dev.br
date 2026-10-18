@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { citedTool, citedToolLabel, extractHeadings, readingTime } from '@/lib/content-derived'
-import { getAllPosts, getGuide, getRelatedPosts } from '@/lib/content'
+import { getAllEnglishPosts, getAllPosts, getGuide, getRelatedPosts } from '@/lib/content'
 import { CATEGORIES, getCategory, isCategorySlug, isPostStatus } from '@/lib/categories'
 
 describe('extractHeadings', () => {
@@ -132,6 +132,20 @@ describe('citedToolLabel', () => {
     const tool = citedTool('Veja o [validador](/ferramentas/validador-meta-tags).')!
     expect(citedToolLabel(tool, 'pt-BR')).toBe(tool.title)
     expect(citedToolLabel(tool, 'en')).toBe('Meta tag validator (Portuguese interface)')
+  })
+
+  it('uses the English tool title as is', () => {
+    const tool = citedTool('See the [validator](/en/tools/meta-tag-validator).')!
+    expect(tool.href).toBe('/en/tools/meta-tag-validator')
+    expect(citedToolLabel(tool, 'en')).toBe('Meta tag validator')
+  })
+
+  it('every English article cites the English version of a tool', () => {
+    // Desde 2026-10-18 as ferramentas têm versão inglesa: um artigo inglês que
+    // ainda mande o leitor para a interface portuguesa é link a corrigir.
+    for (const { frontmatter, derived } of getAllEnglishPosts()) {
+      expect(derived.citedTool?.href, frontmatter.slug).toMatch(/^\/en\/tools\//)
+    }
   })
 
   it('names every tool in English', () => {

@@ -355,16 +355,16 @@ consistency of the three signals is what the CI test checks.
    "User-declared canonical" field against the "Google-selected canonical". A
    divergence there is the symptom of contradictory signals; check canonical,
    sitemap and internal links until the three agree. Before that, to know what
-   the page **declares**, the [meta tag validator](/ferramentas/validador-meta-tags)
+   the page **declares**, the [meta tag validator](/en/tools/meta-tag-validator)
    separates the three ways of getting the canonical wrong: missing, relative, or
-   pointing to another URL (its interface is in Portuguese).
+   pointing to another URL.
 4. **The noindex case:** for a page that should leave the index, confirm both
    halves: the `noindex` meta present in the HTML **and** the URL crawlable (out
    of robots.txt). One without the other doesn't work; this site has the scar to
    prove it.
 5. **The destination page's JSON-LD:** after consolidating URLs, the schema's
    `@id`/`url` needs to point to the final canonical URL; the [JSON-LD
-   generator](/ferramentas/gerador-json-ld) emits the format used on this site.
+   generator](/en/tools/json-ld-generator) emits the format used on this site.
    And as always in the [technical SEO guide for
    Next.js](/en/guide/technical-seo-nextjs): the rule that matters becomes a CI
    test, because an indexing instrument without verification is a promise, not
