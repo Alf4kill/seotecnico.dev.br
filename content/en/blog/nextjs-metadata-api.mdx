@@ -652,9 +652,9 @@ Close the loop, as always, with verification, in this order:
    right; the shallow merge breaks the inner routes. Look for `og:url` (it
    must be the page's own URL), `og:locale`, `og:site_name` and `og:image`
    with an absolute URL. If you would rather not dig through raw HTML, this
-   site's [meta tag validator](/ferramentas/validador-meta-tags) reads that
+   site's [meta tag validator](/en/tools/meta-tag-validator) reads that
    same response and returns title, description, canonical and Open Graph
-   with a verdict for each (its interface is in Portuguese); it is step 1
+   with a verdict for each; it is step 1
    automated, including the 60 and 155 limits.
 2. **Compare two routes: one that customizes `openGraph` and one that
    doesn't.** If the set of emitted tags differs between them, you have ad hoc
@@ -664,8 +664,8 @@ Close the loop, as always, with verification, in this order:
    concluding that "it didn't work".
 4. **Rich Results Test for the JSON-LD** that comes from the same
    frontmatter; if you still assemble the block by hand, this site's [JSON-LD
-   generator](/ferramentas/gerador-json-ld) produces the format I use in
-   production (its interface is in Portuguese).
+   generator](/en/tools/json-ld-generator) produces the format I use in
+   production.
 5. **Lock it in CI.** A test that opens every route and checks a
    self-referencing canonical plus a matching `og:url` takes minutes to write
    and eliminates the whole class of regression. It was the difference between

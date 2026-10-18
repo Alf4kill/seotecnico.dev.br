@@ -109,10 +109,9 @@ an absolute URL, mandatory for Open Graph) and the behaviour of
 routes.
 
 To audit an already published route by the ruler of this section, this site has
-a [meta tag validator](/ferramentas/validador-meta-tags): it reads the HTML the
+a [meta tag validator](/en/tools/meta-tag-validator): it reads the HTML the
 server responds with and classifies title, description, canonical, robots, H1
-and Open Graph — the same checks this site's CI enforces on every deploy. (The
-tool's interface is in Portuguese; the report is readable regardless.)
+and Open Graph — the same checks this site's CI enforces on every deploy.
 
 → Full chapter: [Next.js Metadata API: canonical and the merge that isn't](/en/blog/nextjs-metadata-api)
 
@@ -183,7 +182,7 @@ type remains valid in schema.org — keeping it costs almost nothing when it is
 born from the same source as the visible FAQ.
 
 To assemble a one-off schema quickly, this site has a
-[JSON-LD generator](/ferramentas/gerador-json-ld) that returns both the object
+[JSON-LD generator](/en/tools/json-ld-generator) that returns both the object
 and the ready-made Next.js component.
 
 → Full chapter: [How to implement JSON-LD in Next.js (App Router)](/en/blog/nextjs-json-ld)
@@ -280,7 +279,7 @@ or too much preloading competing for bandwidth with the very element it was
 supposed to speed up.
 
 Before diagnosing anything, it helps to know where you stand in the **field**:
-the [Core Web Vitals checker](/ferramentas/checador-cwv) queries your origin's
+the [Core Web Vitals checker](/en/tools/cwv-checker) queries your origin's
 real p75 in CrUX. If the origin isn't in the dataset yet — the case for most
 sites — that is information too: it means your only route is your own RUM, as
 this site does.

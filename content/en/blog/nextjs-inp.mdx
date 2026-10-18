@@ -271,12 +271,12 @@ After applying any fix above:
 1. **In GA4**, build an Exploration with `metric_name = INP`, `metric_id` in the rows and Event count among the metrics, and export it. The Exploration **sums** custom metrics, so the **maximum per `metric_id`** has to be calculated outside GA4: a row with an Event count greater than 1 is a sum of reports, not a measurement. Then break it down by `inp_element` and by the three subparts, without trusting the event's route (see the trap above), and compare the window before and after the deploy.
 2. **In DevTools**, repeat the Performance panel recording on the same interaction and check whether the long task you went after has left the trace.
 3. **In Lighthouse**, what will move is **TBT**, not INP; use it as an indirect signal and don't confuse one with the other.
-4. **In CrUX**, if and when the site crosses the traffic threshold, remember that the window is 28 days: field data takes time to reflect the fix. To find out whether your domain is already in, and what its field INP is if it is, use the [Core Web Vitals checker](/ferramentas/checador-cwv) (its interface is in Portuguese).
+4. **In CrUX**, if and when the site crosses the traffic threshold, remember that the window is 28 days: field data takes time to reflect the fix. To find out whether your domain is already in, and what its field INP is if it is, use the [Core Web Vitals checker](/en/tools/cwv-checker).
 
 The order of business is always the same: a fix without field measurement is a guess with nice syntax.
 
 ---
 
-This article is path 6 of the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs). If the problem is loading and not interaction, the starting point is [how to improve LCP in Next.js](/en/blog/improve-lcp-nextjs); that is, in fact, where this RUM pipeline was born. And to validate this article's own FAQPage, the [JSON-LD generator](/ferramentas/gerador-json-ld) does the job (its interface is in Portuguese).
+This article is path 6 of the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs). If the problem is loading and not interaction, the starting point is [how to improve LCP in Next.js](/en/blog/improve-lcp-nextjs); that is, in fact, where this RUM pipeline was born. And to validate this article's own FAQPage, the [JSON-LD generator](/en/tools/json-ld-generator) does the job.
 
 This is the English version of [an article first published in Portuguese](/blog/inp-nextjs); the two declare each other.

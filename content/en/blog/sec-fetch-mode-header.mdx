@@ -295,8 +295,8 @@ signal in two fields recorded on every page: `has_sec_fetch` and `ua_class`,
 which marks `browser-like` when that header is there and `Accept` asks for
 HTML. Any client built on Node's `fetch` that asked for HTML was counted as a
 browser. That includes this site's own tool: the [meta tag
-validator](/ferramentas/validador-meta-tags) fetches the URL you paste with
-Node's `fetch` and an HTML `Accept` (its interface is in Portuguese), and when
+validator](/en/tools/meta-tag-validator) fetches the URL you paste with
+Node's `fetch` and an HTML `Accept`, and when
 the URL was this site's, it reached the proxy shaped like a browser.
 
 `lab_fetch_mode` was not affected: it records the pair as a string, so a Node
