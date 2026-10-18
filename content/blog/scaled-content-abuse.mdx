@@ -1,0 +1,332 @@
+---
+title: "Scaled content abuse: como o Google lê páginas em template"
+description: "O que a política de scaled content abuse diz sobre bloco de cidades, uma página por keyword e title gerado, com as fontes do Google e o caso no Next.js."
+slug: "scaled-content-abuse"
+primaryQuery: "scaled content abuse"
+keywords: ['scaled content abuse', 'abuso de conteúdo em escala', 'conteúdo em escala', 'keyword stuffing', 'doorway', 'páginas por cidade', 'regiões atendidas', 'boilerplate', 'canônica', 'template']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  Scaled content abuse é a política de spam do Google contra páginas em massa
+  feitas para manipular o ranqueamento, por IA, script ou pessoas. No template de
+  agência, o bloco de cidades é um exemplo de keyword stuffing, e a página por
+  variação entra na definição de doorway.
+datePublished: "2026-10-18"
+dateModified: "2026-10-18"
+faq:
+  - question: "Scaled content abuse vale para texto escrito por pessoas?"
+    answer: "Sim. A política descreve muitas páginas geradas para manipular o ranqueamento sem ajudar quem lê, e o Google diz que o método de produção não importa. Desde a mudança de março de 2024, ela cobre automação, trabalho humano ou a combinação dos dois."
+  - question: "Página por cidade é sempre doorway?"
+    answer: "Não. Os exemplos de doorway falam de páginas por região que afunilam o visitante para uma única página e de páginas substancialmente parecidas que funcionam mais como resultado de busca do que como navegação. Uma página de cidade com informação própria daquele lugar fica fora dessa descrição."
+  - question: "Usar IA para escrever é scaled content abuse?"
+    answer: "Não por si só. O guia do Google sobre IA generativa diz que ela ajuda em pesquisa e estrutura, e que o problema é gerar muitas páginas sem acrescentar valor. O critério é escala sem valor, não a ferramenta."
+  - question: "Title igual ao H1 prejudica o SEO?"
+    answer: "Não há nada na documentação do Google dizendo isso. O guia de title links sugere o contrário: deixar claro qual é o título principal da página, por exemplo colocando o texto do título no primeiro h1 visível."
+---
+
+Scaled content abuse é a política de spam do Google contra sites que produzem muitas páginas com o objetivo principal de manipular o ranqueamento, sem ajudar quem lê. A política vale para qualquer método: IA, script ou uma pessoa preenchendo template. O modelo de agência com bloco fixo de cidades atendidas, uma página por variação de keyword e title gerado em série aparece, peça por peça, em três trechos da documentação: o exemplo de keyword stuffing, a definição de doorway e a própria política de escala.
+
+Não há medição de laboratório aqui. O artigo pega o HTML que um template típico serve, mostra qual frase da documentação descreve cada pedaço e termina com o passo a passo para auditar o seu.
+
+## O que o Google chama de scaled content abuse
+
+Nas políticas de spam, scaled content abuse (na versão em português, "abuso de conteúdo em escala") é gerar muitas páginas com o propósito principal de manipular o ranqueamento, e não de ajudar o usuário. Costuma vir como grande volume de conteúdo pouco original e de pouco valor, e o texto fecha com o ponto central: tanto faz como o conteúdo foi criado.
+
+Os exemplos listados, em paráfrase:
+
+- usar IA generativa ou ferramenta parecida para gerar muitas páginas sem acrescentar valor;
+- raspar feeds, resultados de busca ou outros conteúdos, inclusive com troca de sinônimos ou tradução automática;
+- costurar trechos de páginas diferentes sem acrescentar nada;
+- criar vários sites para esconder a escala;
+- criar muitas páginas que fazem pouco sentido para quem lê, mas contêm as palavras-chave buscadas.
+
+A mudança que puxa o template de agência para esse escopo é de março de 2024. A antiga política de "conteúdo gerado automaticamente" virou uma política sobre escala, e o anúncio deixou explícito que ela vale para conteúdo produzido por automação, por pessoas ou pelos dois. Um redator preenchendo o template cidade por cidade está coberto do mesmo jeito que um script.
+
+IA não é o alvo. O guia do Google sobre conteúdo com IA diz que ela ajuda em pesquisa e na estrutura de um texto original; o problema é gerar muitas páginas sem valor. O critério é escala sem valor, não a ferramenta.
+
+| Quando | O que mudou na documentação |
+|---|---|
+| 2022 | O Google lança o sistema de conteúdo útil, com um sinal aplicado ao site inteiro |
+| Março de 2024 | Conteúdo gerado automaticamente vira scaled content abuse; o sistema de conteúdo útil passa a fazer parte dos sistemas centrais de ranqueamento |
+| Maio de 2026 | As políticas de spam passam a valer também para as respostas de IA generativa da Busca |
+| Outubro de 2026 | O guia sobre conteúdo com IA passa a apontar as seções das diretrizes de avaliadores sobre escala e baixo esforço |
+
+O texto do Google hoje nomeia essas práticas. Nenhuma fonte oficial marca uma data a partir da qual o modelo de agência deixou de dar resultado, e eu não vou inventar uma.
+
+## O que um template de agência coloca no HTML
+
+Para deixar concreto, vou usar um site fictício: a Desentupidora Exemplo, uma empresa de serviço com site no modelo clássico de agência. Não existe e não tem métricas.
+
+O template produz três coisas no HTML servido:
+
+1. **Um bloco fixo em toda página**: "Atendemos os bairros X, Y, Z..." com a lista de bairros e cidades, seguido de um parágrafo institucional idêntico em todas as URLs.
+2. **Uma página por keyword ou por cidade**: `/desentupidora-zona-sul`, `/desentupidora-24h`, `/desentupidora-em-osasco`, cada uma com o mesmo corpo e a keyword trocada.
+3. **`<title>`, H1 e `alt` gerados a partir da keyword**: o mesmo molde com uma palavra diferente em cada página.
+
+<figure>
+  <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="As três peças de um template de agência, o que cada uma coloca no HTML servido e o trecho da documentação do Google que a descreve">
+    <title>Do template ao trecho da documentação</title>
+    <desc>Três linhas e três colunas. Na primeira coluna, as peças do template: bloco fixo de cidades e bairros, uma página por variação, title, H1 e alt gerados. Na segunda, o que cada uma coloca no HTML servido: o mesmo bloco em toda página, páginas quase iguais em que muda só a keyword, titles que mudam uma palavra. Na terceira, onde o Google descreve cada uma: keyword stuffing, doorway e scaled content abuse, boilerplate em title. Setas ligam as colunas da esquerda para a direita.</desc>
+    <text x="120" y="26" textAnchor="middle" fontSize="12" fill="var(--foreground)">Peça do template</text>
+    <text x="360" y="26" textAnchor="middle" fontSize="12" fill="var(--foreground)">No HTML servido</text>
+    <text x="600" y="26" textAnchor="middle" fontSize="12" fill="var(--foreground)">Onde o Google descreve</text>
+    <rect x="20" y="44" width="200" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="120" y="71" textAnchor="middle" fontSize="12" fill="var(--foreground)">Bloco fixo de</text>
+    <text x="120" y="89" textAnchor="middle" fontSize="12" fill="var(--foreground)">cidades e bairros</text>
+    <rect x="260" y="44" width="200" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="71" textAnchor="middle" fontSize="12" fill="var(--foreground)">Mesmo bloco</text>
+    <text x="360" y="89" textAnchor="middle" fontSize="12" fill="var(--foreground)">em toda página</text>
+    <rect x="500" y="44" width="200" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="600" y="71" textAnchor="middle" fontSize="12" fill="var(--foreground)">Keyword stuffing</text>
+    <text x="600" y="89" textAnchor="middle" fontSize="11" fill="var(--foreground)">exemplo literal da política</text>
+    <rect x="20" y="128" width="200" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="120" y="155" textAnchor="middle" fontSize="12" fill="var(--foreground)">Uma página</text>
+    <text x="120" y="173" textAnchor="middle" fontSize="12" fill="var(--foreground)">por variação</text>
+    <rect x="260" y="128" width="200" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="155" textAnchor="middle" fontSize="12" fill="var(--foreground)">Páginas quase iguais,</text>
+    <text x="360" y="173" textAnchor="middle" fontSize="12" fill="var(--foreground)">muda só a keyword</text>
+    <rect x="500" y="128" width="200" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="600" y="155" textAnchor="middle" fontSize="12" fill="var(--foreground)">Doorway e</text>
+    <text x="600" y="173" textAnchor="middle" fontSize="12" fill="var(--foreground)">scaled content abuse</text>
+    <rect x="20" y="212" width="200" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="120" y="239" textAnchor="middle" fontSize="12" fill="var(--foreground)">Title, H1 e alt</text>
+    <text x="120" y="257" textAnchor="middle" fontSize="12" fill="var(--foreground)">gerados</text>
+    <rect x="260" y="212" width="200" height="64" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="239" textAnchor="middle" fontSize="12" fill="var(--foreground)">Titles que mudam</text>
+    <text x="360" y="257" textAnchor="middle" fontSize="12" fill="var(--foreground)">uma palavra</text>
+    <rect x="500" y="212" width="200" height="64" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="600" y="239" textAnchor="middle" fontSize="12" fill="var(--foreground)">Boilerplate</text>
+    <text x="600" y="257" textAnchor="middle" fontSize="12" fill="var(--foreground)">em title</text>
+    <line x1="220" y1="76" x2="252" y2="76" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="260,76 252,72 252,80" fill="var(--color-diagram-axis)" />
+    <line x1="460" y1="76" x2="492" y2="76" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="500,76 492,72 492,80" fill="var(--color-diagram-axis)" />
+    <line x1="220" y1="160" x2="252" y2="160" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="260,160 252,156 252,164" fill="var(--color-diagram-axis)" />
+    <line x1="460" y1="160" x2="492" y2="160" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="500,160 492,156 492,164" fill="var(--color-diagram-axis)" />
+    <line x1="220" y1="244" x2="252" y2="244" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="260,244 252,240 252,248" fill="var(--color-diagram-axis)" />
+    <line x1="460" y1="244" x2="492" y2="244" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="500,244 492,240 492,248" fill="var(--color-diagram-axis)" />
+  </svg>
+  <figcaption>Cada peça do template, o que ela coloca no HTML servido e o trecho da documentação do Google que a descreve.</figcaption>
+</figure>
+
+A mesma relação, em tabela:
+
+| Peça do template | No HTML servido | Onde o Google descreve |
+|---|---|---|
+| Bloco fixo de cidades e bairros | Mesmo bloco de texto em toda página | Exemplo de keyword stuffing nas políticas de spam; conteúdo de enchimento nas diretrizes de avaliadores |
+| Uma página por variação | Páginas quase iguais, muda a keyword ou a cidade | Doorway e scaled content abuse nas políticas de spam; guia de otimização para IA generativa |
+| Title, H1 e alt gerados | Titles que mudam uma palavra | Boilerplate em `<title>` no guia de title links; revisão de metadados no guia sobre IA |
+
+## Bloco de cidades atendidas: o exemplo literal de keyword stuffing
+
+Keyword stuffing, na definição do Google, é encher a página de palavras-chave ou números para manipular o ranqueamento, muitas vezes em listas, de forma pouco natural ou fora de contexto. Um dos exemplos é "blocks of text that list cities and regions", ou seja, blocos de texto que listam cidades e regiões, e o texto completo especifica: aquelas pelas quais a página tenta ranquear.
+
+Esse qualificador é o que importa. O problema não é dizer onde a empresa atende; é um bloco cuja função é colocar nomes de cidades na página para ranquear por eles. O guia de introdução ao SEO reforça: repetir as mesmas palavras, mesmo em variações, cansa o usuário e vai contra as políticas de spam.
+
+As diretrizes dos avaliadores têm a categoria conteúdo de enchimento (filler): material de baixo esforço que infla a página, pior quando é grande ou empurra o conteúdo útil para baixo. Que um bloco de bairros repetido em toda página se encaixa aí é leitura minha, não está no texto do Google: as diretrizes não citam esse caso.
+
+O que a documentação **não** diz: como o Google pondera um bloco de corpo repetido no site inteiro, ou quantos nomes de cidade uma página pode ter. Qualquer número sobre isso vem de terceiros.
+
+## Uma página por variação de keyword: doorway e escala
+
+A política de doorway descreve páginas criadas para ranquear em buscas específicas e parecidas, que levam a páginas intermediárias menos úteis que o destino final. Dois exemplos encaixam no template:
+
+- páginas voltadas para regiões ou cidades específicas que afunilam o visitante para uma única página;
+- páginas substancialmente parecidas, mais próximas de resultados de busca do que de uma hierarquia navegável.
+
+O guia do Google sobre otimização para IA generativa fecha a outra ponta: criar conteúdo separado para cada variação de como as pessoas buscam, quando feito principalmente para manipular o ranqueamento ou as respostas de IA, viola a política de scaled content abuse. O guia acrescenta que volume de páginas não torna um site mais relevante e que os sistemas entendem sinônimos sem uma página por formulação.
+
+**Nem toda página por cidade é doorway.** Os exemplos falam de afunilamento e de páginas substancialmente parecidas. Uma página de localidade com informação própria do lugar (equipe, endereço, prazo de atendimento, particularidades da região) fica fora dessa descrição. O teste útil: se eu trocar o nome da cidade, o resto da página continua verdadeiro? Se sim, a página não tem nada próprio do lugar.
+
+Existe uma versão mais sofisticada: reescrever o texto para cada keyword. Essas páginas não são duplicatas textuais, então um verificador de texto duplicado não acusa nada. Só que a política não fala em texto idêntico; fala em páginas substancialmente parecidas e em escala. Dizer a mesma coisa com outras palavras continua dentro dessa descrição.
+
+As diretrizes dos avaliadores trazem exemplos desse tipo nas seções sobre escala e baixo esforço: páginas de códigos de erro preenchidas por template, nomes de produto trocados num texto genérico, centenas de artigos no mesmo molde, perguntas e respostas repetitivas. Ressalva: essas diretrizes orientam avaliadores que medem a qualidade dos sistemas, e o Google afirma que as notas deles não influenciam o ranqueamento diretamente.
+
+## Title, H1 e alt gerados em série
+
+O guia de title links é direto: "Avoid repeated or boilerplate text in `<title>` elements", ou seja, evitar texto repetitivo ou padronizado no `<title>`. O exemplo ruim do guia é um title longo comum a todas as páginas que muda uma única informação. A solução sugerida é gerar o title a partir do que a página realmente tem.
+
+Quando detecta esse problema, o Google pode montar outro título para o resultado a partir de headings, texto da página ou âncoras. Se isso acontece com as páginas do template, o resultado de busca deixa de mostrar o title que o molde gerou.
+
+O guia sobre conteúdo com IA estende a revisão aos metadados: `<title>`, meta description, dados estruturados e `alt` de imagens. Se o template gera esses campos a partir da keyword, eles herdam o problema do corpo.
+
+**Title igual ao H1 não é problema documentado.** O guia de title links aponta o contrário: deixar claro qual é o título principal, por exemplo com o texto do título no primeiro `<h1>` visível. Neste site, o H1 de cada artigo é renderizado a partir do title do frontmatter. O que o guia critica é title igual entre páginas, não title igual ao H1 da mesma página.
+
+## Como o Google lê um conjunto de páginas quase iguais
+
+A documentação de canonicalização descreve o mecanismo: ao indexar, o Google identifica o conteúdo principal de cada página; quando várias têm conteúdo principal muito parecido, agrupa todas, escolhe a mais completa como canônica e rastreia as outras com menos frequência.
+
+Conteúdo duplicado, por si só, não viola as políticas de spam. A página de canonicalização diz isso, e o guia de introdução ao SEO acrescenta que é ineficiente, mas não gera ação manual. A consolidação dessas URLs na prática está em [redirects e canônicas no Next.js](/blog/redirects-canonicals-nextjs).
+
+O que dá para afirmar é condicional. **Se** as páginas do template diferem só pela keyword ou pela cidade, a parte que varia é pequena perto da parte compartilhada, e o comportamento documentado para conteúdo principal muito parecido é agrupar e indexar uma. O Google nunca escreveu isso sobre páginas de cidade; é o mecanismo geral aplicado ao caso.
+
+<figure>
+  <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cinco URLs quase iguais de um template caem num mesmo agrupamento; uma vira a canônica indexada e as outras passam a ser rastreadas com menos frequência">
+    <title>Páginas quase iguais viram um agrupamento</title>
+    <desc>À esquerda, cinco URLs do mesmo template. Linhas levam as cinco a um agrupamento central, rotulado conteúdo principal muito parecido. Do agrupamento, uma seta contínua leva a uma caixa em destaque, uma canônica no índice, e uma seta tracejada leva a outra caixa, demais URLs rastreadas com menos frequência.</desc>
+    <rect x="20" y="20" width="230" height="36" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="135" y="42" textAnchor="middle" fontSize="11" fill="var(--foreground)">/desentupidora-zona-sul</text>
+    <rect x="20" y="72" width="230" height="36" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="135" y="94" textAnchor="middle" fontSize="11" fill="var(--foreground)">/desentupidora-zona-norte</text>
+    <rect x="20" y="124" width="230" height="36" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="135" y="146" textAnchor="middle" fontSize="11" fill="var(--foreground)">/desentupidora-24h</text>
+    <rect x="20" y="176" width="230" height="36" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="135" y="198" textAnchor="middle" fontSize="11" fill="var(--foreground)">/desentupidora-em-osasco</text>
+    <rect x="20" y="228" width="230" height="36" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="135" y="250" textAnchor="middle" fontSize="11" fill="var(--foreground)">/desentupidora-barata</text>
+    <line x1="250" y1="38" x2="302" y2="142" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="250" y1="90" x2="302" y2="142" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="250" y1="142" x2="302" y2="142" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="250" y1="194" x2="302" y2="142" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <line x1="250" y1="246" x2="302" y2="142" stroke="var(--color-diagram-axis)" strokeWidth="1" />
+    <polygon points="310,142 302,138 302,146" fill="var(--color-diagram-axis)" />
+    <rect x="310" y="102" width="170" height="80" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="395" y="136" textAnchor="middle" fontSize="12" fill="var(--foreground)">Conteúdo principal</text>
+    <text x="395" y="154" textAnchor="middle" fontSize="12" fill="var(--foreground)">muito parecido</text>
+    <path d="M480 126 H510 V80 H532" fill="none" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="540,80 532,76 532,84" fill="var(--color-diagram-axis)" />
+    <path d="M480 158 H510 V214 H532" fill="none" stroke="var(--color-diagram-axis)" strokeWidth="1.5" strokeDasharray="4 3" />
+    <polygon points="540,214 532,210 532,218" fill="var(--color-diagram-axis)" />
+    <rect x="540" y="48" width="160" height="64" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="620" y="75" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">1 canônica</text>
+    <text x="620" y="93" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">no índice</text>
+    <rect x="540" y="174" width="160" height="80" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="620" y="201" textAnchor="middle" fontSize="12" fill="var(--foreground)">Demais URLs:</text>
+    <text x="620" y="219" textAnchor="middle" fontSize="12" fill="var(--foreground)">rastreadas com</text>
+    <text x="620" y="237" textAnchor="middle" fontSize="12" fill="var(--foreground)">menos frequência</text>
+  </svg>
+  <figcaption>O mecanismo de canonicalização aplicado a páginas de template que só mudam a keyword ou a cidade.</figcaption>
+</figure>
+
+Em texto: o Google identifica o conteúdo principal de cada URL do template. Como ele é quase o mesmo em todas, elas caem no mesmo agrupamento. Uma vira a canônica indexada, e as outras passam a ser rastreadas com menos frequência.
+
+Sobre site versus página: entre 2022 e 2024, o sistema de conteúdo útil aplicava um sinal ao site inteiro, hoje documentado como histórico. Atualmente, o guia de sistemas de ranqueamento diz que eles trabalham no nível da página, mas também usam sinais do site, sem detalhar quais. A frase de que o Google presume que páginas individuais acompanham a qualidade das outras do domínio existe, mas está dentro da política de reputação de site, que trata de conteúdo de terceiros. Vale como indicação, não como regra sobre templates.
+
+## O que não é problema (e circula como se fosse)
+
+Muita "regra" de conteúdo que circula em pt-BR não tem base na documentação:
+
+| O que circula | O que o Google diz | Fonte |
+|---|---|---|
+| A página precisa de um mínimo de palavras | Tamanho sozinho não importa; não existe contagem ideal | Guia de introdução ao SEO; guia de IA generativa |
+| Quebrar o texto em pedaços pequenos ajuda a IA | Não é necessário | Guia de IA generativa |
+| Headings precisam de ordem e quantidade certas | Para a Busca, ordem não importa e não há quantidade ideal | Guia de introdução ao SEO |
+| Title igual ao H1 é erro | Não documentado; o guia sugere o título no primeiro h1 visível | Guia de title links |
+| É preciso cobrir toda variação de cauda longa | Desnecessário; os sistemas entendem sinônimos | Guia de IA generativa |
+| Texto com "cara de IA" é punido | O uso de IA não é o critério; valor é | Guia sobre conteúdo com IA; diretrizes de avaliadores |
+| Conteúdo duplicado gera punição | Não viola as políticas de spam nem gera ação manual | Canonicalização; guia de introdução ao SEO |
+
+O problema de política está em escala sem valor, bloco de keywords e páginas de entrada. Formatação não entra nessa conta.
+
+## No Next.js: `generateStaticParams` com lista de keywords é um gerador de doorway
+
+No [guia de SEO técnico no Next.js](/guia/seo-tecnico-nextjs) eu uso o App Router como implementação de referência. E o template de agência cabe em poucas linhas nele.
+
+Ilustrativo: não existe neste repositório.
+
+```tsx
+// app/servicos/[slug]/page.tsx
+const variacoes = ['desentupidora-zona-sul', 'desentupidora-24h', 'desentupidora-em-osasco']
+
+export function generateStaticParams() {
+  return variacoes.map((slug) => ({ slug }))
+}
+
+type Props = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: Props) {
+  const { slug } = await params
+  return { title: `${slug.replaceAll('-', ' ')} | Marca` }
+}
+
+export default async function Page({ params }: Props) {
+  const { slug } = await params
+  return <PaginaServico keyword={slug.replaceAll('-', ' ')} />
+}
+```
+
+O build emite uma página por item da lista, com o mesmo corpo e title no formato "keyword | Marca". O Googlebot avalia o HTML que chega, não o código que o gerou.
+
+O código real da rota de artigos deste site:
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx
+// Somente slugs existentes em /content/blog são gerados; o resto é 404.
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return getAllPosts().map(({ frontmatter }) => ({ slug: frontmatter.slug }))
+}
+```
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const post = getPostBySlug(slug)
+  if (!post) return {}
+
+  const { frontmatter } = post
+  return buildMetadata({
+    title: frontmatter.title,
+    absoluteTitle: true,
+    description: frontmatter.description,
+    path: `/blog/${frontmatter.slug}`,
+    article: {
+      publishedTime: frontmatter.datePublished,
+      modifiedTime: frontmatter.dateModified,
+    },
+    ogImage: {
+      path: `/blog/${frontmatter.slug}/opengraph-image`,
+      alt: frontmatter.title,
+    },
+  })
+}
+```
+
+O formato é parecido; a origem da lista não. Aqui, cada rota existe porque um arquivo MDX foi escrito, e qualquer outro slug retorna 404 por causa do `dynamicParams = false`. O title vem do frontmatter de cada artigo, não de um molde "keyword | Marca" (detalhes em [como gerar title e description com a Metadata API](/blog/metadata-api-nextjs)).
+
+A diferença não está no `generateStaticParams`, e sim no que a lista representa: conteúdo escrito ou keywords. Este site não tem páginas por cidade nem por variação, então não tenho dado próprio sobre como o Google trataria um template desses.
+
+## Como verificar se o seu template cai nisso
+
+Cinco passos, do mais objetivo ao mais subjetivo:
+
+1. **Inspeção de URL no Search Console**, em duas ou três páginas do template. Compare o "URL canônico declarado pelo usuário" com o "URL canônico selecionado pelo Google". Se o Google escolhe outra página do template, está tratando as duas como cópias. Use os dados da versão indexada: segundo a ajuda do Search Console, o teste ao vivo não avalia cópia nem canônica.
+2. **Relatório de indexação de páginas.** Procure "Cópia sem página canônica selecionada pelo usuário" e "Cópia, o Google e o usuário não escolheram a mesma página canônica". Muitas URLs do template nesses status indicam que o Google agrupou as páginas e indexou uma. Não é erro em si; é a canonicalização agindo sobre páginas quase iguais.
+3. **Relatório de ações manuais.** Confirme que está vazio. Não há ação com o nome da política: o abuso de conteúdo em escala aparece dentro de "Problemas graves de spam", doorways dentro de "Conteúdo superficial com pouco ou nenhum valor agregado", e keyword stuffing em "Texto oculto e/ou excesso de palavras-chave". Relatório vazio não significa que os sistemas automáticos concordam: o Google detecta violações por sistemas automáticos e, quando necessário, por revisão humana, e é a revisão humana que pode resultar em ação manual.
+4. **Crawl dos titles.** Exporte os titles com o Screaming Frog ou similar, remova a parte variável (cidade, bairro, keyword) e agrupe o resto. Dezenas de URLs com o mesmo title é o boilerplate descrito no guia. Para conferir página a página, o [validador de meta tags](/ferramentas/validador-meta-tags) mostra title, description e H1 lado a lado.
+5. **Teste do avaliador.** Abra várias páginas do template em sequência. As diretrizes orientam os avaliadores a julgar escala depois de olhar várias páginas, não uma. É heurística, não medição, mas costuma deixar o padrão óbvio.
+
+## Se o site já é assim: o que o Google documenta sobre recuperação
+
+A página sobre core updates diz que melhorias podem levar meses para serem reconhecidas, às vezes só no core update seguinte. Desde dezembro de 2025, ela também cita atualizações centrais menores, não anunciadas, como outra via. E não há garantia de impacto.
+
+Remover conteúdo é tratado como último recurso. A mesma página diz que, se você pensa em apagar seções inteiras, elas provavelmente foram feitas para buscadores, e removê-las pode ajudar o resto do site. Nada ali garante recuperação de tráfego ao tirar o bloco de cidades, e eu também não garanto.
+
+Se eu tivesse que ordenar o trabalho, com a ressalva de que depende do site:
+
+- **Consolidar** as páginas por variação em uma página por serviço real, com redirect das URLs antigas. No Next.js, `permanent: true` gera 308, não 301; detalhes em [redirects e canônicas no Next.js](/blog/redirects-canonicals-nextjs).
+- **Trocar o bloco de cidades** por informação real de cobertura onde ajuda quem lê, como prazo de atendimento por região.
+- **Reescrever os titles** a partir de campos distintos de cada página, não de um molde com a keyword.
+
+## Fontes
+
+- [Políticas de spam para a pesquisa na Web do Google](https://developers.google.com/search/docs/essentials/spam-policies), consultado em 18/10/2026
+- [Otimizar seu site para recursos de IA generativa na Pesquisa Google](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide), consultado em 18/10/2026
+- [Orientações da Pesquisa Google sobre conteúdo gerado com IA](https://developers.google.com/search/docs/fundamentals/using-gen-ai-content), consultado em 18/10/2026
+- [Atualizações principais da Pesquisa Google](https://developers.google.com/search/docs/appearance/core-updates), consultado em 18/10/2026
+- [Guia dos sistemas de classificação da Pesquisa Google](https://developers.google.com/search/docs/appearance/ranking-systems-guide), consultado em 18/10/2026
+- [Atualização principal de março de 2024 e novas políticas de spam](https://developers.google.com/search/blog/2024/03/core-update-spam-policies), consultado em 18/10/2026
+- [Diretrizes de avaliadores de qualidade da Pesquisa, edição de 11/09/2025](https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf), consultado em 18/10/2026
+- [O que é canonicalização de URL](https://developers.google.com/search/docs/crawling-indexing/canonicalization), consultado em 18/10/2026
+- [Guia de introdução ao SEO](https://developers.google.com/search/docs/fundamentals/seo-starter-guide), consultado em 18/10/2026
+- [Como influenciar os title links nos resultados](https://developers.google.com/search/docs/appearance/title-link), consultado em 18/10/2026
+- [Pesquisa Google e conteúdo gerado por IA (blog, 2023)](https://developers.google.com/search/blog/2023/02/google-search-and-ai-content), consultado em 18/10/2026
+- [Ferramenta de inspeção de URL (Ajuda do Search Console)](https://support.google.com/webmasters/answer/9012289?hl=pt-BR), consultado em 18/10/2026
+- [Relatório de indexação de páginas (Ajuda do Search Console)](https://support.google.com/webmasters/answer/7440203?hl=pt-BR), consultado em 18/10/2026
+- [Relatório de ações manuais (Ajuda do Search Console)](https://support.google.com/webmasters/answer/9044175?hl=pt-BR), consultado em 18/10/2026
