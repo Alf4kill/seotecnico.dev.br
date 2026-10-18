@@ -12,7 +12,7 @@ tldr: >-
   descartado em silêncio — inclusive og:image, og:url e og:locale. O mesmo vale
   para alternates, e é assim que o canonical some.
 datePublished: "2026-07-22"
-dateModified: "2026-09-13"
+dateModified: "2026-10-18"
 faq:
   - question: "O openGraph do layout é herdado pela página?"
     answer: "Não, se a página definir qualquer campo dentro de openGraph. O merge da Metadata API é raso: quando a página declara o próprio objeto openGraph, o objeto inteiro do layout pai é descartado — inclusive og:locale, og:site_name e og:image. A herança só acontece quando a página não declara openGraph nenhum. Comportamento verificado no Next.js 16.2.6 e documentado na referência oficial do generateMetadata."
@@ -356,12 +356,14 @@ export function GET() {
   return new ImageResponse(
     (
       <OgCard
-        badge="Laboratório de SEO técnico"
-        title="SEO técnico para desenvolvedores Next.js"
+        kicker="Laboratório vivo"
+        title="SEO técnico para quem desenvolve"
+        highlight="sites modernos"
         subtitle="Guias práticos, ferramentas gratuitas e experimentos medidos com dados reais."
+        art={{ kind: 'mark', variant: 'beam' }}
       />
     ),
-    OG_SIZE
+    { ...OG_SIZE, fonts: ogFonts() }
   )
 }
 ```

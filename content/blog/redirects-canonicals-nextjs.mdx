@@ -12,7 +12,7 @@ tldr: >-
   conhecida no build, ela fica no redirects() do config; middleware só quando a
   decisão depende de cookie, header ou geografia.
 datePublished: "2026-07-22"
-dateModified: "2026-09-13"
+dateModified: "2026-10-18"
 faq:
   - question: "permanent true no Next.js é 301 ou 308?"
     answer: "É 308. A diferença para o 301 é que o 308 obriga o cliente a preservar o método HTTP do request original (um POST continua POST). Para SEO dá no mesmo: o Google trata ambos como redirect permanente e consolida os sinais na URL de destino — para páginas acessadas via GET, a distinção é irrelevante na prática."
@@ -57,8 +57,8 @@ que dois deles, combinados, se anulam — medido neste site.
 
 Quando a regra é conhecida no build — a migração de slug, a URL legada, o
 caminho renomeado — o lugar dela é o array `redirects()` do config. O
-formato (ilustrativo; a razão de não haver um exemplo de produção aqui vem
-já na próxima frase):
+formato (ilustrativo; o único redirect de produção deste site vem logo
+depois):
 
 ```ts
 // next.config.ts — exemplo ilustrativo, não código deste site
@@ -70,11 +70,26 @@ async redirects() {
 ```
 
 E a transparência que este site deve ao leitor: o array `redirects()` de
-produção daqui está **vazio** — existe só o comentário de exemplo em
-`next.config.ts`. Não por descuido: o site nasceu em 2026-07 já com a
-estrutura atual de URLs, e **redirect é dívida de histórico, não boa prática
-por si**. Quem não tem URL legada não tem o que redirecionar — e cada
-redirect que você não precisa criar é uma cadeia que nunca vai existir.
+produção daqui tem **uma regra só**, criada em setembro de 2026, quando `/en`
+virou a home em inglês. `/en/guide` é um segmento de caminho sem página, e
+quem encurtava a URL do guia em inglês caía num 404:
+
+```ts
+// next.config.ts
+  async redirects() {
+    return [
+      // /en/guide é só um segmento de caminho, sem página: quem encurta a URL
+      // do guia inglês caía num 404. Com /en virando home, este era o último
+      // beco sem saída da camada inglesa. `permanent` ⇒ 308.
+      { source: '/en/guide', destination: '/en/guide/technical-seo-nextjs', permanent: true },
+    ]
+  },
+```
+
+Fora essa, nenhuma. O site nasceu em 2026-07 já com a estrutura atual de URLs,
+e **redirect é dívida de histórico, não boa prática por si**. Quem não tem URL
+legada não tem o que redirecionar — e cada redirect que você não precisa criar
+é uma cadeia que nunca vai existir.
 
 ### permanent: true é 308, não 301 — e por que dá no mesmo
 
@@ -99,14 +114,16 @@ mostra como.
 O middleware intercepta toda request antes do roteamento e pode responder
 com um redirect. É a ferramenta certa para exatamente um tipo de caso: **a
 decisão que depende de informação que só existe na request** — um cookie de
-sessão, um header, um país de origem. Um exemplo hipotético (este site não
-tem middleware — nenhuma linha):
+sessão, um header, um país de origem. No Next.js 16, o middleware passou a se
+chamar **Proxy**: o arquivo é `proxy.ts` e exporta uma função `proxy`, com o
+mesmo mecanismo. Um exemplo hipotético (o proxy deste site não redireciona
+nada; a próxima seção diz o que ele faz):
 
 ```ts
-// middleware.ts — exemplo hipotético, este site não usa middleware
+// proxy.ts — exemplo hipotético; até o Next.js 15, middleware.ts
 import { NextResponse, type NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.cookies.has("beta-optin")) {
     return NextResponse.redirect(new URL("/beta", request.url));
   }
@@ -119,6 +136,12 @@ Cada request do site — página, asset que passe pelo matcher, crawler —
 executa o middleware. É latência somada na frente de tudo, inclusive na
 frente do Googlebot. Esse custo se justifica quando a lógica é
 verdadeiramente dinâmica; para regra estática, é desperdício puro.
+
+Este site paga esse custo de propósito, e não por redirect: o `src/proxy.ts`
+registra cada request de página para medir se e como crawlers de IA leem o
+conteúdo, porque crawler não executa o JavaScript do GTM. É código na frente de
+toda página que o matcher deixa passar, aceito porque não existe outro lugar
+onde essa medição caiba.
 
 ### Redirect em middleware não é para URL que você já conhece
 

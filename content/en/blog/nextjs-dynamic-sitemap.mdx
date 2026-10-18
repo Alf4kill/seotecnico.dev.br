@@ -1,0 +1,484 @@
+---
+title: "Dynamic sitemap in Next.js with sitemap.ts and robots.ts"
+description: "Dynamic sitemap in Next.js: only 2 of the 4 fields matter to Google. How to derive it from content, fix lastmod and use robots.ts as a fail-safe."
+slug: "nextjs-dynamic-sitemap"
+primaryQuery: "next.js dynamic sitemap"
+keywords: ['english', 'inglês', 'sitemap', 'sitemap.ts', 'robots.ts', 'robots.txt', 'dynamic sitemap', 'lastmod', 'priority', 'changefreq', 'noindex', 'disallow', 'image sitemap', 'generatesitemaps', 'indexing']
+lang: "en"
+translationOf: "sitemap-dinamico-nextjs"
+category: indexacao
+tldr: >-
+  A dynamic sitemap is an app/sitemap.ts whose array is derived from the
+  content source, not typed by hand: publishing a post is enough for it to
+  grow on its own. Of the four fields you can declare per URL, Google actually
+  reads only loc and lastmod; priority and changefreq are ignored.
+datePublished: "2026-10-18"
+dateModified: "2026-10-18"
+faq:
+  - question: "Do I need to submit the sitemap in Google Search Console, or is declaring it in robots.txt enough?"
+    answer: >-
+      Declaring the sitemap in robots.txt, through the sitemap key in
+      robots.ts's return value, is enough for Googlebot to discover it.
+      Submitting it manually in Search Console is not required, but it speeds up
+      the first discovery and gives you the Sitemaps report, which shows how
+      many URLs were read from the file, a practical way to confirm Google sees
+      what you expect.
+  - question: "Do priority and changeFrequency do anything?"
+    answer: >-
+      Not for Google: the official documentation states that both fields are
+      ignored. Declaring them does no harm, but it does not influence ranking or
+      crawl order either. If the goal is optimizing for Google, time is better
+      spent making sure lastmod is verifiable than tuning those two values.
+  - question: "Which date should I use in lastmod?"
+    answer: >-
+      The date of the content's last significant update (a change in the main
+      text, the structured data or the page's links), never the build or
+      deploy date. Google only uses the field if it is consistent and
+      verifiable; new Date() on every build produces a date that never matches
+      a real change, which teaches Google to ignore the field.
+  - question: "My sitemap.ts exists but /sitemap.xml returns 404. What happened?"
+    answer: >-
+      First confirm the path: in the App Router the file is app/sitemap.ts, and
+      a sitemap.ts in pages/ or outside app/ produces no route at all. Then
+      confirm that the default function really returns the array and that
+      nothing threw during the build, because an exception in the function
+      takes down the route's generation. Finally, check that no static file is
+      serving the same path from public/.
+  - question: "Should I put noindex pages in the sitemap?"
+    answer: >-
+      No. The sitemap declares which URLs you want Google to crawl and consider
+      for indexing, so including a noindex URL in it is a contradictory signal:
+      you ask for attention to a page and, when Google gets there, tell it to
+      leave. If the page should not be indexed, the sitemap function should not
+      be enumerating it.
+  - question: "How do I keep Vercel previews from being indexed?"
+    answer: >-
+      Make robots.ts depend on an environment variable that only exists in
+      production, checking that it equals exactly the expected string before
+      allowing anything. Preview deploys, branches and local builds do not have
+      that variable set, so they fall into Disallow: / automatically, with no
+      manual configuration per deploy.
+---
+
+A dynamic sitemap in Next.js is an `app/sitemap.ts` file that exports a
+default function returning an array; Next.js serves that array at
+`/sitemap.xml` automatically. The "dynamic" part is not the routing, which
+Next.js already handles: it is the array itself being *derived* from the
+content source instead of typed by hand. Publishing a post should be enough for
+the sitemap to grow on its own; if that does not happen in your project, the
+sitemap is not dynamic, it is a `.ts` file with a fixed list inside.
+
+The rest of this article is not about creating the file, which takes three
+lines right below. It is about the question most tutorials in Portuguese do not
+answer: of the four fields `sitemap.ts` lets you declare per URL, how many does
+Google actually read? And what to do about the others, which keep being copied
+from tutorial to tutorial with no effect at all.
+
+```ts
+// app/sitemap.ts
+import type { MetadataRoute } from 'next'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [{ url: 'https://yoursite.com', lastModified: new Date() }]
+}
+```
+
+That is already a valid sitemap. The problem starts when that array does not
+change on its own as the site grows, and that is where most tutorials stop.
+This is the third path of the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs), and each
+section below is a decision made on this very site, with the code that is in
+production now.
+
+## What Next.js generates and what Google actually reads
+
+The format that shows up in practically every tutorial, including the official
+example in the Next.js documentation, is this:
+
+```ts
+{ url: '...', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 }
+```
+
+Four fields. According to Google's documentation on building a sitemap,
+`<priority>` and `<changefreq>` are ignored. The only metadata Google actually
+uses is `<lastmod>`, and only when the value is consistent and verifiable, for
+example by comparing it with the page's real last modification. Of four fields,
+then, two do nothing and the third only works if it is true.
+
+That is not an SEO blog's opinion; it is in the documentation. And the reason
+the pattern persists in so many tutorials is simple: Next.js's own official
+example also uses `lastModified: new Date()` on every entry, which is exactly
+the pattern that teaches Google to distrust the field, the subject of the
+section after next.
+
+| Field | Does Google use it? | Worth declaring |
+|---|---|---|
+| `url` | yes, it is the list of URLs that exist | always |
+| `lastModified` | yes, if it is verifiable | only when there is a real date derivable from the content |
+| `changeFrequency` | no | never; it affects nothing |
+| `priority` | no | never; it affects neither crawl order nor ranking |
+
+The `MetadataRoute.Sitemap` type, exported by `next`, types that array. It is
+what Next.js serializes to XML and serves at `/sitemap.xml` with no extra step.
+
+## A truly dynamic sitemap: derive it from the content
+
+<figure>
+  <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three columns showing the content source, the derivation and the sitemap output, with a fourth row in grey showing the alternative of a hand-maintained list">
+    <title>Where each sitemap URL comes from</title>
+    <desc>Three columns connected by lines: the first shows the content source, the MDX files in content/blog and their frontmatter; the second shows the derivation, the getAllPosts function that reads each file's dateModified; the third shows the sitemap output, the loc, lastmod and image:loc tags. A fourth row, in dashed grey, shows the alternative of a manually maintained list of URLs, with no derivation, which does not update itself when the content changes and so ends up with a missing or stale lastmod.</desc>
+    <text x="90" y="34" fontSize="13" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">Content source</text>
+    <text x="340" y="34" fontSize="13" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">Derivation</text>
+    <text x="590" y="34" fontSize="13" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">Sitemap output</text>
+    <rect x="20" y="52" width="140" height="60" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="90" y="78" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">content/blog/</text>
+    <text x="90" y="94" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">*.mdx (frontmatter)</text>
+    <line x1="162" y1="82" x2="266" y2="82" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="270" y="52" width="140" height="60" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="340" y="78" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">getAllPosts()</text>
+    <text x="340" y="94" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">reads dateModified</text>
+    <line x1="412" y1="82" x2="516" y2="82" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="520" y="52" width="140" height="60" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="590" y="78" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">&lt;loc&gt;, &lt;lastmod&gt;</text>
+    <text x="590" y="94" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">from the frontmatter</text>
+    <rect x="20" y="128" width="140" height="60" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="90" y="154" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">Diagrams</text>
+    <text x="90" y="170" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">exported from the post</text>
+    <line x1="162" y1="158" x2="266" y2="158" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="270" y="128" width="140" height="60" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="340" y="154" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">postImages</text>
+    <text x="340" y="170" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">slug → files</text>
+    <line x1="412" y1="158" x2="516" y2="158" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" />
+    <rect x="520" y="128" width="140" height="60" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="590" y="154" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">&lt;image:loc&gt;</text>
+    <text x="590" y="170" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">in the image namespace</text>
+    <line x1="20" y1="208" x2="660" y2="208" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" strokeDasharray="3 3" />
+    <text x="20" y="228" fontSize="11" fill="var(--color-diagram-axis, #9CA3AF)">Alternative not used on this site:</text>
+    <rect x="20" y="240" width="140" height="60" rx="8" fill="var(--color-accent, #F59E0B)" fillOpacity="0.12" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="90" y="266" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">List of URLs</text>
+    <text x="90" y="282" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">kept by hand</text>
+    <line x1="162" y1="270" x2="266" y2="270" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="3 3" />
+    <rect x="270" y="240" width="140" height="60" rx="8" fill="var(--color-accent, #F59E0B)" fillOpacity="0.12" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="340" y="266" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">None:</text>
+    <text x="340" y="282" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">the list is typed</text>
+    <line x1="412" y1="270" x2="516" y2="270" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="3 3" />
+    <rect x="520" y="240" width="140" height="60" rx="8" fill="var(--color-accent, #F59E0B)" fillOpacity="0.12" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="590" y="262" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">lastmod missing</text>
+    <text x="590" y="278" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">or stale</text>
+  </svg>
+  <figcaption>
+    The sitemap is a projection of the content: the source is the MDX file, the
+    derivation is a function, and the output follows on its own. Without
+    derivation, it drifts until someone remembers to edit the list.
+  </figcaption>
+</figure>
+
+The difference between a dynamic sitemap and a list of URLs with a `.ts`
+extension fits in one function: `getAllPosts()`. On this site, `sitemap.ts`
+does not list posts: it reads `/content/blog`, maps each MDX file to an entry
+and uses the frontmatter's `dateModified` as `lastModified`. Publishing a file
+is the only step. There is no second list to remember to update.
+
+```ts
+import { getAllPosts } from '@/lib/content'
+
+// Data local, não UTC: `new Date('2026-07-20')` seria interpretada como
+// meia-noite UTC e poderia voltar um dia no fuso de quem lê.
+const toDate = (d: string) => new Date(`${d}T00:00:00`)
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return getAllPosts().map(({ frontmatter }) => ({
+    url: `https://seotecnico.dev.br/blog/${frontmatter.slug}`,
+    lastModified: toDate(frontmatter.dateModified),
+  }))
+}
+```
+
+The comment says the date is built as local time, not UTC:
+`new Date('2026-07-20')` would be read as midnight UTC and could slip back a
+day in the reader's time zone. Note that `getAllPosts()` returns objects with
+the frontmatter nested (`frontmatter.slug`, `frontmatter.dateModified`),
+because the function separates the validated frontmatter from the MDX body.
+That validation happens at build time: a `title` over 60 characters or a
+missing required field breaks compilation before anything reaches the sitemap.
+
+The table below is the textual mirror of the diagram above, the same logic in
+text:
+
+| Source | Derivation | Sitemap output | When the content changes |
+|---|---|---|---|
+| `content/blog/*.mdx`, frontmatter | `getAllPosts()` reads each file's frontmatter | `<loc>` and `<lastmod>`, the latter from `dateModified` | editing the post updates `lastmod` on its own, because the date is in the file itself |
+| diagrams exported from the post | `postImages` maps slug to files | `<image:loc>` | declaring a new diagram adds it to the sitemap with no extra edit |
+| *(alternative not used here)* hand-kept list | none; the list is typed | `<loc>` with no reliable `lastmod` | nothing changes on its own: the list goes stale until someone remembers it |
+
+The last row is what most Next.js projects end up doing by default: a literal
+array that works until the day someone forgets to add a new URL, or removes a
+page without taking it off the list. Deriving from the content eliminates that
+whole category of error, because the sitemap never drifts out of sync: it *is*
+a projection of the content.
+
+It is worth marking what stays outside that derivation: static pages with no
+associated content date, such as `/ferramentas`, `/sobre` and `/politica-de-privacidade`,
+have no `dateModified` to derive from. The next section explains why that is a
+deliberate omission, not a gap.
+
+## The `lastmod` problem
+
+The condition Google publishes for using `<lastmod>` is specific: the value has
+to be consistent and verifiable, for example comparable with the page's real
+last modification. In practice, that rules out the pattern that appears in
+almost every sitemap example out there, the Next.js documentation's included:
+
+```ts
+// o padrão que ensina o Google a ignorar o lastmod
+{ url: '...', lastModified: new Date() }
+```
+
+That is the pattern that teaches Google to ignore `lastmod`. `new Date()` runs
+at build time. Every time the site is deployed (whether or not that page's
+content changed) the URL declares that it changed just now. A Monday redeploy
+with no change at all produces the same `lastmod` as a Tuesday redeploy with
+the article rewritten from scratch. Google has no way to verify that date
+against anything, because it never matches a real change. It is the practical
+reason behind the recommendation that the value reflect only significant
+updates (main content, structured data, links) and not a build or copyright
+date.
+
+This site's rule inverts the logic, and the comment sits at the top of the
+production file (it says that lastmod is only emitted when derivable from the
+frontmatter, because a lastmod that changes on every build without a real
+content change teaches Google to ignore it):
+
+```ts
+// lastmod só é emitido quando derivável do frontmatter: um lastmod que muda a
+// cada build sem mudança real de conteúdo ensina o Google a ignorá-lo.
+```
+
+In practice, that produces three different behaviours inside the same
+`sitemap.ts`:
+
+- **Blog posts**: `lastModified` comes from the frontmatter's `dateModified`.
+  If the post does not change, the field does not change, even if the site is
+  redeployed ten times in the week.
+- **Home and `/blog`**: they derive `lastModified` from the most recent
+  `dateModified` among the guide and all posts, because those pages do change
+  when the content they list changes. It is still verifiable: the date reflects
+  a real change in the set displayed.
+- **Static pages with no content date**: they carry no `lastModified` at all.
+  Omitting is the decision. Inventing a date would be worse than declaring
+  nothing, because it would reintroduce exactly the unverifiable pattern
+  described above.
+
+The third line is the one that usually raises questions: why not use the deploy
+date here too? Because the deploy date is not the date that page's *content*
+changed; it is the date the *code* changed, which happens for reasons unrelated
+to the content, such as an updated dependency or a style tweak in another
+component. Declaring that as `lastmod` would be technically easy and
+editorially false.
+
+## `robots.ts`: the default is not to index
+
+`robots.ts` solves a different problem from `sitemap.ts`, but the two go
+together because it is `robots.txt` that announces the sitemap. The design
+decision here is that the default is *not* to index, and anything that strays
+from the happy production path falls into that default automatically (excerpt
+from the July 2026 version; today the file also declares groups per AI agent,
+and the fail-safe is identical):
+
+```ts
+// src/app/robots.ts (julho de 2026)
+export default function robots(): MetadataRoute.Robots {
+  if (!indexable) {
+    return { rules: [{ userAgent: '*', disallow: '/' }] }
+  }
+
+  return {
+    rules: [{ userAgent: '*', allow: '/', disallow: ['/api/'] }],
+    sitemap: `${site.url}/sitemap.xml`,
+  }
+}
+```
+
+And `indexable` comes from an environment variable, in `src/lib/site.ts`:
+
+```ts
+export const indexable = process.env.SITE_INDEXABLE === 'true'
+```
+
+The point is the direction of the fail-safe. `indexable` is only `true` if the
+variable exists *and* equals exactly `'true'`. A missing variable, a Vercel
+preview deploy, a local build: all fail *closed*. The absence of configuration
+produces `Disallow: /`, not the other way round. Indexing is opt-in, and the
+opt-in is a variable that only exists in production.
+
+That solves a common and costly accident: a staging URL indexed, showing up in
+search and competing with the equivalent production page, two URLs for the
+same content, splitting signals. With the default inverted, that accident would
+require someone to *set* the wrong variable in an environment that should not
+be indexed, instead of simply forgetting to set it, which is by far the more
+common failure mode.
+
+## `noindex` and `Disallow` don't add up
+
+<figure>
+  <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparison between the noindex and Disallow directives and what happens when both are applied to the same URL">
+    <title>noindex vs. Disallow</title>
+    <desc>Two rows, one per directive. In the noindex row, Googlebot crawls the page, reads the tag and does not index it. In the Disallow row, Googlebot never crawls the page, and so it can still appear indexed as a URL-only result if it is discovered through an external link. A third band, highlighted in the accent colour, shows the result of applying both directives to the same URL: the Disallow prevents crawling, the noindex is never read, and the URL may end up indexed with no title or description.</desc>
+    <text x="120" y="30" fontSize="12" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">Directive</text>
+    <text x="360" y="30" fontSize="12" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">What Googlebot does</text>
+    <text x="580" y="30" fontSize="12" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">Result</text>
+    <rect x="20" y="48" width="200" height="56" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="120" y="81" fontSize="12" fontWeight="500" fill="var(--foreground, #111827)" textAnchor="middle">noindex on the page</text>
+    <rect x="240" y="48" width="240" height="56" rx="8" fill="none" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="360" y="72" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">crawls the page</text>
+    <text x="360" y="88" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">and reads the directive</text>
+    <rect x="500" y="48" width="160" height="56" rx="8" fill="var(--color-diagram-phase-b, #D1FAE5)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="580" y="81" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">not indexed</text>
+    <rect x="20" y="118" width="200" height="56" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="120" y="151" fontSize="12" fontWeight="500" fill="var(--foreground, #111827)" textAnchor="middle">Disallow in robots.txt</text>
+    <rect x="240" y="118" width="240" height="56" rx="8" fill="none" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="360" y="151" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">never crawls the page</text>
+    <rect x="500" y="118" width="160" height="56" rx="8" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
+    <text x="580" y="142" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">may appear indexed</text>
+    <text x="580" y="158" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">via an external link</text>
+    <rect x="20" y="196" width="640" height="76" rx="12" fill="var(--color-accent, #F59E0B)" fillOpacity="0.12" stroke="var(--color-accent, #F59E0B)" strokeWidth="0.5" />
+    <text x="340" y="222" fontSize="12" fontWeight="600" fill="var(--foreground, #111827)" textAnchor="middle">Both together, on the same URL</text>
+    <text x="340" y="244" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">the Disallow prevents crawling, so the noindex is never read</text>
+    <text x="340" y="262" fontSize="11" fill="var(--foreground, #111827)" textAnchor="middle">and the URL may still be indexed as a URL-only result, with no title or description</text>
+  </svg>
+  <figcaption>
+    `noindex` only prevents indexing if the page is crawled. `Disallow`
+    prevents crawling. Together on the same URL, they cancel each other out.
+  </figcaption>
+</figure>
+
+An audit of this site's own crawl baseline, run on 20 July 2026, found a real
+defect: the `/busca` page was simultaneously marked `noindex, follow` in the
+`robots` meta tag **and** blocked by `Disallow: /busca` in `robots.txt`.
+
+It looks redundant (two ways of saying "I don't want this in search"), but the
+two rules do not add up, they cancel each other out. `Disallow` prevents
+crawling: Googlebot never downloads the page, so it never reads the `noindex`
+in its HTML. If Google discovers the URL some other way, such as an external
+link, it can still index it, now as a URL-only result, with no title or
+description extracted from the content, because it was never allowed to look
+at the content.
+
+| Goal | Use | Don't use |
+|---|---|---|
+| take the URL out of the index | `noindex` on the page | `Disallow` for the same URL, which keeps the `noindex` from being read |
+| prevent the URL from being crawled | `Disallow` in `robots.txt` | `noindex`, expecting it to solve crawling on its own |
+| both on the same URL | n/a | never; `Disallow` wins by keeping the other directive from being read |
+
+The practical rule, with no exception: `noindex` when the goal is to take the
+URL out of the index; `Disallow` only when the goal is to prevent crawling
+entirely. Never both on the same URL.
+
+The fix here was to remove `Disallow: /busca` from `robots.ts` and keep only
+the `noindex` on the page, letting Googlebot crawl, read the directive and
+actually honour it. That is why the code block in the previous section lists
+only `/api/` in `disallow`.
+
+## Images, languages and large sitemaps
+
+An entry's `images` field emits `<image:image><image:loc>` in the sitemap
+protocol's image namespace. On this site it declares each post's diagrams,
+with no need for a separate image sitemap file:
+
+```ts
+const postImages: Record<string, string[]> = {
+  'melhorar-lcp-nextjs': ['/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp'],
+}
+
+// dentro do map dos posts:
+images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
+```
+
+Two details the documentation's example does not make explicit. First: the
+URLs must be absolute, hence the `${base}` in front of the path. Second: the
+optional chaining returns `undefined` for posts with no declared image, and
+Next.js simply omits the field, which is the desired behaviour, unlike emitting
+an empty list.
+
+The `alternates.languages` field emits
+`<xhtml:link rel="alternate" hreflang="…">` per entry. This site has had
+pt-BR/en pairs since September 2026, but it declares hreflang in each page's
+`<head>`, generated from a single map in `src/lib/hreflang.ts`, so no sitemap
+entry uses the field. Google accepts both forms; the
+[hreflang in Next.js article](/en/blog/nextjs-hreflang) shows how that map
+works.
+
+For large sites, `generateSitemaps` splits the output into several files,
+respecting the limit of 50,000 URLs or 50 MB uncompressed per file, whichever
+comes first. The output lives at paths such as `/product/sitemap/1.xml`. To be
+direct: **you probably don't need this.** That limit exists for sites in the
+tens of thousands of URLs; below that, splitting the sitemap is complexity with
+no measurable benefit.
+
+## The sitemap as the test's source of truth
+
+This is the inversion most articles on sitemaps in Next.js do not cover,
+because it requires treating `sitemap.ts` not as an output but as an input to
+something else.
+
+This site's SEO suite, written in Playwright, imports the sitemap function
+directly and derives its list of routes from it:
+
+```ts
+// tests/seo/seo.spec.ts
+import sitemap from '../../src/app/sitemap'
+
+const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname)
+const routes = [...sitemapPaths, ...noindexPaths]
+```
+
+The practical effect: every route that appears in the sitemap is automatically
+put through the set of assertions (exactly one `<h1>`, title and description
+within the limits, a self-referencing canonical, JSON-LD that parses, a
+`robots` meta with the right value). Publishing an MDX file does not just add
+the URL to the sitemap: it adds the URL to *every SEO test there is*, with no
+line of configuration.
+
+There is also a dedicated test that confirms the served `/sitemap.xml` really
+contains every URL the function enumerates. It covers a specific failure mode:
+the function is correct, but what reaches the visitor is stale (CDN cache, a
+revalidation that did not fire, a partial deploy). Without that test,
+`sitemap.ts` can be perfect in the code and still lie in production.
+
+The same derive-from-content pattern produces `feed.xml` in
+`src/app/feed.xml/route.ts`, declared for autodiscovery through
+`alternates.types` in the metadata. It is not this article's subject, but it is
+the same principle applied to another format.
+
+## How to check it is working
+
+None of the above is worth anything unless it is confirmed against real
+behaviour, rather than what the code is supposed to do:
+
+1. **Search Console, Sitemaps report.** Submit the sitemap URL, or confirm it
+   has already been discovered through `robots.txt`, and watch the count of
+   discovered URLs. That number reflects what Google read from the file.
+2. **Open `/sitemap.xml` and `/robots.txt` directly in the browser.** It
+   confirms what is being served in production, the manual version of the
+   dedicated test in the previous section.
+3. **Run the repository's baseline crawl.** It is what found the `/busca`
+   defect. Running that check after any change to `robots.ts` or `sitemap.ts`
+   is what catches this kind of error before production.
+4. **Don't confuse discovery with indexing.** A URL showing up as discovered
+   guarantees that Google knows it exists, not that it will be indexed.
+   Indexing depends on content, canonical and the other signals the rest of
+   this guide's articles cover.
+
+This article showed `sitemap.ts` and `robots.ts` as they are in production on
+this domain today, including the mistake I had made myself. If you are putting
+together the first version of yours, the [technical SEO guide for
+Next.js](/en/guide/technical-seo-nextjs) puts these two files in the context of
+the cluster's other topics. And if your next question is how the same
+single-source principle applies to structured data, [the article on JSON-LD in
+Next.js](/en/blog/nextjs-json-ld) walks the same test suite from the other
+side, with the [JSON-LD generator](/ferramentas/gerador-json-ld) (its interface
+is in Portuguese) for when you want the schema ready instead of the
+architecture behind it.
+
+This is the English version of [an article first published in
+Portuguese](/blog/sitemap-dinamico-nextjs); the two declare each other.
