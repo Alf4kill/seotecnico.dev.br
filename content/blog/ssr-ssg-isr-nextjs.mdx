@@ -12,7 +12,7 @@ tldr: >-
   completo, possivelmente defasado entre revalidações; CSR entrega HTML vazio e
   é a única estratégia com risco real de indexação.
 datePublished: "2026-07-22"
-dateModified: "2026-09-13"
+dateModified: "2026-10-18"
 faq:
   - question: "O Google indexa site em React ou CSR?"
     answer: "Indexa, mas com uma ressalva importante: conteúdo que só existe depois da execução do JavaScript entra numa fila de renderização separada, que o Google processa quando há recursos disponíveis — pode levar segundos ou bem mais, sem prazo garantido. O HTML inicial vazio também é o que a maioria dos outros crawlers (incluindo os de buscadores com IA) enxerga, porque eles não executam JavaScript."
@@ -155,13 +155,21 @@ export function getAllPosts(): Post[] {
   const dir = path.join(CONTENT_DIR, 'blog')
   if (!fs.existsSync(dir)) return []
 
-  return fs
+  const posts = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.mdx'))
-    .map((f) => readMdxFile(path.join(dir, f)))
+    .map((f) => {
+      const post = readMdxFile(path.join(dir, f))
+      if (!post.frontmatter.category) {
+        throw new Error(`[content] "blog/${f}": missing required frontmatter field "category"`)
+      }
+      return post
+    })
     .sort((a, b) =>
       b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
     )
+  assertBasedOn(posts, 'blog')
+  return posts
 }
 ```
 
