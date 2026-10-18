@@ -111,11 +111,14 @@ export function SearchModal({ items, lang = 'pt-BR' }: SearchModalProps) {
       className="search-dialog"
       aria-label={copy.dialog}
     >
-      {/* Overlay full-screen — captura cliques fora da caixa branca */}
+      {/* Overlay full-screen — captura cliques fora da caixa branca. Não leva
+          aria-hidden: ele ENVOLVE a caixa, e esconder o overlay escondia o
+          campo e os resultados de leitores de tela. Teclado fecha pelo Escape
+          nativo do <dialog>; o clique fora é atalho de mouse. */}
       <div
         className="fixed inset-0 flex items-start justify-center pt-[72px] px-4"
         onClick={closeSearch}
-        aria-hidden="true"
+        role="presentation"
       >
       {/* Caixa branca — stopPropagation evita fechar ao clicar dentro */}
       <div
