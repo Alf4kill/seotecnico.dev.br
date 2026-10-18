@@ -9,14 +9,14 @@ import type { Lang } from '@/lib/hreflang'
 // ferramenta ganha uma forma primária, como as categorias, e o seu emblema
 // (src/lib/art.ts) — a mesma arte do cabeçalho da ferramenta.
 //
-// Em inglês, as ferramentas continuam em português (não há versão inglesa
-// delas): os nomes vêm em inglês, a faixa avisa que a interface é portuguesa,
-// e os links levam hrefLang, sem prefetch, por cruzarem de root layout.
+// Em inglês, a faixa leva às versões inglesas (/en/tools/*), no mesmo root
+// layout da página.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TOOLS = [
   {
     href: '/ferramentas/gerador-json-ld',
+    hrefEn: '/en/tools/json-ld-generator',
     title: 'Gerador de JSON-LD',
     titleEn: 'JSON-LD generator',
     emblem: TOOL_EMBLEMS['gerador-json-ld'],
@@ -26,6 +26,7 @@ const TOOLS = [
   },
   {
     href: '/ferramentas/validador-meta-tags',
+    hrefEn: '/en/tools/meta-tag-validator',
     title: 'Validador de meta tags',
     titleEn: 'Meta tag validator',
     emblem: TOOL_EMBLEMS['validador-meta-tags'],
@@ -35,6 +36,7 @@ const TOOLS = [
   },
   {
     href: '/ferramentas/checador-cwv',
+    hrefEn: '/en/tools/cwv-checker',
     title: 'Checador de Core Web Vitals',
     titleEn: 'Core Web Vitals checker',
     emblem: TOOL_EMBLEMS['checador-cwv'],
@@ -53,12 +55,10 @@ const COPY = {
   'pt-BR': {
     eyebrow: 'Do artigo para a prática',
     heading: 'Toda técnica aqui tem uma ferramenta gratuita do lado.',
-    interfaceNote: undefined,
   },
   en: {
     eyebrow: 'From article to practice',
     heading: 'Every technique here has a free tool next to it.',
-    interfaceNote: 'The tools have a Portuguese interface; the results read the same in any language.',
   },
 } as const
 
@@ -80,15 +80,12 @@ export function ToolsStrip({
           <Heading className="font-display text-[1.75rem] font-bold leading-tight tracking-[-0.02em] text-foreground md:text-[2.125rem]">
             {copy.heading}
           </Heading>
-          {copy.interfaceNote && <p className="text-[0.9375rem] leading-relaxed text-muted">{copy.interfaceNote}</p>}
         </div>
         <ul className="grid gap-4 sm:grid-cols-3 lg:col-span-7 lg:gap-6">
-          {TOOLS.map(({ href, title, titleEn, note, noteEn, mark, emblem }) => (
+          {TOOLS.map(({ href, hrefEn, title, titleEn, note, noteEn, mark, emblem }) => (
             <li key={href}>
               <Link
-                href={href}
-                hrefLang={en ? 'pt-BR' : undefined}
-                prefetch={en ? false : undefined}
+                href={en ? hrefEn : href}
                 className="flex h-full flex-col gap-2.5 border border-gray bg-surface-2 p-5 transition-colors hover:border-primary"
               >
                 <span className="flex items-start justify-between">

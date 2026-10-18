@@ -65,7 +65,7 @@ function expectedJsonLdTypes(path: string): string[] {
   if (path.startsWith('/en/guide/')) {
     return ['Article', 'BreadcrumbList', ...faqTypes(guideEnFrontmatter)]
   }
-  if (path.startsWith('/ferramentas/')) return ['SoftwareApplication', 'BreadcrumbList']
+  if (path.startsWith('/ferramentas/') || path.startsWith('/en/tools/')) return ['SoftwareApplication', 'BreadcrumbList']
   // The guide reads its own frontmatter for the same reason /blog/ does: this
   // branch used to be a hardcoded pair, so a pillar with `faq` that failed to
   // render FaqSection would have passed silently.

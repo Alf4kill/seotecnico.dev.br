@@ -54,6 +54,7 @@ const COPY: Record<Lang, Copy> = {
     nav: [
       { label: 'Guide', href: '/en/guide/technical-seo-nextjs' },
       { label: 'Blog', href: '/en/blog' },
+      { label: 'Tools', href: '/en/tools' },
       { label: 'Case studies', href: '/en/case-studies' },
       { label: 'About', href: '/en/about' },
     ],
