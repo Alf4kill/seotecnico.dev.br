@@ -144,6 +144,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/sec-fetch-mode-header',
     },
   },
+  {
+    id: 'scaled-content-abuse',
+    paths: {
+      'pt-BR': '/blog/scaled-content-abuse',
+      en: '/en/blog/scaled-content-abuse',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
