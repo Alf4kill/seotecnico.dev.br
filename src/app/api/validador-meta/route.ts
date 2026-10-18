@@ -7,6 +7,7 @@ import {
   parseTargetUrl,
   runChecks,
 } from '@/lib/meta-validator'
+import type { Lang } from '@/lib/hreflang'
 import { clientKey, createFixedWindow } from '@/lib/rate-limit'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,6 +34,9 @@ import { clientKey, createFixedWindow } from '@/lib/rate-limit'
 //
 // Sem armazenamento: a URL não é logada nem persistida (LGPD-simples, §13).
 // `/api/` já é Disallow no robots.txt e está fora do matcher do proxy.
+//
+// `?lang=en` (a página /en/tools/meta-tag-validator) troca o idioma das
+// mensagens de erro e das checagens; qualquer outro valor é pt-BR.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MAX_BYTES = 500_000
@@ -45,6 +49,33 @@ const USER_AGENT = 'SEOTecnicoValidador/1.0 (+https://seotecnico.dev.br/ferramen
 // 500 KB de uma URL escolhida por quem chama — sem teto, serve de proxy de
 // saída para qualquer um. Limites e suas limitações em lib/rate-limit.ts.
 const perCaller = createFixedWindow({ windowMs: 60_000, max: 10 })
+
+const ERRORS = {
+  'pt-BR': {
+    redirectBlocked: (reason: string) =>
+      `Um redirecionamento apontou para um destino não permitido (${reason.toLowerCase()})`,
+    notPublic: 'Este endereço não resolve para um IP público — não é possível validar.',
+    redirectNotPublic: 'Um redirecionamento apontou para um endereço que não é público — cadeia interrompida.',
+    timeout: 'A página demorou mais de 8 segundos para responder.',
+    fetchFailed: 'Não foi possível buscar a página (DNS, conexão recusada ou bloqueio).',
+    redirectInvalid: 'O redirecionamento aponta para um endereço inválido.',
+    tooManyRedirects: `A página redirecionou mais de ${MAX_REDIRECTS} vezes.`,
+    rateLimited: 'Muitas validações seguidas. Espere um minuto e tente de novo.',
+    notHtml: (contentType: string) => `A resposta não é HTML (Content-Type: ${contentType || 'ausente'}).`,
+  },
+  en: {
+    redirectBlocked: (reason: string) =>
+      `A redirect pointed to a destination that is not allowed (${reason.toLowerCase()})`,
+    notPublic: 'This address does not resolve to a public IP — it cannot be validated.',
+    redirectNotPublic: 'A redirect pointed to an address that is not public — chain stopped.',
+    timeout: 'The page took more than 8 seconds to respond.',
+    fetchFailed: 'The page could not be fetched (DNS, connection refused or blocked).',
+    redirectInvalid: 'The redirect points to an invalid address.',
+    tooManyRedirects: `The page redirected more than ${MAX_REDIRECTS} times.`,
+    rateLimited: 'Too many validations in a row. Wait a minute and try again.',
+    notHtml: (contentType: string) => `The response is not HTML (Content-Type: ${contentType || 'missing'}).`,
+  },
+} as const
 
 async function resolvesOnlyPublic(hostname: string): Promise<boolean> {
   try {
@@ -69,19 +100,16 @@ type FetchOutcome =
  * mesmas regras aplicadas à URL digitada. `signal` é um só para a cadeia
  * inteira: com um timeout por salto, seis saltos custariam 48s de função.
  */
-async function fetchGuarded(start: URL, signal: AbortSignal): Promise<FetchOutcome> {
+async function fetchGuarded(start: URL, signal: AbortSignal, lang: Lang): Promise<FetchOutcome> {
+  const copy = ERRORS[lang]
   let current = start
 
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     if (hop > 0) {
       // O destino do redirect é entrada tão externa quanto a do usuário.
-      const parsed = parseTargetUrl(current.href)
+      const parsed = parseTargetUrl(current.href, lang)
       if (!parsed.ok) {
-        return {
-          ok: false,
-          error: `Um redirecionamento apontou para um destino não permitido (${parsed.error.toLowerCase()})`,
-          status: 400,
-        }
+        return { ok: false, error: copy.redirectBlocked(parsed.error), status: 400 }
       }
       current = parsed.url
     }
@@ -89,10 +117,7 @@ async function fetchGuarded(start: URL, signal: AbortSignal): Promise<FetchOutco
     if (!(await resolvesOnlyPublic(current.hostname.replace(/\.$/, '').toLowerCase()))) {
       return {
         ok: false,
-        error:
-          hop === 0
-            ? 'Este endereço não resolve para um IP público — não é possível validar.'
-            : 'Um redirecionamento apontou para um endereço que não é público — cadeia interrompida.',
+        error: hop === 0 ? copy.notPublic : copy.redirectNotPublic,
         status: 400,
       }
     }
@@ -114,9 +139,7 @@ async function fetchGuarded(start: URL, signal: AbortSignal): Promise<FetchOutco
         err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')
       return {
         ok: false,
-        error: timedOut
-          ? 'A página demorou mais de 8 segundos para responder.'
-          : 'Não foi possível buscar a página (DNS, conexão recusada ou bloqueio).',
+        error: timedOut ? copy.timeout : copy.fetchFailed,
         status: 502,
       }
     }
@@ -131,32 +154,31 @@ async function fetchGuarded(start: URL, signal: AbortSignal): Promise<FetchOutco
     try {
       current = new URL(location, current)
     } catch {
-      return { ok: false, error: 'O redirecionamento aponta para um endereço inválido.', status: 502 }
+      return { ok: false, error: copy.redirectInvalid, status: 502 }
     }
   }
 
-  return {
-    ok: false,
-    error: `A página redirecionou mais de ${MAX_REDIRECTS} vezes.`,
-    status: 502,
-  }
+  return { ok: false, error: copy.tooManyRedirects, status: 502 }
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const lang: Lang = request.nextUrl.searchParams.get('lang') === 'en' ? 'en' : 'pt-BR'
+  const copy = ERRORS[lang]
+
   if (perCaller.hit(clientKey(request))) {
-    return badRequest('Muitas validações seguidas. Espere um minuto e tente de novo.', 429)
+    return badRequest(copy.rateLimited, 429)
   }
 
-  const parsed = parseTargetUrl(request.nextUrl.searchParams.get('url') ?? '')
+  const parsed = parseTargetUrl(request.nextUrl.searchParams.get('url') ?? '', lang)
   if (!parsed.ok) return badRequest(parsed.error)
 
-  const outcome = await fetchGuarded(parsed.url, AbortSignal.timeout(TIMEOUT_MS))
+  const outcome = await fetchGuarded(parsed.url, AbortSignal.timeout(TIMEOUT_MS), lang)
   if (!outcome.ok) return badRequest(outcome.error, outcome.status)
   const { response, finalUrl, redirected } = outcome
 
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.includes('text/html') && !contentType.includes('application/xhtml')) {
-    return badRequest(`A resposta não é HTML (Content-Type: ${contentType || 'ausente'}).`, 415)
+    return badRequest(copy.notHtml(contentType), 415)
   }
 
   // Lê no máximo MAX_BYTES — meta tags vivem no <head>; o resto só serve para
@@ -181,7 +203,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const meta = extractMeta(html)
-  const checks = runChecks(finalUrl.href, meta)
+  const checks = runChecks(finalUrl.href, meta, lang)
 
   return NextResponse.json({
     finalUrl: finalUrl.href,

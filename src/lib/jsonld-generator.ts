@@ -5,7 +5,13 @@
 // unit tests para schema builders). Nenhuma função aqui toca DOM ou rede:
 // entrada de formulário → objeto schema.org → serialização (JSON puro ou
 // componente Next.js pronto para colar).
+//
+// A ferramenta existe nos dois idiomas (/ferramentas/gerador-json-ld e
+// /en/tools/json-ld-generator). O que muda entre eles são só as mensagens de
+// validação e os comentários do componente gerado; o schema é o mesmo.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import type { Lang } from './hreflang'
 
 export type GeneratorSchemaType =
   | 'Article'
@@ -96,48 +102,86 @@ function field(key: string, value: string): Record<string, string> {
   return v ? { [key]: v } : {}
 }
 
-// ── Validação (mensagens em pt-BR exibidas na UI) ────────────────────────────
+// ── Validação (mensagens exibidas na UI, no idioma da página) ────────────────
 
-export function validateInput(type: GeneratorSchemaType, input: GeneratorInput): string[] {
+const VALIDATION_COPY = {
+  'pt-BR': {
+    headline: 'Informe o título (headline) do artigo.',
+    articleUrl: 'Informe a URL canônica do artigo.',
+    datePublished: 'Informe a data de publicação.',
+    authorName: 'Informe o nome do autor.',
+    faqEmpty: 'Adicione pelo menos uma pergunta com resposta.',
+    faqQuestion: (n: number) => `Pergunta ${n}: falta o texto da pergunta.`,
+    faqAnswer: (n: number) => `Pergunta ${n}: falta a resposta.`,
+    breadcrumbShort: 'Um breadcrumb precisa de pelo menos 2 níveis (ex.: Home → Página).',
+    breadcrumbName: (n: number) => `Nível ${n}: falta o nome.`,
+    breadcrumbUrl: (n: number) => `Nível ${n}: falta a URL.`,
+    personName: 'Informe o nome da pessoa.',
+    organizationName: 'Informe o nome da organização.',
+    organizationUrl: 'Informe a URL do site da organização.',
+  },
+  en: {
+    headline: 'Enter the article title (headline).',
+    articleUrl: 'Enter the canonical URL of the article.',
+    datePublished: 'Enter the publication date.',
+    authorName: 'Enter the author name.',
+    faqEmpty: 'Add at least one question with an answer.',
+    faqQuestion: (n: number) => `Question ${n}: the question text is missing.`,
+    faqAnswer: (n: number) => `Question ${n}: the answer is missing.`,
+    breadcrumbShort: 'A breadcrumb needs at least 2 levels (e.g. Home → Page).',
+    breadcrumbName: (n: number) => `Level ${n}: the name is missing.`,
+    breadcrumbUrl: (n: number) => `Level ${n}: the URL is missing.`,
+    personName: "Enter the person's name.",
+    organizationName: 'Enter the organization name.',
+    organizationUrl: "Enter the URL of the organization's site.",
+  },
+} as const
+
+export function validateInput(
+  type: GeneratorSchemaType,
+  input: GeneratorInput,
+  lang: Lang = 'pt-BR'
+): string[] {
+  const copy = VALIDATION_COPY[lang]
   const errors: string[] = []
 
   if (type === 'Article') {
     const a = input.article
-    if (!a.headline.trim()) errors.push('Informe o título (headline) do artigo.')
-    if (!a.url.trim()) errors.push('Informe a URL canônica do artigo.')
-    if (!a.datePublished.trim()) errors.push('Informe a data de publicação.')
-    if (!a.authorName.trim()) errors.push('Informe o nome do autor.')
+    if (!a.headline.trim()) errors.push(copy.headline)
+    if (!a.url.trim()) errors.push(copy.articleUrl)
+    if (!a.datePublished.trim()) errors.push(copy.datePublished)
+    if (!a.authorName.trim()) errors.push(copy.authorName)
   }
 
   if (type === 'FAQPage') {
     const pairs = input.faq.filter((p) => p.question.trim() || p.answer.trim())
     if (pairs.length === 0) {
-      errors.push('Adicione pelo menos uma pergunta com resposta.')
+      errors.push(copy.faqEmpty)
     }
     for (const [i, p] of pairs.entries()) {
-      if (!p.question.trim()) errors.push(`Pergunta ${i + 1}: falta o texto da pergunta.`)
-      if (!p.answer.trim()) errors.push(`Pergunta ${i + 1}: falta a resposta.`)
+      if (!p.question.trim()) errors.push(copy.faqQuestion(i + 1))
+      if (!p.answer.trim()) errors.push(copy.faqAnswer(i + 1))
     }
   }
 
   if (type === 'BreadcrumbList') {
     const items = input.breadcrumb.filter((b) => b.name.trim() || b.url.trim())
     if (items.length < 2) {
-      errors.push('Um breadcrumb precisa de pelo menos 2 níveis (ex.: Home → Página).')
+      errors.push(copy.breadcrumbShort)
     }
     for (const [i, b] of items.entries()) {
-      if (!b.name.trim()) errors.push(`Nível ${i + 1}: falta o nome.`)
-      if (!b.url.trim()) errors.push(`Nível ${i + 1}: falta a URL.`)
+      if (!b.name.trim()) errors.push(copy.breadcrumbName(i + 1))
+      if (!b.url.trim()) errors.push(copy.breadcrumbUrl(i + 1))
     }
   }
 
   if (type === 'Person') {
-    if (!input.person.name.trim()) errors.push('Informe o nome da pessoa.')
+    if (!input.person.name.trim()) errors.push(copy.personName)
   }
 
   if (type === 'Organization') {
-    if (!input.organization.name.trim()) errors.push('Informe o nome da organização.')
-    if (!input.organization.url.trim()) errors.push('Informe a URL do site da organização.')
+    if (!input.organization.name.trim()) errors.push(copy.organizationName)
+    if (!input.organization.url.trim()) errors.push(copy.organizationUrl)
   }
 
   return errors
@@ -255,18 +299,36 @@ const kebab: Record<GeneratorSchemaType, string> = {
  * injeta o schema via <script type="application/ld+json"> — o mesmo padrão
  * que este site usa em produção.
  */
+const COMPONENT_COMMENTS = {
+  'pt-BR': {
+    usage: (name: string) => `// Server Component — renderize <${name} /> dentro da página (App Router).`,
+    escape: [
+      '  // JSON.stringify não escapa "<": o replace impede que um texto do schema',
+      '  // feche a tag script (recomendação do guia de JSON-LD do Next.js).',
+    ],
+  },
+  en: {
+    usage: (name: string) => `// Server Component — render <${name} /> inside the page (App Router).`,
+    escape: [
+      '  // JSON.stringify does not escape "<": the replace stops a schema string',
+      "  // from closing the script tag (as the Next.js JSON-LD guide recommends).",
+    ],
+  },
+} as const
+
 export function toNextComponent(
   type: GeneratorSchemaType,
-  schema: Record<string, unknown>
+  schema: Record<string, unknown>,
+  lang: Lang = 'pt-BR'
 ): string {
   const name = componentNames[type]
+  const comments = COMPONENT_COMMENTS[lang]
   return `// components/seo/${kebab[type]}.tsx
-// Server Component — renderize <${name} /> dentro da página (App Router).
+${comments.usage(name)}
 const schema = ${toJsonLd(schema)}
 
 export function ${name}() {
-  // JSON.stringify não escapa "<": o replace impede que um texto do schema
-  // feche a tag script (recomendação do guia de JSON-LD do Next.js).
+${comments.escape.join('\n')}
   const json = JSON.stringify(schema).replace(/</g, '\\\\u003c')
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />
 }

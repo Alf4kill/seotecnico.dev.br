@@ -155,3 +155,30 @@ describe('serialization', () => {
     }
   })
 })
+
+describe('English version (/en/tools/json-ld-generator)', () => {
+  const types: GeneratorSchemaType[] = ['Article', 'FAQPage', 'BreadcrumbList', 'Person', 'Organization']
+
+  it('rejects the same input with the same number of messages, in English', () => {
+    const half = makeInput({ faq: [{ question: 'Only a question?', answer: '' }] })
+    expect(validateInput('FAQPage', half, 'en')).toEqual(['Question 1: the answer is missing.'])
+    for (const type of types) {
+      const pt = validateInput(type, makeInput())
+      const en = validateInput(type, makeInput(), 'en')
+      expect(en, type).toHaveLength(pt.length)
+      en.forEach((message, i) => expect(message, type).not.toBe(pt[i]))
+    }
+  })
+
+  it('emits the same component with English comments', () => {
+    for (const type of types) {
+      const pt = toNextComponent(type, { '@type': type })
+      const en = toNextComponent(type, { '@type': type }, 'en')
+      expect(en).toContain('render <' + componentNames[type] + ' /> inside the page')
+      expect(en).not.toContain('renderize')
+      // Só os comentários mudam: o código é linha a linha o mesmo.
+      const code = (s: string) => s.split('\n').filter((line) => !line.trim().startsWith('//'))
+      expect(code(en)).toEqual(code(pt))
+    }
+  })
+})
