@@ -3,7 +3,7 @@ title: 'Technical SEO for Next.js: the App Router guide'
 description: 'What technical SEO means in Next.js and how to implement it: metadata, JSON-LD, sitemaps, Core Web Vitals, hreflang and rendering — with real code.'
 slug: technical-seo-nextjs
 datePublished: '2026-07-26'
-dateModified: '2026-09-13'
+dateModified: '2026-10-18'
 primaryQuery: 'technical seo next.js'
 keywords: ['english', 'inglês', 'technical seo', 'guide', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals', 'rendering', 'hreflang']
 lang: en
@@ -114,7 +114,7 @@ server responds with and classifies title, description, canonical, robots, H1
 and Open Graph — the same checks this site's CI enforces on every deploy. (The
 tool's interface is in Portuguese; the report is readable regardless.)
 
-→ Full chapter, in Portuguese: [Metadata API do Next.js: canonical e o merge que não existe](/blog/metadata-api-nextjs)
+→ Full chapter: [Next.js Metadata API: canonical and the merge that isn't](/en/blog/nextjs-metadata-api)
 
 ## Sitemap and robots derived from content
 
@@ -136,7 +136,7 @@ last trap, which this site committed and measured: `noindex` and `Disallow` do
 **not** add up. A URL blocked in robots.txt is never crawled, so its `noindex`
 is never read — the two instruments cancel each other out.
 
-→ Full chapter, in Portuguese: [Sitemap dinâmico no Next.js com sitemap.ts e robots.ts](/blog/sitemap-dinamico-nextjs)
+→ Full chapter: [Dynamic sitemap in Next.js with sitemap.ts and robots.ts](/en/blog/nextjs-dynamic-sitemap)
 
 ## Redirects, canonicals and noindex: choosing the instrument
 
@@ -158,7 +158,7 @@ runs on **every** request and is the only one able to decide based on a cookie,
 a header or geography. If the rule is already known at build time, it has no
 business in middleware.
 
-→ Full chapter, in Portuguese: [Redirects e canonicals no Next.js: config ou middleware](/blog/redirects-canonicals-nextjs)
+→ Full chapter: [Redirects and canonicals in Next.js: config or middleware](/en/blog/nextjs-redirects-canonicals)
 
 ## JSON-LD in the App Router
 
@@ -186,7 +186,7 @@ To assemble a one-off schema quickly, this site has a
 [JSON-LD generator](/ferramentas/gerador-json-ld) that returns both the object
 and the ready-made Next.js component.
 
-→ Full chapter, in Portuguese: [Como implementar JSON-LD no Next.js (App Router)](/blog/json-ld-nextjs)
+→ Full chapter: [How to implement JSON-LD in Next.js (App Router)](/en/blog/nextjs-json-ld)
 
 ## Hreflang and the bilingual site
 
@@ -233,7 +233,7 @@ reads the content — but assistive technology does not.
 The dedicated chapter followed this implementation rather than preceding it.
 Nothing here is published before it is implemented and measured.
 
-→ Full chapter, in Portuguese: [Hreflang no Next.js: site bilíngue no App Router](/blog/hreflang-nextjs)
+→ Full chapter: [Hreflang in Next.js: a bilingual site in the App Router](/en/blog/nextjs-hreflang)
 
 ## Rendering: what Googlebot actually receives
 
@@ -257,7 +257,7 @@ The practical corollary is that you should be able to **prove** which strategy
 each of your routes uses, instead of assuming. The route table from `next build`
 shows it with one symbol per route.
 
-→ Full chapter, in Portuguese: [SSR, SSG e ISR no Next.js: o que o Googlebot enxerga](/blog/ssr-ssg-isr-nextjs)
+→ Full chapter: [SSR, SSG and ISR in Next.js: what Googlebot sees](/en/blog/nextjs-ssr-ssg-isr)
 
 ## LCP: diagnose before optimising
 
@@ -285,7 +285,7 @@ real p75 in CrUX. If the origin isn't in the dataset yet — the case for most
 sites — that is information too: it means your only route is your own RUM, as
 this site does.
 
-→ Full chapters, in Portuguese: [Como melhorar o LCP no Next.js pelas 4 subpartes](/blog/melhorar-lcp-nextjs) · [LCP alto no Next.js: os erros que impedem de melhorar](/blog/lcp-alto-next-js)
+→ Full chapters: [How to improve LCP in Next.js: a guide by the 4 subparts](/en/blog/improve-lcp-nextjs) · [High LCP in Next.js: the mistakes that keep it high](/en/blog/nextjs-high-lcp)
 
 ## INP: the metric Lighthouse does not measure
 
@@ -306,7 +306,7 @@ INP in PageSpeed Insights or Search Console either. The way out is measuring
 your own field data with RUM — the `web-vitals` library with `onINP` sending an
 event to GA4. That is what this site does, with per-subpart attribution.
 
-→ Full chapter, in Portuguese: [INP no Next.js: como diagnosticar e corrigir](/blog/inp-nextjs)
+→ Full chapter: [INP in Next.js: how to diagnose and fix it](/en/blog/nextjs-inp)
 
 ## Images: performance solved, indexing not
 
@@ -328,7 +328,7 @@ SVG** than as raster, because the `<text>` labels are crawlable and quotable.
 The caveat is that inline SVG does not enter Google Images; if that channel
 matters, export a raster copy and declare it in the image sitemap.
 
-→ Full chapter, in Portuguese: [next/image e SEO: o que o componente não resolve](/blog/next-image-seo)
+→ Full chapter: [next/image and SEO: what the component doesn't solve](/en/blog/next-image-seo)
 
 ## Measurement: GTM and GA4 in a SPA
 
@@ -382,9 +382,10 @@ appear here when it exists, not before.
 All ten chapters now have their implementation on this domain; the hreflang one
 was the last to arrive, and it arrived by being built rather than described.
 Each chapter is an article with real code and its own measurement, and this
-guide is the map that connects them. The chapter articles are published in
-Portuguese, which is this site's primary language; this English version of the
-guide is the entry point for readers who do not read it.
+guide is the map that connects them. The chapter articles were first published
+in Portuguese, this site's primary language; since October 2026, nine of the ten
+also have an English version, linked above, and the GTM chapter is still
+Portuguese only.
 
 What keeps the content from ageing badly is the same CI that protects the code:
 a Playwright suite checks, on every route, a single `<h1>`, title and
