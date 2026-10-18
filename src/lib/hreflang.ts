@@ -83,6 +83,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/design',
     },
   },
+  // O laboratório: a mesma página nos dois idiomas, cada uma derivada da
+  // coleção do próprio idioma.
+  {
+    id: 'lab',
+    paths: {
+      'pt-BR': '/laboratorio',
+      en: '/en/lab',
+    },
+  },
   // A política de privacidade: o mesmo texto nos dois idiomas, com a mesma
   // data de atualização (lib/legal.ts).
   {
