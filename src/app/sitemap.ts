@@ -4,6 +4,7 @@ import { getAllPosts, getAllEnglishPosts, getGuide, getEnglishCaseStudy } from '
 import { isExperiment } from '@/lib/categories'
 import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
 import { CASE_STUDIES_REVISED } from '@/lib/case-studies'
+import { PRIVACY_POLICY_UPDATED } from '@/lib/legal'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sitemap: páginas estáticas (home, guia, blog, ferramentas, sobre) + artigos
@@ -82,7 +83,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/ferramentas/validador-meta-tags`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/ferramentas/checador-cwv`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/sobre`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${base}/politica-de-privacidade`, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/politica-de-privacidade`, lastModified: toDate(PRIVACY_POLICY_UPDATED), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/en/privacy-policy`, lastModified: toDate(PRIVACY_POLICY_UPDATED), changeFrequency: 'yearly', priority: 0.3 },
   ]
 
   const postPages: MetadataRoute.Sitemap = posts.map(({ frontmatter }) => ({

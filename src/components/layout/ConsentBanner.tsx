@@ -19,13 +19,12 @@ import type { Lang } from '@/lib/hreflang'
 // `fixed`, sem CLS).
 const getServerSnapshot = (): ConsentChoice | null => null
 
-// A política de privacidade só existe em português; na moldura inglesa o link
-// avisa isso e carrega hrefLang/lang do destino (mesma regra do Footer).
+// Cada moldura aponta para a política no próprio idioma (par em lib/hreflang.ts).
 const COPY: Record<Lang, {
   dialog: string
   body: string
   policy: string
-  policyLang?: Lang
+  policyHref: string
   decline: string
   accept: string
 }> = {
@@ -33,14 +32,15 @@ const COPY: Record<Lang, {
     dialog: 'Consentimento de cookies',
     body: 'Usamos cookies somente para medir a audiência do site (Google Analytics) — e só depois do seu consentimento. Recusar não muda nada no funcionamento.',
     policy: 'Política de privacidade',
+    policyHref: '/politica-de-privacidade',
     decline: 'Recusar',
     accept: 'Aceitar',
   },
   en: {
     dialog: 'Cookie consent',
     body: 'We use cookies only to measure site traffic (Google Analytics) — and only after you consent. Declining changes nothing about how the site works.',
-    policy: 'Privacy policy (in Portuguese)',
-    policyLang: 'pt-BR',
+    policy: 'Privacy policy',
+    policyHref: '/en/privacy-policy',
     decline: 'Decline',
     accept: 'Accept',
   },
@@ -81,10 +81,7 @@ export function ConsentBanner({ lang }: { lang: Lang }) {
         <p className="text-sm leading-6 text-body">
           {copy.body}{' '}
           <Link
-            href="/politica-de-privacidade"
-            hrefLang={copy.policyLang}
-            // Na moldura inglesa a política é outro root layout (ver LanguageSwitch).
-            prefetch={copy.policyLang ? false : undefined}
+            href={copy.policyHref}
             title={copy.policy}
             className="text-primary underline underline-offset-[3px] transition-colors hover:text-primary-hover"
           >

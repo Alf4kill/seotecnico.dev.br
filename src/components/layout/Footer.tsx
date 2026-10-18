@@ -81,7 +81,7 @@ const COPY: Record<Lang, Copy> = {
         links: [
           { label: 'About',                          href: '/en/about' },
           { label: 'Design',                         href: '/en/design' },
-          { label: 'Privacy policy (in Portuguese)', href: '/politica-de-privacidade', lang: 'pt-BR' },
+          { label: 'Privacy policy',                 href: '/en/privacy-policy' },
         ],
       },
       { title: 'Network', links: NETWORK },
