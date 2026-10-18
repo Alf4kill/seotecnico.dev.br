@@ -1,5 +1,5 @@
 import GithubSlugger from 'github-slugger'
-import { STATIC_SEARCH_ITEMS } from '@/lib/search-data'
+import { STATIC_SEARCH_ITEMS, STATIC_SEARCH_ITEMS_EN } from '@/lib/search-data'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dados derivados do corpo MDX no build — índice, tempo de leitura e a
@@ -87,22 +87,22 @@ export function readingTime(mdx: string): number {
   return Math.max(1, Math.round(words / WORDS_PER_MINUTE))
 }
 
-const TOOLS = STATIC_SEARCH_ITEMS.filter((item) => item.category === 'ferramenta')
+const TOOLS = [...STATIC_SEARCH_ITEMS, ...STATIC_SEARCH_ITEMS_EN].filter((item) => item.category === 'ferramenta')
 
 /**
  * A primeira ferramenta do site que o artigo linka (§6: todo artigo linka ≥1
  * ferramenta). Vai para a margem do artigo como "Ferramenta citada".
  */
 export function citedTool(mdx: string): CitedTool | undefined {
-  const match = /(?:\]\(|href=["'])(\/ferramentas\/[a-z0-9-]+)/.exec(stripCode(mdx))
+  const match = /(?:\]\(|href=["'])(\/(?:ferramentas|en\/tools)\/[a-z0-9-]+)/.exec(stripCode(mdx))
   if (!match) return undefined
   const tool = TOOLS.find((t) => t.href === match[1])
   return tool ? { title: tool.title, href: tool.href } : undefined
 }
 
-// As ferramentas só existem em português. Numa página inglesa, a margem dá o
-// nome em inglês e avisa a língua da interface, em vez de um rótulo português
-// solto numa página inglesa.
+// Um artigo inglês que ainda linke a versão portuguesa de uma ferramenta (as
+// inglesas existem desde 2026-10-18) ganha o nome em inglês e o aviso da língua
+// da interface, em vez de um rótulo português solto numa página inglesa.
 const TOOL_TITLES_EN: Record<string, string> = {
   '/ferramentas/gerador-json-ld': 'JSON-LD generator',
   '/ferramentas/validador-meta-tags': 'Meta tag validator',
@@ -111,6 +111,6 @@ const TOOL_TITLES_EN: Record<string, string> = {
 
 /** O rótulo da ferramenta citada no idioma da página. */
 export function citedToolLabel(tool: CitedTool, lang: 'pt-BR' | 'en'): string {
-  if (lang === 'pt-BR') return tool.title
+  if (lang === 'pt-BR' || tool.href.startsWith('/en/')) return tool.title
   return `${TOOL_TITLES_EN[tool.href] ?? tool.title} (Portuguese interface)`
 }

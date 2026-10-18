@@ -12,9 +12,11 @@ import {
   type GeneratorInput,
   type GeneratorSchemaType,
 } from '@/lib/jsonld-generator'
+import type { Lang } from '@/lib/hreflang'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UI do Gerador de JSON-LD (/ferramentas/gerador-json-ld).
+// UI do Gerador de JSON-LD (/ferramentas/gerador-json-ld e
+// /en/tools/json-ld-generator).
 //
 // Toda a lógica de schema vive em @/lib/jsonld-generator (pura, testada no
 // Vitest); aqui é só estado de formulário e apresentação. Nada sai do
@@ -22,13 +24,124 @@ import {
 // dataLayer (documentado em docs/measurement-plan.md), sem dados do formulário.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const schemaOptions: { value: GeneratorSchemaType; label: string }[] = [
-  { value: 'Article', label: 'Artigo (Article)' },
-  { value: 'FAQPage', label: 'FAQ (FAQPage)' },
-  { value: 'BreadcrumbList', label: 'Breadcrumb (BreadcrumbList)' },
-  { value: 'Person', label: 'Pessoa (Person)' },
-  { value: 'Organization', label: 'Organização (Organization)' },
-]
+const COPY = {
+  'pt-BR': {
+    schemaOptions: [
+      { value: 'Article', label: 'Artigo (Article)' },
+      { value: 'FAQPage', label: 'FAQ (FAQPage)' },
+      { value: 'BreadcrumbList', label: 'Breadcrumb (BreadcrumbList)' },
+      { value: 'Person', label: 'Pessoa (Person)' },
+      { value: 'Organization', label: 'Organização (Organization)' },
+    ],
+    schemaType: 'Tipo de schema',
+    headline: 'Título do artigo (headline)',
+    description: 'Descrição (meta description do artigo)',
+    articleUrl: 'URL canônica do artigo',
+    datePublished: 'Data de publicação',
+    dateModified: 'Data de modificação',
+    authorName: 'Nome do autor',
+    authorUrl: 'URL do autor (perfil, sobre)',
+    publisherName: 'Nome do site/publisher',
+    imageUrl: 'URL da imagem de destaque',
+    question: 'Pergunta',
+    answer: 'Resposta (texto puro, sem HTML)',
+    name: 'Nome',
+    jobTitle: 'Cargo/título (jobTitle)',
+    personUrl: 'URL (site pessoal ou página sobre)',
+    personSameAs: 'Perfis (sameAs) — uma URL por linha',
+    orgName: 'Nome da organização',
+    orgUrl: 'URL do site',
+    logoUrl: 'URL do logo',
+    orgSameAs: 'Perfis oficiais (sameAs) — uma URL por linha',
+    phHeadline: 'Como melhorar o LCP no Next.js',
+    phDescription: 'Guia prático pelas 4 subpartes do LCP…',
+    phArticleUrl: 'https://seusite.dev/blog/seu-artigo',
+    phAuthorUrl: 'https://seusite.dev/sobre',
+    phPublisher: 'Nome do seu site',
+    phImage: 'https://seusite.dev/og/artigo.png',
+    phQuestion: 'O que é um bom LCP?',
+    phAnswer: '2,5 segundos ou menos no percentil 75…',
+    phPersonUrl: 'https://seusite.dev',
+    phOrgName: 'Nome da empresa',
+    phOrgUrl: 'https://empresa.com.br',
+    phLogo: 'https://empresa.com.br/logo.png',
+    phYourName: 'Seu nome',
+    phCrumbRoot: 'https://seusite.dev/',
+    phCrumbBlog: 'https://seusite.dev/blog',
+    phPersonSameAs: 'https://github.com/usuario\nhttps://linkedin.com/in/usuario',
+    phOrgSameAs: 'https://linkedin.com/company/empresa\nhttps://instagram.com/empresa',
+    level: 'Nível',
+    removeQuestion: 'Remover pergunta',
+    addQuestion: 'Adicionar pergunta',
+    removeLevel: 'Remover nível',
+    addLevel: 'Adicionar nível',
+    generate: 'Gerar JSON-LD',
+    outputFormat: 'Formato de saída',
+    nextComponent: 'Componente Next.js',
+    copied: 'Copiado',
+    copyButton: 'Copiar',
+    validateBefore: 'Antes de publicar, valide o resultado no',
+    richResultsTest: 'teste de pesquisa aprimorada do Google',
+  },
+  en: {
+    schemaOptions: [
+      { value: 'Article', label: 'Article' },
+      { value: 'FAQPage', label: 'FAQ (FAQPage)' },
+      { value: 'BreadcrumbList', label: 'Breadcrumb (BreadcrumbList)' },
+      { value: 'Person', label: 'Person' },
+      { value: 'Organization', label: 'Organization' },
+    ],
+    schemaType: 'Schema type',
+    headline: 'Article title (headline)',
+    description: "Description (the article's meta description)",
+    articleUrl: 'Canonical URL of the article',
+    datePublished: 'Publication date',
+    dateModified: 'Modification date',
+    authorName: 'Author name',
+    authorUrl: 'Author URL (profile, about page)',
+    publisherName: 'Site/publisher name',
+    imageUrl: 'Featured image URL',
+    question: 'Question',
+    answer: 'Answer (plain text, no HTML)',
+    name: 'Name',
+    jobTitle: 'Job title (jobTitle)',
+    personUrl: 'URL (personal site or about page)',
+    personSameAs: 'Profiles (sameAs) — one URL per line',
+    orgName: 'Organization name',
+    orgUrl: 'Site URL',
+    logoUrl: 'Logo URL',
+    orgSameAs: 'Official profiles (sameAs) — one URL per line',
+    phHeadline: 'How to improve LCP in Next.js',
+    phDescription: 'A practical guide through the 4 LCP subparts…',
+    phArticleUrl: 'https://yoursite.dev/blog/your-article',
+    phAuthorUrl: 'https://yoursite.dev/about',
+    phPublisher: 'Your site name',
+    phImage: 'https://yoursite.dev/og/article.png',
+    phQuestion: 'What is a good LCP?',
+    phAnswer: '2.5 seconds or less at the 75th percentile…',
+    phPersonUrl: 'https://yoursite.dev',
+    phOrgName: 'Company name',
+    phOrgUrl: 'https://company.com',
+    phLogo: 'https://company.com/logo.png',
+    phYourName: 'Your name',
+    phCrumbRoot: 'https://yoursite.dev/',
+    phCrumbBlog: 'https://yoursite.dev/blog',
+    phPersonSameAs: 'https://github.com/username\nhttps://linkedin.com/in/username',
+    phOrgSameAs: 'https://linkedin.com/company/yourcompany\nhttps://instagram.com/yourcompany',
+    level: 'Level',
+    removeQuestion: 'Remove question',
+    addQuestion: 'Add question',
+    removeLevel: 'Remove level',
+    addLevel: 'Add level',
+    generate: 'Generate JSON-LD',
+    outputFormat: 'Output format',
+    nextComponent: 'Next.js component',
+    copied: 'Copied',
+    copyButton: 'Copy',
+    validateBefore: "Before publishing, validate the result in Google's",
+    richResultsTest: 'Rich Results Test',
+  },
+} as const
 
 type OutputTab = 'json' | 'next'
 
@@ -57,7 +170,8 @@ function Field({
   )
 }
 
-export function JsonLdGenerator() {
+export function JsonLdGenerator({ lang = 'pt-BR' }: { lang?: Lang }) {
+  const copy = COPY[lang]
   const [schemaType, setSchemaType] = useState<GeneratorSchemaType>('Article')
   const [input, setInput] = useState<GeneratorInput>(emptyGeneratorInput)
   const [errors, setErrors] = useState<string[]>([])
@@ -73,20 +187,20 @@ export function JsonLdGenerator() {
     setInput((s) => ({ ...s, organization: { ...s.organization, ...patch } }))
 
   function generate() {
-    const found = validateInput(schemaType, input)
+    const found = validateInput(schemaType, input, lang)
     setErrors(found)
     if (found.length > 0) {
       setOutput(null)
       return
     }
     const schema = buildSchema(schemaType, input)
-    setOutput({ json: toJsonLd(schema), next: toNextComponent(schemaType, schema) })
+    setOutput({ json: toJsonLd(schema), next: toNextComponent(schemaType, schema, lang) })
     setCopied(false)
     // Evento-chave da ferramenta (measurement-plan.md) — só o tipo, nunca o conteúdo.
     pushEvent({ event: 'tool_generate_jsonld', schema_type: schemaType })
   }
 
-  async function copy() {
+  async function copyOutput() {
     if (!output) return
     try {
       await navigator.clipboard.writeText(tab === 'json' ? output.json : output.next)
@@ -100,7 +214,7 @@ export function JsonLdGenerator() {
 
   return (
     <div className="mt-10 border border-gray bg-surface p-5 md:p-8">
-      <Field label="Tipo de schema" required>
+      <Field label={copy.schemaType} required>
         <select
           className={inputClass}
           value={schemaType}
@@ -110,7 +224,7 @@ export function JsonLdGenerator() {
             setOutput(null)
           }}
         >
-          {schemaOptions.map((o) => (
+          {copy.schemaOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
@@ -121,33 +235,33 @@ export function JsonLdGenerator() {
       <div className="mt-6 grid gap-4">
         {schemaType === 'Article' && (
           <>
-            <Field label="Título do artigo (headline)" required>
+            <Field label={copy.headline} required>
               <input
                 className={inputClass}
                 value={input.article.headline}
                 onChange={(e) => setArticle({ headline: e.target.value })}
-                placeholder="Como melhorar o LCP no Next.js"
+                placeholder={copy.phHeadline}
               />
             </Field>
-            <Field label="Descrição (meta description do artigo)">
+            <Field label={copy.description}>
               <input
                 className={inputClass}
                 value={input.article.description}
                 onChange={(e) => setArticle({ description: e.target.value })}
-                placeholder="Guia prático pelas 4 subpartes do LCP…"
+                placeholder={copy.phDescription}
               />
             </Field>
-            <Field label="URL canônica do artigo" required>
+            <Field label={copy.articleUrl} required>
               <input
                 className={inputClass}
                 type="url"
                 value={input.article.url}
                 onChange={(e) => setArticle({ url: e.target.value })}
-                placeholder="https://seusite.dev/blog/seu-artigo"
+                placeholder={copy.phArticleUrl}
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Data de publicação" required>
+              <Field label={copy.datePublished} required>
                 <input
                   className={inputClass}
                   type="date"
@@ -155,7 +269,7 @@ export function JsonLdGenerator() {
                   onChange={(e) => setArticle({ datePublished: e.target.value })}
                 />
               </Field>
-              <Field label="Data de modificação">
+              <Field label={copy.dateModified}>
                 <input
                   className={inputClass}
                   type="date"
@@ -165,40 +279,40 @@ export function JsonLdGenerator() {
               </Field>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Nome do autor" required>
+              <Field label={copy.authorName} required>
                 <input
                   className={inputClass}
                   value={input.article.authorName}
                   onChange={(e) => setArticle({ authorName: e.target.value })}
-                  placeholder="Seu nome"
+                  placeholder={copy.phYourName}
                 />
               </Field>
-              <Field label="URL do autor (perfil, sobre)">
+              <Field label={copy.authorUrl}>
                 <input
                   className={inputClass}
                   type="url"
                   value={input.article.authorUrl}
                   onChange={(e) => setArticle({ authorUrl: e.target.value })}
-                  placeholder="https://seusite.dev/sobre"
+                  placeholder={copy.phAuthorUrl}
                 />
               </Field>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Nome do site/publisher">
+              <Field label={copy.publisherName}>
                 <input
                   className={inputClass}
                   value={input.article.publisherName}
                   onChange={(e) => setArticle({ publisherName: e.target.value })}
-                  placeholder="Nome do seu site"
+                  placeholder={copy.phPublisher}
                 />
               </Field>
-              <Field label="URL da imagem de destaque">
+              <Field label={copy.imageUrl}>
                 <input
                   className={inputClass}
                   type="url"
                   value={input.article.imageUrl}
                   onChange={(e) => setArticle({ imageUrl: e.target.value })}
-                  placeholder="https://seusite.dev/og/artigo.png"
+                  placeholder={copy.phImage}
                 />
               </Field>
             </div>
@@ -210,10 +324,10 @@ export function JsonLdGenerator() {
             {input.faq.map((pair, i) => (
               <fieldset key={i} className="border border-gray p-4">
                 <legend className="eyebrow px-1">
-                  Pergunta {i + 1}
+                  {copy.question} {i + 1}
                 </legend>
                 <div className="grid gap-3">
-                  <Field label="Pergunta" required>
+                  <Field label={copy.question} required>
                     <input
                       className={inputClass}
                       value={pair.question}
@@ -225,10 +339,10 @@ export function JsonLdGenerator() {
                           ),
                         }))
                       }
-                      placeholder="O que é um bom LCP?"
+                      placeholder={copy.phQuestion}
                     />
                   </Field>
-                  <Field label="Resposta (texto puro, sem HTML)" required>
+                  <Field label={copy.answer} required>
                     <textarea
                       className={`${inputClass} min-h-20`}
                       value={pair.answer}
@@ -240,7 +354,7 @@ export function JsonLdGenerator() {
                           ),
                         }))
                       }
-                      placeholder="2,5 segundos ou menos no percentil 75…"
+                      placeholder={copy.phAnswer}
                     />
                   </Field>
                   {input.faq.length > 1 && (
@@ -251,7 +365,7 @@ export function JsonLdGenerator() {
                       }
                       className="inline-flex w-fit items-center gap-1.5 text-sm text-muted hover:text-foreground"
                     >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" /> Remover pergunta
+                      <Trash2 className="h-4 w-4" aria-hidden="true" /> {copy.removeQuestion}
                     </button>
                   )}
                 </div>
@@ -264,7 +378,7 @@ export function JsonLdGenerator() {
               }
               className="inline-flex w-fit items-center gap-1.5 px-3 py-2 border border-gray-control font-mono text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
             >
-              <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar pergunta
+              <Plus className="h-4 w-4" aria-hidden="true" /> {copy.addQuestion}
             </button>
           </>
         )}
@@ -274,10 +388,10 @@ export function JsonLdGenerator() {
             {input.breadcrumb.map((item, i) => (
               <fieldset key={i} className="border border-gray p-4">
                 <legend className="eyebrow px-1">
-                  Nível {i + 1}
+                  {copy.level} {i + 1}
                 </legend>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Nome" required>
+                  <Field label={copy.name} required>
                     <input
                       className={inputClass}
                       value={item.name}
@@ -305,7 +419,7 @@ export function JsonLdGenerator() {
                           ),
                         }))
                       }
-                      placeholder={i === 0 ? 'https://seusite.dev/' : 'https://seusite.dev/blog'}
+                      placeholder={i === 0 ? copy.phCrumbRoot : copy.phCrumbBlog}
                     />
                   </Field>
                 </div>
@@ -320,7 +434,7 @@ export function JsonLdGenerator() {
                     }
                     className="mt-3 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"
                   >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" /> Remover nível
+                    <Trash2 className="h-4 w-4" aria-hidden="true" /> {copy.removeLevel}
                   </button>
                 )}
               </fieldset>
@@ -332,7 +446,7 @@ export function JsonLdGenerator() {
               }
               className="inline-flex w-fit items-center gap-1.5 px-3 py-2 border border-gray-control font-mono text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
             >
-              <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar nível
+              <Plus className="h-4 w-4" aria-hidden="true" /> {copy.addLevel}
             </button>
           </>
         )}
@@ -340,15 +454,15 @@ export function JsonLdGenerator() {
         {schemaType === 'Person' && (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Nome" required>
+              <Field label={copy.name} required>
                 <input
                   className={inputClass}
                   value={input.person.name}
                   onChange={(e) => setPerson({ name: e.target.value })}
-                  placeholder="Seu nome"
+                  placeholder={copy.phYourName}
                 />
               </Field>
-              <Field label="Cargo/título (jobTitle)">
+              <Field label={copy.jobTitle}>
                 <input
                   className={inputClass}
                   value={input.person.jobTitle}
@@ -357,21 +471,21 @@ export function JsonLdGenerator() {
                 />
               </Field>
             </div>
-            <Field label="URL (site pessoal ou página sobre)">
+            <Field label={copy.personUrl}>
               <input
                 className={inputClass}
                 type="url"
                 value={input.person.url}
                 onChange={(e) => setPerson({ url: e.target.value })}
-                placeholder="https://seusite.dev"
+                placeholder={copy.phPersonUrl}
               />
             </Field>
-            <Field label="Perfis (sameAs) — uma URL por linha">
+            <Field label={copy.personSameAs}>
               <textarea
                 className={`${inputClass} min-h-20`}
                 value={input.person.sameAs}
                 onChange={(e) => setPerson({ sameAs: e.target.value })}
-                placeholder={'https://github.com/usuario\nhttps://linkedin.com/in/usuario'}
+                placeholder={copy.phPersonSameAs}
               />
             </Field>
           </>
@@ -380,39 +494,39 @@ export function JsonLdGenerator() {
         {schemaType === 'Organization' && (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Nome da organização" required>
+              <Field label={copy.orgName} required>
                 <input
                   className={inputClass}
                   value={input.organization.name}
                   onChange={(e) => setOrganization({ name: e.target.value })}
-                  placeholder="Nome da empresa"
+                  placeholder={copy.phOrgName}
                 />
               </Field>
-              <Field label="URL do site" required>
+              <Field label={copy.orgUrl} required>
                 <input
                   className={inputClass}
                   type="url"
                   value={input.organization.url}
                   onChange={(e) => setOrganization({ url: e.target.value })}
-                  placeholder="https://empresa.com.br"
+                  placeholder={copy.phOrgUrl}
                 />
               </Field>
             </div>
-            <Field label="URL do logo">
+            <Field label={copy.logoUrl}>
               <input
                 className={inputClass}
                 type="url"
                 value={input.organization.logoUrl}
                 onChange={(e) => setOrganization({ logoUrl: e.target.value })}
-                placeholder="https://empresa.com.br/logo.png"
+                placeholder={copy.phLogo}
               />
             </Field>
-            <Field label="Perfis oficiais (sameAs) — uma URL por linha">
+            <Field label={copy.orgSameAs}>
               <textarea
                 className={`${inputClass} min-h-20`}
                 value={input.organization.sameAs}
                 onChange={(e) => setOrganization({ sameAs: e.target.value })}
-                placeholder={'https://linkedin.com/company/empresa\nhttps://instagram.com/empresa'}
+                placeholder={copy.phOrgSameAs}
               />
             </Field>
           </>
@@ -435,17 +549,17 @@ export function JsonLdGenerator() {
         onClick={generate}
         className="mt-6 min-h-12 bg-primary-solid px-6 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-on-primary transition-colors hover:bg-primary-solid-hover"
       >
-        Gerar JSON-LD
+        {copy.generate}
       </button>
 
       {output && (
         <div className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div role="tablist" aria-label="Formato de saída" className="flex gap-2">
+            <div role="tablist" aria-label={copy.outputFormat} className="flex gap-2">
               {(
                 [
                   ['json', 'JSON-LD'],
-                  ['next', 'Componente Next.js'],
+                  ['next', copy.nextComponent],
                 ] as [OutputTab, string][]
               ).map(([value, label]) => (
                 <button
@@ -470,16 +584,16 @@ export function JsonLdGenerator() {
             </div>
             <button
               type="button"
-              onClick={copy}
+              onClick={copyOutput}
               className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-control font-mono text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               {copied ? (
                 <>
-                  <Check className="h-4 w-4 text-primary" aria-hidden="true" /> Copiado
+                  <Check className="h-4 w-4 text-primary" aria-hidden="true" /> {copy.copied}
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4" aria-hidden="true" /> Copiar
+                  <Copy className="h-4 w-4" aria-hidden="true" /> {copy.copyButton}
                 </>
               )}
             </button>
@@ -488,14 +602,14 @@ export function JsonLdGenerator() {
             <code>{tab === 'json' ? output.json : output.next}</code>
           </pre>
           <p className="mt-3 text-sm text-muted">
-            Antes de publicar, valide o resultado no{' '}
+            {copy.validateBefore}{' '}
             <a
               href="https://search.google.com/test/rich-results"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline underline-offset-[3px]"
             >
-              teste de pesquisa aprimorada do Google
+              {copy.richResultsTest}
             </a>
             .
           </p>

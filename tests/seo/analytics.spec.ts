@@ -34,8 +34,8 @@ async function dataLayerEvents(page: Page): Promise<DataLayerEvent[]> {
  * conservador e não deve calar o dataLayer: quem decide o que sai dali é o
  * Consent Mode no GTM, não o site.
  */
-async function dismissConsent(page: Page) {
-  const reject = page.getByRole('button', { name: 'Recusar' })
+async function dismissConsent(page: Page, label = 'Recusar') {
+  const reject = page.getByRole('button', { name: label })
   if (await reject.isVisible().catch(() => false)) await reject.click()
 }
 
@@ -148,5 +148,89 @@ test.describe('key events das ferramentas', () => {
 
     const serialized = JSON.stringify(await dataLayerEvents(page))
     expect(serialized).not.toContain('exemplo.dev')
+  })
+})
+
+// As versões inglesas (/en/tools/*) usam os mesmos componentes com `lang="en"`.
+// O contrato com o GTM é o mesmo — mesmo evento, mesmo parâmetro; a página de
+// origem fica no page_location. O que muda e precisa de prova: os rótulos que o
+// usuário clica e o `lang=en` que a chamada à API leva.
+test.describe('key events of the English tools', () => {
+  test('tool_generate_jsonld fires from the English generator', async ({ page }) => {
+    await page.goto('/en/tools/json-ld-generator')
+    await dismissConsent(page, 'Decline')
+
+    await page.getByLabel(/Article title/).fill('How to improve LCP in Next.js')
+    await page.getByLabel(/Canonical URL of the article/).fill('https://example.dev/blog/lcp')
+    await page.getByLabel(/Publication date/).fill('2026-10-18')
+    await page.getByLabel(/Author name/).fill('Jane Doe')
+    await page.getByRole('button', { name: 'Generate JSON-LD' }).click()
+
+    await expect(page.locator('pre').first()).toContainText('"@type": "Article"')
+    expect(await dataLayerEvents(page)).toContainEqual(
+      expect.objectContaining({ event: 'tool_generate_jsonld', schema_type: 'Article' })
+    )
+  })
+
+  test('the English validator asks the API for English and reports a count', async ({ page }) => {
+    await page.goto('/en/tools/meta-tag-validator')
+    await dismissConsent(page, 'Decline')
+
+    const requested: string[] = []
+    await page.route('**/api/validador-meta**', (route) => {
+      requested.push(route.request().url())
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          finalUrl: 'https://example.dev/',
+          httpStatus: 200,
+          redirected: false,
+          meta: { title: 'Example', description: 'Example description', ogTitle: null, ogDescription: null, ogImage: null },
+          checks: [],
+          issuesFound: 2,
+        }),
+      })
+    })
+
+    await page.getByRole('textbox').first().fill('https://example.dev/')
+    await page.getByRole('button', { name: /Validate/ }).click()
+
+    await expect
+      .poll(async () => (await dataLayerEvents(page)).find((e) => e.event === 'tool_validate_meta'))
+      .toMatchObject({ issues_found: 2 })
+    expect(requested[0]).toContain('lang=en')
+    expect(JSON.stringify(await dataLayerEvents(page))).not.toContain('example.dev')
+  })
+
+  test('the English checker asks the API for English and explains no-data', async ({ page }) => {
+    await page.goto('/en/tools/cwv-checker')
+    await dismissConsent(page, 'Decline')
+
+    const requested: string[] = []
+    await page.route('**/api/checador-cwv**', (route) => {
+      requested.push(route.request().url())
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          origin: 'https://example.dev',
+          formFactor: 'PHONE',
+          period: { firstDate: '', lastDate: '' },
+          metrics: [],
+          lcpBucket: 'no-data',
+          inDataset: false,
+        }),
+      })
+    })
+
+    await page.getByRole('textbox').first().fill('example.dev')
+    await page.getByRole('button', { name: /^Check/ }).click()
+
+    await expect
+      .poll(async () => (await dataLayerEvents(page)).find((e) => e.event === 'tool_check_cwv'))
+      .toMatchObject({ lcp_bucket: 'no-data' })
+    expect(requested[0]).toContain('lang=en')
+    await expect(page.getByText(/not in the CrUX dataset yet/i)).toBeVisible()
   })
 })

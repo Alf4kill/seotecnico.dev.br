@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { parseCruxReport, parseOrigin, type FormFactor } from '@/lib/crux'
 import { clientKey, createDailyBudget, createFixedWindow } from '@/lib/rate-limit'
+import type { Lang } from '@/lib/hreflang'
 import { site } from '@/lib/site'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -26,6 +27,12 @@ import { site } from '@/lib/site'
 //     site. Sem CAPTCHA: §5.3 exige ferramenta sem fricção e sem login.
 //
 // Sem armazenamento: a origem consultada não é logada nem persistida.
+//
+// `?lang=en` (a página /en/tools/cwv-checker) troca o idioma das mensagens de
+// erro; a resposta de sucesso não tem texto e é a mesma nos dois idiomas. O
+// parâmetro entra na chave do cache de borda, então a mesma origem consultada
+// nos dois idiomas custa duas consultas ao CrUX em vez de uma — custo aceito
+// diante do volume da página inglesa, em troca de uma rota sem estado oculto.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CRUX_ENDPOINT = 'https://chromeuxreport.googleapis.com/v1/records:queryRecord'
@@ -37,6 +44,25 @@ const STALE_WHILE_REVALIDATE = 86_400
 
 const perCaller = createFixedWindow({ windowMs: 60_000, max: 10 })
 const dailyBudget = createDailyBudget(2_000)
+
+const ERRORS = {
+  'pt-BR': {
+    unavailable: 'O checador está temporariamente indisponível.',
+    forbidden: 'Requisição não autorizada.',
+    rateLimited: 'Muitas consultas seguidas. Espere um minuto e tente de novo.',
+    dailyLimit: 'O limite diário de consultas desta ferramenta foi atingido. Tente amanhã.',
+    cruxFailed: 'Não foi possível consultar o CrUX agora. Tente de novo em instantes.',
+    unexpected: 'Resposta inesperada do CrUX.',
+  },
+  en: {
+    unavailable: 'The checker is temporarily unavailable.',
+    forbidden: 'Request not authorized.',
+    rateLimited: 'Too many checks in a row. Wait a minute and try again.',
+    dailyLimit: "This tool's daily query limit has been reached. Try again tomorrow.",
+    cruxFailed: 'CrUX could not be queried right now. Try again in a moment.',
+    unexpected: 'Unexpected response from CrUX.',
+  },
+} as const
 
 function fail(error: string, status: number): NextResponse {
   // Erro nunca é cacheado na borda: um 429 de um chamador não pode virar a
@@ -61,30 +87,30 @@ function fromThisSite(request: NextRequest): boolean {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const lang: Lang = request.nextUrl.searchParams.get('lang') === 'en' ? 'en' : 'pt-BR'
+  const copy = ERRORS[lang]
+
   const key = process.env.CRUX_API_KEY
   if (!key) {
     // Mesmo fail-safe do resto do site: sem configuração, a ferramenta diz que
     // está indisponível em vez de fingir que a origem não tem dados.
-    return fail('O checador está temporariamente indisponível.', 503)
+    return fail(copy.unavailable, 503)
   }
 
-  if (!fromThisSite(request)) return fail('Requisição não autorizada.', 403)
+  if (!fromThisSite(request)) return fail(copy.forbidden, 403)
 
   if (perCaller.hit(clientKey(request))) {
-    return fail('Muitas consultas seguidas. Espere um minuto e tente de novo.', 429)
+    return fail(copy.rateLimited, 429)
   }
 
-  const parsed = parseOrigin(request.nextUrl.searchParams.get('origin') ?? '')
+  const parsed = parseOrigin(request.nextUrl.searchParams.get('origin') ?? '', lang)
   if (!parsed.ok) return fail(parsed.error, 400)
 
   const formFactor: FormFactor =
     request.nextUrl.searchParams.get('formFactor') === 'DESKTOP' ? 'DESKTOP' : 'PHONE'
 
   if (!dailyBudget.spend()) {
-    return fail(
-      'O limite diário de consultas desta ferramenta foi atingido. Tente amanhã.',
-      503
-    )
+    return fail(copy.dailyLimit, 503)
   }
 
   let response: Response
@@ -97,7 +123,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
   } catch {
-    return fail('Não foi possível consultar o CrUX agora. Tente de novo em instantes.', 502)
+    return fail(copy.cruxFailed, 502)
   }
 
   // 404 é resposta legítima e o caso mais comum: a origem não tem visitas
@@ -114,11 +140,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!response.ok) {
     // 403/429 aqui é quota ou chave — problema do dono do site, não de quem
     // consulta, e a mensagem não deve expor qual dos dois.
-    return fail('Não foi possível consultar o CrUX agora. Tente de novo em instantes.', 502)
+    return fail(copy.cruxFailed, 502)
   }
 
   const payload = await response.json().catch(() => null)
-  if (!payload) return fail('Resposta inesperada do CrUX.', 502)
+  if (!payload) return fail(copy.unexpected, 502)
 
   return NextResponse.json(
     { ...parseCruxReport(payload, parsed.origin, formFactor), inDataset: true },

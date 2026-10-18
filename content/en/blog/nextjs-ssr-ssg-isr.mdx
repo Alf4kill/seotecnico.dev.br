@@ -385,8 +385,8 @@ response, Googlebot indexes them in the first wave. Then compare with the
 rendered DOM (DevTools → Elements): what exists in the DOM but **not** in the
 `curl` output is exactly the content hanging in the rendering queue.
 
-This site's [meta tag validator](/ferramentas/validador-meta-tags) reads from
-the same side of the comparison (its interface is in Portuguese): it reads the
+This site's [meta tag validator](/en/tools/meta-tag-validator) reads from
+the same side of the comparison: it reads the
 server's response, not the DOM. A tag that only exists after hydration simply
 does not appear in the report, and that is not a limitation of the tool, it is
 the diagnosis this whole article describes.
@@ -398,8 +398,7 @@ URL Inspection → "View tested page". There is the HTML Google actually got whe
 it tested the page. Check that the critical content is present, and use the
 inspection to validate the route's JSON-LD too, which also has to be in the HTML
 of the first response; if you still assemble the block by hand, the [JSON-LD
-generator](/ferramentas/gerador-json-ld) produces the format this site uses
-(its interface is in Portuguese).
+generator](/en/tools/json-ld-generator) produces the format this site uses.
 
 ## The most common mistake: the component that only exists after hydration
 

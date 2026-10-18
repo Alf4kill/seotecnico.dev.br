@@ -62,10 +62,10 @@ const COPY: Record<Lang, Copy> = {
     homeLabel: `${site.name} — home`,
     byline: `${site.author.name} · ${site.author.jobTitle}`,
     navLabel: 'Footer navigation',
-    // A política de privacidade e o feed só existem em português. Os links
-    // dizem isso em vez de fingir o contrário: um rótulo em inglês levando a
-    // uma página em português, sem aviso, é o despejo silencioso que esta
-    // moldura evita.
+    // O link para o site em português diz o idioma de destino em vez de
+    // fingir o contrário: um rótulo em inglês levando a uma página em
+    // português, sem aviso, é o despejo silencioso que esta moldura evita.
+    // O feed só existe em português e por isso fica fora daqui.
     columns: [
       {
         title: 'Content',
@@ -74,6 +74,7 @@ const COPY: Record<Lang, Copy> = {
           { label: 'Blog',                href: '/en/blog' },
           { label: 'Case studies',        href: '/en/case-studies' },
           { label: 'Lab',                 href: '/en/lab' },
+          { label: 'Tools',               href: '/en/tools' },
           { label: 'Site in Portuguese',  href: '/', lang: 'pt-BR' },
         ],
       },

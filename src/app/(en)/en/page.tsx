@@ -1,5 +1,5 @@
 import { WebSiteJsonLd, PersonJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd'
-import { getAllEnglishPosts, getAllPosts } from '@/lib/content'
+import { getAllEnglishPosts } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 import { ButtonLink, buttonClasses } from '@/components/ui/Button'
@@ -60,7 +60,6 @@ const MEASURED = [
 ]
 
 export default function EnglishHomePage() {
-  const postCount = getAllPosts().length
   const englishPostCount = getAllEnglishPosts().length
   const snapshot = new Date(`${SNAPSHOT_DATE}T00:00:00`).toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -77,33 +76,23 @@ export default function EnglishHomePage() {
       href: '/en/guide/technical-seo-nextjs',
       cta: 'Read the guide',
     },
-    // Os artigos em inglês têm índice próprio (/en/blog): um cartão só, com a
-    // contagem do build, no lugar de um cartão por artigo.
+    // Todo artigo tem versão inglesa (/en/blog): um cartão só, com a contagem
+    // do build, no lugar de um cartão por artigo.
     {
-      mark: 'bg-primary',
-      title: `${englishPostCount} lab articles in English`,
+      mark: 'triangle',
+      title: `${englishPostCount} in-depth articles`,
       description:
-        'What AI assistants read, run and claim about a page, measured on this site: the lab experiments and the articles built on their data.',
+        'Metadata API, JSON-LD, dynamic sitemaps, LCP, INP, hreflang, and what AI assistants read and run on a page — each implemented or measured on this domain before it was written about.',
       href: '/en/blog',
-      cta: 'Browse the English blog',
+      cta: 'Browse the articles',
     },
     {
       mark: 'bg-accent',
       title: 'Three free SEO tools',
       description:
         'A JSON-LD generator, a meta tag validator and a Core Web Vitals checker backed by the Chrome UX Report. No login, no stored data.',
-      href: '/ferramentas',
+      href: '/en/tools',
       cta: 'Open the tools',
-      lang: 'pt-BR' as const,
-    },
-    {
-      mark: 'triangle',
-      title: `${postCount} in-depth articles`,
-      description:
-        'Metadata API, JSON-LD, dynamic sitemaps, LCP, INP, hreflang and SPA tracking in GTM — each implemented on this domain before it was written about.',
-      href: '/blog',
-      cta: 'Browse the articles',
-      lang: 'pt-BR' as const,
     },
     {
       mark: 'bg-shape-reference',
@@ -214,7 +203,7 @@ export default function EnglishHomePage() {
           </h2>
         </div>
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {sections.map(({ mark, title, description, href, cta, lang, external }) => (
+          {sections.map(({ mark, title, description, href, cta, external }) => (
             <article key={href} className="flex flex-col gap-3 border border-gray bg-surface p-6">
               {mark === 'triangle' ? (
                 <span aria-hidden="true" className="h-0 w-0 border-x-[10px] border-b-[18px] border-x-transparent border-b-shape-danger" />
@@ -228,20 +217,8 @@ export default function EnglishHomePage() {
                   {cta} <span aria-hidden="true">↗</span>
                 </a>
               ) : (
-                <ButtonLink
-                  href={href}
-                  hrefLang={lang}
-                  // Destino noutro root layout: ver o comentário em LanguageSwitch.
-                  prefetch={lang ? false : undefined}
-                  title={title}
-                  variant="link"
-                  className="self-start"
-                >
+                <ButtonLink href={href} title={title} variant="link" className="self-start">
                   {cta}
-                  {/* Destino em português: dito no link, não descoberto no clique.
-                      O espaço explícito entra no nome acessível: sem ele o leitor
-                      de tela lê "tools(in Portuguese)". */}
-                  {lang === 'pt-BR' && <>{' '}<span className="normal-case tracking-normal text-muted">(in Portuguese)</span></>}
                 </ButtonLink>
               )}
             </article>

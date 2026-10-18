@@ -12,9 +12,14 @@
 // completo seria dependência sem ganho. O custo aceito: atributos com ">"
 // dentro de aspas confundem o corte da tag — raro em <meta>, irrelevante para
 // o veredito.
+//
+// A ferramenta existe nos dois idiomas (/ferramentas/validador-meta-tags e
+// /en/tools/meta-tag-validator): as mensagens recebem `lang`, as checagens e
+// os vereditos são os mesmos.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { inCidr, parseCidr, type Cidr } from './crawler-verification'
+import type { Lang } from './hreflang'
 
 export const TITLE_MAX = 60
 export const DESCRIPTION_MAX = 155
@@ -25,7 +30,7 @@ export interface MetaCheck {
   id: string
   label: string
   status: CheckStatus
-  /** Frase curta em PT explicando o veredito deste item. */
+  /** Frase curta, no idioma da página, explicando o veredito deste item. */
   detail: string
 }
 
@@ -77,15 +82,35 @@ export function isPrivateAddress(ip: string): boolean {
 
 export type TargetUrl = { ok: true; url: URL } | { ok: false; error: string }
 
+const TARGET_ERRORS = {
+  'pt-BR': {
+    empty: 'Informe uma URL.',
+    scheme: 'Só http e https são suportados.',
+    invalid: 'URL inválida.',
+    port: 'Porta não suportada.',
+    local: 'Endereços locais não são suportados.',
+    private: 'Endereços de rede interna não são suportados.',
+  },
+  en: {
+    empty: 'Enter a URL.',
+    scheme: 'Only http and https are supported.',
+    invalid: 'Invalid URL.',
+    port: 'Port not supported.',
+    local: 'Local addresses are not supported.',
+    private: 'Internal network addresses are not supported.',
+  },
+} as const
+
 /**
  * Normaliza o que o usuário digitou e recusa tudo que não seja uma página web
  * pública — menos o passo de DNS, que a rota faz em seguida.
  */
-export function parseTargetUrl(raw: string): TargetUrl {
+export function parseTargetUrl(raw: string, lang: Lang = 'pt-BR'): TargetUrl {
   const fail = (error: string): TargetUrl => ({ ok: false, error })
+  const copy = TARGET_ERRORS[lang]
 
   const input = raw.trim()
-  if (!input) return fail('Informe uma URL.')
+  if (!input) return fail(copy.empty)
 
   // Esquema explícito que não seja http(s) é recusado com a mensagem certa. Sem
   // isso, `ftp://x` viraria `https://ftp://x` e morreria no check de DNS, com um
@@ -95,31 +120,31 @@ export function parseTargetUrl(raw: string): TargetUrl {
   // (`javascript:`, `data:`) não escapam — viram URL inválida logo abaixo.
   const scheme = /^([a-z][a-z0-9+.-]*):\/\//i.exec(input)?.[1]?.toLowerCase()
   if (scheme && !['http', 'https'].includes(scheme)) {
-    return fail('Só http e https são suportados.')
+    return fail(copy.scheme)
   }
 
   let url: URL
   try {
     url = new URL(scheme ? input : `https://${input}`)
   } catch {
-    return fail('URL inválida.')
+    return fail(copy.invalid)
   }
 
   if (url.port && !ALLOWED_PORTS.includes(url.port)) {
-    return fail('Porta não suportada.')
+    return fail(copy.port)
   }
 
   // Nomes locais nunca chegam ao DNS: barrá-los aqui dá a mensagem certa e não
   // depende de como o resolvedor da máquina trata `.local`.
   const host = url.hostname.replace(/\.$/, '').toLowerCase()
   if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) {
-    return fail('Endereços locais não são suportados.')
+    return fail(copy.local)
   }
   // IP literal é decidido aqui mesmo — não há nome para resolver.
   const literal = host.startsWith('[') ? host.slice(1, -1) : host
   if (/^[\d.]+$/.test(literal) || literal.includes(':')) {
     if (isPrivateAddress(literal)) {
-      return fail('Endereços de rede interna não são suportados.')
+      return fail(copy.private)
     }
   }
 
@@ -298,122 +323,133 @@ function sameUrl(a: string, b: string): boolean {
   }
 }
 
-export function runChecks(finalUrl: string, meta: ExtractedMeta): MetaCheck[] {
+/**
+ * Rótulos e frases de cada checagem, por idioma. Os rótulos que são nomes de
+ * tag (Title, Canonical, og:title…) são os mesmos nos dois; as frases explicam
+ * o veredito, que é idêntico.
+ */
+const CHECK_COPY = {
+  'pt-BR': {
+    langLabel: 'Atributo lang',
+    titleMissing: 'Ausente. É o elemento de SEO on-page mais importante da página.',
+    titleLong: (n: number) => `${n} caracteres — acima de ${TITLE_MAX}, o Google tende a truncar na SERP.`,
+    titleOk: (n: number) => `Presente, ${n} caracteres.`,
+    descriptionMissing: 'Ausente. O Google gera um snippet por conta própria — raramente o que você quer.',
+    descriptionLong: (n: number) => `${n} caracteres — acima de ${DESCRIPTION_MAX}, sujeito a truncamento.`,
+    descriptionOk: (n: number) => `Presente, ${n} caracteres.`,
+    canonicalMissing: 'Ausente. Sem canonical, variações de URL (parâmetros, barra final) podem diluir o sinal.',
+    canonicalRelative: (href: string) => `Relativo ("${href}"). O Google recomenda canonical absoluto.`,
+    canonicalElsewhere: (href: string) =>
+      `Aponta para outra URL (${href}). Se intencional (página duplicada), ok; numa página principal, é sinal de problema.`,
+    canonicalOk: 'Presente, absoluto e autorreferente.',
+    robotsNoindex: (value: string) =>
+      `"${value}" — a página está pedindo para NÃO ser indexada. Confirme se é intencional.`,
+    robotsMissing: 'Ausente — o padrão é index,follow, nenhum problema.',
+    h1None: 'Nenhum <h1> encontrado. Toda página indexável deve ter exatamente um.',
+    h1Many: (n: number) => `${n} <h1> encontrados — o recomendado é exatamente um.`,
+    h1Ok: 'Exatamente um <h1>.',
+    langMissing: 'Ausente no <html>. Importa para acessibilidade e para o idioma detectado.',
+    charsetMissing: 'Meta charset ausente — declare utf-8 no topo do <head>.',
+    viewportMissing: 'Ausente — sem ele a página falha o critério mobile-friendly.',
+    present: 'Presente.',
+    ogMissing: (isImage: boolean) =>
+      `Ausente — o preview do link em redes sociais fica sem ${isImage ? 'imagem' : 'texto próprio'}.`,
+    twitterMissing: 'Ausente — o X/Twitter cai no fallback do Open Graph, sem card grande.',
+  },
+  en: {
+    langLabel: 'lang attribute',
+    titleMissing: 'Missing. It is the most important on-page SEO element of the page.',
+    titleLong: (n: number) => `${n} characters — over ${TITLE_MAX}, Google tends to truncate it in the SERP.`,
+    titleOk: (n: number) => `Present, ${n} characters.`,
+    descriptionMissing: 'Missing. Google builds a snippet on its own — rarely the one you want.',
+    descriptionLong: (n: number) => `${n} characters — over ${DESCRIPTION_MAX}, likely to be truncated.`,
+    descriptionOk: (n: number) => `Present, ${n} characters.`,
+    canonicalMissing: 'Missing. Without a canonical, URL variants (parameters, trailing slash) can dilute the signal.',
+    canonicalRelative: (href: string) => `Relative ("${href}"). Google recommends an absolute canonical.`,
+    canonicalElsewhere: (href: string) =>
+      `Points to another URL (${href}). Fine if intended (a duplicate page); on a main page, it signals a problem.`,
+    canonicalOk: 'Present, absolute and self-referencing.',
+    robotsNoindex: (value: string) =>
+      `"${value}" — the page is asking NOT to be indexed. Confirm that this is intended.`,
+    robotsMissing: 'Missing — the default is index,follow, no problem.',
+    h1None: 'No <h1> found. Every indexable page should have exactly one.',
+    h1Many: (n: number) => `${n} <h1> found — exactly one is recommended.`,
+    h1Ok: 'Exactly one <h1>.',
+    langMissing: 'Missing on <html>. It matters for accessibility and for the detected language.',
+    charsetMissing: 'Meta charset missing — declare utf-8 at the top of <head>.',
+    viewportMissing: 'Missing — without it the page fails the mobile-friendly criterion.',
+    present: 'Present.',
+    ogMissing: (isImage: boolean) =>
+      `Missing — the link preview on social networks has no ${isImage ? 'image' : 'text of its own'}.`,
+    twitterMissing: 'Missing — X/Twitter falls back to Open Graph, with no large card.',
+  },
+} as const
+
+export function runChecks(finalUrl: string, meta: ExtractedMeta, lang: Lang = 'pt-BR'): MetaCheck[] {
+  const copy = CHECK_COPY[lang]
   const checks: MetaCheck[] = []
   const add = (id: string, label: string, status: CheckStatus, detail: string) =>
     checks.push({ id, label, status, detail })
 
   // Title
   if (!meta.title) {
-    add('title', 'Title', 'error', 'Ausente. É o elemento de SEO on-page mais importante da página.')
+    add('title', 'Title', 'error', copy.titleMissing)
   } else if (meta.title.length > TITLE_MAX) {
-    add(
-      'title',
-      'Title',
-      'warning',
-      `${meta.title.length} caracteres — acima de ${TITLE_MAX}, o Google tende a truncar na SERP.`
-    )
+    add('title', 'Title', 'warning', copy.titleLong(meta.title.length))
   } else {
-    add('title', 'Title', 'ok', `Presente, ${meta.title.length} caracteres.`)
+    add('title', 'Title', 'ok', copy.titleOk(meta.title.length))
   }
 
   // Description
   if (!meta.description) {
-    add(
-      'description',
-      'Meta description',
-      'error',
-      'Ausente. O Google gera um snippet por conta própria — raramente o que você quer.'
-    )
+    add('description', 'Meta description', 'error', copy.descriptionMissing)
   } else if (meta.description.length > DESCRIPTION_MAX) {
-    add(
-      'description',
-      'Meta description',
-      'warning',
-      `${meta.description.length} caracteres — acima de ${DESCRIPTION_MAX}, sujeito a truncamento.`
-    )
+    add('description', 'Meta description', 'warning', copy.descriptionLong(meta.description.length))
   } else {
-    add('description', 'Meta description', 'ok', `Presente, ${meta.description.length} caracteres.`)
+    add('description', 'Meta description', 'ok', copy.descriptionOk(meta.description.length))
   }
 
   // Canonical
   if (!meta.canonical) {
-    add(
-      'canonical',
-      'Canonical',
-      'warning',
-      'Ausente. Sem canonical, variações de URL (parâmetros, barra final) podem diluir o sinal.'
-    )
+    add('canonical', 'Canonical', 'warning', copy.canonicalMissing)
   } else if (!/^https?:\/\//i.test(meta.canonical)) {
-    add(
-      'canonical',
-      'Canonical',
-      'error',
-      `Relativo ("${meta.canonical}"). O Google recomenda canonical absoluto.`
-    )
+    add('canonical', 'Canonical', 'error', copy.canonicalRelative(meta.canonical))
   } else if (!sameUrl(meta.canonical, finalUrl)) {
-    add(
-      'canonical',
-      'Canonical',
-      'warning',
-      `Aponta para outra URL (${meta.canonical}). Se intencional (página duplicada), ok; numa página principal, é sinal de problema.`
-    )
+    add('canonical', 'Canonical', 'warning', copy.canonicalElsewhere(meta.canonical))
   } else {
-    add('canonical', 'Canonical', 'ok', 'Presente, absoluto e autorreferente.')
+    add('canonical', 'Canonical', 'ok', copy.canonicalOk)
   }
 
   // Robots
   const robots = meta.metaRobots?.toLowerCase() ?? ''
   if (robots.includes('noindex')) {
-    add(
-      'robots',
-      'Meta robots',
-      'warning',
-      `"${meta.metaRobots}" — a página está pedindo para NÃO ser indexada. Confirme se é intencional.`
-    )
+    add('robots', 'Meta robots', 'warning', copy.robotsNoindex(meta.metaRobots ?? ''))
   } else {
-    add(
-      'robots',
-      'Meta robots',
-      'ok',
-      meta.metaRobots
-        ? `"${meta.metaRobots}".`
-        : 'Ausente — o padrão é index,follow, nenhum problema.'
-    )
+    add('robots', 'Meta robots', 'ok', meta.metaRobots ? `"${meta.metaRobots}".` : copy.robotsMissing)
   }
 
   // H1
   if (meta.h1Count === 0) {
-    add('h1', 'H1', 'error', 'Nenhum <h1> encontrado. Toda página indexável deve ter exatamente um.')
+    add('h1', 'H1', 'error', copy.h1None)
   } else if (meta.h1Count > 1) {
-    add('h1', 'H1', 'warning', `${meta.h1Count} <h1> encontrados — o recomendado é exatamente um.`)
+    add('h1', 'H1', 'warning', copy.h1Many(meta.h1Count))
   } else {
-    add('h1', 'H1', 'ok', 'Exatamente um <h1>.')
+    add('h1', 'H1', 'ok', copy.h1Ok)
   }
 
   // Fundamentos do documento
   if (meta.htmlLang) {
-    add('lang', 'Atributo lang', 'ok', `<html lang="${meta.htmlLang}">.`)
+    add('lang', copy.langLabel, 'ok', `<html lang="${meta.htmlLang}">.`)
   } else {
-    add(
-      'lang',
-      'Atributo lang',
-      'warning',
-      'Ausente no <html>. Importa para acessibilidade e para o idioma detectado.'
-    )
+    add('lang', copy.langLabel, 'warning', copy.langMissing)
   }
   add(
     'charset',
     'Charset',
     meta.charset ? 'ok' : 'warning',
-    meta.charset ? `${meta.charset}.` : 'Meta charset ausente — declare utf-8 no topo do <head>.'
+    meta.charset ? `${meta.charset}.` : copy.charsetMissing
   )
-  add(
-    'viewport',
-    'Viewport',
-    meta.viewport ? 'ok' : 'warning',
-    meta.viewport ? 'Presente.' : 'Ausente — sem ele a página falha o critério mobile-friendly.'
-  )
+  add('viewport', 'Viewport', meta.viewport ? 'ok' : 'warning', meta.viewport ? copy.present : copy.viewportMissing)
 
   // Open Graph — o que o WhatsApp/LinkedIn/Slack usam no preview do link.
   for (const [key, label] of [
@@ -425,18 +461,14 @@ export function runChecks(finalUrl: string, meta: ExtractedMeta): MetaCheck[] {
       `og-${key}`,
       label,
       meta.og[key] ? 'ok' : 'warning',
-      meta.og[key]
-        ? 'Presente.'
-        : `Ausente — o preview do link em redes sociais fica sem ${key === 'image' ? 'imagem' : 'texto próprio'}.`
+      meta.og[key] ? copy.present : copy.ogMissing(key === 'image')
     )
   }
   add(
     'twitter-card',
     'twitter:card',
     meta.twitterCard ? 'ok' : 'warning',
-    meta.twitterCard
-      ? `"${meta.twitterCard}".`
-      : 'Ausente — o X/Twitter cai no fallback do Open Graph, sem card grande.'
+    meta.twitterCard ? `"${meta.twitterCard}".` : copy.twitterMissing
   )
 
   return checks

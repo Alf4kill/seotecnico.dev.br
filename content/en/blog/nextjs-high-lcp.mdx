@@ -404,8 +404,8 @@ to GA4), though still without a statistical window large enough for
 conclusions, and still outside CrUX because it is below the traffic threshold.
 Even so, RUM is what closes the loop: the lab simulates, the field measures. If
 your site already has enough traffic, the [Core Web Vitals
-checker](/ferramentas/checador-cwv) shows field data straight from CrUX, with no
-instrumentation needed (its interface is in Portuguese).
+checker](/en/tools/cwv-checker) shows field data straight from CrUX, with no
+instrumentation needed.
 
 One last calibration of what **not** to chase. Not every PSI flag is worth a
 hunt: Next.js bundles about 14 KiB of legacy JavaScript (the unconditional
@@ -413,7 +413,7 @@ core-js polyfills in the framework chunk) that PSI flags and that you cannot
 remove; a modern browserslist produces byte-for-byte identical output. Spending
 hours on those 14 KiB is time that would pay off much more on any of the
 mistakes above. If you need a starting point for verification, the cluster
-gathers the [validators and measurement tools](/ferramentas) I use in this
+gathers the [validators and measurement tools](/en/tools) I use in this
 routine, and for context beyond LCP (metadata, structured data, rendering), the
 entry point is the [technical SEO guide for
 Next.js](/en/guide/technical-seo-nextjs).

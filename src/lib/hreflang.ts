@@ -102,6 +102,36 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/search',
     },
   },
+  // As ferramentas: o índice e as três páginas, cada uma com a interface, as
+  // mensagens da API e o texto explicativo no próprio idioma.
+  {
+    id: 'tools',
+    paths: {
+      'pt-BR': '/ferramentas',
+      en: '/en/tools',
+    },
+  },
+  {
+    id: 'tool-json-ld',
+    paths: {
+      'pt-BR': '/ferramentas/gerador-json-ld',
+      en: '/en/tools/json-ld-generator',
+    },
+  },
+  {
+    id: 'tool-meta-tags',
+    paths: {
+      'pt-BR': '/ferramentas/validador-meta-tags',
+      en: '/en/tools/meta-tag-validator',
+    },
+  },
+  {
+    id: 'tool-cwv',
+    paths: {
+      'pt-BR': '/ferramentas/checador-cwv',
+      en: '/en/tools/cwv-checker',
+    },
+  },
   // A política de privacidade: o mesmo texto nos dois idiomas, com a mesma
   // data de atualização (lib/legal.ts).
   {

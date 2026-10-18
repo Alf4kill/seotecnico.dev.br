@@ -103,10 +103,7 @@ export const STATIC_SEARCH_ITEMS: SearchItem[] = [
   },
 ]
 
-/**
- * O mesmo para a moldura inglesa: páginas em inglês e as três ferramentas, que
- * só existem em português e por isso dizem isso na própria descrição.
- */
+/** O mesmo para a moldura inglesa: páginas e ferramentas em inglês. */
 export const STATIC_SEARCH_ITEMS_EN: SearchItem[] = [
   // ── Pages ───────────────────────────────────────────────────────────────
   {
@@ -157,28 +154,37 @@ export const STATIC_SEARCH_ITEMS_EN: SearchItem[] = [
     keywords: ['design', 'colophon', 'retro-futurism', 'bauhaus', 'palette', 'contrast', 'typography', 'light theme', 'dark mode'],
   },
 
-  // ── Tools (Portuguese interface) ─────────────────────────────────────────
+  {
+    id: 'tools-en',
+    title: 'Tools',
+    description: 'Free technical SEO tools for developers, no login',
+    href: '/en/tools',
+    category: 'pagina',
+    keywords: ['tools', 'free', 'generator', 'validator', 'checker'],
+  },
+
+  // ── Tools ───────────────────────────────────────────────────────────────
   {
     id: 'gerador-json-ld-en',
     title: 'JSON-LD generator',
-    description: 'Generate valid schema.org structured data, with output ready for Next.js. Interface in Portuguese.',
-    href: '/ferramentas/gerador-json-ld',
+    description: 'Generate valid schema.org structured data, with output ready for Next.js',
+    href: '/en/tools/json-ld-generator',
     category: 'ferramenta',
     keywords: ['schema', 'structured data', 'rich snippets', 'json-ld', 'generator', 'faq', 'breadcrumb', 'article'],
   },
   {
     id: 'validador-meta-tags-en',
     title: 'Meta tag validator',
-    description: 'Validate the title, description, canonical and Open Graph of any URL, with a SERP preview. Interface in Portuguese.',
-    href: '/ferramentas/validador-meta-tags',
+    description: 'Validate the title, description, canonical and Open Graph of any URL, with a SERP preview',
+    href: '/en/tools/meta-tag-validator',
     category: 'ferramenta',
     keywords: ['title', 'description', 'open graph', 'canonical', 'meta tags', 'serp', 'preview', 'validator', 'og:image', 'twitter card', 'h1'],
   },
   {
     id: 'checador-cwv-en',
     title: 'Core Web Vitals checker',
-    description: "Look up any site's real LCP, INP and CLS from the Chrome UX Report, with the distribution of visits. Interface in Portuguese.",
-    href: '/ferramentas/checador-cwv',
+    description: "Look up any site's real LCP, INP and CLS from the Chrome UX Report, with the distribution of visits",
+    href: '/en/tools/cwv-checker',
     category: 'ferramenta',
     keywords: ['cwv', 'lcp', 'cls', 'inp', 'performance', 'crux', 'core web vitals', 'field data', 'p75', 'chrome ux report', 'ttfb', 'fcp'],
   },
