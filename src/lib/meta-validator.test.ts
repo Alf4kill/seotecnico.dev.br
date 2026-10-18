@@ -267,6 +267,38 @@ describe('English version (/en/tools/meta-tag-validator)', () => {
     expect(empty.find((c) => c.id === 'lang')?.label).toBe('lang attribute')
   })
 
+  it('explains every verdict in both languages, never the same sentence', () => {
+    // Um documento por ramo: o que tem problema, o que está ok com valor
+    // ecoado e o canonical apontando para fora. Juntos passam por toda frase
+    // da tabela de cada idioma.
+    const docs = [
+      PERFECT,
+      '<html><head></head><body></body></html>',
+      `<html><head><title>${'t'.repeat(61)}</title><meta name="description" content="${'d'.repeat(156)}">` +
+        '<link rel="canonical" href="/relativo"><meta name="robots" content="noindex"></head>' +
+        '<body><h1>a</h1><h1>b</h1></body></html>',
+      '<html lang="en"><head><link rel="canonical" href="https://outro.example/"><meta name="robots" content="index"></head></html>',
+    ]
+    for (const doc of docs) {
+      const pt = runChecks(URL_OK, extractMeta(doc))
+      const en = runChecks(URL_OK, extractMeta(doc), 'en')
+      en.forEach((check, i) => {
+        expect(check.detail, check.id).not.toBe('')
+        // Frases que só ecoam o valor da página são iguais nos dois idiomas.
+        const echo = /^["<]|^[\w-]+\.$/.test(pt[i].detail)
+        if (!echo) expect(check.detail, check.id).not.toBe(pt[i].detail)
+      })
+    }
+  })
+
+  it('refuses every kind of bad URL with an English reason', () => {
+    for (const raw of ['http://exa mple', 'https://example.com:9999', 'http://10.0.0.1', 'http://[::1]']) {
+      const result = parseTargetUrl(raw, 'en')
+      expect(result.ok, raw).toBe(false)
+      if (!result.ok) expect(result.error, raw).toMatch(/^(Invalid|Port|Internal)/)
+    }
+  })
+
   it('refuses the same URLs, with the reason in English', () => {
     expect(parseTargetUrl('ftp://example.com', 'en')).toEqual({ ok: false, error: 'Only http and https are supported.' })
     expect(parseTargetUrl('http://localhost', 'en')).toEqual({ ok: false, error: 'Local addresses are not supported.' })

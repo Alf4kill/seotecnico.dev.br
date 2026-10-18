@@ -170,6 +170,23 @@ describe('English version (/en/tools/json-ld-generator)', () => {
     }
   })
 
+  it('names each missing field in English', () => {
+    const partial = makeInput({
+      faq: [{ question: '', answer: 'An answer without a question' }],
+      breadcrumb: [{ name: 'Home', url: '' }, { name: '', url: 'https://x.dev/blog' }],
+    })
+    expect(validateInput('FAQPage', partial, 'en')).toEqual(['Question 1: the question text is missing.'])
+    expect(validateInput('BreadcrumbList', partial, 'en')).toEqual([
+      'Level 1: the URL is missing.',
+      'Level 2: the name is missing.',
+    ])
+    expect(validateInput('Person', makeInput(), 'en')).toEqual(["Enter the person's name."])
+    expect(validateInput('Organization', makeInput(), 'en')).toHaveLength(2)
+    expect(validateInput('BreadcrumbList', makeInput(), 'en')).toEqual([
+      'A breadcrumb needs at least 2 levels (e.g. Home → Page).',
+    ])
+  })
+
   it('emits the same component with English comments', () => {
     for (const type of types) {
       const pt = toNextComponent(type, { '@type': type })
