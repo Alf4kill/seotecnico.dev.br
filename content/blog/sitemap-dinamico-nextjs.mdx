@@ -3,7 +3,7 @@ title: 'Sitemap dinâmico no Next.js com sitemap.ts e robots.ts'
 description: 'Sitemap dinâmico no Next.js: só 2 dos 4 campos importam pro Google. Como derivar do conteúdo, corrigir o lastmod e usar robots.ts como fail-safe.'
 slug: sitemap-dinamico-nextjs
 datePublished: '2026-07-20'
-dateModified: '2026-07-20'
+dateModified: '2026-10-18'
 primaryQuery: 'sitemap dinâmico next.js'
 keywords: ['sitemap', 'sitemap.ts', 'robots.ts', 'robots.txt', 'sitemap dinâmico', 'lastmod', 'priority', 'changefreq', 'noindex', 'disallow', 'image sitemap', 'generatesitemaps', 'indexação']
 lang: pt-BR
@@ -396,10 +396,12 @@ Next.js simplesmente omite o campo — que é o comportamento desejado, diferent
 de emitir uma lista vazia.
 
 O campo `alternates.languages` emite
-`<xhtml:link rel="alternate" hreflang="…">` por entrada. Este site ainda não tem
-nenhuma página em inglês publicada, então nenhuma entrada usa o campo hoje; ele
-entra quando os pares pt-BR/en existirem, e o assunto tem artigo próprio no
-guia.
+`<xhtml:link rel="alternate" hreflang="…">` por entrada. Este site tem pares
+pt-BR/en desde setembro de 2026, mas declara o hreflang no `<head>` de cada
+página, gerado de um mapa único em `src/lib/hreflang.ts`, então nenhuma entrada
+do sitemap usa o campo. As duas formas são aceitas pelo Google; o
+[artigo de hreflang no Next.js](/blog/hreflang-nextjs) mostra como esse mapa
+funciona.
 
 Para sites grandes, `generateSitemaps` divide a saída em vários arquivos,
 respeitando o limite de 50.000 URLs ou 50 MB descomprimidos por arquivo — o que
