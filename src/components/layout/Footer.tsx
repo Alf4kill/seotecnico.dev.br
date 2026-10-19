@@ -62,20 +62,17 @@ const COPY: Record<Lang, Copy> = {
     homeLabel: `${site.name} — home`,
     byline: `${site.author.name} · ${site.author.jobTitle}`,
     navLabel: 'Footer navigation',
-    // O link para o site em português diz o idioma de destino em vez de
-    // fingir o contrário: um rótulo em inglês levando a uma página em
-    // português, sem aviso, é o despejo silencioso que esta moldura evita.
-    // O feed só existe em português e por isso fica fora daqui.
+    // Mesmas colunas e mesma ordem do rodapé português. A troca de idioma fica
+    // no header, como na moldura portuguesa; os estudos de caso são linkados
+    // de /en/lab. O feed só existe em português e por isso fica fora daqui.
     columns: [
       {
         title: 'Content',
         links: [
           { label: 'Technical SEO guide', href: '/en/guide/technical-seo-nextjs' },
           { label: 'Blog',                href: '/en/blog' },
-          { label: 'Case studies',        href: '/en/case-studies' },
           { label: 'Lab',                 href: '/en/lab' },
           { label: 'Tools',               href: '/en/tools' },
-          { label: 'Site in Portuguese',  href: '/', lang: 'pt-BR' },
         ],
       },
       {
