@@ -13,8 +13,8 @@ import { AvailabilityNote } from '@/components/sections/AvailabilityNote'
 // pessoa só, com duas páginas que falam dela. Um @id novo aqui criaria, para
 // quem lê o grafo, um segundo autor homônimo.
 //
-// Todo fato desta página precisa ser verificável no repositório — a suíte, o
-// log de experimentos, o RUM. Nada de afirmação que o código não sustente.
+// Mesmas seções de /sobre, na mesma ordem. Todo fato desta página precisa ser
+// verificável no repositório. Nada de afirmação que o código não sustente.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PATH = '/en/about'
@@ -55,82 +55,65 @@ export default function EnglishAboutPage() {
 
         <div className="rich-text mt-10 max-w-[68ch]">
           <p>
-            <strong>{site.name}</strong> is a public technical SEO laboratory for modern websites, with Next.js as
-            its reference implementation, built
-            and run by {site.author.name} — a web developer working in PHP, Next.js and Python
-            who does technical SEO the way a developer does it: in the codebase, with tests, and
-            with measurement.
+            <strong>{site.name}</strong> is a public technical SEO laboratory for modern
+            websites, with Next.js as the reference implementation, built by{' '}
+            {site.author.name} — {site.author.jobTitle} and web developer. The premise is
+            simple: instead of repeating theory, every technique documented here is implemented
+            on this very domain and measured with real data from Google Search Console, the
+            Chrome UX Report and before/after experiments.
           </p>
 
-          <h2>Why a live lab</h2>
+          <h2>Why a live lab?</h2>
           <p>
-            Certifications prove theory. This site exists to prove execution. Instead of
-            describing techniques, it implements each one on this domain and measures the result
-            with Google Search Console, the Chrome UX Report and before/after experiments. The{' '}
+            Certifications prove theory; this site proves execution. The{' '}
             <a href={site.repository} target="_blank" rel="noopener noreferrer">
-              source code is public
+              code is public on GitHub
             </a>
-            , and so are the results — the ones that worked and the ones that did not.
-          </p>
-
-          <h2>How the work is done</h2>
-          <ul>
-            <li>
-              <strong>Hypothesis first.</strong> Every deliberate SEO change goes into the{' '}
-              <a
-                href={`${site.repository}/blob/main/docs/experiment-log.md`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                experiment log
-              </a>{' '}
-              with its prediction before the result exists, and is judged against Search Console
-              data once its window closes.
-            </li>
-            <li>
-              <strong>SEO as a merge gate.</strong> A Playwright suite checks every route for a
-              single H1, title and description length, a self-referencing canonical, valid
-              JSON-LD and reciprocal hreflang. Lighthouse CI enforces performance budgets. Any
-              failure blocks the merge.
-            </li>
-            <li>
-              <strong>Its own field data.</strong> Core Web Vitals are collected from real visits
-              with the <code>web-vitals</code> library, sent through Google Tag Manager to GA4
-              behind Consent Mode v2 — so there is field data before the Chrome UX Report has
-              enough traffic to report any.
-            </li>
-          </ul>
-
-          <h2>What is in English</h2>
-          <p>
-            This page, the{' '}
-            <Link href="/en" title={`${site.name} — home`}>
-              home page
-            </Link>
-            , the{' '}
-            <Link href="/en/case-studies" title="Case studies: technical SEO, measured">
-              case studies
-            </Link>{' '}
-            and the{' '}
+            , SEO changes are logged as experiments with a hypothesis and a result, and the
+            whole process — what worked and what did not — becomes content for the{' '}
+            <Link href="/en/blog" title="Technical SEO blog in English">blog</Link> and the{' '}
             <Link
               href="/en/guide/technical-seo-nextjs"
               title="Technical SEO for Next.js: the App Router guide"
             >
               technical SEO guide for Next.js
             </Link>
-            , plus the{' '}
+            .
+          </p>
+
+          <h2>What you will find here</h2>
+          <ul>
+            <li>
+              Technical SEO guides and articles, implemented in Next.js (App Router) with real
+              code;
+            </li>
+            <li>
+              <Link href="/en/tools" title="Free technical SEO tools">
+                Free technical SEO tools
+              </Link>
+              , with no login and no stored data;
+            </li>
+            <li>
+              SEO experiments documented with methodology and confidence levels, in the{' '}
+              <Link href="/en/lab" title="Lab: technical SEO experiments">lab</Link>, and
+              summarized in the{' '}
+              <Link href="/en/case-studies" title="Case studies: technical SEO, measured">
+                case studies
+              </Link>
+              .
+            </li>
+          </ul>
+
+          <h2>Why the site looks like this</h2>
+          <p>
+            The visual design is a documented decision too: a dark background by default for
+            long reading, a light theme with the same measured palette, square corners,
+            three shapes instead of icons and every color pair measured against the minimum
+            contrast. The full explanation, with the design schools behind it, is in the{' '}
             <Link href="/en/design" title="Site design: Swiss retro-futurism">
               design colophon
             </Link>
-            , which explains the visual system and its measured contrast. The{' '}
-            <Link href="/en/blog" title="Technical SEO articles in English">
-              English blog
-            </Link>{' '}
-            carries every article, the chapters of the Next.js guide included, and the{' '}
-            <Link href="/en/tools" title="Free technical SEO tools">
-              three free tools
-            </Link>{' '}
-            have English versions too.
+            .
           </p>
         </div>
 
