@@ -1,25 +1,29 @@
+import Link from 'next/link'
 import { WebSiteJsonLd, PersonJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd'
-import { getAllEnglishPosts } from '@/lib/content'
+import { getAllEnglishPosts, getGuide } from '@/lib/content'
 import { buildMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
-import { ButtonLink, buttonClasses } from '@/components/ui/Button'
+import { ButtonLink } from '@/components/ui/Button'
+import { PostRow } from '@/components/blog/PostRow'
+import { ToolsStrip } from '@/components/sections/ToolsStrip'
 import { CentralMark } from '@/components/art/Marks'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Home em inglês — par de hreflang da home portuguesa (lib/hreflang.ts).
 //
-// Não é tradução da home portuguesa, e isso é deliberado. A portuguesa recebe
-// quem chega pelo tema; esta recebe quem chega pelo NOME do autor — um link de
-// currículo, de LinkedIn, do README do repositório. Esse leitor não quer começar
-// por um guia: quer saber em trinta segundos o que foi construído e como
-// verificar. Daí a ordem: o que é, o que já foi medido, onde está a prova.
+// Mesma estrutura da home portuguesa, seção por seção: hero com o índice do
+// laboratório, guia pilar, artigos mais recentes e a faixa de ferramentas. As
+// duas versões do site são organizadas do mesmo jeito; muda o idioma, não o
+// caminho do leitor. Os estudos de caso continuam em /en/case-studies,
+// linkados de /en/about, /en/blog e /en/lab.
 //
-// Branding (CLAUDE.md §1): páginas em inglês abrem pelo nome do autor.
+// Branding (CLAUDE.md §1): páginas em inglês abrem pelo nome do autor — por
+// isso o title e o parágrafo do hero o citam.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PATH = '/en'
-const EXPERIMENT_LOG = `${site.repository}/blob/main/docs/experiment-log.md`
-const BASELINES = `${site.repository}/tree/main/docs/baseline`
+const GUIDE = '/en/guide/technical-seo-nextjs'
+const LATEST = 4
 
 export const metadata = buildMetadata({
   title: `${site.author.name} — ${site.author.jobTitle}`,
@@ -29,80 +33,14 @@ export const metadata = buildMetadata({
   lang: 'en',
 })
 
-/**
- * Retrato datado, não métrica viva. Cada número vem de um arquivo versionado —
- * docs/baseline/ e docs/experiment-log.md — e envelhece junto com a data que o
- * acompanha na página. Atualizar aqui é uma decisão de commit, nunca um efeito
- * colateral de build.
- */
-const SNAPSHOT_DATE = '2026-09-11'
-const MEASURED = [
-  {
-    value: '21 / 21',
-    label: 'URLs indexed by Google',
-    detail: 'None stuck in the "discovered" or "crawled, not indexed" queues.',
-  },
-  {
-    value: '11 of 21',
-    label: 'pages in the top 20',
-    detail: 'Average Google position ≤ 20, two months after the first article.',
-  },
-  {
-    value: '4.9 s → 0.9 s',
-    label: 'homepage LCP',
-    detail: 'Render delay fixed in code. PageSpeed Insights mobile: 78 → 100.',
-  },
-  {
-    value: 'Every PR',
-    label: 'blocked if SEO breaks',
-    detail: 'Playwright SEO assertions on every route, plus Lighthouse budgets.',
-  },
-]
-
 export default function EnglishHomePage() {
-  const englishPostCount = getAllEnglishPosts().length
-  const snapshot = new Date(`${SNAPSHOT_DATE}T00:00:00`).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const posts = getAllEnglishPosts()
+  const guide = getGuide('en')
 
-  const sections = [
-    {
-      mark: 'bg-primary rounded-full',
-      title: 'Technical SEO guide for Next.js',
-      description:
-        'The App Router guide: metadata, JSON-LD, sitemaps, Core Web Vitals, hreflang and rendering — written from the code that runs this site.',
-      href: '/en/guide/technical-seo-nextjs',
-      cta: 'Read the guide',
-    },
-    // Todo artigo tem versão inglesa (/en/blog): um cartão só, com a contagem
-    // do build, no lugar de um cartão por artigo.
-    {
-      mark: 'triangle',
-      title: `${englishPostCount} in-depth articles`,
-      description:
-        'Metadata API, JSON-LD, dynamic sitemaps, LCP, INP, hreflang, and what AI assistants read and run on a page — each implemented or measured on this domain before it was written about.',
-      href: '/en/blog',
-      cta: 'Browse the articles',
-    },
-    {
-      mark: 'bg-accent',
-      title: 'Three free SEO tools',
-      description:
-        'A JSON-LD generator, a meta tag validator and a Core Web Vitals checker backed by the Chrome UX Report. No login, no stored data.',
-      href: '/en/tools',
-      cta: 'Open the tools',
-    },
-    {
-      mark: 'bg-shape-reference',
-      title: 'The lab notebook',
-      description:
-        'Every SEO change is logged with its hypothesis before the result exists, then judged against Search Console data — including the ones that failed.',
-      href: EXPERIMENT_LOG,
-      cta: 'Read the experiment log',
-      external: true,
-    },
+  const index = [
+    { label: 'Pillar guide', value: `${guide.derived.headings.length} sections`, href: GUIDE },
+    { label: 'Articles', value: String(posts.length), href: '/en/blog' },
+    { label: 'Tools', value: '3', href: '/en/tools' },
   ]
 
   return (
@@ -114,117 +52,102 @@ export default function EnglishHomePage() {
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-gray py-14 lg:py-22">
         {/* Central mark A1 (beam): ceremonial page, behind the header only. */}
-        <CentralMark variant="beam" className="-right-24 -top-16 w-[34rem] lg:right-[8%] lg:w-[44rem]" />
-        <div className="container-xl relative flex max-w-none flex-col gap-6">
-          <p className="eyebrow flex items-center gap-3.5 text-primary">
-            <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
-            {site.name} · a live technical SEO lab
-          </p>
-          <h1 className="max-w-[62rem] font-display text-[clamp(2.5rem,1.4rem+4.4vw,5rem)] font-bold leading-[0.98] tracking-[-0.03em] text-foreground">
-            Technical SEO for <span className="text-primary">modern websites</span>, implemented and
-            measured in public
-          </h1>
-          <p className="max-w-[46rem] text-lg leading-relaxed text-muted lg:text-xl">
-            By <strong className="font-semibold text-foreground">{site.author.name}</strong>,{' '}
-            {site.author.jobTitle}. Every technique documented on this site is implemented on
-            this same domain, guarded by a CI pipeline that blocks deploys that break SEO, and
-            measured with real Google Search Console data. The site is the experiment; the
-            repository is the lab notebook.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            {/* The reader who arrives by name wants the evidence first: the cases
-                are the primary action, the guide the second. */}
-            <ButtonLink href="/en/case-studies" title="Case studies: technical SEO, measured">
-              See the case studies
-            </ButtonLink>
-            <ButtonLink href="/en/guide/technical-seo-nextjs" variant="outline" title="Technical SEO for Next.js: the App Router guide">
-              Read the guide
-            </ButtonLink>
-            <ButtonLink href="/en/about" variant="outline" title={`About ${site.author.name}`}>
-              About the author
-            </ButtonLink>
-            <a
-              href={site.repository}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Source code of this site on GitHub"
-              className={buttonClasses('outline')}
-            >
-              Source on GitHub <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Medido ────────────────────────────────────────────── */}
-      <section className="container-xl py-12 lg:py-16" aria-labelledby="measured">
-        <div className="grid gap-6 lg:grid-cols-12">
-          <p className="eyebrow text-primary lg:col-span-3">01 · Measured</p>
-          <div className="flex flex-col gap-3 lg:col-span-9">
-            <h2 id="measured" className="font-display text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.025em] text-foreground">
-              Measured so far
-            </h2>
-            <p className="max-w-[46rem] text-[0.9375rem] leading-relaxed text-muted">
-              Google Search Console and PageSpeed Insights, as of{' '}
-              <time dateTime={SNAPSHOT_DATE}>{snapshot}</time>. Every number traces back to a
-              versioned file in the repository — the{' '}
-              <a href={BASELINES} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-[3px] hover:text-primary-hover">
-                baselines
-              </a>{' '}
-              or the{' '}
-              <a href={EXPERIMENT_LOG} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-[3px] hover:text-primary-hover">
-                experiment log
-              </a>
-              .
+        <CentralMark variant="beam" className="-right-24 -top-16 w-[34rem] lg:right-[18%] lg:w-[44rem]" />
+        <div className="container-xl relative grid items-end gap-12 lg:grid-cols-12 lg:gap-6">
+          <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
+            <p className="eyebrow flex items-center gap-3.5 text-primary">
+              <span aria-hidden="true" className="h-[3px] w-10 bg-primary" />
+              Live lab · seotecnico.dev.br
             </p>
+            <h1 className="font-display text-[clamp(2.75rem,1.5rem+5vw,5.5rem)] font-bold leading-[0.96] tracking-[-0.03em] text-foreground">
+              Technical SEO for developers who build <span className="text-primary">modern websites</span>
+            </h1>
+            <p className="max-w-[42rem] text-lg leading-relaxed text-muted lg:text-xl">
+              <strong className="font-semibold text-foreground">{site.name}</strong> is a live lab
+              by {site.author.name}, {site.author.jobTitle}: every technical SEO technique
+              published here — metadata, structured data, sitemaps, Core Web Vitals — is
+              implemented on this very site and measured with real Google Search Console data.
+              Practical guides and free tools, straight from the code.
+            </p>
+            <div className="flex flex-wrap gap-4 pt-2">
+              <ButtonLink href={GUIDE} title="Technical SEO for Next.js: the App Router guide">
+                Start with the guide
+              </ButtonLink>
+              <ButtonLink href="/en/about" variant="outline" title={`About ${site.author.name}`}>
+                About the project
+              </ButtonLink>
+            </div>
+          </div>
+
+          {/* Instrument index: real counts from the build. */}
+          <nav aria-label="Site index" className="min-w-0 border border-gray bg-surface p-6 lg:col-span-4">
+            <p className="eyebrow pb-4 text-[0.625rem]">Lab index</p>
+            <ul>
+              {index.map(({ label, value, href }, i) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="group flex items-baseline justify-between gap-4 border-t border-gray py-3.5 transition-colors"
+                  >
+                    <span className="flex items-baseline gap-3">
+                      <span className="font-mono text-xs text-primary">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="font-display text-lg font-medium text-foreground group-hover:text-primary">{label}</span>
+                    </span>
+                    <span className="font-mono text-xs uppercase text-muted">{value}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </section>
+
+      {/* ── Pillar ────────────────────────────────────────────── */}
+      <section className="border-b border-gray py-12 lg:py-16" aria-labelledby="pillar-title">
+        <div className="container-xl grid gap-8 lg:grid-cols-12 lg:gap-6">
+          <p className="eyebrow text-primary lg:col-span-3">01 · Pillar guide</p>
+          <div className="flex flex-col gap-5 lg:col-span-9">
+            <h2 id="pillar-title" className="font-display text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.025em] text-foreground">
+              <Link href={GUIDE} className="transition-colors hover:text-primary">
+                {guide.frontmatter.title}
+              </Link>
+            </h2>
+            <p className="max-w-[48rem] text-[1.0625rem] leading-relaxed text-body">{guide.frontmatter.description}</p>
+            <ol className="grid gap-x-6 gap-y-2 border-t border-gray pt-5 sm:grid-cols-2 lg:grid-cols-3">
+              {guide.derived.headings.slice(0, 9).map(({ id, text }, i) => (
+                <li key={id}>
+                  <Link
+                    href={`${GUIDE}#${id}`}
+                    className="flex gap-3 py-1 text-sm leading-snug text-muted transition-colors hover:text-foreground"
+                  >
+                    <span className="font-mono text-label">{String(i + 1).padStart(2, '0')}</span>
+                    {text}
+                  </Link>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
-
-        <dl className="mt-10 grid border-t border-gray sm:grid-cols-2 lg:grid-cols-4">
-          {MEASURED.map(({ value, label, detail }) => (
-            <div key={label} className="flex flex-col gap-2 border-b border-gray py-6 pr-6 sm:[&:nth-child(odd)]:border-r lg:border-r lg:[&:last-child]:border-r-0 lg:pl-6 lg:first:pl-0">
-              <dt className="eyebrow order-2 text-[0.625rem]">{label}</dt>
-              <dd className="order-1 font-display text-[2rem] font-bold leading-none tracking-[-0.02em] text-primary">{value}</dd>
-              <dd className="order-3 text-sm leading-relaxed text-muted">{detail}</dd>
-            </div>
-          ))}
-        </dl>
-        <ButtonLink href="/en/case-studies" variant="link" title="Case studies: technical SEO, measured" className="mt-6">
-          How these were measured: the case studies
-        </ButtonLink>
       </section>
 
-      {/* ── O que há no site ──────────────────────────────────── */}
-      <section className="container-xl pb-4" aria-labelledby="whats-here">
-        <div className="grid gap-6 border-t border-gray pt-12 lg:grid-cols-12">
-          <p className="eyebrow text-primary lg:col-span-3">02 · Contents</p>
-          <h2 id="whats-here" className="font-display text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.025em] text-foreground lg:col-span-9">
-            What&rsquo;s on the site
+      {/* ── Latest articles ───────────────────────────────────── */}
+      <section className="container-xl py-12 lg:py-16" aria-labelledby="latest-title">
+        <div className="flex flex-col gap-3 pb-5 md:flex-row md:items-baseline md:justify-between">
+          <h2 id="latest-title" className="font-display text-2xl font-bold tracking-[-0.01em] text-foreground">
+            Latest articles
           </h2>
+          <ButtonLink href="/en/blog" variant="link" className="self-start">
+            See all {posts.length} articles
+          </ButtonLink>
         </div>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {sections.map(({ mark, title, description, href, cta, external }) => (
-            <article key={href} className="flex flex-col gap-3 border border-gray bg-surface p-6">
-              {mark === 'triangle' ? (
-                <span aria-hidden="true" className="h-0 w-0 border-x-[10px] border-b-[18px] border-x-transparent border-b-shape-danger" />
-              ) : (
-                <span aria-hidden="true" className={`h-4.5 w-4.5 ${mark}`} />
-              )}
-              <h3 className="font-display text-xl font-bold text-foreground">{title}</h3>
-              <p className="flex-1 text-[0.9375rem] leading-relaxed text-muted">{description}</p>
-              {external ? (
-                <a href={href} target="_blank" rel="noopener noreferrer" className={buttonClasses('link', 'self-start')}>
-                  {cta} <span aria-hidden="true">↗</span>
-                </a>
-              ) : (
-                <ButtonLink href={href} title={title} variant="link" className="self-start">
-                  {cta}
-                </ButtonLink>
-              )}
-            </article>
+        <ol className="border-b border-gray">
+          {posts.slice(0, LATEST).map((post, i) => (
+            <PostRow key={post.frontmatter.slug} post={post} index={i + 1} lang="en" />
           ))}
-        </div>
+        </ol>
       </section>
+
+      <ToolsStrip lang="en" />
     </>
   )
 }
