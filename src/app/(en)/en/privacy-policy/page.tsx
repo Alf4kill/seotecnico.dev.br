@@ -147,17 +147,8 @@ export default function EnglishPrivacyPolicyPage() {
         </p>
 
         <p>
-          This is the English version of the{' '}
-          <Link
-            href="/politica-de-privacidade"
-            hrefLang="pt-BR"
-            // Outro root layout: sem prefetch (ver LanguageSwitch).
-            prefetch={false}
-            title="Política de privacidade"
-          >
-            privacy policy in Portuguese
-          </Link>
-          ; both describe the same processing.
+          This is the English version of the privacy policy published in
+          Portuguese; both describe the same processing.
         </p>
       </div>
     </section>
