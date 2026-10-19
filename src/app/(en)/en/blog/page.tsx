@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAllEnglishPosts, getAllPosts } from '@/lib/content'
+import { getAllEnglishPosts } from '@/lib/content'
 import { CATEGORIES, isExperiment } from '@/lib/categories'
 import { buildMetadata } from '@/lib/metadata'
 import { BreadcrumbJsonLd } from '@/components/seo/JsonLd'
@@ -18,10 +18,10 @@ import { CornerMark } from '@/components/art/Marks'
 // .category-filter), and the list is the English collection only.
 //
 // The two indexes are an hreflang pair (lib/hreflang.ts): same function, the
-// blog of each language. The English collection is smaller on purpose — only
-// the lab articles are translated (CLAUDE.md §1) — and the page says so, with
-// a link to the full Portuguese blog, instead of pretending to be complete.
-// No RSS button: the feed exists only in Portuguese.
+// blog of each language. Every article has an English version, so the page
+// links only English pages; the Portuguese original is one click away through
+// the language switch in the header. No RSS button: the feed exists only in
+// Portuguese.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PATH = '/en/blog'
@@ -34,11 +34,8 @@ export const metadata = buildMetadata({
   lang: 'en',
 })
 
-const LINK = 'text-primary underline underline-offset-[3px] hover:text-primary-hover'
-
 export default function EnglishBlogPage() {
   const posts = getAllEnglishPosts()
-  const portugueseCount = getAllPosts().length
   const [latest] = posts
   const experiments = posts.filter((p) => isExperiment(p.frontmatter.status)).length
   const measuring = posts.filter((p) => p.frontmatter.status === 'em-medicao').length
@@ -72,25 +69,7 @@ export default function EnglishBlogPage() {
             </h1>
             <p className="max-w-[39rem] text-lg leading-relaxed text-muted">
               Each article answers one technical SEO question with measurements made on this
-              very site. When the result is null, it is published too.{' '}
-              {posts.length >= portugueseCount ? (
-                <>
-                  Every article here also exists in Portuguese, the site&rsquo;s primary language,
-                  on the{' '}
-                  <Link href="/blog" hrefLang="pt-BR" prefetch={false} className={LINK}>
-                    Portuguese blog
-                  </Link>
-                  .
-                </>
-              ) : (
-                <>
-                  These are the English versions of the articles; the{' '}
-                  <Link href="/blog" hrefLang="pt-BR" prefetch={false} className={LINK}>
-                    full blog, with {portugueseCount} articles, is in Portuguese
-                  </Link>
-                  .
-                </>
-              )}
+              very site. When the result is null, it is published too.
             </p>
           </div>
 
