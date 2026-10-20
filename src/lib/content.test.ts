@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { assertBasedOn, getAllEnglishPosts, getAllPosts, resolveBasedOn, type Post } from './content'
+import { assertBasedOn, getAllEnglishPosts, getAllPosts, resolveBasedOn, sortEnglishPosts, type Post } from './content'
 import { isExperiment, type PostStatus } from './categories'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,7 +62,36 @@ describe('assertBasedOn', () => {
   })
 })
 
+describe('sortEnglishPosts', () => {
+  function english(slug: string, datePublished: string, translationOf?: string): Post {
+    const base = post(slug)
+    return { ...base, frontmatter: { ...base.frontmatter, lang: 'en', datePublished, translationOf } }
+  }
+  const originals: Record<string, string> = { velho: '2026-07-17', novo: '2026-10-18' }
+  const order = (posts: Post[]) =>
+    sortEnglishPosts(posts, (slug) => originals[slug]).map((p) => p.frontmatter.slug)
+
+  it('puts the newest datePublished first', () => {
+    expect(order([english('a', '2026-10-04'), english('b', '2026-10-18')])).toEqual(['b', 'a'])
+  })
+
+  it('breaks a same-day tie by the newer Portuguese original, not by file name', () => {
+    const posts = [english('detect', '2026-10-18', 'velho'), english('scaled', '2026-10-18', 'novo')]
+    expect(order(posts)).toEqual(['scaled', 'detect'])
+  })
+
+  it('uses its own date for an article written in English, then the slug', () => {
+    const posts = [english('b', '2026-10-18'), english('a', '2026-10-18'), english('t', '2026-10-18', 'velho')]
+    expect(order(posts)).toEqual(['a', 'b', 't'])
+  })
+})
+
 describe('published content', () => {
+  it('features the English article whose original is newest among a same-day batch', () => {
+    // 14 traduções saíram em 2026-10-18; só scaled-content-abuse é conteúdo novo.
+    expect(getAllEnglishPosts()[0].frontmatter.slug).toBe('scaled-content-abuse')
+  })
+
   it('every basedOn in both collections points to an experiment', () => {
     // getAll* já chamam assertBasedOn; o teste existe para o erro aparecer
     // aqui, com nome, e não só no build.
