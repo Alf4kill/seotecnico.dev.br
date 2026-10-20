@@ -301,11 +301,29 @@ export function getAllEnglishPosts(): Post[] {
       }
       return post
     })
-    .sort((a, b) =>
-      b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
-    )
-  assertBasedOn(posts, 'en/blog')
-  return posts
+  const originals = new Map(getAllPosts().map((p) => [p.frontmatter.slug, p.frontmatter.datePublished]))
+  const sorted = sortEnglishPosts(posts, (slug) => originals.get(slug))
+  assertBasedOn(sorted, 'en/blog')
+  return sorted
+}
+
+/**
+ * Newest first. Translations published in one batch share a datePublished, and
+ * a tie used to fall back to file name order, which put the translation of an
+ * old article ahead of a new one on /en/blog and /en. A tie now goes to the
+ * post whose content is newer: the Portuguese original's datePublished for a
+ * translation, its own for an article written in English; then slug, so the
+ * order never depends on the file system. Exported for testing.
+ */
+export function sortEnglishPosts(posts: Post[], originalDate: (ptSlug: string) => string | undefined): Post[] {
+  const contentDate = ({ frontmatter }: Post) =>
+    (frontmatter.translationOf && originalDate(frontmatter.translationOf)) || frontmatter.datePublished
+  return [...posts].sort(
+    (a, b) =>
+      b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished) ||
+      contentDate(b).localeCompare(contentDate(a)) ||
+      a.frontmatter.slug.localeCompare(b.frontmatter.slug)
+  )
 }
 
 export function getEnglishPostBySlug(slug: string): Post | undefined {
