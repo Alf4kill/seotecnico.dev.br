@@ -3,7 +3,8 @@
 Date: 2026-10-23 · Branch: `feat/testes-a11y` · Commits:
 `9b25746` deps · `37043a3` `9b2228b` `58b019d` `9b0c337` fixes ·
 `f1d5b49` component tests · `aa53f71` axe suite · `cf3043d` CI · README and
-this report in the commit that adds this file.
+report in the two commits after it · `86e2000` `b47fe8c` colour fixes approved
+by the owner after the warnings.
 
 Every number below was taken from the test output on this branch. Anything
 that was not measured says so.
@@ -84,8 +85,13 @@ that was not measured says so.
 
 ### Violations after
 
-**0 blocking.** The 14 contrast nodes remain as **warnings**, in 5 colour pairs
-across 6 routes. They will stay until the owner decides on each pair.
+**0 blocking.**
+
+- **After the non-colour fixes:** 14 contrast nodes remained as warnings, in 5
+  colour pairs across 6 routes.
+- **After the owner's colour decision:** 4 nodes remain, in 2 pairs. Both are
+  the "03" in the `/design` specimen, kept on purpose (see below). The total
+  went from 266 nodes to 4, all of them warnings.
 
 ### Fixes
 
@@ -97,18 +103,23 @@ across 6 routes. They will stay until the owner decides on each pair.
 | The author link on `/design` was told apart from the text by colour alone | `link-in-text-block`, 1.4.1 | Underline, the same treatment as `.rich-text` links. No colour changed | `9b0c337` |
 
 - **Justified exclusions:** none. No `.exclude()` is used.
-- **Colour changes applied:** none. Each one needs the owner's approval. They
-  are listed below as proposals.
+- **Colour changes applied (approved by the owner on 2026-10-23):**
+  - Plain `pre` blocks in the light theme: `#3A3C42` → `#C6D0DB` on `#1B222B`,
+    1.45:1 → 10.26:1 (`86e2000`). The text now uses the dark-island tokens; no
+    palette value changed.
+  - Third word of the `/design` h1: `gray-strong` → `label`. Dark goes
+    `#35404E` → `#7A8798` (1.79:1 → 5.17:1), light goes `#A8ADB4` → `#67635A`
+    (1.93:1 → 5.13:1) (`b47fe8c`).
 
-### Contrast: warnings waiting for a decision
+### Contrast: warnings and the owner's decision
 
-| # | Where | Theme | Text / background | Ratio | Required | Proposal |
+| # | Where | Theme | Text / background | Ratio | Required | Proposal → decision |
 |---|---|---|---|---|---|---|
-| 1 | Plain `pre` blocks: a fence without rehype-pretty-code, and the hand-written example on the JSON-LD generator pages. Routes: `/blog/ssr-ssg-isr-nextjs`, `/en/blog/nextjs-ssr-ssg-isr`, `/ferramentas/gerador-json-ld`, `/en/tools/json-ld-generator` | light | `#3A3C42` on `#1B222B` | 1.45:1 | 4.5:1 | Apply the existing dark-island tokens to `.rich-text pre`, giving `#C6D0DB` on `#1B222B` = **10.26:1**. No palette value changes; the light-theme text colour was leaking into a block that stays dark. |
-| 2 | Third word of the `/design` and `/en/design` h1 ("suíço" / "Swiss"), `text-gray-strong` | dark | `#35404E` on `#0E1116` | 1.79:1 | 3:1 (large) | `text-label`: **5.17:1** |
-| 3 | Same word | light | `#A8ADB4` on `#F2EDE3` | 1.93:1 | 3:1 (large) | `text-label`: **5.13:1** |
-| 4 | "03" in the type specimen on `/design` and `/en/design`, inside `aria-hidden` art | dark | `#35404E` on `#12161C` | 1.72:1 | 3:1 | Keep. It is decorative text in a specimen, which WCAG 1.4.3 exempts. |
-| 5 | Same specimen | light | `#A8ADB4` on `#ECE6DA` | 1.81:1 | 3:1 | Keep, same reason. |
+| 1 | Plain `pre` blocks: a fence without rehype-pretty-code, and the hand-written example on the JSON-LD generator pages. Routes: `/blog/ssr-ssg-isr-nextjs`, `/en/blog/nextjs-ssr-ssg-isr`, `/ferramentas/gerador-json-ld`, `/en/tools/json-ld-generator` | light | `#3A3C42` on `#1B222B` | 1.45:1 | 4.5:1 | Apply the existing dark-island tokens to `.rich-text pre`, giving `#C6D0DB` on `#1B222B` = **10.26:1**. No palette value changes; the light-theme text colour was leaking into a block that stays dark. → **Applied** |
+| 2 | Third word of the `/design` and `/en/design` h1 ("suíço" / "Swiss"), `text-gray-strong` | dark | `#35404E` on `#0E1116` | 1.79:1 | 3:1 (large) | `text-label`: **5.17:1** → **Applied** |
+| 3 | Same word | light | `#A8ADB4` on `#F2EDE3` | 1.93:1 | 3:1 (large) | `text-label`: **5.13:1** → **Applied** |
+| 4 | "03" in the type specimen on `/design` and `/en/design`, inside `aria-hidden` art | dark | `#35404E` on `#12161C` | 1.72:1 | 3:1 | Keep. It is decorative text in a specimen, which WCAG 1.4.3 exempts. → **Kept**; it stays as a warning |
+| 5 | Same specimen | light | `#A8ADB4` on `#ECE6DA` | 1.81:1 | 3:1 | Keep, same reason. → **Kept** |
 
 - **Cases axe could not decide:** 2200 `color-contrast` nodes were reported as
   `incomplete`, meaning text over a background image or overlapping elements.
@@ -124,12 +135,17 @@ across 6 routes. They will stay until the owner decides on each pair.
   - Job `seo` runs the axe suite together with the Playwright suite, then
     publishes the contrast table in the job summary and uploads `a11y-report`
     as an artifact.
-- **Last run:** not verified at the time of writing. It will be filled in from
-  the pull request.
-- **Time added to the pipeline:**
-  - Locally, the axe suite alone took 1.1 min for 148 tests, on 12 cores with
-    the default worker count.
-  - The CI figure is not measured yet.
+- **Last run:** green on PR #112, run `40013873815` (commit `5fcda06`, before
+  the colour fixes).
+  - Every job passed: `verify`, `seo`, and the Lighthouse shards and gate.
+  - The `seo` job showed one `Contraste abaixo de AA (aviso)` annotation per
+    colour pair (5 at that point) and uploaded the `a11y-report` artifact.
+  - The run for the colour-fix commits is the next one on the same PR.
+- **Time added to the pipeline:** the `SEO regression suite` step took 3 min
+  37 s on that run. The last green run on `main` took 1 min 17 s, so the step
+  grew by about **2 min 20 s** (one run each, so not a stable average).
+  - Locally, the axe suite alone takes 1.1 min for 148 tests on 12 cores.
+  - Not measured: the time the 10 component tests add to `verify`.
 
 ## README
 
@@ -138,8 +154,8 @@ across 6 routes. They will stay until the owner decides on each pair.
 
 ## Open items and limitations
 
-- The contrast warnings above wait for the owner's decision. Until then they
-  remain warnings.
+- The "03" in the `/design` specimen stays as a warning on purpose: 4 nodes,
+  2 pairs.
 - The 2200 `incomplete` contrast nodes were not reviewed manually.
 - Coverage is WCAG 2.0/2.1 A and AA. WCAG 2.2 criteria are not tested, among
   them `target-size` (2.5.8).
