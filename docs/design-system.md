@@ -129,7 +129,11 @@ mobile it lives inside the menu: a fourth 44px button does not fit the bar at
 390px.
 
 **Dark island.** `:root, .theme-dark-island, .rich-text
-figure[data-rehype-pretty-code-figure]` declare the dark tokens. A declaration
+figure[data-rehype-pretty-code-figure], .rich-text pre` declare the dark
+tokens. The bare `pre` is there for blocks outside the rehype-pretty-code
+frame (a fence without a language, a hand-written example), which otherwise
+inherited the light body colour on a dark background (1.45:1 before, 10.26:1
+after; found by axe on 2026-10-23). A declaration
 on the element beats the value inherited from `<html>`, so a code block (and
 the JSON-LD generator output) keeps cyan, controls and labels of the dark
 theme on a light page. The Shiki theme is unchanged.

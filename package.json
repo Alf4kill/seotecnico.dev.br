@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:seo": "playwright test",
+    "test:a11y": "playwright test a11y",
     "lhci": "lhci autorun",
     "baseline:crawl": "node scripts/baseline-crawl.mjs",
     "baseline:lighthouse": "node scripts/baseline-lighthouse.mjs"
@@ -38,8 +39,12 @@
     "web-vitals": "^5.3.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.61.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

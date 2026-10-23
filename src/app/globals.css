@@ -25,7 +25,8 @@
 /* declaração no próprio elemento vence o valor herdado do <html>.               */
 :root,
 .theme-dark-island,
-.rich-text figure[data-rehype-pretty-code-figure] {
+.rich-text figure[data-rehype-pretty-code-figure],
+.rich-text pre {
   color-scheme: dark;
 
   --background-rgb: 14 17 22;      /* #0E1116 grafite */
@@ -570,6 +571,11 @@ dialog.search-dialog::backdrop {
   color: rgb(var(--label-code-rgb));
 }
 .rich-text pre {
+  /* O fundo é --code-background (escuro nos dois temas); o texto precisa vir
+     da ilha também. Sem isto um `pre` fora da moldura do rehype-pretty-code
+     (fence sem linguagem, exemplo escrito à mão) herdava o corpo do tema claro:
+     #3A3C42 sobre #1B222B, 1,45:1 (axe, 2026-10-23). Com a ilha: 10,26:1. */
+  color: rgb(var(--body-rgb));
   margin: 0;
   padding: 1.1rem 1.25rem;
   overflow-x: auto;

@@ -236,7 +236,8 @@ export const SEARCH_COPY: Record<Lang, SearchCopy> = {
     dialog: 'Busca',
     placeholder: 'Buscar artigos, ferramentas, páginas...',
     input: 'Campo de busca',
-    open: 'Abrir busca',
+    // Contém o texto visível do botão ("buscar…"): WCAG 2.5.3, label in name.
+    open: 'Buscar no site',
     close: 'Fechar busca',
     button: 'buscar…',
     seeAll: 'Ver todos os resultados para',

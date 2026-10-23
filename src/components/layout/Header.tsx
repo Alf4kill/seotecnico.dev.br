@@ -26,6 +26,8 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle'
 interface Copy {
   home: string
   homeLabel: string
+  /** Completa, só para leitor de tela, o nome do link da marca. */
+  homeHint: string
   nav: { label: string; href: string }[]
   navLabel: string
   mobileNavLabel: string
@@ -37,6 +39,7 @@ const COPY: Record<Lang, Copy> = {
   'pt-BR': {
     home: '/',
     homeLabel: `${site.name} — página inicial`,
+    homeHint: 'página inicial',
     nav: [
       { label: 'Guia',        href: '/guia/seo-tecnico-nextjs' },
       { label: 'Blog',        href: '/blog' },
@@ -51,6 +54,7 @@ const COPY: Record<Lang, Copy> = {
   en: {
     home: '/en',
     homeLabel: `${site.name} — home`,
+    homeHint: 'home',
     nav: [
       { label: 'Guide', href: '/en/guide/technical-seo-nextjs' },
       { label: 'Blog', href: '/en/blog' },
@@ -185,13 +189,16 @@ export function Header({ lang }: { lang: Lang }) {
         <Link
           href={copy.home}
           className="flex shrink-0 items-baseline gap-2.5"
-          aria-label={copy.homeLabel}
           title={copy.homeLabel}
         >
+          {/* Sem aria-label: o nome acessível sai do texto visível mais este
+              complemento, para quem comanda por voz poder dizer o que vê
+              (WCAG 2.5.3, regra label-content-name-mismatch do axe). */}
           <span className="font-display text-[1.1875rem] font-bold uppercase tracking-[-0.01em] text-foreground">
             SEO Técnico
           </span>
           <span className="font-mono text-[0.6875rem] tracking-[0.14em] text-primary">.DEV.BR</span>
+          <span className="sr-only"> — {copy.homeHint}</span>
         </Link>
 
         {/* ── Navegação desktop ─────────────────────────────────── */}

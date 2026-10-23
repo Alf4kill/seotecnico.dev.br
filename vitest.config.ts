@@ -1,18 +1,20 @@
 import { defineConfig } from 'vitest/config'
 import { fileURLToPath } from 'node:url'
 
-// Unit tests for /lib utilities (CLAUDE.md §8). DOM globals (window,
+// Unit tests for /lib utilities (CLAUDE.md §8) and component tests for the
+// three tool UIs (*.test.tsx, Testing Library). DOM globals (window,
 // localStorage, document) come from the jsdom environment.
 export default defineConfig({
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
       // Só o que o Vitest tem como cobrir: lógica pura em /lib e a rota de API.
-      // Componentes e páginas são exercidos pela suíte Playwright; medi-los
-      // aqui produziria um número que só sobe escrevendo teste de unidade para
-      // o que já tem teste melhor.
+      // Os testes de componente (*.test.tsx) cobrem o contrato de interação das
+      // ferramentas — rótulos, estados, evento — e ficam fora do piso de
+      // propósito: medir componente aqui produziria um número que sobe sem que
+      // a lógica testada mude. Páginas seguem com a suíte Playwright.
       include: ['src/lib/**', 'src/app/api/**'],
       reporter: ['text', 'html'],
       reportsDirectory: './coverage',

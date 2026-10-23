@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FRAMES = [
-  { home: '/', open: 'Abrir busca', field: 'Campo de busca', seeAll: /Ver todos os resultados para/, results: '/busca?q=lcp', articlePrefix: '/blog/' },
+  { home: '/', open: 'Buscar no site', field: 'Campo de busca', seeAll: /Ver todos os resultados para/, results: '/busca?q=lcp', articlePrefix: '/blog/' },
   { home: '/en', open: 'Open search', field: 'Search field', seeAll: /See all results for/, results: '/en/search?q=lcp', articlePrefix: '/en/blog/' },
 ] as const
 

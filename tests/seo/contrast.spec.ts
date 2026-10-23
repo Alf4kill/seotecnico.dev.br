@@ -162,7 +162,7 @@ test.describe('contraste AA por papel de cor', () => {
     // Texto sobre fundo de modal: o par que já reprovou uma vez (tint de 10%,
     // achado (3) da baseline de 2026-07-20). O chip mudou de forma, a regra não.
     await page.goto('/ferramentas')
-    await page.getByRole('button', { name: 'Abrir busca' }).first().click()
+    await page.getByRole('button', { name: 'Buscar no site' }).first().click()
     await page.getByLabel('Campo de busca').fill('json')
     await expect(page.locator('.search-chip').first()).toBeVisible()
     const worst = await worstContrast(page, '.search-chip')

@@ -15,9 +15,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // a11y-reporter agrega os avisos de contraste do axe (tests/seo/a11y.spec.ts)
+  // em test-results/a11y-report.md e, no CI, no resumo do job.
   reporter: process.env.CI
-    ? [['list'], ['html', { open: 'never' }]]
-    : [['list']],
+    ? [['list'], ['html', { open: 'never' }], ['./tests/a11y-reporter.ts']]
+    : [['list'], ['./tests/a11y-reporter.ts']],
   use: {
     // Dedicated port: a dev server (or another worktree's `next start`) on
     // 3000 must never be reused — it would serve a stale build.
