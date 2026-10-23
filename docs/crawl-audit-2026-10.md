@@ -161,9 +161,17 @@ record. The `www` CNAME and the TXT records were left as they were. Verified at
 - the TLS handshake with SNI `seotecnico.dev.br` validates: Let's Encrypt
   certificate for `seotecnico.dev.br`, valid until 2026-12-12.
 
-Still open: the Domains page in Vercel should keep showing *Valid
-Configuration*; a report to Vercel support with both traceroutes, so the
-apex can return to the current address once the route is repaired.
+Minutes later the owner opened the site in a browser from the same network,
+and it loaded. Vercel's Domains page now marks the apex **DNS Change
+Recommended**: a recommendation, not an invalid configuration. It asks for
+`216.198.79.1` because Vercel is expanding its IP range, and states that the
+legacy records (`cname.vercel-dns.com`, `76.76.21.21`) continue to work.
+
+**Decision: keep `76.76.21.21` until the route is repaired.** Moving back now
+would make the apex unreachable again from that ISP. Still open: a report to
+Vercel support with both traceroutes and this recommendation. When a
+`tracert 216.198.79.1` from the owner's network gets past the ISP core, the
+apex can move back and the warning goes away.
 
 ### 5.4 Not findings: artifacts of crawling localhost, or not applicable
 
