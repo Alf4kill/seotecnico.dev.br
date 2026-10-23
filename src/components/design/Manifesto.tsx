@@ -631,7 +631,12 @@ export function Manifesto({ lang }: { lang: Lang }) {
       <div aria-hidden="true" className="hazard-stripe [--stripe:var(--color-primary)]" />
       <p className="container-xl py-6 font-mono text-xs text-label">
         {c.footer} <time dateTime={MANIFESTO_REVISED}>{MANIFESTO_REVISED}</time> ·{' '}
-        <Link href={lang === 'en' ? '/en/about' : '/sobre'} className="text-primary hover:text-primary-hover">
+        <Link
+          href={lang === 'en' ? '/en/about' : '/sobre'}
+          // Sublinhado como nos links de .rich-text: link no meio de texto não
+          // pode depender só da cor (axe link-in-text-block, WCAG 1.4.1).
+          className="text-primary underline underline-offset-[3px] hover:text-primary-hover"
+        >
           {site.author.name}
         </Link>
       </p>
