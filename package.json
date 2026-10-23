@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:seo": "playwright test",
+    "test:a11y": "playwright test a11y",
     "lhci": "lhci autorun",
     "baseline:crawl": "node scripts/baseline-crawl.mjs",
     "baseline:lighthouse": "node scripts/baseline-lighthouse.mjs"
