@@ -192,6 +192,22 @@ article afterwards is a robots.txt violation, dated and first-party.
 > from every other hypothesis **by path**, not by timestamp, so they need no
 > entry here one by one; their times live in the rounds file. The slug itself
 > is never written here, because it lives only in `LAB_PROBE_CONTROL_SLUG`.
+>
+> **2026-10-23, 21:25:36 to 21:31:57 UTC — the crawl audit's production pass.**
+> The crawl itself (advertools, Playwright, Screaming Frog) ran against a local
+> production build with no `GA4_CRAWLER_*` secrets and no GTM id, so it sent
+> nothing to either property. Production got only a seeded pass, no spidering,
+> user agent `seotecnico-audit/1.0 (+https://seotecnico.dev.br/sobre)`, one
+> request per second: `/robots.txt`, `/sitemap.xml`, `/` (×3, via `http://`,
+> `www.` and direct), `/blog/gtm-nextjs` (via `http://www.` and with a trailing
+> slash), `/en/guide`, one 404 probe. The first attempt (21:25:36–21:29:02, 12
+> requests) reached the server only on the `www.` hops: the apex address
+> `216.198.79.1` refused or timed out every connection. The retry
+> (21:31:28–21:31:57, 15 requests) pinned the apex to `64.29.17.1`. Between
+> them, two `/robots.txt` probes at 21:30:31 and one `/robots.txt` fetch by an
+> external fetcher at about 21:29:55 (which failed). No trap, no `/llms.txt`.
+> **Exclude the whole 21:25–21:32 UTC span from every window.** The exit is the
+> owner's connection; its October `net_id` is resolved by the procedure above.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 
