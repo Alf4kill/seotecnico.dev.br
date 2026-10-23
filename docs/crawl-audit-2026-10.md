@@ -244,13 +244,13 @@ still have no impressions then, check their status in URL Inspection.
 1. ~~Search Console join~~: done with Performance → Pages (§5.5). The
    indexing (Pages) report would turn "shown in search" into "indexed" and
    give the not-indexed reasons. Optional, owner export.
-2. CrUX for the 68 URLs through `CRUX_API_KEY`. The origin was absent from the
-   dataset on 2026-09-11, so expect "no field data" and report it as such.
+2. ~~CrUX~~: the owner checked on 2026-10-23, and the site still has no field
+   data, as on 2026-09-11.
 3. ~~Register the time of the owner's Screaming Frog run against production~~:
    done (§3, `measurement-plan.md`).
 4. Report the `216.198.79.0/24` route to Vercel support (owner).
-5. Write `relatorio-auditoria-crawl.md` with real numbers only, and decide
-   whether the case becomes a PT/EN article.
+5. ~~Write `relatorio-auditoria-crawl.md`~~: done. A PT/EN article is under
+   analysis.
 
 ## 8. Reproduce
 
