@@ -142,6 +142,29 @@ This cannot be fixed from the repository. Open for the owner:
    Googlebot ever hit the same failure. Any link to the 2026-10-13
    deindexation is a question, not a finding, until that report says so.
 
+**Diagnosed and worked around, same evening.** No VPN was in use: the owner's
+`tracert 216.198.79.1` goes from the home router through the ISP's core
+(hops 3–4) and gets no answer from hop 5 on. A
+silent traceroute alone proves nothing, because many routers do not answer
+ICMP. Together with the TCP connects that never open, it places the break
+between this ISP and Vercel's `216.198.79.0/24`. The ISP is a large Brazilian residential provider, and this site is
+Portuguese-first.
+
+**Fix (outside the repository):** at 2026-10-23 20:34 UTC−3 (23:34 UTC) the
+owner replaced the apex A record at registro.br with `76.76.21.21`, a single A
+record. The `www` CNAME and the TXT records were left as they were. Verified at
+23:35 UTC, with no HTTP request:
+
+- `a.sec.dns.br`, `c.sec.dns.br`, `8.8.8.8`, `1.1.1.1` and the owner's resolver
+  all answer `76.76.21.21` (TTL 3600);
+- TCP 443 opens from the owner's network;
+- the TLS handshake with SNI `seotecnico.dev.br` validates: Let's Encrypt
+  certificate for `seotecnico.dev.br`, valid until 2026-12-12.
+
+Still open: the Domains page in Vercel should keep showing *Valid
+Configuration*; a report to Vercel support with both traceroutes, so the
+apex can return to the current address once the route is repaired.
+
 ### 5.4 Not findings: artifacts of crawling localhost, or not applicable
 
 | SF issue | Why it does not apply |
