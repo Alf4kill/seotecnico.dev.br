@@ -89,7 +89,11 @@ describe('design tokens', () => {
   })
 
   it('a ilha escura redeclara os tokens escuros (bloco de código no claro)', () => {
-    expect(css).toMatch(/:root,\s*\.theme-dark-island,\s*\.rich-text figure\[data-rehype-pretty-code-figure\]\s*\{/)
+    // `.rich-text pre` cobre o bloco fora da moldura do rehype-pretty-code (fence
+    // sem linguagem, exemplo escrito à mão): sem ele o texto vinha do tema claro.
+    expect(css).toMatch(
+      /:root,\s*\.theme-dark-island,\s*\.rich-text figure\[data-rehype-pretty-code-figure\],\s*\.rich-text pre\s*\{/
+    )
   })
 
   it('o âmbar de preenchimento dos diagramas não muda com o tema', () => {
