@@ -355,7 +355,10 @@ export function Manifesto({ lang }: { lang: Lang }) {
               {c.heroWords[1]}
               <span aria-hidden="true" className="hidden h-[0.14em] flex-1 bg-accent md:block" />
             </span>
-            <span className="text-gray-strong">{c.heroWords[2]}</span>
+            {/* text-label, não gray-strong: a palavra é texto do h1, não ornamento,
+                e precisa de 3:1 (texto grande) — 5,17:1 escuro, 5,13:1 claro.
+                O "03" do espécime segue gray-strong: é arte aria-hidden. */}
+            <span className="text-label">{c.heroWords[2]}</span>
           </h1>
           <div className="grid gap-8 pt-11 lg:grid-cols-12 lg:gap-6">
             <p className="text-lg leading-relaxed text-foreground lg:col-span-6 lg:text-[1.3125rem]">{c.lead}</p>
