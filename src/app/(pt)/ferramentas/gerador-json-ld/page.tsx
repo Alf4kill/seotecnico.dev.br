@@ -109,7 +109,8 @@ export default function GeradorJsonLdPage() {
             &quot;Componente Next.js&quot; da ferramenta gera, e o mesmo que
             este site usa em todas as páginas:
           </p>
-          <pre>
+          {/* tabIndex: o bloco rola na horizontal e precisa ser alcançável pelo teclado. */}
+          <pre tabIndex={0}>
             <code>{`// components/seo/faq-json-ld.tsx
 const schema = { /* saída do gerador */ }
 

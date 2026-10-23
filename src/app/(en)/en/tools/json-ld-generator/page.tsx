@@ -109,7 +109,8 @@ export default function JsonLdGeneratorPage() {
             the tool&apos;s &quot;Next.js component&quot; tab generates and the
             same one this site uses on every page:
           </p>
-          <pre>
+          {/* tabIndex: o bloco rola na horizontal e precisa ser alcançável pelo teclado. */}
+          <pre tabIndex={0}>
             <code>{`// components/seo/faq-json-ld.tsx
 const schema = { /* generator output */ }
 
