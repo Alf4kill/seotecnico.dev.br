@@ -208,6 +208,15 @@ article afterwards is a robots.txt violation, dated and first-party.
 > external fetcher at about 21:29:55 (which failed). No trap, no `/llms.txt`.
 > **Exclude the whole 21:25–21:32 UTC span from every window.** The exit is the
 > owner's connection; its October `net_id` is resolved by the procedure above.
+>
+> **Same day, about 21:45 UTC (18:45 UTC−3) — the owner's Screaming Frog run
+> against production**, before the audit moved to the local build. User agent
+> `Screaming Frog SEO Spider/24.3`, seeded at `https://seotecnico.dev.br/`,
+> stopped at that one URL. The apex address was unreachable from this network
+> at the time (`docs/crawl-audit-2026-10.md` §5.3), so most likely nothing
+> arrived. If a hit with that user agent exists, **exclude 21:40–21:50 UTC**.
+> The 23:35 UTC checks of the DNS change were DNS lookups, TCP connects and
+> one TLS handshake, with no HTTP request, so the proxy saw nothing.
 
 Two design decisions worth pinning, because both fail silently if reversed:
 

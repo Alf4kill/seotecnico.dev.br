@@ -54,9 +54,11 @@ The proxy reports every document request to the crawler GA4 property
    `<a href>` only.
 4. Production got a seeded pass only (§5.3), logged in the synthetic-traffic
    register in `measurement-plan.md`: 2026-10-23, 21:25–21:32 UTC.
-5. *Pending:* the owner ran Screaming Frog once against production before the
-   local run. It reached at most the home page. Its time still has to go into
-   the same register.
+5. The owner ran Screaming Frog once against production before the local run,
+   at about 18:45 UTC−3 (21:45 UTC), and it stopped at the home page. At that
+   hour the apex address was unreachable from the owner's network (§5.3), so
+   the request most likely never reached the server. The window is in the
+   register anyway.
 
 ## 4. Inventory — the three crawlers agree
 
@@ -167,6 +169,14 @@ Recommended**: a recommendation, not an invalid configuration. It asks for
 `216.198.79.1` because Vercel is expanding its IP range, and states that the
 legacy records (`cname.vercel-dns.com`, `76.76.21.21`) continue to work.
 
+The owner then traced both addresses from the same connection, one after the
+other. `tracert 76.76.21.21` follows the same first four hops through
+the ISP's network, gets no answer on hops 5–11, and **completes at hop 12**
+(12 ms). `tracert 216.198.79.1` follows the same four hops and never completes
+(30 hops, all silent from hop 5). The two paths are the same up to the ISP
+core, and only the new Vercel range is never reached. Both traces go with the
+support report.
+
 **Decision: keep `76.76.21.21` until the route is repaired.** Moving back now
 would make the apex unreachable again from that ISP. Still open: a report to
 Vercel support with both traceroutes and this recommendation. When a
@@ -183,6 +193,41 @@ apex can move back and the warning goes away.
 | Readability difficult | The Flesch formula is calibrated for English and means nothing for pt-BR. |
 | H2 multiple (68), title equals H1 (47), high external outlinks (5 pages, max 17 unique) | Informational per SF's own description. The outlinks are cited sources. |
 
+### 5.5 Search Console join
+
+Source: Performance → Pages, owner's UI export of 2026-10-23, Web search, last
+3 months (2026-07-22 → 2026-10-21). Joined with the crawl by
+`audits/scripts/join_gsc.py`. The Pages *indexing* report was not exported,
+so "shown in search" below means "had at least one impression", which is not
+the same as "indexed".
+
+| Question | Answer |
+|---|---|
+| URLs Google showed that the crawl did not find | **0**: all 47 URLs with impressions are among the 68 crawled pages |
+| Pages shown in search with no internal link | **0**: every crawled page has at least 2 linking pages |
+| Linked pages with no impression | **21** |
+| Clicks / impressions summed per page | 11 / 2,643 (page-level totals; the property-level device totals add to 2,490, because Search Console aggregates differently by page) |
+
+The 21 pages without impressions, by time online before the window closed:
+
+- **13 English articles published on 2026-10-18** (4 days of exposure).
+- **6 English static pages from the same 2026-10-18 release** (`/en/lab`,
+  `/en/tools` and its three tools, `/en/privacy-policy`). They have no
+  frontmatter date. Their age comes from the commit that added each route.
+- **2 older pages**, the only ones that say anything:
+  - `/laboratorio`: route added 2026-10-04, about 18 days online, no impressions.
+  - `/blog/pre-registro-seo`: published 2026-10-08, 14 days, no impressions,
+    while its English pair `/en/blog/seo-testing-pre-registration` had 9.
+
+By depth: 1/1 page at depth 0, 13/15 at depth 1, 27/36 at depth 2 and 6/16 at
+depth 3 had impressions. **This is not a depth effect.** Depth 3 is almost
+entirely the English articles that were 4 days old, so age and depth are the
+same variable here. The data cannot separate them, and no claim is made.
+
+Next reading: re-run the join on a window that ends at least 28 days after
+2026-10-18 (2026-11-15 or later). If `/laboratorio` and `/blog/pre-registro-seo`
+still have no impressions then, check their status in URL Inspection.
+
 ## 6. What the crawl found that the test suite could not
 
 - **The apex outage.** CI runs against a local build, so it can never see DNS
@@ -196,14 +241,15 @@ apex can move back and the warning goes away.
 
 ## 7. Still to do
 
-1. **Search Console join** (owner exports, because no personal GSC API exists):
-   Pages report with URLs (indexed / not indexed), Performance → Pages for 3
-   months. Output: indexed without internal links, linked without
-   impressions, not-indexed reasons vs crawl depth and inlinks.
+1. ~~Search Console join~~: done with Performance → Pages (§5.5). The
+   indexing (Pages) report would turn "shown in search" into "indexed" and
+   give the not-indexed reasons. Optional, owner export.
 2. CrUX for the 68 URLs through `CRUX_API_KEY`. The origin was absent from the
    dataset on 2026-09-11, so expect "no field data" and report it as such.
-3. Register the time of the owner's Screaming Frog run against production.
-4. Write `relatorio-auditoria-crawl.md` with real numbers only, and decide
+3. ~~Register the time of the owner's Screaming Frog run against production~~:
+   done (§3, `measurement-plan.md`).
+4. Report the `216.198.79.0/24` route to Vercel support (owner).
+5. Write `relatorio-auditoria-crawl.md` with real numbers only, and decide
    whether the case becomes a PT/EN article.
 
 ## 8. Reproduce
