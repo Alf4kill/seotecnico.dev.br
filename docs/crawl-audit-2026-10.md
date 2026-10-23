@@ -116,12 +116,31 @@ The proxy reports every document request to the crawler GA4 property
 | Production sitemap | 68 URLs, same as the local build |
 | **Apex reachability** | **The apex has a single A record, `216.198.79.1`. Every TCP connection to it, and to `216.198.79.65`, failed from the owner's network and from an external fetcher (connection refused) between 21:25 and 21:43 UTC. `www` also resolves to `64.29.17.x`, which answered, so `www` worked. Pinned to `64.29.17.1`, the apex served 200. Vercel's status page listed no incident.** |
 
-The apex finding is the most severe of the audit and cannot be fixed from the
-repository. Open for the owner: check the domain in Vercel → Settings →
-Domains and the A record at registro.br, and test from another network. Search
-Console → Settings → Crawl stats → Host status shows whether Googlebot hit the
-same failure. Any link to the 2026-10-13 deindexation is a question, not a
-finding, until that report says so.
+**Narrowed the same evening: a route problem, not an outage.** Vercel's project
+Domains page lists all three domains as *Valid Configuration*, so the A record
+is the one Vercel expects. A TCP-only check from check-host.net (no HTTP
+request, so nothing reached the proxy) connected to `216.198.79.1:443` from 17
+of 18 nodes (Bulgaria, Germany, Hong Kong, India, Indonesia, Iran ×2, Japan,
+Kazakhstan, Russia, Sweden, Switzerland, Turkey, Ukraine, Atlanta, Los Angeles,
+Vietnam), plus a separate São Paulo node. Bucharest timed out, and two
+nodes did not answer. At 22:18 UTC the owner's network still could not
+connect to `216.198.79.1`/`.65`, but did connect to `64.29.17.1` and
+`76.76.21.21`.
+
+So the address is up, and some networks cannot route to it. The owner's
+residential ISP is one of them, and its customers are this site's audience.
+This cannot be fixed from the repository. Open for the owner:
+
+1. Test from a third network (mobile data) and run `tracert 216.198.79.1` from
+   the home connection, to see where the path stops.
+2. Either report the route to Vercel support with that trace, or move the apex
+   A record at registro.br to `76.76.21.21`. Vercel's knowledge base still
+   documents that value for apex domains, and it answered from every network
+   tested. Keep a single A record: with two, some connections keep landing on
+   the unreachable one.
+3. Search Console → Settings → Crawl stats → Host status shows whether
+   Googlebot ever hit the same failure. Any link to the 2026-10-13
+   deindexation is a question, not a finding, until that report says so.
 
 ### 5.4 Not findings: artifacts of crawling localhost, or not applicable
 
