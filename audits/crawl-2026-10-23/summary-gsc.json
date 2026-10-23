@@ -1,0 +1,62 @@
+{
+  "gsc_window": "last 3 months to 2026-10-21, Web search",
+  "crawled_pages": 68,
+  "pages_with_impressions": 47,
+  "gsc_urls_not_in_crawl": [],
+  "indexed_or_shown_without_internal_links": 0,
+  "linked_without_impressions": 21,
+  "linked_without_impressions_by_days_exposed": {
+    "no_date (static page)": [
+      "/en/lab",
+      "/en/privacy-policy",
+      "/en/tools",
+      "/en/tools/cwv-checker",
+      "/en/tools/json-ld-generator",
+      "/en/tools/meta-tag-validator",
+      "/laboratorio"
+    ],
+    "<=7 days": [
+      "/en/blog/detect-ai-crawlers",
+      "/en/blog/does-chatgpt-read-javascript",
+      "/en/blog/improve-lcp-nextjs",
+      "/en/blog/next-image-seo",
+      "/en/blog/nextjs-dynamic-sitemap",
+      "/en/blog/nextjs-gtm",
+      "/en/blog/nextjs-high-lcp",
+      "/en/blog/nextjs-hreflang",
+      "/en/blog/nextjs-inp",
+      "/en/blog/nextjs-json-ld",
+      "/en/blog/nextjs-metadata-api",
+      "/en/blog/nextjs-redirects-canonicals",
+      "/en/blog/nextjs-ssr-ssg-isr"
+    ],
+    "8-30 days": [
+      "/blog/pre-registro-seo"
+    ],
+    ">30 days": []
+  },
+  "impressions_by_depth": {
+    "0": {
+      "pages": 1,
+      "with_impressions": 1,
+      "impressions": 64
+    },
+    "1": {
+      "pages": 15,
+      "with_impressions": 13,
+      "impressions": 650
+    },
+    "2": {
+      "pages": 36,
+      "with_impressions": 27,
+      "impressions": 1719
+    },
+    "3": {
+      "pages": 16,
+      "with_impressions": 6,
+      "impressions": 210
+    }
+  },
+  "total_clicks": 11,
+  "total_impressions": 2643
+}
