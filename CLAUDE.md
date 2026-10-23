@@ -355,8 +355,10 @@ colors:
 
 ## 10. Content conventions
 
-- Site content: Portuguese (pt-BR) primary; English versions for pillar +
-  selected spokes under `/en` with hreflang.
+- Site content: Portuguese (pt-BR) primary, with an English version under
+  `/en` paired by hreflang. **Every new article ships in both languages in the
+  same PR** (owner rule, 2026-10-23); a Portuguese-only article is not
+  published.
 - Code identifiers, commits, README, and `/docs`: **English**.
 - MDX frontmatter schema (enforced):
 
