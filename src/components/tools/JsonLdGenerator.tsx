@@ -80,6 +80,7 @@ const COPY = {
     nextComponent: 'Componente Next.js',
     copied: 'Copiado',
     copyButton: 'Copiar',
+    result: 'Resultado',
     validateBefore: 'Antes de publicar, valide o resultado no',
     richResultsTest: 'teste de pesquisa aprimorada do Google',
   },
@@ -138,6 +139,7 @@ const COPY = {
     nextComponent: 'Next.js component',
     copied: 'Copied',
     copyButton: 'Copy',
+    result: 'Result',
     validateBefore: "Before publishing, validate the result in Google's",
     richResultsTest: 'Rich Results Test',
   },
@@ -533,15 +535,16 @@ export function JsonLdGenerator({ lang = 'pt-BR' }: { lang?: Lang }) {
         )}
       </div>
 
+      {/* role="alert" num invólucro, não na <ul>: na própria lista ele apagaria
+          a semântica de lista e deixaria cada <li> órfão (axe listitem). */}
       {errors.length > 0 && (
-        <ul
-          role="alert"
-          className="mt-6 list-disc border border-accent/60 bg-accent/10 py-3 pl-8 pr-4 text-sm text-foreground"
-        >
-          {errors.map((e) => (
-            <li key={e}>{e}</li>
-          ))}
-        </ul>
+        <div role="alert" className="mt-6 border border-accent/60 bg-accent/10 py-3 pl-8 pr-4 text-sm text-foreground">
+          <ul className="list-disc">
+            {errors.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <button
@@ -598,7 +601,14 @@ export function JsonLdGenerator({ lang = 'pt-BR' }: { lang?: Lang }) {
               )}
             </button>
           </div>
-          <pre className="theme-dark-island mt-4 overflow-x-auto border border-gray bg-surface-2 p-4 font-mono text-sm leading-6 text-body">
+          {/* Região nomeada e focável: rola na horizontal (teclado precisa
+              alcançar) e é o que leitor de tela procura depois de gerar. */}
+          <pre
+            role="region"
+            aria-label={`${copy.result} (${tab === 'json' ? 'JSON-LD' : copy.nextComponent})`}
+            tabIndex={0}
+            className="theme-dark-island mt-4 overflow-x-auto border border-gray bg-surface-2 p-4 font-mono text-sm leading-6 text-body"
+          >
             <code>{tab === 'json' ? output.json : output.next}</code>
           </pre>
           <p className="mt-3 text-sm text-muted">
