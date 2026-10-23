@@ -1,0 +1,73 @@
+{
+  "base": "http://localhost:3000",
+  "pages": 68,
+  "pagesThatDiffer": 44,
+  "pagesWithMoreTextRendered": 44,
+  "pagesWithLessTextRendered": 0,
+  "pagesWithLinksOnlyRendered": 0,
+  "pagesWithHeadingChanges": 0,
+  "pagesWithJsonLdChanges": 0,
+  "pagesWithTitleChanges": 0,
+  "largestDeltas": [
+    {
+      "path": "/blog/metadata-api-nextjs",
+      "rawWords": 4360,
+      "renderedWords": 4372,
+      "wordDelta": 12
+    },
+    {
+      "path": "/en/blog/nextjs-metadata-api",
+      "rawWords": 4381,
+      "renderedWords": 4393,
+      "wordDelta": 12
+    },
+    {
+      "path": "/blog/sitemap-dinamico-nextjs",
+      "rawWords": 3514,
+      "renderedWords": 3523,
+      "wordDelta": 9
+    },
+    {
+      "path": "/en/blog/nextjs-dynamic-sitemap",
+      "rawWords": 3527,
+      "renderedWords": 3536,
+      "wordDelta": 9
+    },
+    {
+      "path": "/blog/melhorar-lcp-nextjs",
+      "rawWords": 3598,
+      "renderedWords": 3606,
+      "wordDelta": 8
+    },
+    {
+      "path": "/en/blog/improve-lcp-nextjs",
+      "rawWords": 3537,
+      "renderedWords": 3545,
+      "wordDelta": 8
+    },
+    {
+      "path": "/blog/json-ld-nextjs",
+      "rawWords": 5153,
+      "renderedWords": 5160,
+      "wordDelta": 7
+    },
+    {
+      "path": "/en/blog/nextjs-json-ld",
+      "rawWords": 5125,
+      "renderedWords": 5132,
+      "wordDelta": 7
+    },
+    {
+      "path": "/blog/sec-fetch-mode",
+      "rawWords": 3593,
+      "renderedWords": 3599,
+      "wordDelta": 6
+    },
+    {
+      "path": "/blog/javascript-seo-google-vs-ia",
+      "rawWords": 3189,
+      "renderedWords": 3195,
+      "wordDelta": 6
+    }
+  ]
+}
