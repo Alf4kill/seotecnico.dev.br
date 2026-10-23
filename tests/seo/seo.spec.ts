@@ -249,6 +249,18 @@ test('sitemap.xml serves every enumerated URL', async ({ request }) => {
   }
 })
 
+// The crawl audit of 2026-10-23 found no security header on any URL. A page
+// and two route handlers stand for the responses the `/:path*` rule in
+// next.config.ts has to reach (docs/crawl-audit-2026-10.md).
+for (const path of ['/', '/robots.txt', '/feed.xml']) {
+  test(`security headers on ${path}`, async ({ request }) => {
+    const headers = (await request.get(path)).headers()
+    expect(headers['x-content-type-options'], `nosniff on ${path}`).toBe('nosniff')
+    expect(headers['x-frame-options'], `X-Frame-Options on ${path}`).toBe('DENY')
+    expect(headers['referrer-policy'], `Referrer-Policy on ${path}`).toBe('strict-origin-when-cross-origin')
+  })
+}
+
 test('robots.txt responds', async ({ request }) => {
   const response = await request.get('/robots.txt')
   expect(response.status()).toBe(200)

@@ -35,6 +35,26 @@ const nextConfig: NextConfig = {
     imageSizes:  [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
+  // ── Headers de segurança ───────────────────────────────────────────────────
+  // Achado da auditoria de crawl de 2026-10-23 (docs/crawl-audit-2026-10.md):
+  // nenhum header de segurança era enviado. Estes três não mudam nada no que o
+  // Googlebot lê, e o site não se embute em iframe em lugar nenhum.
+  // Content-Security-Policy fica de fora de propósito: uma CSP que valha alguma
+  // coisa precisa de nonce ou hash para o GTM, o ThemeScript inline e o JSON-LD
+  // — decisão separada, registrada no mesmo documento.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ]
+  },
+
   // ── Redirects permanentes (301) ───────────────────────────────────────────
   async redirects() {
     return [
