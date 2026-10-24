@@ -150,12 +150,28 @@ Search Console, Vercel and registro.br was not measured.
 ## Suggested CV line (no inflation)
 
 > Ran a crawl audit of my own 68-page Next.js site with Screaming Frog (free),
-> advertools and Playwright, cross-checked against Search Console. It found an
-> ISP-level route failure to the apex domain (fixed via DNS) and missing
-> security headers (fixed in config, enforced in CI).
+> advertools and Playwright, cross-checked against Search Console. Found
+> missing security headers (fixed in config, enforced in CI) and diagnosed a
+> route failure between one ISP and the apex domain's IP range (worked around
+> via DNS).
 
 PT: *Auditoria de crawl do meu site Next.js (68 páginas) com Screaming Frog
 (versão gratuita), advertools e Playwright, cruzada com o Search Console:
-encontrei falha de rota de uma operadora até o domínio principal (corrigida
-via DNS) e headers de segurança ausentes (corrigidos na configuração e
-travados no CI).*
+encontrei headers de segurança ausentes (corrigidos na configuração e
+travados no CI) e diagnostiquei uma falha de rota entre uma operadora e a
+faixa de IPs do domínio principal (contornada via DNS).*
+
+Wording, deliberately:
+
+- **Headers first.** It is the finding with a fix that is complete and
+  enforced.
+- **"Diagnosed", not "found".** The failure surfaced when the audit's
+  production steps (the first Screaming Frog attempt and the seeded pass)
+  could not connect. The work is the diagnosis: TCP checks from check-host nodes,
+  two traceroutes, and a DNS change verified without an HTTP request.
+- **"One ISP" and "worked around", not "ISP-level" and "fixed".** 17 of 18
+  check-host nodes connected, and the route to `216.198.79.0/24` is still
+  broken; only the apex moved to an address that works.
+- **No Googlebot claim.** Whether Googlebot ever met the failure is unknown
+  until Crawl stats → Host status is read. If it shows failures in the same
+  period, the line can say so then.
