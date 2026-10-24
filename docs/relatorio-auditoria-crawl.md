@@ -2,8 +2,8 @@
 
 Date: 2026-10-23 · Branch: `feat/crawl-audit` · Commits: `33427a3` tooling ·
 `a729d8e` security headers · `aa6f068` external link · `3f0e70d` `e376922`
-`fbd068c` `6c89ba1` audit record and apex · `a989f12` Search Console join ·
-`8d4a839` join, traces and the Screaming Frog window · this report in the
+`861ac0a` `5f36677` audit record and apex · `4918090` Search Console join ·
+`4ec7bff` join, traces and the Screaming Frog window · this report in the
 commit after them.
 
 Every number below comes from a crawl export, a script output or a command run
