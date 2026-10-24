@@ -1,0 +1,246 @@
+---
+title: "Árvore de acessibilidade: como agentes de IA leem a página"
+description: "Agentes como o Playwright MCP leem a página pela árvore de acessibilidade, não pela tela. O que a árvore deste site mostrava antes e depois de 266 achados."
+slug: "arvore-de-acessibilidade"
+primaryQuery: "árvore de acessibilidade"
+keywords: ['accessibility tree', 'arvore de acessibilidade', 'acessibilidade', 'a11y', 'agentes de ia', 'agente de navegação', 'playwright mcp', 'chrome devtools mcp', 'aria', 'nome acessível', 'axe-core', 'wcag', 'label in name', 'computer use']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  A árvore de acessibilidade é a página como o navegador a monta para
+  tecnologias assistivas: elementos com papel, nome e estado. O Playwright MCP
+  a lê em vez da tela. Aqui, um nome sem o texto visível fazia o link da marca
+  sumir de uma busca pelo que está escrito nele.
+datePublished: "2026-10-23"
+dateModified: "2026-10-23"
+faq:
+  - question: "O que é a árvore de acessibilidade?"
+    answer: "É uma árvore que o navegador monta a partir do DOM para leitores de tela e outras tecnologias assistivas. Cada nó tem um papel (link, botão, região, título), um nome acessível e, quando houver, um estado (marcado, expandido, desativado). Elementos só de layout, como a maioria das div, não viram nó."
+  - question: "Agentes de IA usam a árvore de acessibilidade?"
+    answer: "Alguns, sim. O Playwright MCP entrega ao modelo um snapshot da árvore de acessibilidade em vez de uma captura de tela, e o Chrome DevTools MCP tem uma ferramenta de snapshot baseada nela. Outros trabalham com captura de tela e coordenadas de clique, como o computer use da Anthropic. Um site não sabe qual dos dois o está lendo."
+  - question: "Como ver a árvore de acessibilidade de uma página?"
+    answer: "No Chrome, a aba Accessibility do painel Elements do DevTools mostra o nó selecionado e, com a opção de árvore completa ligada, a página inteira. Em código, o método ariaSnapshot() do Playwright devolve a árvore de um trecho da página em YAML, no mesmo formato que o Playwright MCP entrega ao modelo."
+  - question: "Corrigir acessibilidade melhora o SEO?"
+    answer: "Não que este site tenha medido. O Googlebot indexa o HTML e o texto, e as correções deste artigo mudaram poucas palavras do HTML: um complemento escondido no link da marca e o nome do botão de busca. O que muda é a página para quem navega por tecnologia assistiva e, pelo mesmo mecanismo, para agentes que leem a árvore."
+---
+
+A árvore de acessibilidade é a versão da página que o navegador monta para
+tecnologias assistivas: cada elemento relevante vira um nó com papel (link,
+botão, região), nome acessível e estado. Parte dos agentes de IA que navegam
+lê essa árvore em vez da imagem da tela. O Playwright MCP entrega ao modelo um
+snapshot de acessibilidade, e o Chrome DevTools MCP tem uma ferramenta de
+snapshot "baseada na árvore de acessibilidade". Para esses agentes, um
+controle sem nome ou com um nome diferente do texto na tela é um controle que
+não se acha pelo que está escrito nele. Foi o que uma auditoria com axe-core
+encontrou neste site, no cabeçalho de todas as páginas.
+
+Este artigo mostra a árvore deste site antes e depois das correções, com o
+script que a capturou, e separa o que foi medido do que é mecanismo. Nenhuma
+taxa de sucesso de agente foi medida aqui.
+
+## O que é a árvore, num exemplo deste site
+
+O navegador lê o DOM, descarta o que é só layout e monta uma árvore com o que
+importa para quem não vê a tela. Este é o link da marca, no cabeçalho, como o
+Playwright o descreve depois da correção:
+
+```yaml
+- link "SEO Técnico .DEV.BR — página inicial":
+  - /url: /
+```
+
+Um papel (`link`), um nome entre aspas e o destino. Duas `span` com classes de
+fonte e cor, e uma terceira escondida na tela, viraram uma linha. É essa linha
+que um agente como o Playwright MCP recebe, com uma referência ao lado
+(`[ref=e5]`, por exemplo) que ele usa para clicar.
+
+Note que a tela mostra "SEO TÉCNICO", em maiúsculas, e a árvore guarda
+"SEO Técnico". A caixa alta vem do CSS (`text-transform`), e a árvore leva o
+texto do HTML. Um agente que lê pixels e outro que lê a árvore recebem a
+mesma marca escrita de dois jeitos.
+
+## Quem lê a árvore e quem lê a tela
+
+| Agente | O que recebe da página | Como aponta um elemento |
+|---|---|---|
+| Playwright MCP | Snapshot de acessibilidade, "em vez de capturas de tela" | Referência do nó (`ref`) |
+| Chrome DevTools MCP | Snapshot em texto "baseado na árvore de acessibilidade" | Identificador do nó (`uid`) |
+| Computer use (Anthropic) | Captura de tela | Coordenadas em pixels |
+
+As três descrições são da documentação de cada um, consultada em 23/10/2026.
+O site não escolhe qual deles o visita, e um mesmo agente pode combinar os
+dois modos. Por isso o argumento deste artigo é condicional: **se** o agente
+lê a árvore, **então** o que está nela é o que ele tem.
+
+## O que a auditoria encontrou
+
+A suíte roda o axe-core com Playwright em toda rota do sitemap, nos dois
+temas, com as regras WCAG 2.0 e 2.1, níveis A e AA. São 148 auditorias. No
+código que estava em produção, ela encontrou 266 nós com violação, todos de
+impacto *serious*:
+
+| Regra do axe | Nós | O que é |
+|---|---|---|
+| `label-content-name-mismatch` | 224 | Nome acessível que não contém o texto visível (WCAG 2.5.3) |
+| `scrollable-region-focusable` | 16 | Tabela ou bloco de código que rola, mas não recebe foco pelo teclado |
+| `color-contrast` | 14 | Texto abaixo do contraste mínimo |
+| `listitem` | 8 | Item de lista sem lista em volta, na árvore |
+| `link-in-text-block` | 4 | Link distinguível do texto só pela cor |
+
+Os 224 primeiros são um único componente repetido: o link da marca, presente
+em todas as páginas, nos dois temas. Contraste não muda a árvore, e o foco por
+teclado muda pouco para quem não usa teclado. Dois achados mudam o que um
+agente encontra, e são os dois que eu medi.
+
+## Antes e depois: o link da marca
+
+O link tinha um `aria-label` com "SEO Técnico — página inicial". Um
+`aria-label` substitui o conteúdo do elemento como nome acessível, então o
+nome não continha ".DEV.BR", que está na tela. A correção tirou o
+`aria-label` e acrescentou um complemento só para leitor de tela.
+
+Para medir o "antes" sem voltar o código, o script abre a página servida,
+fotografa a árvore, recoloca o `aria-label` e tira o complemento no próprio
+DOM, que é o diff da correção aplicado ao contrário, e fotografa de novo:
+
+```yaml
+# antes (aria-label restaurado)
+- link "SEO Técnico — página inicial":
+  - /url: /
+  - text: SEO Técnico .DEV.BR
+
+# depois (página servida)
+- link "SEO Técnico .DEV.BR — página inicial":
+  - /url: /
+```
+
+Os dois nomes descrevem o link. Um agente que lê a árvore inteira veria, antes,
+o nome e o texto. A diferença aparece quando alguém procura o link pelo que
+está escrito nele, que é como um agente recebe a instrução de um humano
+("clique em SEO Técnico .DEV.BR") e como um usuário de comando de voz fala:
+
+| Busca por papel + texto visível | Antes | Depois |
+|---|---|---|
+| `getByRole('link', { name: 'SEO Técnico .DEV.BR' })` em `/` | 0 links | 1 link |
+| A mesma busca em `/en` | 0 links | 1 link |
+
+O Playwright compara o nome como trecho, sem diferenciar maiúsculas. Antes,
+"SEO Técnico .DEV.BR" não era trecho de "SEO Técnico — página inicial", e a
+busca não achava nada. A WCAG 2.5.3 (Label in Name, nível A) pede exatamente
+isso: o nome tem de conter o texto visível, de preferência no começo.
+
+O botão de busca do cabeçalho tinha o mesmo defeito: mostrava "buscar…" e se
+chamava "Abrir busca". Agora se chama "Buscar no site".
+
+## Antes e depois: o resultado do gerador de JSON-LD
+
+No [gerador de JSON-LD](/ferramentas/gerador-json-ld), o resultado aparece num
+`<pre>` depois de clicar em "Gerar JSON-LD". Um `<pre>` não tem papel próprio na
+árvore. O código gerado estava lá como texto, mas sem um nó com nome que
+dissesse "isto é o resultado". Quem achou foi o teste de componente, que
+procurava o resultado como um leitor de tela procuraria:
+
+```ts
+screen.getByRole('region', { name: /resultado/i })
+```
+
+Não achava. A correção deu ao `<pre>` papel de região, nome e foco:
+
+```yaml
+# depois, com o formulário preenchido e "Gerar" clicado
+- region "Resultado (JSON-LD)":
+  - code: "{ \"@context\": \"https://schema.org\", \"@type\": \"Article\", ... }"
+```
+
+Com os três atributos tirados de novo no DOM, a mesma busca por papel e nome
+encontra 0 regiões. Um agente que recebe "copie o JSON-LD gerado" tem, depois
+da correção, um nó chamado "Resultado" para ler. Antes, tinha um bloco de
+texto entre outros.
+
+O mesmo componente tinha `role="alert"` na `<ul>` de erros. O papel de alerta
+na própria lista apaga o papel de lista, e cada `<li>` fica órfão na árvore: é
+o `listitem` da tabela. O alerta passou para um invólucro em volta da lista.
+
+## O que isso muda, e o que não muda
+
+O que dá para afirmar com o que foi medido:
+
+- **Medido:** a árvore do link da marca e do resultado do gerador, antes e
+  depois; a busca pelo texto visível, de 0 para 1; as violações do axe, de 266
+  nós para 4, todos avisos de contraste num texto decorativo mantido de
+  propósito.
+- **Mecanismo:** um agente que lê a árvore só tem o que está nela. Nome que
+  não contém o texto visível quebra a busca pelo texto visível; elemento sem
+  papel nem nome não se acha por papel e nome.
+- **Não medido:** se algum agente real errou ou acertou mais por causa disso.
+  Nenhum agente foi testado contra o "antes" e o "depois", e um agente que
+  trabalha por captura de tela não vê diferença nenhuma nessas correções.
+
+Este site mede, em outro experimento, [quais assistentes de IA executam
+JavaScript](/blog/quais-ias-executam-javascript) quando buscam uma página.
+Aquilo é sobre o que chega no HTML. A árvore de acessibilidade é a etapa
+seguinte: o que um agente com navegador consegue apontar depois que a página
+renderizou.
+
+Nada disso mexe no SEO de busca diretamente. O Googlebot lê o HTML e o texto.
+A mesma rodada de auditoria, com crawler, está no
+[caso do Screaming Frog gratuito](/blog/screaming-frog-gratuito), e nenhum
+dos dois relatórios via o que o outro via.
+
+## No Next.js: o nome sai do texto visível
+
+No [guia de SEO técnico no Next.js](/guia/seo-tecnico-nextjs) o App Router é
+a implementação de referência, e as duas correções são JSX comum. No link da
+marca, o nome vem do conteúdo, com um complemento escondido na tela:
+
+```tsx
+// src/components/layout/Header.tsx
+<Link href={copy.home} className="flex shrink-0 items-baseline gap-2.5" title={copy.homeLabel}>
+  {/* Sem aria-label: o nome acessível sai do texto visível mais este
+      complemento (WCAG 2.5.3). */}
+  <span className="font-display ... uppercase ...">SEO Técnico</span>
+  <span className="font-mono ...">.DEV.BR</span>
+  <span className="sr-only"> — {copy.homeHint}</span>
+</Link>
+```
+
+No resultado do gerador, papel, nome e foco no próprio `<pre>`, que rola na
+horizontal e precisa ser alcançável pelo teclado:
+
+```tsx
+// src/components/tools/JsonLdGenerator.tsx
+<pre
+  role="region"
+  aria-label={`${copy.result} (${tab === 'json' ? 'JSON-LD' : copy.nextComponent})`}
+  tabIndex={0}
+  className="theme-dark-island mt-4 overflow-x-auto ..."
+>
+```
+
+E o script que fotografa a árvore antes e depois, para repetir a medição em
+outro site:
+
+```js
+// audits/scripts/aria-snapshot.mjs (trecho)
+const brand = page.locator('header a').first()
+console.log(await brand.ariaSnapshot())
+await brand.evaluate((a, l) => {
+  a.setAttribute('aria-label', l)
+  a.querySelector('.sr-only')?.remove()
+}, 'SEO Técnico — página inicial')
+console.log(await brand.ariaSnapshot())
+```
+
+O `ariaSnapshot()` devolve o mesmo YAML que o Playwright MCP entrega ao
+modelo, sem as referências. Não precisa de servidor MCP para ver o que ele
+veria.
+
+## Fontes
+
+- [MDN: árvore de acessibilidade (glossário)](https://developer.mozilla.org/en-US/docs/Glossary/Accessibility_tree), consultado em 23/10/2026
+- [Playwright MCP: snapshots](https://playwright.dev/mcp/snapshots), consultado em 23/10/2026
+- [Chrome DevTools MCP: referência de ferramentas (`take_snapshot`)](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md), consultado em 23/10/2026
+- [Anthropic: computer use tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool), consultado em 23/10/2026
+- [W3C: Understanding SC 2.5.3 Label in Name](https://www.w3.org/WAI/WCAG21/Understanding/label-in-name.html), consultado em 23/10/2026
+- [Playwright: aria snapshots](https://playwright.dev/docs/aria-snapshots), consultado em 23/10/2026
+- Relatório completo dos testes: [`docs/a11y-test-report.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/a11y-test-report.md)

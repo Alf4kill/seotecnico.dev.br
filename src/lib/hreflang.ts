@@ -300,6 +300,20 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/detect-ai-crawlers',
     },
   },
+  {
+    id: 'screaming-frog-gratuito',
+    paths: {
+      'pt-BR': '/blog/screaming-frog-gratuito',
+      en: '/en/blog/screaming-frog-free-version',
+    },
+  },
+  {
+    id: 'arvore-de-acessibilidade',
+    paths: {
+      'pt-BR': '/blog/arvore-de-acessibilidade',
+      en: '/en/blog/accessibility-tree',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */

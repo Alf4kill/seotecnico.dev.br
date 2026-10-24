@@ -1,0 +1,331 @@
+---
+title: "Screaming Frog free version: what it audits, what it locks"
+description: "Screaming Frog's free version crawls 500 URLs and locks JS, extraction and Search Console. What it found on a 68-page site, and what it left out."
+slug: "screaming-frog-free-version"
+primaryQuery: "screaming frog free version"
+keywords: ['english', 'inglês', 'screaming frog', 'screaming frog free', 'free version', 'crawler', 'crawl', 'seo audit', 'technical audit', 'advertools', 'scrapy', 'crawling', 'security headers', 'dns', 'search console']
+lang: "en"
+translationOf: "screaming-frog-gratuito"
+category: indexacao
+tldr: >-
+  Screaming Frog's free version crawls up to 500 URLs per crawl, enough to
+  audit a small site end to end. It locks configuration, saving the crawl,
+  JavaScript rendering, custom extraction and the Search Console integration.
+  What it locks can be covered with open tools.
+datePublished: "2026-10-23"
+dateModified: "2026-10-23"
+faq:
+  - question: "What is the limit of Screaming Frog's free version?"
+    answer: "500 URLs per crawl. The count includes everything the crawler encounters, not only HTML pages: scripts, images, feeds and external links count toward the total. On a 68-page site, the crawl encountered 198 URLs, 86 of them internal."
+  - question: "Does Screaming Frog's free version render JavaScript?"
+    answer: "No. In the free version 24.3, under Crawl Config › Spider › Rendering, the selector is locked to Text Only, with a notice that these options are only available with a licence. The vendor's FAQ, read on 2026-10-23, says the same: JavaScript rendering is among the features the licence unlocks, along with custom extraction and the Google Analytics and Search Console integrations."
+  - question: "Can the free version be used on sites with more than 500 URLs?"
+    answer: "Only in parts. The limit is per crawl, so separate sections can be crawled, but the link graph, click depth and orphan pages only make sense with the whole site in one crawl. Above 500 URLs, an open crawler such as advertools covers the full inventory."
+  - question: "Does the free version find DNS problems?"
+    answer: "Not as a diagnosis. It records the connection failure on the start URL and stops there. That is what happened on this site: the crawl stopped at the home page because the connection to the domain failed, and diagnosing the route took a TCP test and a traceroute."
+---
+
+Screaming Frog's free version crawls up to 500 URLs per crawl and, below that
+limit, audits a whole site: status codes, titles, descriptions, canonicals,
+hreflang, internal and external links, click depth and an issues report. It
+locks configuration (fixed user agent and speed), saving the crawl,
+JavaScript rendering, custom extraction and the Google Analytics and Search
+Console integrations. On this site, 68 pages, the free version was enough for
+the inventory. What it locks I covered with advertools and Playwright. And the
+most serious finding of the audit was not in the HTML at all.
+
+This article is the full case: the setup, the numbers, what each item in the
+issues report was worth, and what a crawler finds that an SEO test suite does
+not. Every number comes from exports and commands run on 2026-10-23. The
+scripts are in the
+[site's repository](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/audits).
+
+## What the free version does and what it locks
+
+Screaming Frog's FAQ, read on 2026-10-23, describes the free version as able
+to crawl up to 500 URLs at a time. Without a licence, crawls cannot be saved or
+opened, and the configuration options are unavailable. The licence costs £199
+a year and also unlocks JavaScript rendering, custom extraction and the
+Google Analytics and Search Console integrations. In the program, the
+rendering screen (Crawl Config › Spider › Rendering) shows the selector locked
+to "Text Only", with a notice that these options need a licence.
+
+| Feature | Free version | What I used instead |
+|---|---|---|
+| Crawl of up to 500 URLs | yes | — |
+| Issues report and CSV export | yes | — |
+| Configurable user agent and speed | no | advertools, with its own user agent and a delay between requests |
+| Save and reopen the crawl | no | export the CSVs right after the crawl |
+| JavaScript rendering | no | Playwright, with JavaScript off and on |
+| Custom extraction (XPath, CSS) | no | advertools |
+| Search Console integration | no | manual export of Performance → Pages |
+
+Configuration mattered most. Without changing the user agent or the speed, I
+did not want to point the crawler at production: this site measures who
+visits it, in an [experiment on AI crawlers](/en/blog/detect-ai-crawlers), and
+an audit crawl would enter the data as a visitor. So the crawl ran against a
+local production build that sends nothing to GA4.
+
+## Crawl setup
+
+Three crawlers, one build:
+
+- **Screaming Frog 24.3, free version**: the reference crawl and the issues
+  report.
+- **advertools 0.18 (on Scrapy)**: an identifiable user agent, `robots.txt`
+  obeyed, XPath extraction, the link graph and the sitemap join.
+- **Playwright**: each sitemap URL opened with JavaScript off and on,
+  comparing text, links, headings and JSON-LD.
+
+The local build has one detail that decides whether the crawl leaks to
+production: the site's domain has to point at `localhost`. Canonicals,
+hreflang and the sitemap use absolute URLs. With the production domain, a
+crawler that follows canonicals and hreflang leaves localhost and hits the
+real site.
+
+```python
+# audits/scripts/crawl_audit.py (excerpt)
+USER_AGENT = 'seotecnico-audit/1.0 (+https://seotecnico.dev.br/sobre)'
+
+adv.crawl(
+    f'{base}/',
+    str(raw),
+    follow_links=True,
+    allowed_domains=[urlsplit(base).hostname],
+    xpath_selectors=XPATH,
+    custom_settings={
+        'USER_AGENT': USER_AGENT,
+        'ROBOTSTXT_OBEY': True,
+        'DOWNLOAD_DELAY': delay,
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
+        # 3xx/4xx/5xx are findings, not noise
+        'HTTPERROR_ALLOW_ALL': True,
+    },
+)
+```
+
+Production only got a minimal pass: 9 hand-picked URLs, no link following, one
+request per second, with the user agent above and the time window logged so
+it can be excluded from the experiment's analyses.
+
+## The numbers: three crawlers, one inventory
+
+| | Screaming Frog | advertools |
+|---|---|---|
+| URLs encountered | 198 (86 internal, 112 external) | 69 internal + 420 external links |
+| HTML pages | 68 | 68 |
+| Other internal URLs | 14 scripts, 3 images, 1 feed | 1 feed |
+| Pages whose depth differs between the two | 0 | 0 |
+
+Both crawlers listed the same 68 pages, with the same click depth for each.
+The production sitemap also has 68 URLs. That agreement is what lets me use
+the numbers of both as one.
+
+The rest of the inventory:
+
+- **Depth:** 1 page at level 0, 15 at 1, 36 at 2 and 16 at 3. None is more
+  than 3 clicks from the home page.
+- **Internal links:** 2,442, none broken and none pointing to a redirect.
+- **Orphans:** none in either direction. Every sitemap URL receives a link,
+  and every linked page is in the sitemap. The least-linked page has 2 pages
+  pointing to it.
+- **Hreflang:** 66 pages in pairs with `x-default`, no reciprocity errors. The
+  2 without hreflang have no Portuguese version.
+- **External links:** 64 distinct URLs, checked once each. One answered with
+  a 308 redirect (Perplexity's documentation, fixed). Another is a DOI that
+  ends in a 403 for bots, at the publisher's bot wall; it stayed, because a
+  DOI is the correct way to cite a paper.
+
+## Raw and rendered HTML: the same on all 68 pages
+
+Neither Screaming Frog's free version nor advertools runs JavaScript, so I
+opened each page in Chromium twice. With JavaScript off, the page is what a
+reader that only downloads the HTML gets: Googlebot's first pass and, as this
+site measured, [the AI assistants that do not run JavaScript](/en/blog/which-ai-assistants-run-javascript).
+
+Result: text, links, headings, JSON-LD and title identical on all 68 pages.
+The only difference was the label of the code blocks' copy button ("COPY"),
+which only appears after hydration: 1 to 12 extra words on 44 pages, and
+nothing else. The site's three tools serve their explanatory text and their
+form in the HTML. Only the result depends on JavaScript.
+
+## The issues report, item by item
+
+Screaming Frog listed 19 issue types. I checked each one against the code and
+against production, and they fell into four groups.
+
+**Artifacts of crawling localhost (not findings):**
+
+| Issue | Why |
+|---|---|
+| Security: HTTP URLs (86 URLs, high priority) | The crawl ran on `http://localhost`. In production, `http://` answers 308 to `https://`. |
+| Security: Form on HTTP URL (4) | The tool forms, on the same localhost. |
+| Links: Outlinks To Localhost (68) | The build pointed the domain at localhost on purpose. |
+
+**Valid and fixed:**
+
+| Issue | Fix |
+|---|---|
+| Missing `X-Content-Type-Options`, `X-Frame-Options` and `Referrer-Policy` (86 of 86 URLs) | Three headers in `next.config.ts`, locked by a CI test |
+
+**Valid and kept, with a reason:**
+
+| Issue | Where | Reason |
+|---|---|---|
+| Missing Content-Security-Policy (83 URLs) | every page | A CSP that actually protects needs a nonce or hashes for GTM, inline scripts and JSON-LD. That is a decision of its own, with a performance cost to measure. |
+| Title over 561 px | 2 pages | 1 to 3 px over an estimate, with titles of up to 60 characters |
+| Description over 985 px | 2 pages | 2 to 5 px over the same estimate |
+| Alt over 100 characters | 3 images | PageSpeed Insights screenshots whose alt describes the measured values |
+| Duplicate H2 | 4 pages | Same section titles in two articles of one experiment series |
+| Low content (under 200 words) | 2 pages | The tool index pages, not articles |
+
+**Not applicable:** Flesch readability, calibrated for English, says nothing
+about Portuguese text. "Bad Content Type" is almost certainly the RSS feed
+served as `application/rss+xml`. And "H2 multiple", "title same as H1" and
+"high external outlinks" are informational filters, as the program itself
+describes them.
+
+Almost half of the issue types were not defects. That is what I would expect
+from any automated report, and it is why one cannot go straight to a client
+without validation.
+
+## The most serious finding was outside the HTML
+
+Before I understood I needed the local build, I pointed Screaming Frog at
+production. The crawl stopped at the home page. It was not configuration: the
+crawler could not open a connection to the domain.
+
+The apex domain, without `www`, had a single A record, `216.198.79.1`, from
+the new IP range Vercel recommends today. From my residential connection, no
+TCP connection to port 443 of that IP would open. `www` worked because it
+resolves to two IPs, and one of them answered.
+
+To tell "the site is down" apart from "the route is down", I tested the TCP
+connection from several countries with check-host.net, with no HTTP request:
+
+- 17 of 18 nodes connected, plus a São Paulo node tested separately;
+- the `traceroute` from my connection goes through the ISP's core and stops
+  at the next hop;
+- the `traceroute` to `76.76.21.21`, another Vercel entry IP, follows the
+  same path and reaches the destination at hop 12.
+
+The site was up. The route between my ISP and that IP range was not. The fix
+was to change the A record to `76.76.21.21`. Vercel's knowledge base still
+documents that value for apex domains, and the dashboard calls it a legacy
+record that keeps working. The change stays until the route is repaired. After it, DNS, TCP and the TLS certificate were checked with no HTTP
+request.
+
+No test in the repository could have found this. CI runs against a local
+build, which goes through neither DNS nor Vercel's network. What found it was
+a crawler pointed at production that could not open the first page.
+
+## The Search Console join
+
+The free version does not connect to Search Console, so I exported
+Performance → Pages for the last 3 months (2026-07-22 to 2026-10-21) and
+joined it with the crawl in a script. Without the API, "is it indexed" becomes
+"did it have at least one impression".
+
+| Question | Answer |
+|---|---|
+| URLs Google showed that the crawl did not find | 0 |
+| Pages shown in search with no internal link | 0 |
+| Linked pages with no impression | 21 |
+
+Of the 21 without impressions, 19 were published on 2026-10-18, four days
+before the window closed. Only two say anything: the lab index (online since
+2026-10-04) and the Portuguese version of the article on
+[SEO testing with pre-registration](/en/blog/seo-testing-pre-registration)
+(since 2026-10-08), whose English pair had 9 impressions. The next reading is
+on 2026-11-15, after 28 days of exposure for the new pages.
+
+By depth, the pages at level 3 had fewer impressions. But almost every level-3
+page is one of those published four days earlier, so age and depth are the
+same variable in this data. They cannot be separated, and I claim nothing
+about depth from it.
+
+## What the crawler found and the test suite did not
+
+This site has a Playwright suite that blocks the deploy if a page loses its
+h1, canonical, JSON-LD or hreflang. It tests the URLs the sitemap
+**declares**. The crawler tests the ones **reachable through links**, plus
+every link target, every external link and every response header. What made
+the report and the suite could not see:
+
+1. the main domain unreachable from one ISP;
+2. no security header on any URL;
+3. an external link that had moved;
+4. raw and rendered HTML equal on all 68 pages, measured site-wide for the
+   first time.
+
+CI was green the whole time. And it was not wrong: it tests none of these
+things. A green CI says that what it measures did not break; the audit looks
+at the rest. The same day, an accessibility suite with axe-core reported 266
+violations the SEO suite could not see either, 224 of them on the brand link,
+in the header of every page. What that changes for an AI agent is in an
+article of its own:
+[how AI agents read a page through the accessibility tree](/en/blog/accessibility-tree).
+
+## In Next.js: security headers in `next.config.ts`
+
+In the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) I use
+the App Router as the reference implementation. The header fix is a
+`headers()` function in the config, with one rule that matches every route:
+
+```ts
+// next.config.ts
+async headers() {
+  return [
+    {
+      source: '/:path*',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      ],
+    },
+  ]
+},
+```
+
+And a test in the SEO suite's file, so the finding does not come back:
+
+```ts
+// tests/seo/seo.spec.ts
+for (const path of ['/', '/robots.txt', '/feed.xml']) {
+  test(`security headers on ${path}`, async ({ request }) => {
+    const headers = (await request.get(path)).headers()
+    expect(headers['x-content-type-options']).toBe('nosniff')
+    expect(headers['x-frame-options']).toBe('DENY')
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin')
+  })
+}
+```
+
+None of these headers changes what Googlebot reads. `X-Frame-Options: DENY`
+stops the site from being embedded in an iframe, and this site is not
+embedded anywhere. If yours is, the rule has to be different.
+
+The other Next.js detail is the crawl build: the domain comes from an
+environment variable, and that variable decides whether canonicals and
+hreflang send the crawler to localhost or to production.
+
+```bash
+NEXT_PUBLIC_GTM_ID= SITE_INDEXABLE=true NEXT_PUBLIC_DOMAIN=http://localhost:3000 npm run build
+```
+
+`SITE_INDEXABLE=true` matters too. Without it, this site serves
+`Disallow: /` in `robots.txt`, and a crawler that obeys the file, such as
+Screaming Frog, crawls nothing. To check title and description page by page
+after the crawl, the [meta tag validator](/en/tools/meta-tag-validator) shows
+both side by side with a search result preview.
+
+## Sources
+
+- [Screaming Frog SEO Spider FAQ](https://www.screamingfrog.co.uk/seo-spider/faq/), read on 2026-10-23
+- [Screaming Frog SEO Spider pricing](https://www.screamingfrog.co.uk/seo-spider/pricing/), read on 2026-10-23
+- [advertools: crawler documentation](https://advertools.readthedocs.io/en/master/advertools.spider.html), read on 2026-10-23
+- [Vercel: can I use my domain on Vercel with A records?](https://vercel.com/kb/guide/a-record-and-caa-with-vercel), read on 2026-10-23
+- [Next.js: `headers` in `next.config.js`](https://nextjs.org/docs/app/api-reference/config/next-config-js/headers), read on 2026-10-23
+- [MDN: X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Content-Type-Options), read on 2026-10-23
+- Full audit record: [`docs/crawl-audit-2026-10.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/crawl-audit-2026-10.md)

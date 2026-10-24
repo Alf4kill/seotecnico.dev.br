@@ -28,3 +28,9 @@ Thumbs.db
 
 # Coverage reports
 coverage/
+
+# Crawl audits: raw crawl data stays local (CLAUDE.md §14 — publish aggregates,
+# not raw datasets). Scripts and each crawl's summary.json are versioned.
+audits/.venv/
+audits/crawl-*/**
+!audits/crawl-*/summary*.json

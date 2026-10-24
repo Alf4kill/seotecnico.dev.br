@@ -1,0 +1,36 @@
+{
+  "base": "http://localhost:3000",
+  "user_agent": "seotecnico-audit/1.0 (+https://seotecnico.dev.br/sobre)",
+  "crawled_urls": 69,
+  "crawled_html": 68,
+  "status_counts": {
+    "200": 69
+  },
+  "sitemap_urls": 68,
+  "sitemap_not_reached_by_links": [],
+  "linked_not_in_sitemap": [],
+  "depth_histogram": {
+    "0": 1,
+    "1": 15,
+    "2": 36,
+    "3": 16
+  },
+  "max_depth": 3,
+  "pages_with_one_inlink_or_less": [],
+  "internal_links": 2442,
+  "broken_internal_links": 0,
+  "internal_links_to_redirects": 0,
+  "redirect_sources": [],
+  "external_links": 420,
+  "external_domains": 19,
+  "hreflang_issues": 0,
+  "external_urls_checked": 64,
+  "external_status_counts": {
+    "200": 63,
+    "403": 1
+  },
+  "external_redirected": 2,
+  "external_non_200": [
+    "403 https://academic.oup.com/biomet/article-lookup/doi/10.1093/biomet/26.4.404"
+  ]
+}

@@ -1,0 +1,331 @@
+---
+title: "Screaming Frog gratuito: o que ele audita e o que trava"
+description: "A versão gratuita do Screaming Frog rastreia 500 URLs e trava JS, extração e Search Console. O que ela achou num site de 68 páginas e o que ficou de fora."
+slug: "screaming-frog-gratuito"
+primaryQuery: "screaming frog gratuito"
+keywords: ['screaming frog', 'screaming frog free', 'versão gratuita', 'crawler', 'crawl', 'auditoria de seo', 'auditoria técnica', 'advertools', 'scrapy', 'rastreamento', 'headers de segurança', 'dns', 'search console']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  A versão gratuita do Screaming Frog rastreia até 500 URLs por crawl e basta
+  para auditar um site pequeno inteiro. Ela trava configuração, salvar o
+  crawl, renderização de JavaScript, extração customizada e a integração com o
+  Search Console. O que ela trava dá para cobrir com ferramentas abertas.
+datePublished: "2026-10-23"
+dateModified: "2026-10-23"
+faq:
+  - question: "Qual o limite da versão gratuita do Screaming Frog?"
+    answer: "500 URLs por crawl. A conta inclui tudo o que o crawler encontra, não só páginas HTML: scripts, imagens, feeds e links externos entram no total. Num site de 68 páginas, o crawl encontrou 198 URLs, das quais 86 internas."
+  - question: "O Screaming Frog gratuito renderiza JavaScript?"
+    answer: "Não. Na versão 24.3 gratuita, em Crawl Config › Spider › Rendering, o seletor fica travado em Text Only, com o aviso de que essas opções só estão disponíveis com licença. O FAQ do fabricante, consultado em 23/10/2026, diz o mesmo: renderização de JavaScript está entre os recursos que a licença libera, junto com extração customizada e as integrações com Google Analytics e Search Console."
+  - question: "Dá para usar o Screaming Frog gratuito em sites com mais de 500 URLs?"
+    answer: "Só por partes. O limite é por crawl, então dá para rastrear seções separadas, mas o grafo de links, a profundidade e as páginas órfãs só fazem sentido com o site inteiro num mesmo crawl. Acima de 500 URLs, um crawler aberto como o advertools cobre o inventário completo."
+  - question: "O Screaming Frog gratuito acha problemas de DNS?"
+    answer: "Não como diagnóstico. Ele registra a falha de conexão da URL inicial e para ali. Foi isso que aconteceu neste site: o crawl parou na home porque a conexão com o domínio falhou, e o diagnóstico de rota precisou de teste de TCP e traceroute."
+---
+
+A versão gratuita do Screaming Frog rastreia até 500 URLs por crawl e, abaixo
+desse limite, audita um site inteiro: status, títulos, descrições, canonicals,
+hreflang, links internos e externos, profundidade de clique e um relatório de
+issues. Ela trava a configuração (user agent e velocidade fixos), salvar o
+crawl, a renderização de JavaScript, a extração customizada e as integrações
+com Google Analytics e Search Console. Neste site, de 68 páginas, a versão
+gratuita bastou para o inventário. O que ela trava eu cobri com advertools e
+Playwright. E o achado mais grave da auditoria nem estava no HTML.
+
+Este artigo é o caso completo: a configuração, os números, o que cada issue
+do relatório valia e o que um crawler encontra que uma suíte de testes de SEO
+não encontra. Todos os números saem de exports e de comandos rodados em
+23/10/2026. Os scripts estão no
+[repositório do site](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/audits).
+
+## O que a versão gratuita faz e o que ela trava
+
+O FAQ do Screaming Frog, consultado em 23/10/2026, descreve a versão gratuita
+como capaz de rastrear até 500 URLs por vez. Sem licença, não dá para salvar
+nem abrir crawls, e as opções de configuração ficam indisponíveis. A licença
+custa £199 por ano e libera, além disso, renderização de JavaScript, extração
+customizada e as integrações com Google Analytics e Search Console. No
+programa, a tela de renderização (Crawl Config › Spider › Rendering) mostra o
+seletor travado em "Text Only", com o aviso de que essas opções exigem
+licença.
+
+| Recurso | Versão gratuita | O que eu usei no lugar |
+|---|---|---|
+| Crawl de até 500 URLs | sim | — |
+| Relatório de issues e exportação em CSV | sim | — |
+| User agent e velocidade configuráveis | não | advertools, com user agent próprio e atraso entre requisições |
+| Salvar e reabrir o crawl | não | exportar os CSVs logo após o crawl |
+| Renderização de JavaScript | não | Playwright, com JavaScript ligado e desligado |
+| Extração customizada (XPath, CSS) | não | advertools |
+| Integração com Search Console | não | exportação manual de Desempenho → Páginas |
+
+O que mais pesou foi a configuração. Sem poder trocar o user agent nem a
+velocidade, eu não queria apontar o crawler para produção: este site mede quem
+o visita, num [experimento sobre crawlers de IA](/blog/detectar-crawlers-ia),
+e um crawl de auditoria entraria nos dados como visitante. Então o crawl rodou
+contra um build de produção local, que não envia nada para o GA4.
+
+## A configuração do crawl
+
+Três crawlers, o mesmo build:
+
+- **Screaming Frog 24.3, versão gratuita**: o crawl de referência e o
+  relatório de issues.
+- **advertools 0.18 (sobre Scrapy)**: user agent identificável, `robots.txt`
+  respeitado, extração por XPath, grafo de links e junção com o sitemap.
+- **Playwright**: cada URL do sitemap aberta com JavaScript desligado e ligado,
+  comparando texto, links, headings e JSON-LD.
+
+O build local tem um detalhe que decide se o crawl sai ou não para a
+produção: o domínio do site precisa apontar para o `localhost`. Os canonicals,
+o hreflang e o sitemap usam URL absoluta. Com o domínio de produção, um
+crawler que segue canonical e hreflang sai do localhost e vai bater no site
+real.
+
+```python
+# audits/scripts/crawl_audit.py (trecho)
+USER_AGENT = 'seotecnico-audit/1.0 (+https://seotecnico.dev.br/sobre)'
+
+adv.crawl(
+    f'{base}/',
+    str(raw),
+    follow_links=True,
+    allowed_domains=[urlsplit(base).hostname],
+    xpath_selectors=XPATH,
+    custom_settings={
+        'USER_AGENT': USER_AGENT,
+        'ROBOTSTXT_OBEY': True,
+        'DOWNLOAD_DELAY': delay,
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
+        # 3xx/4xx/5xx são achados, não ruído
+        'HTTPERROR_ALLOW_ALL': True,
+    },
+)
+```
+
+A produção recebeu só um passe mínimo: 9 URLs escolhidas a dedo, sem seguir
+links, uma requisição por segundo, com o user agent acima e a janela de
+horário registrada para ser excluída das análises do experimento.
+
+## Os números: três crawlers, o mesmo inventário
+
+| | Screaming Frog | advertools |
+|---|---|---|
+| URLs encontradas | 198 (86 internas, 112 externas) | 69 internas + 420 links externos |
+| Páginas HTML | 68 | 68 |
+| Outras URLs internas | 14 scripts, 3 imagens, 1 feed | 1 feed |
+| Páginas com profundidade diferente entre os dois | 0 | 0 |
+
+Os dois crawlers listaram as mesmas 68 páginas, com a mesma profundidade de
+clique em cada uma. O sitemap de produção também tem 68 URLs. Essa
+concordância é o que me deixa usar os números dos dois como se fossem um.
+
+O resto do inventário:
+
+- **Profundidade:** 1 página no nível 0, 15 no 1, 36 no 2 e 16 no 3. Nenhuma
+  passa de 3 cliques a partir da home.
+- **Links internos:** 2.442, nenhum quebrado e nenhum apontando para redirect.
+- **Órfãs:** nenhuma em nenhuma direção. Toda URL do sitemap recebe link, e
+  toda página linkada está no sitemap. A que recebe menos links tem 2 páginas
+  apontando para ela.
+- **Hreflang:** 66 páginas em pares com `x-default`, nenhum erro de
+  reciprocidade. As 2 sem hreflang não têm versão em português.
+- **Links externos:** 64 URLs distintas, checadas uma vez cada. Uma
+  respondia com redirect 308 (documentação do Perplexity, corrigida). Outra
+  é um DOI que termina num 403 para bots, no muro antibot da editora; ficou,
+  porque DOI é a forma correta de citar um artigo científico.
+
+## HTML bruto e renderizado: iguais nas 68 páginas
+
+Nem o Screaming Frog gratuito nem o advertools executam JavaScript, então
+abri cada página no Chromium duas vezes. Com JavaScript desligado, a página é o
+que lê um leitor que só baixa o HTML: a primeira passada do Googlebot e, como
+este site mediu, [os assistentes de IA que não executam JavaScript](/blog/quais-ias-executam-javascript).
+
+Resultado: texto, links, headings, JSON-LD e title idênticos nas 68 páginas. A
+única diferença foi o rótulo do botão de copiar dos blocos de código
+("COPIAR"), que só aparece depois da hidratação: de 1 a 12 palavras a mais em
+44 páginas, e nada além disso. As três ferramentas do site servem o texto
+explicativo e o formulário no HTML. Só o resultado depende de JavaScript.
+
+## O relatório de issues, item por item
+
+O Screaming Frog listou 19 tipos de issue. Validei cada um contra o código e
+contra a produção, e eles se dividiram em quatro grupos.
+
+**Efeito do crawl em localhost (não valem):**
+
+| Issue | Por quê |
+|---|---|
+| Security: HTTP URLs (86 URLs, prioridade alta) | O crawl rodou em `http://localhost`. Em produção, `http://` responde 308 para `https://`. |
+| Security: Form on HTTP URL (4) | São os formulários das ferramentas, no mesmo localhost. |
+| Links: Outlinks To Localhost (68) | O build apontou o domínio para localhost de propósito. |
+
+**Valem e foram corrigidos:**
+
+| Issue | Correção |
+|---|---|
+| Faltam `X-Content-Type-Options`, `X-Frame-Options` e `Referrer-Policy` (86 de 86 URLs) | Três headers no `next.config.ts`, travados por um teste no CI |
+
+**Valem e ficaram, com motivo:**
+
+| Issue | Onde | Motivo |
+|---|---|---|
+| Falta Content-Security-Policy (83 URLs) | todas as páginas | Uma CSP que proteja de verdade precisa de nonce ou hash para o GTM, scripts inline e JSON-LD. É uma decisão própria, com custo de performance a medir. |
+| Title acima de 561 px | 2 páginas | 1 a 3 px acima de uma estimativa, com títulos de até 60 caracteres |
+| Description acima de 985 px | 2 páginas | 2 a 5 px acima da mesma estimativa |
+| Alt acima de 100 caracteres | 3 imagens | Prints do PageSpeed Insights cujo alt descreve os valores medidos |
+| H2 duplicado | 4 páginas | Mesmos títulos de seção em dois artigos da mesma série de experimentos |
+| Pouco conteúdo (menos de 200 palavras) | 2 páginas | Os índices das ferramentas, não artigos |
+
+**Não se aplicam:** a legibilidade de Flesch, calibrada para inglês, não diz
+nada sobre texto em português. O "Bad Content Type" é quase certamente o
+feed RSS servido como `application/rss+xml`. E "H2 múltiplo", "title igual ao
+H1" e "muitos links externos" são filtros informativos, como o próprio
+programa descreve.
+
+Quase metade dos tipos de issue não era defeito. É o que eu esperaria de
+qualquer relatório automático, e é por isso que ele não pode ir direto para o
+cliente sem validação.
+
+## O achado mais grave estava fora do HTML
+
+Antes de entender que precisava do build local, apontei o Screaming Frog para
+a produção. O crawl parou na home. Não era configuração: o crawler não
+conseguia abrir a conexão com o domínio.
+
+O domínio sem `www` tinha um único registro A, `216.198.79.1`, da faixa nova
+de IPs que a Vercel recomenda hoje. A partir da minha conexão residencial,
+nenhuma conexão TCP com a porta 443 desse IP abria. O `www` funcionava porque
+resolve para dois IPs, e um deles respondia.
+
+Para separar "o site caiu" de "a rota caiu", testei a conexão TCP a partir de
+vários países com o check-host.net, sem requisição HTTP:
+
+- 17 de 18 nós conectaram, mais um nó em São Paulo testado à parte;
+- o `traceroute` da minha conexão passa pelo núcleo da operadora e para no
+  salto seguinte;
+- o `traceroute` para `76.76.21.21`, outro IP de entrada da Vercel, segue o
+  mesmo caminho e chega ao destino no salto 12.
+
+O site estava no ar. A rota entre a minha operadora e aquela faixa de IPs, não.
+A correção foi trocar o registro A para `76.76.21.21`. A base de conhecimento
+da Vercel ainda documenta esse valor para domínios sem `www`, e o painel o
+chama de registro legado que continua funcionando. A troca fica valendo até a
+rota ser consertada. Depois dela, DNS, TCP e o certificado TLS foram
+conferidos sem nenhuma requisição HTTP.
+
+Nenhum teste do repositório poderia achar isso. O CI roda contra um build
+local, que não passa por DNS nem pela rede da Vercel. Quem achou foi um
+crawler apontado para a produção que não conseguiu abrir a primeira página.
+
+## O cruzamento com o Search Console
+
+A versão gratuita não conecta ao Search Console, então exportei Desempenho →
+Páginas dos últimos 3 meses (22/07 a 21/10/2026) e juntei com o crawl num
+script. Sem a API, a pergunta "está indexada" vira "teve ao menos uma
+impressão".
+
+| Pergunta | Resposta |
+|---|---|
+| URLs que o Google mostrou e o crawl não encontrou | 0 |
+| Páginas exibidas na busca sem nenhum link interno | 0 |
+| Páginas linkadas sem nenhuma impressão | 21 |
+
+Das 21 sem impressão, 19 foram publicadas em 18/10, quatro dias antes de a
+janela fechar. Só duas dizem alguma coisa: o índice do laboratório (no ar
+desde 04/10) e o artigo sobre
+[teste de SEO com pré-registro](/blog/pre-registro-seo) (desde 08/10). A
+próxima leitura é em 15/11, depois de 28 dias de exposição das páginas novas.
+
+Por profundidade, as páginas no nível 3 tiveram menos impressões. Mas quase
+todas as páginas de nível 3 são justamente as publicadas há quatro dias, então
+idade e profundidade são a mesma variável nesses dados. Não dá para separar, e
+eu não afirmo nada sobre profundidade a partir disso.
+
+## O que o crawler achou e a suíte de testes não
+
+Este site tem uma suíte Playwright que bloqueia o deploy se uma página perde
+o h1, o canonical, o JSON-LD ou o hreflang. Ela testa as URLs que o sitemap
+**declara**. O crawler testa as que estão **acessíveis por link**, mais cada
+destino de link, cada link externo e cada header de resposta. O que entrou no
+relatório e a suíte não via:
+
+1. o domínio principal inacessível a partir de uma operadora;
+2. nenhum header de segurança em nenhuma URL;
+3. um link externo que mudou de endereço;
+4. a igualdade entre HTML bruto e renderizado nas 68 páginas, medida pela
+   primeira vez no site inteiro.
+
+O CI estava verde o tempo todo. E não errou: ele não testa nenhuma dessas
+coisas. Um CI verde diz que o que ele mede não quebrou; a auditoria olha o
+resto. No mesmo dia, uma suíte de acessibilidade com axe-core apontou 266
+violações que a suíte de SEO também não via, 224 delas no link da marca, no
+cabeçalho de todas as páginas. O que isso muda para um agente de IA está num
+artigo próprio:
+[como agentes de IA leem a página pela árvore de acessibilidade](/blog/arvore-de-acessibilidade).
+
+## No Next.js: headers de segurança no `next.config.ts`
+
+No [guia de SEO técnico no Next.js](/guia/seo-tecnico-nextjs) eu uso o App
+Router como implementação de referência. A correção dos headers é uma
+função `headers()` na configuração, com uma regra que pega todas as rotas:
+
+```ts
+// next.config.ts
+async headers() {
+  return [
+    {
+      source: '/:path*',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      ],
+    },
+  ]
+},
+```
+
+E um teste no mesmo arquivo da suíte de SEO, para o achado não voltar:
+
+```ts
+// tests/seo/seo.spec.ts
+for (const path of ['/', '/robots.txt', '/feed.xml']) {
+  test(`security headers on ${path}`, async ({ request }) => {
+    const headers = (await request.get(path)).headers()
+    expect(headers['x-content-type-options']).toBe('nosniff')
+    expect(headers['x-frame-options']).toBe('DENY')
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin')
+  })
+}
+```
+
+Nenhum desses headers muda o que o Googlebot lê. O `X-Frame-Options: DENY`
+impede o site de ser embutido em iframe, e este site não se embute em lugar
+nenhum. Se o seu se embute, a regra precisa ser outra.
+
+O outro cuidado com o Next.js é o do build para o crawl: o domínio vem de uma
+variável de ambiente, e é ela que decide se canonicals e hreflang mandam o
+crawler para o localhost ou para a produção.
+
+```bash
+NEXT_PUBLIC_GTM_ID= SITE_INDEXABLE=true NEXT_PUBLIC_DOMAIN=http://localhost:3000 npm run build
+```
+
+O `SITE_INDEXABLE=true` também importa. Sem ele, este site serve
+`Disallow: /` no `robots.txt`, e um crawler que respeita o arquivo, como o
+Screaming Frog, não rastreia nada. Para conferir title e description página
+a página depois do crawl, o [validador de meta tags](/ferramentas/validador-meta-tags)
+mostra os dois lado a lado com a prévia do resultado de busca.
+
+## Fontes
+
+- [FAQ do Screaming Frog SEO Spider](https://www.screamingfrog.co.uk/seo-spider/faq/), consultado em 23/10/2026
+- [Preços do Screaming Frog SEO Spider](https://www.screamingfrog.co.uk/seo-spider/pricing/), consultado em 23/10/2026
+- [advertools: documentação do crawler](https://advertools.readthedocs.io/en/master/advertools.spider.html), consultado em 23/10/2026
+- [Vercel: posso usar meu domínio com registros A?](https://vercel.com/kb/guide/a-record-and-caa-with-vercel), consultado em 23/10/2026
+- [Next.js: `headers` no `next.config.js`](https://nextjs.org/docs/app/api-reference/config/next-config-js/headers), consultado em 23/10/2026
+- [MDN: X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Content-Type-Options), consultado em 23/10/2026
+- Registro completo da auditoria: [`docs/crawl-audit-2026-10.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/crawl-audit-2026-10.md)
