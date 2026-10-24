@@ -22,7 +22,7 @@ header. The audit reads only that difference.
 
 | Tool | Role | What it could not do here |
 |---|---|---|
-| Screaming Frog SEO Spider 24.3, **free** | Reference crawl, issue report, cross-check | The free version is capped at 500 URLs per crawl (68 pages here, so no limit was hit), cannot save crawls, and locks configuration, JavaScript rendering, custom extraction and the GA/GSC integrations (vendor FAQ, read 2026-10-23). User agent and speed are fixed. |
+| Screaming Frog SEO Spider 24.3, **free** | Reference crawl, issue report, cross-check | The free version is capped at 500 URLs per crawl (68 pages here, so no limit was hit), cannot save crawls, and locks configuration, JavaScript rendering, custom extraction and the GA/GSC integrations (vendor FAQ, read 2026-10-23). Confirmed in the program by the owner: Crawl Config › Spider › Rendering is locked to "Text Only" with "only available with an SEO Spider Licence". User agent and speed are fixed. |
 | advertools 0.18.0 (Scrapy) — `audits/scripts/crawl_audit.py` | Configurable crawl: own user agent, `ROBOTSTXT_OBEY`, delay, custom XPath (meta robots, hreflang, `html lang`), link graph, depth, external status, sitemap join | No JavaScript rendering |
 | Playwright — `audits/scripts/raw-vs-rendered.mjs` | Each sitemap URL opened with JavaScript off and on; visible text, links, headings, JSON-LD and title compared | — |
 
@@ -146,11 +146,11 @@ This cannot be fixed from the repository. Open for the owner:
 
 **Diagnosed and worked around, same evening.** No VPN was in use: the owner's
 `tracert 216.198.79.1` goes from the home router through the ISP's core
-(hops 3–4) and gets no answer from hop 5 on. A
-silent traceroute alone proves nothing, because many routers do not answer
+(hops 3–4) and gets no answer from hop 5 on. A silent traceroute alone proves nothing, because many routers do not answer
 ICMP. Together with the TCP connects that never open, it places the break
-between this ISP and Vercel's `216.198.79.0/24`. The ISP is a large Brazilian residential provider, and this site is
-Portuguese-first.
+between this ISP and Vercel's `216.198.79.0/24`. The ISP is a large Brazilian
+residential provider, and this site is Portuguese-first. The ISP is not named
+in public on purpose (owner decision, 2026-10-23).
 
 **Fix (outside the repository):** at 2026-10-23 20:34 UTC−3 (23:34 UTC) the
 owner replaced the apex A record at registro.br with `76.76.21.21`, a single A

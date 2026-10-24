@@ -18,7 +18,7 @@ faq:
   - question: "What is the limit of Screaming Frog's free version?"
     answer: "500 URLs per crawl. The count includes everything the crawler encounters, not only HTML pages: scripts, images, feeds and external links count toward the total. On a 68-page site, the crawl encountered 198 URLs, 86 of them internal."
   - question: "Does Screaming Frog's free version render JavaScript?"
-    answer: "According to the vendor's FAQ, read on 2026-10-23, no: JavaScript rendering is among the features the licence unlocks, along with custom extraction and the Google Analytics and Search Console integrations. The pricing page lists features without clearly separating the versions, so check inside the program itself."
+    answer: "No. In the free version 24.3, under Crawl Config › Spider › Rendering, the selector is locked to Text Only, with a notice that these options are only available with a licence. The vendor's FAQ, read on 2026-10-23, says the same: JavaScript rendering is among the features the licence unlocks, along with custom extraction and the Google Analytics and Search Console integrations."
   - question: "Can the free version be used on sites with more than 500 URLs?"
     answer: "Only in parts. The limit is per crawl, so separate sections can be crawled, but the link graph, click depth and orphan pages only make sense with the whole site in one crawl. Above 500 URLs, an open crawler such as advertools covers the full inventory."
   - question: "Does the free version find DNS problems?"
@@ -46,7 +46,9 @@ Screaming Frog's FAQ, read on 2026-10-23, describes the free version as able
 to crawl up to 500 URLs at a time. Without a licence, crawls cannot be saved or
 opened, and the configuration options are unavailable. The licence costs £199
 a year and also unlocks JavaScript rendering, custom extraction and the
-Google Analytics and Search Console integrations.
+Google Analytics and Search Console integrations. In the program, the
+rendering screen (Crawl Config › Spider › Rendering) shows the selector locked
+to "Text Only", with a notice that these options need a licence.
 
 | Feature | Free version | What I used instead |
 |---|---|---|

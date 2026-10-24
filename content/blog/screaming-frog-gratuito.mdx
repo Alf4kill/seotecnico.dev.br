@@ -17,7 +17,7 @@ faq:
   - question: "Qual o limite da versão gratuita do Screaming Frog?"
     answer: "500 URLs por crawl. A conta inclui tudo o que o crawler encontra, não só páginas HTML: scripts, imagens, feeds e links externos entram no total. Num site de 68 páginas, o crawl encontrou 198 URLs, das quais 86 internas."
   - question: "O Screaming Frog gratuito renderiza JavaScript?"
-    answer: "Segundo o FAQ do fabricante, consultado em 23/10/2026, não: renderização de JavaScript está entre os recursos que a licença libera, junto com extração customizada e as integrações com Google Analytics e Search Console. A página de preços lista os recursos sem separar claramente as versões, então vale conferir no próprio programa."
+    answer: "Não. Na versão 24.3 gratuita, em Crawl Config › Spider › Rendering, o seletor fica travado em Text Only, com o aviso de que essas opções só estão disponíveis com licença. O FAQ do fabricante, consultado em 23/10/2026, diz o mesmo: renderização de JavaScript está entre os recursos que a licença libera, junto com extração customizada e as integrações com Google Analytics e Search Console."
   - question: "Dá para usar o Screaming Frog gratuito em sites com mais de 500 URLs?"
     answer: "Só por partes. O limite é por crawl, então dá para rastrear seções separadas, mas o grafo de links, a profundidade e as páginas órfãs só fazem sentido com o site inteiro num mesmo crawl. Acima de 500 URLs, um crawler aberto como o advertools cobre o inventário completo."
   - question: "O Screaming Frog gratuito acha problemas de DNS?"
@@ -45,7 +45,10 @@ O FAQ do Screaming Frog, consultado em 23/10/2026, descreve a versão gratuita
 como capaz de rastrear até 500 URLs por vez. Sem licença, não dá para salvar
 nem abrir crawls, e as opções de configuração ficam indisponíveis. A licença
 custa £199 por ano e libera, além disso, renderização de JavaScript, extração
-customizada e as integrações com Google Analytics e Search Console.
+customizada e as integrações com Google Analytics e Search Console. No
+programa, a tela de renderização (Crawl Config › Spider › Rendering) mostra o
+seletor travado em "Text Only", com o aviso de que essas opções exigem
+licença.
 
 | Recurso | Versão gratuita | O que eu usei no lugar |
 |---|---|---|

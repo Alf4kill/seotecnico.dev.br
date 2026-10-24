@@ -30,7 +30,8 @@ with the evidence for each line, is [`crawl-audit-2026-10.md`](crawl-audit-2026-
 - No configuration: the user agent stays `Screaming Frog SEO Spider/24.3`, and
   speed and robots handling cannot change. That is why the crawl ran against a
   local build and not production.
-- No JavaScript rendering, no custom extraction, no Search Console or
+- No JavaScript rendering (Crawl Config › Spider › Rendering is locked to
+  "Text Only" without a licence, checked in the program), no custom extraction, no Search Console or
   Analytics integration, no saving a crawl. advertools, Playwright and a
   manual Search Console export covered each of these.
 - The 500-URL cap was not reached: 198 URLs encountered, 86 internal.
