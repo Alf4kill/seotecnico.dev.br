@@ -89,7 +89,9 @@ describe('sortEnglishPosts', () => {
 describe('published content', () => {
   it('features the English article whose original is newest among a same-day batch', () => {
     // 14 traduções saíram em 2026-10-18; só scaled-content-abuse é conteúdo novo.
-    expect(getAllEnglishPosts()[0].frontmatter.slug).toBe('scaled-content-abuse')
+    const batch = getAllEnglishPosts().filter((p) => p.frontmatter.datePublished === '2026-10-18')
+    expect(batch.length).toBeGreaterThan(1)
+    expect(batch[0].frontmatter.slug).toBe('scaled-content-abuse')
   })
 
   it('every basedOn in both collections points to an experiment', () => {
