@@ -249,8 +249,8 @@ still have no impressions then, check their status in URL Inspection.
 3. ~~Register the time of the owner's Screaming Frog run against production~~:
    done (§3, `measurement-plan.md`).
 4. Report the `216.198.79.0/24` route to Vercel support (owner).
-5. ~~Write `relatorio-auditoria-crawl.md`~~: done. A PT/EN article is under
-   analysis.
+5. ~~Write `relatorio-auditoria-crawl.md`~~: done. ~~PT/EN article~~: done,
+   `/blog/screaming-frog-gratuito` and `/en/blog/screaming-frog-free-version`.
 
 ## 8. Reproduce
 

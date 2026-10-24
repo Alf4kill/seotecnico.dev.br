@@ -135,8 +135,10 @@ their form markup in the HTML.
 
 ## Case published at
 
-`docs/crawl-audit-2026-10.md` (working record). A PT/EN blog article is under
-analysis and not yet written.
+`docs/crawl-audit-2026-10.md` (working record), and the article pair
+`/blog/screaming-frog-gratuito` + `/en/blog/screaming-frog-free-version`,
+published with `/blog/arvore-de-acessibilidade` + `/en/blog/accessibility-tree`
+(the accessibility side of the same day) and linked both ways.
 
 ## Time spent
 
