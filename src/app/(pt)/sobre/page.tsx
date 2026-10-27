@@ -97,6 +97,17 @@ export default function SobrePage() {
             </Link>
             .
           </p>
+
+          <h2>Como o site é feito</h2>
+          <p>
+            O processo também é público: como a IA entra no trabalho, como cada
+            página passa da pesquisa ao merge e quais regras o CI cobra. Cada
+            relato aponta o arquivo ou o commit que o comprova, na seção{' '}
+            <Link href="/projeto" title="Projeto: como este site de SEO técnico é feito">
+              Projeto
+            </Link>
+            .
+          </p>
         </div>
 
         <AvailabilityNote lang="pt-BR" />

@@ -115,6 +115,17 @@ export default function EnglishAboutPage() {
             </Link>
             .
           </p>
+
+          <h2>How the site is made</h2>
+          <p>
+            The process is public as well: how AI is used in the work, how each page goes from
+            research to merge and which rules CI enforces. Each account points to the file or
+            commit that backs it, in the{' '}
+            <Link href="/en/project" title="Project: how this technical SEO site is built">
+              Project
+            </Link>{' '}
+            section.
+          </p>
         </div>
 
         <AvailabilityNote lang="en" />

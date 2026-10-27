@@ -4,8 +4,8 @@ import type { Lang } from './hreflang'
 // ─────────────────────────────────────────────────────────────────────────────
 // Search data — a parte do índice que NÃO tem de onde ser derivada.
 //
-// Artigos e as duas versões da pilar são montados a partir do frontmatter em
-// lib/search-index.ts. O que sobrou aqui são rotas sem conteúdo em /content:
+// Artigos, entradas do projeto e as duas versões da pilar são montados a partir
+// do frontmatter em lib/search-index.ts. O que sobrou aqui são rotas sem conteúdo em /content:
 // páginas institucionais e ferramentas. Ferramenta ainda não lançada aparece
 // de propósito, apontando para o índice — quem procura "checador de cwv"
 // merece saber que ele está a caminho.
@@ -14,7 +14,7 @@ import type { Lang } from './hreflang'
 // nada aqui pode tocar `fs`. É por isso que a montagem mora em outro módulo.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type SearchCategory = 'pagina' | 'artigo' | 'ferramenta'
+export type SearchCategory = 'pagina' | 'artigo' | 'projeto' | 'ferramenta'
 
 export interface SearchItem {
   id:          string
@@ -74,6 +74,14 @@ export const STATIC_SEARCH_ITEMS: SearchItem[] = [
     href: '/design',
     category: 'pagina',
     keywords: ['design', 'colofão', 'retrofuturismo', 'bauhaus', 'paleta', 'contraste', 'tipografia', 'tema claro', 'modo escuro'],
+  },
+  {
+    id: 'projeto',
+    title: 'Projeto',
+    description: 'Como este site é construído e mantido: uso de IA, processo de cada página e decisões de design',
+    href: '/projeto',
+    category: 'pagina',
+    keywords: ['projeto', 'bastidores', 'como o site é feito', 'processo', 'ia', 'repositório'],
   },
 
   // ── Ferramentas (as "em breve" apontam para o índice até serem lançadas) ─
@@ -153,6 +161,14 @@ export const STATIC_SEARCH_ITEMS_EN: SearchItem[] = [
     category: 'pagina',
     keywords: ['design', 'colophon', 'retro-futurism', 'bauhaus', 'palette', 'contrast', 'typography', 'light theme', 'dark mode'],
   },
+  {
+    id: 'project-en',
+    title: 'Project',
+    description: 'How this site is built and run: AI use, how each page is made and the design decisions',
+    href: '/en/project',
+    category: 'pagina',
+    keywords: ['project', 'behind the scenes', 'how the site is made', 'process', 'ai', 'repository'],
+  },
 
   {
     id: 'tools-en',
@@ -207,6 +223,7 @@ export const fuseOptions: IFuseOptions<SearchItem> = {
 export const categoryLabel: Record<SearchCategory, string> = {
   pagina:     'Página',
   artigo:     'Artigo',
+  projeto:    'Projeto',
   ferramenta: 'Ferramenta',
 }
 
@@ -232,7 +249,7 @@ export const SEARCH_COPY: Record<Lang, SearchCopy> = {
   'pt-BR': {
     path: '/busca',
     category: categoryLabel,
-    categoryPlural: { pagina: 'Páginas', artigo: 'Artigos', ferramenta: 'Ferramentas' },
+    categoryPlural: { pagina: 'Páginas', artigo: 'Artigos', projeto: 'Projeto', ferramenta: 'Ferramentas' },
     dialog: 'Busca',
     placeholder: 'Buscar artigos, ferramentas, páginas...',
     input: 'Campo de busca',
@@ -246,8 +263,8 @@ export const SEARCH_COPY: Record<Lang, SearchCopy> = {
   },
   en: {
     path: '/en/search',
-    category: { pagina: 'Page', artigo: 'Article', ferramenta: 'Tool' },
-    categoryPlural: { pagina: 'Pages', artigo: 'Articles', ferramenta: 'Tools' },
+    category: { pagina: 'Page', artigo: 'Article', projeto: 'Project', ferramenta: 'Tool' },
+    categoryPlural: { pagina: 'Pages', artigo: 'Articles', projeto: 'Project', ferramenta: 'Tools' },
     dialog: 'Search',
     placeholder: 'Search articles, tools, pages...',
     input: 'Search field',

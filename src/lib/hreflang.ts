@@ -92,6 +92,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/lab',
     },
   },
+  // A seção do projeto (CLAUDE.md §5.4): o índice, derivado das entradas de
+  // cada idioma. As entradas têm o par delas no fim da lista.
+  {
+    id: 'project',
+    paths: {
+      'pt-BR': '/projeto',
+      en: '/en/project',
+    },
+  },
   // A busca: a mesma página utilitária (noindex nos dois lados), cada uma com o
   // índice do próprio idioma. O par existe para o seletor de idioma levar à
   // busca do outro idioma, não para indexação.
