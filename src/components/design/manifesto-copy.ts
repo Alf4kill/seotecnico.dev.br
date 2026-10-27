@@ -292,7 +292,7 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
           school: 'Bauhaus',
           years: '1919 — 1933',
           title: 'Circle, square, triangle as a language',
-          text: 'The primary shapes are not ornament: they are the alphabet of the categories. On the blog every topic axis gets one of them, always the same, at any size. No illustrative icon enters the system.',
+          text: 'The primary shapes are not ornament: they are the alphabet of the categories. On the blog every topic gets one of them, always the same, at any size. No illustrative icon enters the system.',
           where: 'category markers, filter glyphs, tools, favicon',
         },
         {
@@ -380,9 +380,9 @@ export const MANIFESTO_COPY: Record<Lang, ManifestoCopy> = {
       title: 'Scenes, emblems and background marks',
       paragraphs: [
         'Three families of drawings, all inline SVG: no texture, no gradient, no image — not one extra request and nothing competing for LCP. Every color is a token, so the same works change material when the theme changes. And all of it is decoration: hidden from screen readers, and no page depends on it to be understood.',
-        'The scenes come in four trios, one per blog axis — light for Core Web Vitals, void for crawling, window for metadata, vigil for measurement — and each article inherits its axis’s scene. The emblems mark the tools. The background marks, a large drawing at 7% opacity in dark and 8% in light, only appear behind the header of a ceremonial page, never behind running text.',
+        'The scenes come in four trios, one per blog topic — light for Core Web Vitals, void for crawling, window for metadata, vigil for measurement — and each article inherits its axis’s scene. The emblems mark the tools. The background marks, a large drawing at 7% opacity in dark and 8% in light, only appear behind the header of a ceremonial page, never behind running text.',
       ],
-      scenesTitle: 'Scenes · one trio per axis',
+      scenesTitle: 'Scenes · one trio per topic',
       emblemsTitle: 'Emblems · tools',
       emblemFor: {
         index: 'Tools index',

@@ -130,7 +130,7 @@ export default function EnglishBlogPage() {
                 <span className="w-15 bg-shape-danger" />
               </div>
               <div className="flex justify-between">
-                <span className="eyebrow text-[0.625rem]">Articles per axis</span>
+                <span className="eyebrow text-[0.625rem]">Articles per topic</span>
                 <span className="eyebrow text-[0.625rem]">Fig. 01</span>
               </div>
               <ul className="flex h-44 items-end gap-2 sm:gap-5">
@@ -165,7 +165,7 @@ export default function EnglishBlogPage() {
             All articles
           </h2>
           <fieldset>
-            <legend className="sr-only">Filter by kind or axis</legend>
+            <legend className="sr-only">Filter by kind or topic</legend>
             <div className="flex flex-wrap gap-2.5">
               {[
                 { slug: 'all', label: 'All' },

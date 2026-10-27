@@ -153,8 +153,8 @@ export default function EnglishProjectPage() {
           <Link href="/en/blog" className={LINK}>
             blog
           </Link>{' '}
-          and enters the lab; the account of how the site was made, or of something that went wrong
-          with it, comes here.
+          and goes into the lab; the story of how the site was made, or of something that went
+          wrong with it, goes here.
         </p>
       </section>
 

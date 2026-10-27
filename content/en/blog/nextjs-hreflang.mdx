@@ -1,6 +1,6 @@
 ---
 title: "Hreflang in Next.js: a bilingual site in the App Router"
-description: "How to implement hreflang in Next.js with the Metadata API: reciprocity, x-default, the camelCase attribute that fools audits and the test that locks it."
+description: "Implementing hreflang in Next.js with the Metadata API: reciprocity, x-default, the camelCase attribute that fools audits, and the test that locks it in."
 slug: "nextjs-hreflang"
 primaryQuery: "hreflang next.js"
 keywords: ['english', 'inglês', 'hreflang', 'bilingual', 'multilingual', 'language', 'x-default', 'alternates', 'languages', 'i18n', 'internationalization', 'html lang', 'root layout', 'route group', 'reciprocity']
@@ -9,55 +9,57 @@ translationOf: "hreflang-nextjs"
 category: indexacao
 tldr: >-
   In the App Router, hreflang comes from alternates.languages in the Metadata
-  API. What decides whether it works is reciprocity, not syntax: if A declares B
-  without B declaring A, Google discards the whole cluster, with no error or
-  warning. So the pair has to come from a single source.
+  API. Whether it works depends on reciprocity, not syntax: if A declares B
+  but B doesn't declare A, Google throws out the whole cluster with no error
+  or warning. So both sides of the pair need to come from a single source.
 datePublished: "2026-10-18"
 dateModified: "2026-10-18"
 faq:
   - question: "How do I implement hreflang in the Next.js App Router?"
-    answer: "Through the Metadata API's alternates.languages field, which the framework turns into link rel=alternate tags in the head. The object maps a language code to an absolute URL and must include the page itself among the alternatives, plus an x-default. What you should not do is declare that object by hand on each page: the pair has to come from a single source, or reciprocity breaks at the first route rename."
+    answer: "Through the Metadata API's alternates.languages field, which the framework turns into link rel=alternate tags in the head. The object maps a language code to an absolute URL and must list the page itself among the alternates, plus an x-default. What you shouldn't do is write that object by hand on each page: the pair needs to come from a single source, or reciprocity breaks the first time someone renames a route."
   - question: "What happens if hreflang isn't reciprocal?"
-    answer: "Google ignores the declaration. The documentation is explicit: if page A points to page B as an alternative, B must point back to A, otherwise the annotations may be interpreted incorrectly or simply disregarded. The problem is that this produces no error anywhere: not in the build, not in the HTML, not in a syntax validator. The page has the right tags and the language cluster never exists."
+    answer: "Google ignores the declaration. The documentation is explicit: if page A points to page B as an alternate, B must point back to A, or the annotations may be misread or simply ignored. The problem is that this produces no error anywhere: not in the build, not in the HTML, not in a syntax validator. The page has the right tags, and the language cluster never exists."
   - question: "What is x-default for?"
-    answer: "It is the version served to anyone who matches no declared language, such as a German reader on a site that only has Portuguese and English. It is not required, but without it Google chooses on its own. On a Portuguese-first site, x-default points to the Portuguese original, not to the translation. It is also the right place for a language selection page, when one exists."
-  - question: "Do I need hreflang if the site is only in one language?"
-    answer: "No. Hreflang exists to relate equivalent versions in different languages or regions; without a second version, there is no cluster to declare. Emitting hreflang for a one-item pair is noise: the tags point only to the page itself and say nothing the canonical doesn't already say."
+    answer: "It's the version served to anyone who doesn't match any declared language, like a German reader on a site that only has Portuguese and English. It isn't required, but without it Google picks on its own. On a Portuguese-first site, x-default points to the Portuguese original, not the translation. It's also the right place for a language selection page, if you have one."
+  - question: "Do I need hreflang if my site is only in one language?"
+    answer: "No. Hreflang exists to link equivalent versions in different languages or regions; without a second version, there's no cluster to declare. Emitting hreflang for a pair of one is noise: the tags only point to the page itself and say nothing the canonical doesn't already say."
   - question: "Does hreflang solve duplicate content between languages?"
-    answer: "Duplication is not really what it solves. Two versions of the same page in different languages are not duplicate content to Google; they are distinct pages. Hreflang serves to group them and make Google serve the right version to each user. The symptom that it is not working shows up in Search Console as a Google-selected canonical pointing from one language to the other."
+    answer: "That isn't really the problem it solves. Two versions of the same page in different languages aren't duplicate content to Google; they're distinct pages. Hreflang groups them so Google serves each user the right version. When it isn't working, the symptom shows up in Search Console as a Google-selected canonical pointing from one language to the other."
   - question: "Which language code should I use in hreflang?"
-    answer: "A language in ISO 639-1, optionally followed by a region in ISO 3166-1 Alpha 2: pt, pt-BR, en, en-GB. The classic mistake is inventing the region: en-UK does not exist, the United Kingdom's code is GB. Another is declaring a region without a language. And remember that a region is not a language: pt-BR and pt-PT only make sense if both versions really exist and are different."
+    answer: "A language code in ISO 639-1, optionally followed by a region in ISO 3166-1 Alpha 2: pt, pt-BR, en, en-GB. The classic mistake is making up the region: en-UK doesn't exist, because the United Kingdom's code is GB. Another is declaring a region without a language. And remember that a region isn't a language: pt-BR and pt-PT only make sense if both versions actually exist and differ."
 ---
 
 In the App Router, hreflang comes from the Metadata API's
-`alternates.languages` field, and the framework turns that object into the
+`alternates.languages` field, which the framework turns into
 `<link rel="alternate" hreflang>` tags in the `<head>`. The syntax is the easy
-part. What decides whether it works is **reciprocity**: if page A declares B as
-an alternative and B doesn't declare A back, Google discards the whole cluster,
-with no build error, no warning in the HTML, no visible symptom. This article
-shows the implementation that survives that, with this site's code: the English
-version of the guide, the pair declared in a single source, the test that checks
-the return link in the served HTML, and a Next.js trap that made this site's
-audit report missing hreflang on a page that was perfectly correct.
+part. Whether it works depends on **reciprocity**: if page A declares B as an
+alternate and B doesn't declare A back, Google throws out the whole cluster,
+with no build error, no warning in the HTML and no visible symptom. This
+article shows an implementation that holds up, using this site's code: the
+English version of the guide, the pair declared in a single source, the test
+that checks the return link in the served HTML, and a Next.js quirk that made
+this site's own audit report missing hreflang on a page that was perfectly
+fine.
 
 ## The three rules that decide whether hreflang works
 
 | Rule | What it requires | What happens if you get it wrong |
 | --- | --- | --- |
-| Reciprocity | If A declares B, B declares A | Google disregards the annotation, silently |
-| Self-reference | Each page lists itself among the alternatives | The block stops being identical on both sides and becomes a source of drift |
-| `x-default` | A version for anyone who matches no language | Google chooses on its own which one to serve |
+| Reciprocity | If A declares B, B declares A | Google ignores the annotation, silently |
+| Self-reference | Each page lists itself among the alternates | The block stops being identical on both sides and starts to drift |
+| `x-default` | A version for anyone who matches no language | Google decides on its own which one to serve |
 
-Self-reference is the one that causes the most surprise, so it is worth
-explaining: since each page lists **every** version, itself included, the block
-of tags comes out **exactly the same** on both sides of the pair. That is not
-redundancy; it is what makes reciprocity checkable. Two blocks that should be
-identical are easy to compare; two blocks that should be complementary are not.
+Self-reference is the rule that surprises people most, so it's worth
+explaining: because each page lists **every** version, itself included, the
+block of tags comes out **exactly the same** on both sides of the pair. That
+isn't redundancy; it's what makes reciprocity easy to check. Two blocks that
+should be identical are easy to compare; two blocks that should complement each
+other aren't.
 
 <figure>
-  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparison between a reciprocal pair, which Google accepts as a language cluster, and a one-way pair, which Google discards without producing an error">
-    <title>Reciprocity: what Google accepts and what it discards</title>
-    <desc>Two scenarios side by side. On the left, the Portuguese and English pages point to each other with arrows in both directions, and the result is an accepted cluster. On the right, only the Portuguese page points to the English one; the return arrow does not exist, and the result is a disregarded annotation.</desc>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparison between a reciprocal pair, which Google accepts as a language cluster, and a one-way pair, which Google ignores without producing an error">
+    <title>Reciprocity: what Google accepts and what it ignores</title>
+    <desc>Two scenarios side by side. On the left, the Portuguese and English pages point to each other with arrows in both directions, and the result is an accepted cluster. On the right, only the Portuguese page points to the English one; there's no return arrow, and the result is an ignored annotation.</desc>
 
     <text x="30" y="30" fontSize="13" fill="var(--foreground, #111827)">reciprocal: accepted</text>
     <rect x="30" y="46" width="130" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
@@ -73,7 +75,7 @@ identical are easy to compare; two blocks that should be complementary are not.
 
     <line x1="360" y1="20" x2="360" y2="285" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1" strokeDasharray="4 4" />
 
-    <text x="440" y="30" fontSize="13" fill="var(--foreground, #111827)">one-way: discarded</text>
+    <text x="440" y="30" fontSize="13" fill="var(--foreground, #111827)">one-way: ignored</text>
     <rect x="440" y="46" width="130" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
     <text x="505" y="74" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">/guia (pt-BR)</text>
     <rect x="440" y="152" width="130" height="46" fill="var(--color-diagram-phase-a, #DBEAFE)" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="0.5" />
@@ -81,23 +83,23 @@ identical are easy to compare; two blocks that should be complementary are not.
     <line x1="490" y1="92" x2="490" y2="152" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="1.5" />
     <polygon points="490,152 486,142 494,142" fill="var(--color-diagram-axis, #9CA3AF)" />
     <line x1="522" y1="152" x2="522" y2="92" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" strokeDasharray="5 4" />
-    <text x="536" y="126" fontSize="12" fill="var(--foreground, #111827)">doesn't exist</text>
+    <text x="536" y="126" fontSize="12" fill="var(--foreground, #111827)">missing</text>
     <rect x="440" y="238" width="180" height="40" fill="none" stroke="var(--color-accent, #F59E0B)" strokeWidth="1.5" />
-    <text x="530" y="263" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">annotation disregarded</text>
+    <text x="530" y="263" textAnchor="middle" fontSize="12" fill="var(--foreground, #111827)">annotation ignored</text>
   </svg>
-  <figcaption>A reciprocity failure produces no error: it produces an absence of result.</figcaption>
+  <figcaption>A reciprocity failure doesn't produce an error; it produces nothing at all.</figcaption>
 </figure>
 
-The diagram's mirror:
+The same diagram, as a table:
 
-| Scenario | What exists in the HTML | What Google does |
+| Scenario | What's in the HTML | What Google does |
 | --- | --- | --- |
-| Reciprocal | Both pages list both versions | Treats them as a cluster and serves the right version per language |
-| One-way | Only the source lists the alternative | Disregards the annotation; each page stays on its own |
+| Reciprocal | Both pages list both versions | Treats them as a cluster and serves the right version for each language |
+| One-way | Only the source page lists the alternate | Ignores the annotation; each page stands alone |
 
 ## Where to declare it: `alternates.languages`
 
-This is the field, and it sits in the same `alternates` object that carries the
+Here's the field, which sits in the same `alternates` object as the
 canonical:
 
 ```ts
@@ -114,27 +116,28 @@ export const metadata: Metadata = {
 };
 ```
 
-Two observations the documentation doesn't highlight. The URLs must be
-**absolute** (relative hreflang doesn't count, which is why the example above
+Two points the documentation doesn't emphasize. The URLs must be
+**absolute** (relative hreflang URLs don't count, which is why the example
 repeats the domain). And `alternates`, like `openGraph`, is **replaced, not
-merged** between layout and page: a language block defined only in the layout
-disappears on the first route that declares its own `alternates`. It is the
-same [Metadata API shallow merge](/en/blog/nextjs-metadata-api) that already
-broke this site's Open Graph once.
+merged**, between layout and page: a language block defined only in the
+layout disappears on the first route that declares its own `alternates`. It's
+the same [Metadata API shallow merge](/en/blog/nextjs-metadata-api) that
+already broke this site's Open Graph once.
 
-But the real problem with the snippet above is neither of those. It is that it
-is written **on the page**.
+But neither of those is the real problem with the snippet above. The real
+problem is that it's written **on the page**.
 
 ## The pair has to come from a single source
 
-Declaring the pair by hand on each page works on the day you write it, and
+Declaring the pair by hand on each page works on the day you write it and
 breaks at the first refactor: someone renames a route, updates the hreflang on
-the side they were editing, and the other side keeps pointing to a URL that no
-longer exists. There is no error. There is a cluster that stopped existing.
+the side they were editing, and the other side keeps pointing to a URL that
+no longer exists. No error. Just a cluster that quietly stopped existing.
 
-The fix is structural: the pairs live in a module, and both sides are generated
-from the **same object**. This is an excerpt of this site's production map, in
-`src/lib/hreflang.ts` (the first pair; the others follow the same shape):
+The fix is structural: the pairs live in one module, and both sides are
+generated from the **same object**. Here's an excerpt from this site's
+production map, in `src/lib/hreflang.ts` (the first pair; the rest follow the
+same shape):
 
 ```ts
 export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
@@ -148,9 +151,9 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
 ] as const
 ```
 
-And the single metadata helper **derives** the language block from the route's
-path, instead of receiving it as an argument; the snippet below is this site's
-`buildMetadata()`:
+And the single metadata helper **derives** the language block from the
+route's path instead of taking it as an argument; the snippet below is this
+site's `buildMetadata()`:
 
 ```ts
 const languagePaths = languageAlternatePaths(path)
@@ -173,38 +176,40 @@ return {
 }
 ```
 
-The gain is that the page loses the ability to get it wrong. It doesn't declare
-the pair: it states its own path, and the pair comes from whoever knows. A route
-with no translation emits nothing, because a one-item cluster is just noise. And
-since both sides query the same structure, the block comes out identical on
-both, which is exactly what the self-reference rule asked for.
+The payoff is that the page can no longer get it wrong. It doesn't declare
+the pair; it just states its own path, and the pair comes from the one place
+that knows. A route with no translation emits nothing, because a one-page
+cluster is just noise. And since both sides read from the same structure, the
+block comes out identical on each, which is exactly what the self-reference
+rule calls for.
 
 ## The camelCase attribute that fools audits
 
-This part is original, and it cost a debugging session here.
+This part is original, and it cost me a debugging session.
 
-When the reciprocity check was turned on in CI, it reported that the English
-version **had no hreflang tag at all**, on a page whose `view-source` showed the
-three tags, correct. The cause: Next.js serializes the attribute as
-`hrefLang`, in camelCase, in the HTML it delivers:
+When the reciprocity check was switched on in CI, it reported that the
+English version **had no hreflang tags at all**, on a page whose
+`view-source` showed all three tags, correctly. The cause: Next.js
+serializes the attribute as `hrefLang`, in camelCase, in the HTML it sends:
 
 ```html
 <link rel="alternate" hrefLang="pt-BR" href="https://seotecnico.dev.br/guia/seo-tecnico-nextjs"/>
 ```
 
-That is **valid**. HTML attribute names are case-insensitive: the browser's
-parser normalizes it to `hreflang`, the DOM returns lowercase, and Google reads
-it without trouble. What doesn't read it is any script that searches for the
-string `hreflang=` in a raw HTTP response with a case-sensitive search.
+That's **valid**. HTML attribute names are case-insensitive: the browser's
+parser normalizes it to `hreflang`, the DOM returns it in lowercase, and
+Google reads it without any trouble. What can't read it is any script that
+searches a raw HTTP response for the string `hreflang=` with a case-sensitive
+match.
 
-The detail that makes it treacherous is that the same check passes or fails
-depending on **where** you read the page. Reading the DOM of a page open in the
-browser, the attribute appears in lowercase and everything passes. Reading the
-same page over HTTP, it appears in camelCase and the result is zero. This site's
-audit did both (the DOM for the current page, HTTP for the alternative), and
-that is why it reported exactly the missing return link.
+What makes it treacherous is that the same check passes or fails depending
+on **where** you read the page. Read the DOM of a page open in a browser, and
+the attribute is lowercase and everything passes. Read the same page over
+HTTP, and it's camelCase and the result is zero. This site's audit did both
+(the DOM for the current page, HTTP for the alternate), which is why it
+reported exactly the missing return link.
 
-The fix is one line, and it applies to any hreflang audit done by script (the
+The fix is one line, and it applies to any scripted hreflang audit (the
 comment says the `i` flags are the fix):
 
 ```ts
@@ -213,92 +218,95 @@ return (html.match(/<link\b[^>]*>/gi) ?? [])
   .filter((tag) => /rel="alternate"/i.test(tag) && /\bhreflang=/i.test(tag))
 ```
 
-If you have ever run your own crawler on a Next.js site and concluded it had no
-hreflang, it is worth rechecking with a case-insensitive search before opening a
-ticket. This site's [meta tag validator](/en/tools/meta-tag-validator) reads
-the server's HTML for the same reason this article argues for: it normalizes
-attribute names, and it doesn't check hreflang yet; when it does, it will be by
-that yardstick.
+If you've ever run your own crawler on a Next.js site and concluded it had no
+hreflang, recheck with a case-insensitive search before filing a ticket. This
+site's [meta tag validator](/en/tools/meta-tag-validator) reads the server's
+HTML for the same reason this article argues for: it normalizes attribute
+names. It doesn't check hreflang yet, but when it does, it'll follow the same
+rule.
 
 ## `<html lang>`: what the App Router won't let you do
 
-The question that comes up right after creating the English route: how do you
-change the `<html>` `lang` only there?
+The question that comes up right after you create the English route: how do
+you change the `<html>` element's `lang` just for that route?
 
-In the App Router, you **don't**, not from a nested layout. The `<html>` tag
-belongs to the root layout, and a child layout doesn't rewrite it. There are two
-ways out, and neither is free:
+In the App Router, you **can't**, at least not from a nested layout. The
+`<html>` tag belongs to the root layout, and a child layout can't rewrite it.
+There are two ways out, and neither is free:
 
-1. **Two root layouts, by route group** (`app/(pt)/layout.tsx` and
-   `app/(en)/layout.tsx`, each with its own `<html lang>`). It is the framework's
-   canonical answer. The cost is that navigating between the two groups causes a
-   **full page load**, not a client-side navigation, and every existing route has
-   to move into one of the groups.
-2. **Mark the subtree**: `<article lang="en">` on the English page, with
-   `<html lang="pt-BR">` left intact.
+1. **Two root layouts, using route groups** (`app/(pt)/layout.tsx` and
+   `app/(en)/layout.tsx`, each with its own `<html lang>`). This is the
+   framework's official answer. The cost is that navigating between the two
+   groups triggers a **full page load** rather than a client-side navigation,
+   and every existing route has to move into one of the groups.
+2. **Mark the subtree**: `<article lang="en">` on the English page, leaving
+   `<html lang="pt-BR">` as it is.
 
-This site chose the second, and not out of laziness. The header, the footer and
-the consent banner around the article **really are in Portuguese**. Switching
-the whole document to `en` would mislabel that frame; marking as English only
-what is English is the honest description of a page whose content and interface
-speak different languages.
+This site went with the second option, and not out of laziness. The header,
+the footer and the consent banner around the article **really are in
+Portuguese**. Switching the whole document to `en` would mislabel that
+frame; marking only the English part as English is the honest description of
+a page whose content and interface speak different languages.
 
-The SEO impact of that is nil, and it is worth saying plainly: Google
-**ignores** the `lang` attribute for language detection; it reads the content.
-What doesn't ignore it is assistive technology, and that is why the markup has to
-be right. When `/en` has a frame of its own, option 1 becomes worth the price.
+The SEO impact is zero, and it's worth saying plainly: Google **ignores** the
+`lang` attribute for language detection and reads the content instead. What
+doesn't ignore it is assistive technology, which is why the markup has to be
+right. Once `/en` has its own frame, option 1 becomes worth the price.
 
-**Update (September 2026):** `/en` got its own frame (home, about page, header,
-footer and consent banner in English), and the site moved to option 1. The
-`<html lang>` now follows each page's hreflang, and the SEO suite requires that
-on every route with a pair. The full page load when switching languages was
-confirmed, and the migration charged three more things:
+**Update (September 2026):** `/en` got its own frame (home page, about page,
+header, footer and consent banner in English), and the site switched to
+option 1. `<html lang>` now matches each page's hreflang, and the SEO test
+suite enforces that on every route with a pair. The full page load when
+switching languages was confirmed, and the migration came with three more
+costs:
 
-- **A 404 with no common layout.** With two root layouts, the page for a
-  non-existent URL has no layout to inherit from. The way out was
-  `global-not-found.tsx`, which in Next.js 16 still depends on
+- **A 404 with no shared layout.** With two root layouts, the page for a URL
+  that doesn't exist has no layout to inherit. The fix was
+  `global-not-found.tsx`, which in Next.js 16 still requires
   `experimental.globalNotFound`.
-- **Wasted prefetch.** A `<Link>` to a route in the other group is prefetched
-  like any other, but the navigation reloads the whole page and throws away what
-  was fetched. Links that cross languages, such as the language switcher, now
-  use `prefetch={false}`.
-- **OG images with a new URL.** Inside a route group, metadata images generated
-  by file convention get a hash in their URL, and every hand-written URL points
-  to a 404. The case is in the [article on the Next.js Metadata
+- **Wasted prefetches.** A `<Link>` to a route in the other group gets
+  prefetched like any other, but the navigation reloads the whole page and
+  throws away what was fetched. Links that cross languages, like the language
+  switcher, now use `prefetch={false}`.
+- **OG images with new URLs.** Inside a route group, metadata images generated
+  by file convention get a hash in their URL, so every hand-written URL points
+  to a 404. That case is covered in the [article on the Next.js Metadata
   API](/en/blog/nextjs-metadata-api).
 
 ## The translated version's URL
 
-Two defensible forms: mirror the path (`/en/guia/seo-tecnico-nextjs`) or
-translate the slug (`/en/guide/technical-seo-nextjs`). This site chose the
-second, because the URL is part of what the page claims to be: an English page
-with a Portuguese slug gives a wrong hint right in the address.
+There are two defensible approaches: mirror the path
+(`/en/guia/seo-tecnico-nextjs`) or translate the slug
+(`/en/guide/technical-seo-nextjs`). This site chose the second, because the
+URL is part of what the page says it is: an English page with a Portuguese
+slug sends the wrong signal right there in the address.
 
-The cost is real and worth recording: with different slugs, one side's path
-cannot be derived from the other by regex, and that is precisely why the map in
-the previous section exists. Mirroring the path would make the map unnecessary;
-it was a trade-off made consciously.
+The cost is real and worth noting: with different slugs, you can't derive one
+side's path from the other with a regex, which is exactly why the map in the
+previous section exists. Mirroring the path would have made the map
+unnecessary; this was a deliberate trade-off.
 
 ## The visible link that contradicts the hreflang
 
-A common failure, and an annoying one to notice: correct hreflang in the
-`<head>`, and the menu's language switcher pointing to the other language's
-**home**. A reader who clicks "English" on an article page lands on a generic
-home and leaves, and the two signals the site emits about the same relationship
-disagree.
+A common failure, and an easy one to miss: correct hreflang in the `<head>`,
+and a language switcher in the menu that points to the other language's
+**home page**. A reader who clicks "English" on an article lands on a generic
+home page and leaves, and the two signals the site sends about the same
+relationship disagree with each other.
 
-The prevention is the same as in the map section: the switcher reads the **same
-source** that generates the tags. Here it resolves the counterpart's path through
-the pair, so the visible link and the machine declaration can't drift apart. The
-label, incidentally, is written in the target language ("Português" on the
-English page): whoever is looking for the other version reads the language they
-are looking for, not the one they are already seeing.
+The prevention is the same as in the map section: the switcher reads from
+the **same source** that generates the tags. Here, it looks up the
+counterpart's path through the pair, so the visible link and the
+machine-readable declaration can't drift apart. The label, by the way, is
+written in the target language ("Português" on the English page): someone
+looking for the other version reads the language they're looking for, not
+the one they're already in.
 
-## How to lock it in CI
+## How to lock it in with CI
 
-None of the above survives six months of maintenance without a test. And the
+None of this survives six months of maintenance without a test. And the
 right test doesn't read the source code: it reads the **served HTML**, fetches
-the declared alternative and checks that it declares the return link:
+the declared alternate and checks that the alternate links back:
 
 ```ts
 // tests/seo/seo.spec.ts — roda em toda rota do sitemap
@@ -312,42 +320,42 @@ expect(
 ).toContain(route)
 ```
 
-The comment says it runs on every route in the sitemap. Note what it covers
-that a code inspection wouldn't: the alternative **responds with 200** (hreflang
-to a broken URL is a common error in migrations) and the return link **exists
-in the delivered HTML**, not in the developer's intent.
+The comment says it runs on every route in the sitemap. Notice what it
+catches that a code review wouldn't: the alternate **returns a 200** (hreflang
+pointing to a broken URL is a common migration mistake), and the return link
+**exists in the HTML actually sent**, not just in the developer's intentions.
 
-A process detail worth more than the code: that test was written **before** any
-English page existed, with a guard that kept it inert while no route emitted
-hreflang. It lay dormant for weeks and started running on its own the day the
-`/en` route entered the sitemap, and the first thing it did was find the
-camelCase problem. Writing the assertion together with the rule, even with
-nothing to assert yet, is cheap; and the one who pays is the future version of
-the site, not the current one.
+A process detail that's worth more than the code: that test was written
+**before** any English page existed, with a guard that kept it idle while no
+route emitted hreflang. It sat dormant for weeks and switched itself on the
+day the `/en` route was added to the sitemap, and the first thing it did was
+find the camelCase problem. Writing the assertion alongside the rule, even
+when there's nothing to assert yet, is cheap, and it's the future version of
+the site that benefits, not the current one.
 
 ## How to know it worked
 
-Correct markup is not a result. The signal that decides it sits in Search
-Console, in each version's **URL Inspection**: compare the user-declared
-canonical with the **Google-selected canonical**. If Google picks one language's
-URL as the canonical of the other, it merged the two pages into one: the cluster
-was rejected, and no amount of correct tags in the code changes that. As long as
-both languages keep their own canonicals and each shows up in searches in its own
-language, it is working.
+Correct markup isn't a result. The signal that settles it lives in Search
+Console, in **URL Inspection** for each version: compare the user-declared
+canonical with the **Google-selected canonical**. If Google picks one
+language's URL as the canonical for the other, it has merged the two pages
+into one: the cluster was rejected, and no amount of correct tags in your code
+will change that. As long as both languages keep their own canonicals and each
+shows up in searches in its own language, it's working.
 
-Search Console's pages report has a section on alternate languages that helps,
-but URL-by-URL inspection is what really answers the question.
+Search Console's page indexing report has a section on alternate languages
+that helps, but URL-by-URL inspection is what really answers the question.
 
-And the transparency this site owes: the English version of the guide went live
-on 26 July 2026, together with this implementation. **The verdict doesn't exist
-yet**: a 28-day window has to close before any number here means anything, and
-the registered hypothesis is that the English version gains its own impressions
-**without** pulling down the Portuguese version's. If it does pull them down,
-the pair is being read as duplication and the implementation failed. The result
-appears here when it exists, not before.
+And in the interest of transparency: the English version of the guide went
+live on July 26, 2026, along with this implementation. **There's no verdict
+yet**: a 28-day window has to close before any number here means anything,
+and the registered hypothesis is that the English version earns its own
+impressions **without** dragging down the Portuguese version's. If it does
+drag them down, the pair is being read as duplication and the implementation
+has failed. The result will appear here once it exists, not before.
 
-The full context (metadata, JSON-LD, sitemaps, rendering and Core Web Vitals) is
-in the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs), which
-is also the page whose English version is used as the example here.
+The full context (metadata, JSON-LD, sitemaps, rendering and Core Web Vitals)
+is in the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs),
+which is also the page whose English version serves as the example here.
 
 This is the English version of an article first published in Portuguese; the two declare each other.

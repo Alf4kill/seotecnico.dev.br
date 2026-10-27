@@ -107,8 +107,8 @@ export default function EnglishAboutPage() {
           <h2>Why the site looks like this</h2>
           <p>
             The visual design is a documented decision too: a dark background by default for
-            long reading, a light theme with the same measured palette, square corners,
-            three shapes instead of icons and every color pair measured against the minimum
+            long reads, a light theme with the same measured palette, square corners, three
+            shapes instead of icons, and every color pair checked against the minimum
             contrast. The full explanation, with the design schools behind it, is in the{' '}
             <Link href="/en/design" title="Site design: Swiss retro-futurism">
               design colophon
@@ -118,9 +118,9 @@ export default function EnglishAboutPage() {
 
           <h2>How the site is made</h2>
           <p>
-            The process is public as well: how AI is used in the work, how each page goes from
-            research to merge and which rules CI enforces. Each account points to the file or
-            commit that backs it, in the{' '}
+            The process is public too: how AI is used in the work, how each page goes from
+            research to merge, and which rules CI enforces. Each entry points to the file or
+            commit that backs it up, in the{' '}
             <Link href="/en/project" title="Project: how this technical SEO site is built">
               Project
             </Link>{' '}
