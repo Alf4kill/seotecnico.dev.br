@@ -65,7 +65,7 @@ months, `docs/research/2026-09-13-page-creation.md`).*
 | O4 | Perfect technical SEO baseline (CWV green, valid structured data, clean crawl) | Lighthouse CI, Rich Results Test, Screaming Frog crawl | Week 1–2 |
 | O5 | At least one free tool page attracting usage + backlinks | GA4 key events; Ahrefs/GSC links report | Month 1–3 |
 | O6 | Documented before/after SEO experiment with confidence tiers | `experimento.py` methodology, published case study | Month 3+ |
-| O7 | AEO/GEO: get cited by at least one AI search engine | `ai-search-monitor` tracking | Month 3+ |
+| O7 | AEO/GEO: get cited by at least one AI search engine | `ai-search-monitor` tracking (not running, §7.3) | Month 3+ |
 | O8 | The way the site is built is public and checkable: AI use is disclosed, and every number about the project's history prints the command that reproduces it | `/projeto` entries (§5.4), each linking a versioned artifact | Month 4+ |
 
 If a proposed feature does not serve one of these objectives, do not build it.
@@ -277,11 +277,17 @@ All custom events pushed via a typed `dataLayer` helper in
   another account, which this project does not use), so the toolkit has never
   run against this site. Search Console data comes from manual exports, dated
   in the file that records them (owner, 2026-10-26).
-- `nextjs-cwv-toolkit`: CrUX/PSI time series into SQLite.
+- `nextjs-cwv-toolkit`: CrUX/PSI time series into SQLite. **Not running:** the
+  toolkit has never run against this site (owner, 2026-10-26). Field data in
+  the repository comes from dated one-off queries (CrUX through Tool 3's
+  endpoint, `docs/baseline/`); lab data from Lighthouse CI and
+  `scripts/baseline-lighthouse.mjs`. There is no time series.
 - `experimento.py`: before/after deltas with confidence tiers for every
   deliberate SEO change. Changes are logged in `/docs/experiment-log.md`
   (date, change, hypothesis, result).
-- `ai-search-monitor`: monthly AEO citation checks.
+- `ai-search-monitor`: monthly AEO citation checks. **Not running:** the
+  toolkit has never run against this site (owner, 2026-10-26), so no AEO
+  citation check has been made with it.
 - **Power before registration.** Every hypothesis in the log states, next to
   its window, the smallest effect or count that window can detect given the
   traffic already observed. This domain's human traffic cannot power a
