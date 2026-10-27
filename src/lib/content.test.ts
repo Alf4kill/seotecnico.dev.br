@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { assertBasedOn, getAllEnglishPosts, getAllPosts, resolveBasedOn, sortEnglishPosts, type Post } from './content'
+import { assertBasedOn, getAllEnglishPosts, getAllPosts, getProjectEntries, resolveBasedOn, sortEnglishPosts, type Post } from './content'
+import { site } from './site'
 import { isExperiment, type PostStatus } from './categories'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,5 +100,31 @@ describe('published content', () => {
     // aqui, com nome, e não só no build.
     expect(() => getAllPosts()).not.toThrow()
     expect(() => getAllEnglishPosts()).not.toThrow()
+  })
+})
+
+// A seção do projeto (CLAUDE.md §5.4) é uma coleção à parte: o loader já recusa
+// uma entrada com eixo ou no idioma errado. O que fica para cá é o que o loader
+// não vê — que a seção nunca se confunde com o blog e que a regra de evidência vale.
+describe('project entries', () => {
+  const entries = [...getProjectEntries(), ...getProjectEntries('en')]
+
+  it('exist in both languages, the same number on each side', () => {
+    expect(getProjectEntries().length).toBeGreaterThan(0)
+    expect(getProjectEntries('en').length).toBe(getProjectEntries().length)
+  })
+
+  it('never share a slug with a blog post', () => {
+    const blog = new Set([...getAllPosts(), ...getAllEnglishPosts()].map((p) => p.frontmatter.slug))
+    for (const { frontmatter } of entries) {
+      expect(blog.has(frontmatter.slug), `"${frontmatter.slug}" is also a blog slug`).toBe(false)
+    }
+  })
+
+  it('each link at least one versioned artifact in the repository', () => {
+    // A regra de evidência da seção: um commit, um PR ou um arquivo no GitHub.
+    for (const { frontmatter, content } of entries) {
+      expect(content, `${frontmatter.lang} "${frontmatter.slug}" links nothing in ${site.repository}`).toContain(site.repository)
+    }
   })
 })

@@ -81,6 +81,18 @@ describe('buildLlmsTxt', () => {
     expect(output.endsWith('\n')).toBe(true)
   })
 
+  it('gives the project section its own heading, and leaves it out while empty', () => {
+    const entry = post('uso-de-ia', 'Uso de IA', 'Como a IA é usada.')
+    const base = post('how-ai-is-used', 'AI use', 'How AI is used.')
+    const entryEn: Post = { ...base, frontmatter: { ...base.frontmatter, lang: 'en', translationOf: 'uso-de-ia' } }
+    const output = buildLlmsTxt(guide, [], guide, [], { pt: [entry], en: [entryEn] })
+
+    expect(output).toContain('## Projeto')
+    expect(output).toContain('](https://seotecnico.dev.br/projeto/uso-de-ia): Como a IA é usada.')
+    expect(output).toContain('](https://seotecnico.dev.br/en/project/how-ai-is-used): How AI is used. English translation of /projeto/uso-de-ia.')
+    expect(buildLlmsTxt(guide, [])).not.toContain('## Projeto')
+  })
+
   it('lists every tool that has a route — the index must not lag behind a launch', () => {
     const dir = path.join(process.cwd(), 'src', 'app', '(pt)', 'ferramentas')
     const shipped = fs

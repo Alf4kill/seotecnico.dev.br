@@ -3,7 +3,7 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { STATIC_SEARCH_ITEMS, type SearchItem } from './search-data'
 import { buildSearchIndex } from './search-index'
-import { getAllEnglishPosts, getAllPosts, getGuide } from './content'
+import { getAllEnglishPosts, getAllPosts, getGuide, getProjectEntries } from './content'
 import { counterpartPath, TRANSLATION_PAIRS } from './hreflang'
 
 // O índice de busca já foi o último espelho de /content mantido à mão. Agora
@@ -121,10 +121,19 @@ describe('buildSearchIndex', () => {
     expect(new Set(hrefs).size, 'a route may appear once in the index').toBe(hrefs.length)
   })
 
+  it('indexes every project entry under its own label, exactly once', () => {
+    const published = getProjectEntries().map((e) => `/projeto/${e.frontmatter.slug}`).sort()
+    expect(byCategory('projeto').map((item) => item.href).sort()).toEqual(published)
+  })
+
   it('leaves no derivable page in the static list', () => {
     // Guarda contra a regressão de reintroduzir à mão o que já é derivado.
     const derivable = STATIC_SEARCH_ITEMS.filter(
-      (item) => item.href.startsWith('/blog/') || item.href.includes('guide') || item.href.startsWith('/guia/')
+      (item) =>
+        item.href.startsWith('/blog/') ||
+        item.href.includes('guide') ||
+        item.href.startsWith('/guia/') ||
+        item.href.startsWith('/projeto/')
     )
     expect(derivable, 'articles and the pillar come from frontmatter').toEqual([])
   })
@@ -143,6 +152,12 @@ describe("buildSearchIndex('en')", () => {
       .filter((item) => item.category === 'artigo')
       .map((item) => item.href)
       .sort()
+    expect(indexed).toEqual(published)
+  })
+
+  it('indexes every English project entry under its own label', () => {
+    const published = getProjectEntries('en').map((e) => `/en/project/${e.frontmatter.slug}`).sort()
+    const indexed = indexEn.filter((item) => item.category === 'projeto').map((item) => item.href).sort()
     expect(indexed).toEqual(published)
   })
 
