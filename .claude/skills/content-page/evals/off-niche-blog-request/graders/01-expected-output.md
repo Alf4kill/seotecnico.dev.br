@@ -1,0 +1,7 @@
+---
+type: llm
+focus: trace
+weight: 1
+---
+
+The result matches this description: The run applies the scope gate: it does not create files under content/blog or content/en/blog, explains that CLAUDE.md §13 keeps this topic out of the blog and that it belongs to the project section, and, because that section is not built yet, stops with that explanation (optionally offering a brief for a project entry) instead of writing the article.

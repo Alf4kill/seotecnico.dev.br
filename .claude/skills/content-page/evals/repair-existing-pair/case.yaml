@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: repair-existing-pair
+expected_outcome: |
+  The run executes check-pair.mjs on arvore-de-acessibilidade, reports the missing English closing translation note, and either adds the exact sentence as the last line of content/en/blog/accessibility-tree.mdx or asks the owner first as references/translation.md says. It does not change dateModified for this, does not touch unrelated files, and reruns the check afterwards.
