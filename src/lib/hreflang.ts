@@ -332,6 +332,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/project/how-ai-is-used',
     },
   },
+  {
+    id: 'como-uma-pagina-nasce',
+    paths: {
+      'pt-BR': '/projeto/como-uma-pagina-nasce',
+      en: '/en/project/how-a-page-is-made',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
