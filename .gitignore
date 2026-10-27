@@ -19,8 +19,11 @@ test-results/
 playwright-report/
 .lighthouseci/
 
-# Editor / local tooling
-.claude/
+# Editor / local tooling — project skills are versioned (docs/skills.md)
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/content-page/
 
 # OS
 .DS_Store
