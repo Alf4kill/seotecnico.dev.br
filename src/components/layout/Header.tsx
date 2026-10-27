@@ -41,9 +41,9 @@ const COPY: Record<Lang, Copy> = {
     homeLabel: `${site.name} — página inicial`,
     homeHint: 'página inicial',
     nav: [
-      { label: 'Guia',        href: '/guia/seo-tecnico-nextjs' },
       { label: 'Blog',        href: '/blog' },
       { label: 'Ferramentas', href: '/ferramentas' },
+      { label: 'Projeto',     href: '/projeto' },
       { label: 'Sobre',       href: '/sobre' },
     ],
     navLabel: 'Navegação principal',
@@ -56,9 +56,9 @@ const COPY: Record<Lang, Copy> = {
     homeLabel: `${site.name} — home`,
     homeHint: 'home',
     nav: [
-      { label: 'Guide', href: '/en/guide/technical-seo-nextjs' },
       { label: 'Blog', href: '/en/blog' },
       { label: 'Tools', href: '/en/tools' },
+      { label: 'Project', href: '/en/project' },
       { label: 'About', href: '/en/about' },
     ],
     navLabel: 'Main navigation',
