@@ -1,0 +1,152 @@
+---
+title: "How a content page is made on this site"
+description: "From research note to merge: the steps behind each page, what checking against sources and code corrected in every draft, and what is automated."
+slug: "how-a-page-is-made"
+primaryQuery: "how a content page is made"
+keywords: ['english', 'inglês', 'process', 'pipeline', 'editorial workflow', 'how a page is made', 'research note', 'brief', 'draft', 'verification', 'skill', 'check-draft', 'check-pair']
+lang: "en"
+translationOf: "como-uma-pagina-nasce"
+tldr: >-
+  Each page is the end of a chain: a dated research note, an approved brief, a
+  draft, a check against sources and code, an English version, registration,
+  scripted checks and a PR. Every draft published so far needed corrections in
+  that check.
+datePublished: "2026-10-27"
+dateModified: "2026-10-27"
+---
+
+A content page here is not a writing task: it is the end of a chain. First a
+dated research note, then a brief I approve, a draft, a verification pass
+against the sources and the code, the English version, registration, the
+check scripts and a pull request I merge. The step that carries the most
+weight is verification: every draft published so far, wherever it came from,
+arrived with something wrong that only that pass found.
+
+This page is part of the [Project](/en/project) section. How the work is split
+between me and Claude is in the entry on [how AI is used in this
+project](/en/project/how-ai-is-used); this one covers the process itself. The
+source is the
+[process document in the repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/content-pipeline.md),
+and the procedure became the
+[content-page skill](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/content-page),
+which a session with repository access follows step by step.
+
+## The chain
+
+| Step | Runs in | Output | Kept in the repository |
+|---|---|---|---|
+| Gates: first-hand evidence, scope, no query overlap | session with the repository | go or stop, with the reason | no |
+| Research note | session with the repository and web access | `docs/research/YYYY-MM-DD-<topic>.md` | yes |
+| Brief | session with the repository or editorial session | the page plan, which I approve before any prose | no: the brief is deleted after use |
+| Draft | writing session, me, or the session with the repository | Portuguese MDX | only after verification |
+| Verification | session with the repository, always | corrected MDX; the corrections go in the commit body | yes |
+| English version | session with the repository | the pair in `content/en/` | yes |
+| Registration | session with the repository | hreflang pair and a row in the experiment log | yes |
+| Checks | session with the repository and CI | script and test output | in the PR |
+| Merge, indexing request, distribution | me | the date in the log row | yes |
+
+The three gates exist to stop the page that should not exist. The first asks
+for first-hand evidence: a measurement, an audit, an incident or a file in
+this repository. The second checks the blog's scope, which is how machines
+fetch, render, read and index pages. The third searches published content for
+an equivalent `primaryQuery`. On an exact-match domain, a filler page is the
+main risk, and stopping before the research note is cheaper than stopping
+after the draft.
+
+The research note is what makes a page well informed. Every external fact is
+read on the original page, on the day, with the update date it prints, and
+gets a certainty label: **[documented]**, **[inference]**, **[third-party]** or
+**[observation]**. The note ends with the list of what the article may claim
+and what it may not.
+
+## One page traced: scaled content abuse
+
+The article on [scaled content abuse](/en/blog/scaled-content-abuse), from 18
+October 2026, went through every step, and each one left a trace:
+
+| Step | What happened | Record |
+|---|---|---|
+| Research note | every Google page read on the day from its HTML, with the printed update date, a label per claim, a list of claims to avoid and the proposed angle | commit `5adfded` |
+| Brief | approved with changes the same day: structure, FAQ, links, banned framings and a length ceiling | outside the repository |
+| Writing session | the research note was not passed along, so every Google source was re-read from scratch; the session delivered a self-check table and a list of open items | outside the repository |
+| Verification | the manual-action sentence aligned with the help text; a "most visible sign" claim reduced to the mechanism; a timeline row corrected against the changelog; a source for the live-test claim; the short answer cut to the 300-character limit the build enforces | body of commit `7e73fc1` |
+| English version | interface labels taken from the English help pages, and the real code of the English route | commit `ed4adb4` |
+| Links | English pages pointed at the new articles; later, the rule that English text links only to English pages | `9742f18`, `62b32b7`, `8aba089` |
+
+What the trace shows: the writing session's self-check got every mechanical
+check right and still left four factual corrections for verification. And the
+research note that was not passed along cost a full round of research done
+again. Since then, the note travels with the brief.
+
+## What verification has corrected
+
+| Page | Draft from | Correction | Record |
+|---|---|---|---|
+| `melhorar-lcp-nextjs` | writing session | a slot for a lab measurement with nothing to fill it; a sentence about RUM while RUM was still a plan | PR #7 |
+| `json-ld-nextjs` | writing session | invented component files, props and author object; an argument resting on a Google page removed on 2026-06-15; the wrong mechanism for client components | PR #17 |
+| `inp-nextjs` | writing session | an H1 in the body; SVG colours outside the palette; an internal document cited in reader-facing text | `0b95d3c` |
+| five spokes | writing session, with placeholders | a "100% static" claim the build output contradicted; a missing pillar link | PR #27 |
+| `pre-registro-seo` | my draft | a title without the query; a stimulus attributed to the wrong article; a list of deviations different from the log's | `0d997fb` |
+| `sec-fetch-mode` | my draft | a false claim about HTTP clients; testing it revealed a defect in the site's own classifier, fixed in PR #95 | `4de2df3` |
+| `scaled-content-abuse` | writing session | four factual alignments with the sources; a short answer over the limit | `7e73fc1` |
+
+The `[CODE-n]` placeholders ended invented code: the writing session, which
+cannot see the repository, leaves the slot empty, and the session with the
+repository copies the excerpt from the file. Nothing has ended "a fact that
+sounded right". That is why verification re-reads the sources on the day and
+tests the claim that looks most testable, when it can be tested here. That is
+how the `sec-fetch-mode` draft led to a real defect in the code.
+
+## What is automated, and what is not
+
+| Check | Done by | When |
+|---|---|---|
+| Frontmatter fields, title ≤60, description ≤155, short answer ≤300, axis, `basedOn` | `src/lib/content.ts` | every build |
+| A cited repository path exists | `content-code-paths.test.ts` | CI |
+| Translation pair declared on both sides | `hreflang.test.ts` | CI |
+| One H1, title, description, canonical, JSON-LD, hreflang, contrast, accessibility | the Playwright suite | CI |
+| Leftover placeholder, body H1, double braces, unmapped component, SVG colour outside the tokens, banned framing, quote length, required links, lead paragraph | `check-draft.mjs` | when the draft arrives and before the PR |
+| Both sides exist, same facts and dates, links inside their own language, translation note, log row | `check-pair.mjs` | before the PR |
+| Whether the topic deserves a page; whether a fact is still true; whether the code shown matches the repository's lines | **nobody**: verification and me | every page |
+
+The last row is the one that matters. The scripts catch the defect that has
+already happened once. Whether the page should exist, and whether a sentence
+is still true today, remain reading work.
+
+## The skill
+
+The process used to live scattered across `CLAUDE.md`, the tests, two research
+notes and commit messages. The `content-page` skill gathers it into nine
+phases, each saying where it runs and what it delivers, plus templates for the
+research note and the brief, the kit that goes to the writing session, the
+verification walkthrough with every correction in the history, and the two
+scripts. It points to the sections of `CLAUDE.md` instead of copying them:
+when the two disagree, `CLAUDE.md` wins and the skill is what gets fixed.
+
+`check-draft.mjs` was written from the defects in the table above and run
+against every published article before it was trusted. The first run failed
+six correct files, all false positives: the `<Image>` component, which the
+skill's draft said did not exist in MDX; a table of date formats read as a
+placeholder; `aria-label` text counted as a long quote; and Windows line
+endings hiding the lead paragraph. Once those four were fixed, the 48 articles
+passed with no errors, and a draft broken on purpose in ten places failed on
+all ten. This page went through both scripts before the PR, with the
+`project` type, which replaces the requirement to link the pillar and a tool
+with the requirement to link a versioned file.
+
+## How to check
+
+```bash
+git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
+git show -s 5adfded 7e73fc1 ed4adb4
+wc -l docs/research/2026-10-18-scaled-content-research.md
+node .claude/skills/content-page/scripts/check-draft.mjs --published
+node .claude/skills/content-page/scripts/check-pair.mjs --all
+node .claude/skills/content-page/scripts/check-pair.mjs como-uma-pagina-nasce --type project
+```
+
+When the skill entered the repository, in PR #115, the command
+`check-draft.mjs --published` reported 48 files and 0 errors. Run on a later
+commit, the number grows with every article published.
+
+This is the English version of a page first published in Portuguese; the two declare each other.

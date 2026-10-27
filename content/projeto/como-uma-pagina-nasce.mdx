@@ -1,0 +1,148 @@
+---
+title: "Como uma página de conteúdo é feita neste site"
+description: "Da nota de pesquisa ao merge: as etapas de cada página, o que a verificação contra as fontes e o código corrigiu em cada rascunho e o que é automático."
+slug: "como-uma-pagina-nasce"
+primaryQuery: "como uma página de conteúdo é feita"
+keywords: ['processo', 'pipeline', 'fluxo editorial', 'como uma página é feita', 'nota de pesquisa', 'brief', 'rascunho', 'verificação', 'skill', 'check-draft', 'check-pair']
+lang: "pt-BR"
+tldr: >-
+  Cada página é o fim de uma cadeia: nota de pesquisa datada, brief aprovado,
+  rascunho, verificação contra as fontes e o código, versão em inglês, registro,
+  scripts de checagem e PR. Todo rascunho publicado até hoje precisou de
+  correção na verificação.
+datePublished: "2026-10-27"
+dateModified: "2026-10-27"
+---
+
+Uma página de conteúdo aqui não é uma tarefa de redação: é o fim de uma
+cadeia. Primeiro uma nota de pesquisa datada, depois um brief que eu aprovo,
+um rascunho, uma passada de verificação contra as fontes e o código, a versão
+em inglês, o registro, os scripts de checagem e um pull request de que eu faço
+o merge. A etapa que mais pesa é a verificação: todo rascunho publicado até
+hoje, venha de onde vier, chegou com algo errado que só ela encontrou.
+
+Esta página faz parte da seção [Projeto](/projeto). A divisão do trabalho entre
+mim e o Claude está na entrada sobre [como a IA é usada neste
+projeto](/projeto/uso-de-ia); aqui está o processo em si. A fonte é o
+[documento do processo no repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/content-pipeline.md),
+e o procedimento virou a
+[skill content-page](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/content-page),
+que uma sessão com acesso ao repositório segue passo a passo.
+
+## A cadeia
+
+| Etapa | Onde roda | O que sai | Fica no repositório |
+|---|---|---|---|
+| Portões: evidência própria, escopo, sem sobreposição de query | sessão com o repositório | seguir ou parar, com o motivo | não |
+| Nota de pesquisa | sessão com o repositório e acesso à web | `docs/research/AAAA-MM-DD-<tema>.md` | sim |
+| Brief | sessão com o repositório ou sessão editorial | plano da página, que eu aprovo antes de qualquer texto | não: o brief é apagado depois de usado |
+| Rascunho | sessão de redação, eu mesmo ou a sessão com o repositório | MDX em português | só depois da verificação |
+| Verificação | sessão com o repositório, sempre | MDX corrigido; as correções vão no corpo do commit | sim |
+| Versão em inglês | sessão com o repositório | o par em `content/en/` | sim |
+| Registro | sessão com o repositório | par de hreflang e linha no registro de experimentos | sim |
+| Checagens | sessão com o repositório e CI | saída dos scripts e dos testes | no PR |
+| Merge, pedido de indexação, divulgação | eu | a data na linha do registro | sim |
+
+Os três portões existem para impedir a página que não deveria existir. O
+primeiro pede evidência de primeira mão: uma medição, uma auditoria, um
+incidente ou um arquivo deste repositório. O segundo confere o escopo do blog,
+que é como máquinas buscam, renderizam, leem e indexam páginas. O terceiro
+procura no conteúdo publicado uma `primaryQuery` equivalente. Num domínio de
+correspondência exata, uma página de enchimento é o risco principal, e é mais
+barato parar antes da nota de pesquisa do que depois do rascunho.
+
+A nota de pesquisa é o que faz uma página ser bem informada. Cada fato externo
+é lido na página original, no dia, com a data de atualização que ela imprime,
+e recebe um rótulo de certeza: **[documented]**, **[inference]**,
+**[third-party]** ou **[observation]**. A nota termina na lista do que o artigo
+pode afirmar e do que não pode.
+
+## Uma página rastreada: abuso de conteúdo em escala
+
+O artigo sobre [abuso de conteúdo em escala](/blog/scaled-content-abuse), de
+18 de outubro de 2026, passou por todas as etapas, e cada uma deixou rastro:
+
+| Etapa | O que aconteceu | Registro |
+|---|---|---|
+| Nota de pesquisa | cada página do Google lida no dia pelo HTML, com a data de atualização impressa, rótulo por afirmação, uma lista de afirmações a evitar e o ângulo proposto | commit `5adfded` |
+| Brief | aprovado com mudanças no mesmo dia: estrutura, FAQ, links, enquadramentos proibidos e um teto de tamanho | fora do repositório |
+| Sessão de redação | a nota de pesquisa não foi junto, então cada fonte do Google foi relida do zero; a sessão entregou uma tabela de autoverificação e uma lista de pendências | fora do repositório |
+| Verificação | a frase sobre ação manual alinhada ao texto da ajuda; um "sinal mais visível" reduzido ao mecanismo; uma linha da linha do tempo corrigida pelo changelog; uma fonte para a afirmação sobre o teste ao vivo; a resposta curta cortada ao limite de 300 caracteres que o build impõe | corpo do commit `7e73fc1` |
+| Versão em inglês | rótulos de interface tirados das páginas de ajuda em inglês e o código real da rota inglesa | commit `ed4adb4` |
+| Links | páginas em inglês apontadas para os artigos novos; depois, a regra de que texto em inglês só liga para páginas em inglês | `9742f18`, `62b32b7`, `8aba089` |
+
+O que o rastro mostra: a autoverificação da sessão de redação acertou todas as
+checagens mecânicas e mesmo assim deixou quatro correções de fato para a
+verificação. E a nota de pesquisa que não foi junto custou uma pesquisa
+inteira refeita. Desde então, a nota viaja com o brief.
+
+## O que a verificação já corrigiu
+
+| Página | Origem do rascunho | Correção | Registro |
+|---|---|---|---|
+| `melhorar-lcp-nextjs` | sessão de redação | um espaço para medição de laboratório sem nada para preencher; uma frase sobre RUM quando o RUM ainda era plano | PR #7 |
+| `json-ld-nextjs` | sessão de redação | arquivos de componente, props e objeto de autor inventados; um argumento apoiado numa página do Google removida em 2026-06-15; o mecanismo errado para client components | PR #17 |
+| `inp-nextjs` | sessão de redação | H1 no corpo; cores de SVG fora da paleta; um documento interno citado no texto para o leitor | `0b95d3c` |
+| cinco spokes | sessão de redação, com marcadores | uma afirmação de "100% estático" que a saída do build desmentia; um link para a pilar faltando | PR #27 |
+| `pre-registro-seo` | meu rascunho | título sem a query; um estímulo atribuído ao artigo errado; uma lista de desvios diferente da do registro | `0d997fb` |
+| `sec-fetch-mode` | meu rascunho | uma afirmação falsa sobre clientes HTTP; testá-la revelou um defeito no classificador do próprio site, corrigido no PR #95 | `4de2df3` |
+| `scaled-content-abuse` | sessão de redação | quatro alinhamentos de fato com as fontes; resposta curta acima do limite | `7e73fc1` |
+
+Os marcadores `[CODE-n]` acabaram com o código inventado: a sessão de redação,
+que não vê o repositório, deixa o lugar vazio e a sessão com o repositório
+copia o trecho do arquivo. Nada acabou com "um fato que soava certo". Por isso a
+verificação relê as fontes no dia e testa a afirmação que mais parece testável,
+quando dá para testá-la aqui. Foi assim que o rascunho de `sec-fetch-mode` levou
+a um defeito real no código.
+
+## O que é automático e o que não é
+
+| Verificação | Quem faz | Quando |
+|---|---|---|
+| Campos do frontmatter, título ≤60, descrição ≤155, resposta curta ≤300, eixo, `basedOn` | `src/lib/content.ts` | todo build |
+| Um caminho do repositório citado existe | `content-code-paths.test.ts` | CI |
+| Par de tradução declarado dos dois lados | `hreflang.test.ts` | CI |
+| Um H1, título, descrição, canonical, JSON-LD, hreflang, contraste, acessibilidade | suíte do Playwright | CI |
+| Marcador esquecido, H1 no corpo, chaves duplas, componente não mapeado, cor de SVG fora dos tokens, enquadramento proibido, tamanho de citação, links obrigatórios, primeiro parágrafo | `check-draft.mjs` | na chegada do rascunho e antes do PR |
+| Os dois lados existem, mesmos fatos e datas, links dentro do próprio idioma, nota de tradução, linha no registro | `check-pair.mjs` | antes do PR |
+| O assunto merece uma página; um fato ainda é verdade; o código mostrado bate com as linhas do repositório | **ninguém**: a verificação e eu | toda página |
+
+A última linha é a que importa. Os scripts pegam o defeito que já aconteceu
+uma vez. A pergunta de que a página deveria existir, e a de que uma frase ainda
+é verdade hoje, continuam sendo trabalho de leitura.
+
+## A skill
+
+O processo morava espalhado entre o `CLAUDE.md`, os testes, duas notas de
+pesquisa e mensagens de commit. A skill `content-page` junta tudo em nove
+fases, cada uma dizendo onde roda e o que entrega, mais modelos para a nota de
+pesquisa e o brief, o kit que vai para a sessão de redação, o roteiro da
+verificação com cada correção do histórico e os dois scripts. Ela aponta para
+as seções do `CLAUDE.md` em vez de copiá-las: quando os dois divergem, o
+`CLAUDE.md` vence e a skill é que se corrige.
+
+`check-draft.mjs` foi escrito a partir dos defeitos da tabela acima e rodado
+contra todos os artigos publicados antes de ser confiável. A primeira rodada
+reprovou seis arquivos corretos, todos falsos positivos: o componente `<Image>`,
+que o rascunho da skill dizia não existir no MDX; uma tabela de formatos de
+data lida como marcador; texto de `aria-label` contado como citação longa; e
+quebras de linha do Windows escondendo o primeiro parágrafo. Corrigidos os
+quatro, os 48 artigos passaram sem erro, e um rascunho quebrado de propósito em
+dez pontos falhou nos dez. Esta página passou pelos dois scripts antes do PR,
+com o tipo `project`, que troca a exigência de link para a pilar e uma
+ferramenta pela exigência de link para um arquivo versionado.
+
+## Como conferir
+
+```bash
+git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
+git show -s 5adfded 7e73fc1 ed4adb4
+wc -l docs/research/2026-10-18-scaled-content-research.md
+node .claude/skills/content-page/scripts/check-draft.mjs --published
+node .claude/skills/content-page/scripts/check-pair.mjs --all
+node .claude/skills/content-page/scripts/check-pair.mjs como-uma-pagina-nasce --type project
+```
+
+Quando a skill entrou no repositório, no PR #115, o comando
+`check-draft.mjs --published` deu 48 arquivos e 0 erros. Rodado num commit mais novo, o número
+cresce a cada artigo publicado.
