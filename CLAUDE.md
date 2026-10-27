@@ -66,6 +66,7 @@ months, `docs/research/2026-09-13-page-creation.md`).*
 | O5 | At least one free tool page attracting usage + backlinks | GA4 key events; Ahrefs/GSC links report | Month 1–3 |
 | O6 | Documented before/after SEO experiment with confidence tiers | `experimento.py` methodology, published case study | Month 3+ |
 | O7 | AEO/GEO: get cited by at least one AI search engine | `ai-search-monitor` tracking | Month 3+ |
+| O8 | The way the site is built is public and checkable: AI use is disclosed, and every number about the project's history prints the command that reproduces it | `/projeto` entries (§5.4), each linking a versioned artifact | Month 4+ |
 
 If a proposed feature does not serve one of these objectives, do not build it.
 
@@ -103,6 +104,8 @@ Total recurring cost target: domain only (~R$40/year).
 /ferramentas/checador-cwv       → Tool 3: CWV quick check (CrUX API)
 /sobre                          → About / credentials / contact
 /design                         → Design colophon (visual system rationale; pair of /en/design)
+/projeto                        → Project section index (§5.4; pair of /en/project)
+/projeto/[slug]                 → Project entries (MDX, content/projeto)
 /en/...                         → Selected English versions (hreflang pairs)
 sitemap.xml                     → via app/sitemap.ts (dynamic)
 robots.txt                      → via app/robots.ts
@@ -159,6 +162,38 @@ gets linked and used).
 | Checador de CWV | CrUX API (free, key required — free quota) | `tool_check_cwv` |
 
 Tools must work without login. No stored user data (LGPD simplicity).
+
+### 5.4 Project section (documentation of the project itself)
+
+Entries document how this site is built and run: decisions, methods,
+tooling, processes (including how AI is used), postmortems. Since 2026-10-26
+(owner decision; `docs/proposals/project-section.md` and its review).
+
+- **Scope:** this project only. No personal subjects (§13).
+- **Evidence:** every entry links at least one versioned artifact (commit,
+  PR, file in `docs/`). A number about the project's history prints the
+  command that reproduces it, and the commit it was measured at.
+- **Claims policy** (§10) applies unchanged.
+- **Surfaces:** sitemap, hreflang pairs, on-site search, `llms.txt` (under its
+  own heading). Not in `/blog`, related articles or the RSS feed: the blog's
+  topical cluster stays clean.
+- **Frontmatter:** the article schema (§10) without `category`.
+  `primaryQuery` is the honest question the entry answers; search demand is
+  not required.
+- **Bilingual:** like articles, every entry ships PT + EN in the same PR.
+- **Reachable** from `/sobre`, `/en/about` and the footer's "Projeto" /
+  "Project" column, whose title links the index (§6, no orphans). `/design`
+  is listed on the index as a hand-written entry.
+- **Procedure:** the `content-page` skill (`.claude/skills/content-page/`).
+
+What each page about the site is for, so entries do not drift into each other:
+
+| Page | Answers | Changes |
+|---|---|---|
+| `/sobre`, `/en/about` | who runs it and what the site is | rarely |
+| `/laboratorio`, `/en/lab` | what was measured, and the method of each experiment | per experiment |
+| `/en/case-studies` | results, told for a hiring reader | per case |
+| `/projeto`, `/en/project` | how the site is built and run | per entry |
 
 ---
 
@@ -379,6 +414,8 @@ category:       # blog posts: required, one of lib/categories.ts (no URL is gene
 status:         # optional: em-medicao | fechado | regressao | referencia — only when true
 keywords:       # optional list → synonyms for the SITE's search index only
 faq:            # optional array → renders FAQPage JSON-LD
+tldr:           # optional, ≤300 chars: direct answer, rendered on top and as Article.abstract
+basedOn:        # optional list of experiment slugs in the same language collection → isBasedOn
 ```
 
 - First paragraph must directly answer `primaryQuery` (AEO pattern).
@@ -456,9 +493,13 @@ A page or feature is DONE only when:
 - User accounts, logins, databases with personal data
 - Paid services of any kind beyond the domain
 - CMS integrations
-- Content outside the niche: content SEO, link building, general marketing,
-  news commentary, and any topic that is not about how machines (Googlebot,
-  AI assistants) fetch, render, read or index pages
+- Blog content outside the niche: content SEO, link building, general
+  marketing, news commentary, and any topic that is not about how machines
+  (Googlebot, AI assistants) fetch, render, read or index pages. The single
+  exception is the project section (§5.4), and only for entries about this
+  project itself.
+- Personal subjects, anywhere on the site: career, job search, personal life,
+  client work, and opinions that are not about this repository.
 - Anything that doesn't map to an objective in section 3
 
 ---
