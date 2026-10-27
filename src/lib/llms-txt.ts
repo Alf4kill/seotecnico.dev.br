@@ -68,7 +68,19 @@ function postLine(post: Post): string {
   return linkLine(`/blog/${slug}`, title, description)
 }
 
-export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn: Post[] = []): string {
+/** Entradas da seção do projeto (CLAUDE.md §5.4), nos dois idiomas. */
+export interface ProjectEntries {
+  pt: Post[]
+  en: Post[]
+}
+
+export function buildLlmsTxt(
+  guide: Post,
+  posts: Post[],
+  guideEn?: Post,
+  postsEn: Post[] = [],
+  project: ProjectEntries = { pt: [], en: [] }
+): string {
   const sections = [
     `# ${site.name}`,
     '',
@@ -106,6 +118,20 @@ export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn
                 : frontmatter.description
             )
           ),
+          ...(project.en.length > 0
+            ? [
+                `- [Project](${absoluteUrl('/en/project')}): How this site is built and run, each entry backed by a file, commit or pull request. English version of /projeto.`,
+                ...project.en.map(({ frontmatter }) =>
+                  linkLine(
+                    `/en/project/${frontmatter.slug}`,
+                    frontmatter.title,
+                    frontmatter.translationOf
+                      ? `${frontmatter.description} English translation of /projeto/${frontmatter.translationOf}.`
+                      : frontmatter.description
+                  )
+                ),
+              ]
+            : []),
           '',
         ]
       : []),
@@ -121,6 +147,17 @@ export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn
     '',
     ...ABOUT_LINKS.map((a) => linkLine(a.path, a.title, a.description)),
     '',
+    // Seção própria (CLAUDE.md §5.4): um agente que pergunta "como este site é
+    // feito" chega à entrada certa em vez de inferir pelos artigos.
+    ...(project.pt.length > 0
+      ? [
+          '## Projeto',
+          '',
+          linkLine('/projeto', 'Projeto', 'Como este site é construído e mantido: cada entrada aponta o arquivo, o commit ou o pull request que a comprova.'),
+          ...project.pt.map(({ frontmatter }) => linkLine(`/projeto/${frontmatter.slug}`, frontmatter.title, frontmatter.description)),
+          '',
+        ]
+      : []),
     '## Lab',
     '',
     // Sonda de canal (docs/detection-experiment.md §4): esta URL existe SÓ

@@ -92,6 +92,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/lab',
     },
   },
+  // A seção do projeto (CLAUDE.md §5.4): o índice, derivado das entradas de
+  // cada idioma. As entradas têm o par delas no fim da lista.
+  {
+    id: 'project',
+    paths: {
+      'pt-BR': '/projeto',
+      en: '/en/project',
+    },
+  },
   // A busca: a mesma página utilitária (noindex nos dois lados), cada uma com o
   // índice do próprio idioma. O par existe para o seletor de idioma levar à
   // busca do outro idioma, não para indexação.
@@ -312,6 +321,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
     paths: {
       'pt-BR': '/blog/arvore-de-acessibilidade',
       en: '/en/blog/accessibility-tree',
+    },
+  },
+  // Entradas do projeto, /projeto/<slug> ↔ /en/project/<slug-en>: mesma regra
+  // dos artigos (id = slug português = `translationOf` do MDX inglês).
+  {
+    id: 'uso-de-ia',
+    paths: {
+      'pt-BR': '/projeto/uso-de-ia',
+      en: '/en/project/how-ai-is-used',
     },
   },
 ] as const

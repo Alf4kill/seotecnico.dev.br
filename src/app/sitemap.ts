@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { site } from '@/lib/site'
-import { getAllPosts, getAllEnglishPosts, getGuide, getEnglishCaseStudy } from '@/lib/content'
+import { getAllPosts, getAllEnglishPosts, getGuide, getEnglishCaseStudy, getProjectEntries } from '@/lib/content'
 import { isExperiment } from '@/lib/categories'
 import { MANIFESTO_REVISED } from '@/components/design/manifesto-copy'
 import { CASE_STUDIES_REVISED } from '@/lib/case-studies'
@@ -127,5 +127,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/en/lab`, lastModified: newestEnglishLab ? toDate(newestEnglishLab) : undefined, changeFrequency: 'weekly', priority: 0.6 },
   ]
 
-  return [...staticPages, ...englishBlogIndex, ...postPages, ...englishPostPages]
+  // Seção do projeto (CLAUDE.md §5.4): as entradas dos dois idiomas e os dois
+  // índices. O índice lista também o colofão /design, então o lastmod dele é a
+  // data mais nova entre as entradas e MANIFESTO_REVISED (mesma conta da página).
+  const projectPages: MetadataRoute.Sitemap = (['pt-BR', 'en'] as const).flatMap((lang) => {
+    const prefix = lang === 'en' ? '/en/project' : '/projeto'
+    const entries = getProjectEntries(lang)
+    const newest = entries
+      .map((e) => e.frontmatter.dateModified)
+      .concat(MANIFESTO_REVISED)
+      .sort()
+      .at(-1) as string
+    return [
+      { url: `${base}${prefix}`, lastModified: toDate(newest), changeFrequency: 'monthly' as const, priority: lang === 'en' ? 0.5 : 0.6 },
+      ...entries.map(({ frontmatter }) => ({
+        url: `${base}${prefix}/${frontmatter.slug}`,
+        lastModified: toDate(frontmatter.dateModified),
+        changeFrequency: 'monthly' as const,
+        priority: lang === 'en' ? 0.5 : 0.6,
+      })),
+    ]
+  })
+
+  return [...staticPages, ...englishBlogIndex, ...postPages, ...englishPostPages, ...projectPages]
 }

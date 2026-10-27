@@ -11,6 +11,8 @@ interface FooterLink {
 
 interface FooterColumn {
   title: string
+  /** Índice da seção, quando o título da coluna é ele mesmo um link. */
+  href?: string
   links: FooterLink[]
 }
 
@@ -46,6 +48,8 @@ const COPY: Record<Lang, Copy> = {
       },
       {
         title: 'Projeto',
+        // O título leva ao índice /projeto (CLAUDE.md §5.4: nenhuma página órfã).
+        href: '/projeto',
         links: [
           { label: 'Sobre',                   href: '/sobre' },
           { label: 'Design',                  href: '/design' },
@@ -77,6 +81,7 @@ const COPY: Record<Lang, Copy> = {
       },
       {
         title: 'Project',
+        href: '/en/project',
         links: [
           { label: 'About',                          href: '/en/about' },
           { label: 'Design',                         href: '/en/design' },
@@ -143,9 +148,17 @@ export function Footer({ lang }: { lang: Lang }) {
 
         {/* ── Colunas ───────────────────────────────────────────── */}
         <nav aria-label={copy.navLabel} className="grid grid-cols-2 gap-x-14 gap-y-8 sm:grid-cols-3">
-          {copy.columns.map(({ title, links }) => (
+          {copy.columns.map(({ title, href, links }) => (
             <div key={title} className="flex flex-col gap-2.5">
-              <p className="eyebrow text-[0.625rem]">{title}</p>
+              <p className="eyebrow text-[0.625rem]">
+                {href ? (
+                  <Link href={href} className="transition-colors hover:text-primary">
+                    {title}
+                  </Link>
+                ) : (
+                  title
+                )}
+              </p>
               {links.map((link) => (
                 <FooterAnchor key={link.href} {...link} />
               ))}

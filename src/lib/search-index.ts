@@ -1,4 +1,4 @@
-import { getAllEnglishPosts, getAllPosts, getGuide, type Post } from './content'
+import { getAllEnglishPosts, getAllPosts, getGuide, getProjectEntries, type Post } from './content'
 import { LANGS, TRANSLATION_PAIRS, type Lang } from './hreflang'
 import { STATIC_SEARCH_ITEMS, STATIC_SEARCH_ITEMS_EN, type SearchItem } from './search-data'
 
@@ -37,7 +37,7 @@ function guideItems(): SearchItem[] {
 
 /**
  * Índice completo do idioma, na ordem em que foi montado (páginas, pilar,
- * artigos, ferramentas). A ordem é irrelevante para o resultado — o Fuse ordena
+ * artigos, entradas do projeto, ferramentas). A ordem é irrelevante para o resultado — o Fuse ordena
  * por score — mas ser determinística mantém o diff estável.
  *
  * O índice português segue com as duas versões da pilar (quem procura o guia
@@ -51,8 +51,11 @@ export function buildSearchIndex(lang: Lang = 'pt-BR'): SearchItem[] {
     )
     const guide = guideItems().filter((item) => item.href.startsWith('/en/'))
     const pages = STATIC_SEARCH_ITEMS_EN.filter((item) => item.category === 'pagina')
+    const project = getProjectEntries('en').map((entry) =>
+      itemFromPost(entry, `/en/project/${entry.frontmatter.slug}`, 'projeto', `project-${entry.frontmatter.slug}`)
+    )
     const tools = STATIC_SEARCH_ITEMS_EN.filter((item) => item.category === 'ferramenta')
-    return [...pages, ...guide, ...articles, ...tools]
+    return [...pages, ...guide, ...articles, ...project, ...tools]
   }
 
   const articles = getAllPosts().map((post) =>
@@ -65,7 +68,10 @@ export function buildSearchIndex(lang: Lang = 'pt-BR'): SearchItem[] {
   )
 
   const pages = STATIC_SEARCH_ITEMS.filter((item) => item.category === 'pagina')
+  const project = getProjectEntries().map((entry) =>
+    itemFromPost(entry, `/projeto/${entry.frontmatter.slug}`, 'projeto', `projeto-${entry.frontmatter.slug}`)
+  )
   const tools = STATIC_SEARCH_ITEMS.filter((item) => item.category === 'ferramenta')
 
-  return [...pages, ...guideItems(), ...articles, ...tools]
+  return [...pages, ...guideItems(), ...articles, ...project, ...tools]
 }

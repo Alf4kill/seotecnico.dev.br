@@ -8,7 +8,7 @@ import {
   languageAlternatePaths,
   pairForPath,
 } from './hreflang'
-import { getAllEnglishPosts, getGuide, getPostBySlug } from './content'
+import { getAllEnglishPosts, getGuide, getPostBySlug, getProjectEntries, getProjectEntry } from './content'
 import { buildMetadata } from './metadata'
 import { site } from './site'
 
@@ -59,6 +59,23 @@ describe('TRANSLATION_PAIRS', () => {
       const slug = pair.paths.en.slice('/en/blog/'.length)
       expect(posts.some((p) => p.frontmatter.slug === slug && p.frontmatter.translationOf === pair.id),
         `pair "${pair.id}" points to an English article that does not declare it`).toBe(true)
+    }
+  })
+
+  it('pairs every English project entry with its original, and only those', () => {
+    // Mesma regra dos artigos, sobre /projeto ↔ /en/project (CLAUDE.md §5.4).
+    const entries = getProjectEntries('en')
+    for (const { frontmatter } of entries) {
+      expect(frontmatter.translationOf, `/en/project/${frontmatter.slug} declares no original`).toBeDefined()
+      const pair = pairForPath(`/en/project/${frontmatter.slug}`)
+      expect(pair?.id, `/en/project/${frontmatter.slug} has no hreflang pair`).toBe(frontmatter.translationOf)
+      expect(pair?.paths['pt-BR']).toBe(`/projeto/${frontmatter.translationOf}`)
+      expect(getProjectEntry(frontmatter.translationOf as string), `no Portuguese original "${frontmatter.translationOf}"`).toBeDefined()
+    }
+    for (const pair of TRANSLATION_PAIRS.filter((p) => p.paths.en.startsWith('/en/project/'))) {
+      const slug = pair.paths.en.slice('/en/project/'.length)
+      expect(entries.some((e) => e.frontmatter.slug === slug && e.frontmatter.translationOf === pair.id),
+        `pair "${pair.id}" points to an English entry that does not declare it`).toBe(true)
     }
   })
 })

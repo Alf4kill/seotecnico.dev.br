@@ -158,7 +158,7 @@ there is no second file to edit.
 ```bash
 node .claude/skills/content-page/scripts/check-draft.mjs content/blog/<pt>.mdx
 node .claude/skills/content-page/scripts/check-draft.mjs content/en/blog/<en>.mdx
-node .claude/skills/content-page/scripts/check-pair.mjs <pt-slug>
+node .claude/skills/content-page/scripts/check-pair.mjs <pt-slug>          # project entry: --type project
 npm test
 NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run build
 NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run test:seo
