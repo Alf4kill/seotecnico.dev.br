@@ -60,7 +60,7 @@ months, `docs/research/2026-09-13-page-creation.md`).*
 | # | Objective | How it's measured | Target window |
 |---|-----------|-------------------|---------------|
 | O1 | Get the site indexed and appearing in Google | GSC: pages indexed, first impressions | Week 1–2 |
-| O2 | Rank for long-tail Portuguese queries (positions 1–20) | GSC queries report; own GSC Monitor | Month 2–4 |
+| O2 | Rank for long-tail Portuguese queries (positions 1–20) | GSC queries report (manual exports; `gsc-monitor` not running, §7.3) | Month 2–4 |
 | O3 | Fully working GTM → GA4 pipeline with documented events | DebugView validation + measurement plan doc | Week 1 |
 | O4 | Perfect technical SEO baseline (CWV green, valid structured data, clean crawl) | Lighthouse CI, Rich Results Test, Screaming Frog crawl | Week 1–2 |
 | O5 | At least one free tool page attracting usage + backlinks | GA4 key events; Ahrefs/GSC links report | Month 1–3 |
@@ -237,7 +237,11 @@ All custom events pushed via a typed `dataLayer` helper in
 
 ### 7.3 External measurement (dogfooding own tools)
 
-- `gsc-monitor`: weekly indexing + query snapshots.
+- `gsc-monitor`: weekly indexing + query snapshots. **Not running:** this
+  project has no Search Console API access (the only credentials belong to
+  another account, which this project does not use), so the toolkit has never
+  run against this site. Search Console data comes from manual exports, dated
+  in the file that records them (owner, 2026-10-26).
 - `nextjs-cwv-toolkit`: CrUX/PSI time series into SQLite.
 - `experimento.py`: before/after deltas with confidence tiers for every
   deliberate SEO change. Changes are logged in `/docs/experiment-log.md`
