@@ -1,0 +1,166 @@
+---
+title: "How AI is used in this technical SEO project"
+description: "A technical SEO site built with Claude: what the Git history shows, who decides what, and which rules are enforced as CI tests."
+slug: "how-ai-is-used"
+primaryQuery: "how ai is used in this project"
+keywords: ['english', 'inglês', 'ai', 'artificial intelligence', 'claude', 'claude code', 'llm', 'process', 'co-authored', 'how the site is built']
+lang: "en"
+translationOf: "uso-de-ia"
+tldr: >-
+  One person and Claude sessions with repository access: Claude writes code,
+  tests and drafts; I decide, review and merge every PR. CI blocks whatever
+  breaks a rule.
+datePublished: "2026-10-27"
+dateModified: "2026-10-27"
+---
+
+This site is built by one person working with Claude, Anthropic's model. I
+decide what gets built, bring the data only I can reach (Search Console and
+GA4), review every change and merge every pull request. Claude writes most of
+the code, tests, documentation and article drafts, inside rules the repository
+itself checks. What makes that output usable is not the model: it is that
+almost every rule a model could break is a rule a test checks.
+
+This page is part of the [Project](/en/project) section, which documents how
+the site is built. The source for everything here is the
+[AI workflow document in the repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/ai-workflow.md),
+and every number below comes with the command that reproduces it.
+
+## What the history shows
+
+Measured at commit `b141722`, the merge of PR #114, on 23 October 2026:
+
+| Measure | Value |
+|---|---|
+| Commits on `main` | 468 |
+| Merged pull requests | 117 merge commits, PRs #1 → #114 |
+| Non-merge commits | 351 |
+| …with a `Co-Authored-By: Claude` trailer | 351, all of them |
+| First commit | 12 July 2026 |
+
+The co-author trailer names the model that produced each commit:
+
+| Model in the trailer | Commits | First → last |
+|---|---|---|
+| Claude Fable 5 | 46 | 2026-07-12 → 2026-07-25 |
+| Claude Opus 4.8 | 28 | 2026-07-13 → 2026-07-22 |
+| Claude Opus 5 | 101 | 2026-07-24 → 2026-10-15 |
+| Claude Opus 5.5 | 176 | 2026-09-23 → 2026-10-23 |
+
+By commit type (the `type: subject` convention, merges excluded): `docs` 131,
+`feat` 67, `content` 59, `fix` 35, `test` 18, `ci` 10, others 31.
+Documentation is the largest category: in this project, the record of a
+decision is part of the deliverable.
+
+**What these numbers do not say.** A trailer records that a Claude session
+produced the commit. It does not measure how much of the text the model wrote
+and how much I edited, dictated or rejected before the commit existed. No such
+measurement exists for this project, and this page does not estimate one.
+
+The history was rewritten on 19 October 2026 to unify the author identity;
+every SHA changed that day. The SHAs cited here are from the current history.
+Older pull request pages on GitHub still show the original ones.
+
+## Who does what
+
+| Step | Me | Claude |
+|---|---|---|
+| Decide the next piece of work | yes | proposes, in research notes and proposals |
+| Search Console and GA4 data | export by hand from the project's properties | reads the exports; never holds the credentials |
+| Research | review | writes dated notes, with an evidence label on every claim |
+| Code, tests, documentation, drafts | review and correct | writes them, in a session with repository access |
+| Pull request | review and merge | opens it; never merges |
+| After merge | request indexing and distribute | — |
+
+Editorial work (briefs, draft review) happens in a session without repository
+access, and implementation in a session with it. Because the first cannot see
+the code, it leaves `[CODE-n]` placeholders wherever the site's code would go,
+and the second fills them by copying from the file. Before that rule, drafts
+arrived with invented code: component files and prop shapes that do not exist
+in the repository, as PR #17 records.
+
+## The contract: CLAUDE.md
+
+`CLAUDE.md` is read at the start of every session and declares itself the
+project's single source of truth. What makes it a contract for a model rather
+than a wish list:
+
+- **Numbered sections.** A commit, a review comment or a skill cites "§10"
+  instead of paraphrasing a rule.
+- **Dated decisions.** "owner rule, 2026-10-23", "rule since 2026-09-25":
+  the date and who decided, inside the rule itself. A later session knows
+  which rule is newer and why it exists.
+- **The claims policy** (§10). Every claim is a mechanism, a condition or a
+  magnitude, and a magnitude needs a measurement with a declared method. It is
+  the rule that keeps generated text from inventing numbers.
+- **An out-of-scope list** (§13), as useful to a model as the scope.
+
+## Rules that are tests
+
+CI (`.github/workflows/ci.yml`) blocks a merge on any failure:
+
+| Check | What it catches that a model might get wrong |
+|---|---|
+| Lint, type-check, 33 Vitest files | broken code, schema builders, content parsing |
+| Content loader (`src/lib/content.ts`) | a title over 60 characters, a description over 155, a short answer over 300, an unknown axis |
+| `content-code-paths.test.ts` | an article citing a repository path that does not exist |
+| `hreflang.test.ts` | a translation pair declared on one side only |
+| `design-rules.test.ts`, `design-tokens.test.ts` | a hardcoded colour, a forbidden utility, token drift |
+| 8 Playwright specs | one H1, title and description, canonical, JSON-LD types, hreflang in both directions, contrast, accessibility |
+| Lighthouse CI | performance budgets |
+
+When a rule matters and is not yet a test, it tends to be broken. The closing
+translation note on English articles was a convention, not a check, and the
+two pairs published on 23 October shipped without it. The gap showed up when
+the pair script of the page-creation skill started checking for it.
+
+## Making a claim smaller
+
+Several commits exist only to make a sentence smaller and true. One example:
+during the October crawl audit, the apex domain refused connections from my
+network and from an external fetcher. The first reading was an outage. Commit
+`e376922` reduced that reading to what the evidence supported: a TCP-only
+check reached the address from 17 of 18 nodes worldwide and from a node in
+São Paulo, so the address was up, and what failed was the route from some
+networks to it. The research notes follow the same habit, with labels such as
+**[documented]**, **[inference]** and **[observation]** on every claim.
+
+## What stays with me
+
+- **Merging.** No session merges its own pull request.
+- **Secrets.** API keys live in Vercel environment variables. The project's
+  Search Console and GA4 live in my personal Google account.
+- **Search Console data, by hand.** No API pulls it. The monitoring toolkits
+  listed in `CLAUDE.md` (`gsc-monitor`, `nextjs-cwv-toolkit`,
+  `ai-search-monitor`) have never run against this site. Every Search Console
+  number in the repository comes from a manual export, dated in the file that
+  records it.
+- **The decision to publish.** Whether a topic deserves a page, and whether a
+  page is ready.
+- **Distribution.** Indexing requests and posts happen after merge, by hand.
+
+Google treats AI use the same way: the problem its spam policy describes is
+scale without value, not the tool, as the article on
+[scaled content abuse](/en/blog/scaled-content-abuse) shows. The method of
+registering the hypothesis before the data, used in the experiments here, is
+in [SEO testing with pre-registration](/en/blog/seo-testing-pre-registration).
+And the other page that explains a decision of the site from the inside is the
+[design colophon](/en/design).
+
+## Reproducing the numbers
+
+```bash
+git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
+git rev-list --count b141722
+git log --merges --oneline b141722 | wc -l
+git rev-list --no-merges --count b141722
+git log --no-merges --format='%(trailers:key=Co-Authored-By,valueonly)' b141722 \
+  | grep -i claude | sed 's/<.*//' | sort | uniq -c
+git log --no-merges --format='%s' b141722 \
+  | sed -E 's/^([a-z]+)(\([^)]*\))?:.*/\1/' | sort | uniq -c | sort -rn
+```
+
+Run on a later commit, the numbers grow: the tables above are a dated
+snapshot, not a live counter.
+
+This is the English version of a page first published in Portuguese; the two declare each other.

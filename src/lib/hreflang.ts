@@ -323,6 +323,15 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/accessibility-tree',
     },
   },
+  // Entradas do projeto, /projeto/<slug> ↔ /en/project/<slug-en>: mesma regra
+  // dos artigos (id = slug português = `translationOf` do MDX inglês).
+  {
+    id: 'uso-de-ia',
+    paths: {
+      'pt-BR': '/projeto/uso-de-ia',
+      en: '/en/project/how-ai-is-used',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */

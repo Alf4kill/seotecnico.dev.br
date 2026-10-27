@@ -1,0 +1,167 @@
+---
+title: "Como a IA é usada neste projeto de SEO técnico"
+description: "Um site de SEO técnico feito com o Claude: o que o histórico do Git mostra, quem decide o quê e quais regras viram teste no CI."
+slug: "uso-de-ia"
+primaryQuery: "como a ia é usada neste projeto"
+keywords: ['ia', 'inteligência artificial', 'claude', 'claude code', 'llm', 'processo', 'bastidores', 'co-autoria', 'como o site é feito']
+lang: "pt-BR"
+tldr: >-
+  Uma pessoa e sessões do Claude com acesso ao repositório: o Claude escreve
+  código, testes e rascunhos; eu decido, reviso e faço o merge de todo PR. O
+  CI bloqueia o que quebra uma regra.
+datePublished: "2026-10-27"
+dateModified: "2026-10-27"
+---
+
+Este site é construído por uma pessoa trabalhando com o Claude, o modelo da
+Anthropic. Eu decido o que entra, trago os dados que só eu acesso (Search
+Console e GA4), reviso cada mudança e faço o merge de cada pull request. O
+Claude escreve a maior parte do código, dos testes, da documentação e dos
+rascunhos dos artigos, dentro de regras que o próprio repositório verifica. O
+que torna esse texto utilizável não é o modelo: é que quase toda regra que um
+modelo poderia quebrar é uma regra que um teste confere.
+
+Esta página faz parte da seção [Projeto](/projeto), que documenta como o site é
+feito. A fonte de tudo o que está aqui é o
+[documento de uso de IA no repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/ai-workflow.md),
+e cada número abaixo vem com o comando que o reproduz.
+
+## O que o histórico mostra
+
+Medido no commit `b141722`, o merge do PR #114, em 23 de outubro de 2026:
+
+| Medida | Valor |
+|---|---|
+| Commits na `main` | 468 |
+| Pull requests com merge | 117 commits de merge, do PR #1 ao #114 |
+| Commits sem merge | 351 |
+| …com o trailer `Co-Authored-By: Claude` | 351, todos |
+| Primeiro commit | 12 de julho de 2026 |
+
+O trailer de co-autoria diz qual modelo produziu cada commit:
+
+| Modelo no trailer | Commits | Primeiro → último |
+|---|---|---|
+| Claude Fable 5 | 46 | 2026-07-12 → 2026-07-25 |
+| Claude Opus 4.8 | 28 | 2026-07-13 → 2026-07-22 |
+| Claude Opus 5 | 101 | 2026-07-24 → 2026-10-15 |
+| Claude Opus 5.5 | 176 | 2026-09-23 → 2026-10-23 |
+
+Por tipo de commit (convenção `tipo: assunto`, sem merges): `docs` 131, `feat`
+67, `content` 59, `fix` 35, `test` 18, `ci` 10, outros 31. Documentação é a
+maior categoria: neste projeto, o registro de uma decisão faz parte da entrega.
+
+**O que esses números não dizem.** O trailer registra que uma sessão do Claude
+produziu o commit. Ele não mede quanto do texto o modelo escreveu e quanto eu
+editei, ditei ou recusei antes de o commit existir. Essa medida não existe para
+este projeto, e esta página não a estima.
+
+O histórico foi reescrito em 19 de outubro de 2026 para unificar a identidade
+de autor; todos os SHAs mudaram nesse dia. Os SHAs citados aqui são os do
+histórico atual. As páginas de PRs antigos no GitHub ainda mostram os
+originais.
+
+## Quem faz o quê
+
+| Etapa | Eu | Claude |
+|---|---|---|
+| Decidir o próximo trabalho | sim | propõe, em notas de pesquisa e propostas |
+| Dados do Search Console e do GA4 | exporto à mão das propriedades do projeto | lê as exportações; nunca tem as credenciais |
+| Pesquisa | reviso | escreve notas datadas, com rótulo de evidência em cada afirmação |
+| Código, testes, documentação, rascunhos | reviso e corrijo | escreve, numa sessão com acesso ao repositório |
+| Pull request | reviso e faço o merge | abre; nunca faz o merge |
+| Depois do merge | peço indexação e divulgo | — |
+
+O trabalho editorial (briefs, revisão de rascunhos) acontece numa sessão sem
+acesso ao repositório, e a implementação, numa sessão com acesso. Como a
+primeira não enxerga o código, ela deixa marcadores `[CODE-n]` no lugar de
+qualquer código do site, e a segunda os preenche copiando do arquivo. Antes
+dessa regra, os rascunhos chegavam com código inventado: arquivos de
+componente e formatos de props que não existem no repositório, como registra o
+PR #17.
+
+## O contrato: CLAUDE.md
+
+O `CLAUDE.md` é lido no começo de toda sessão e se declara a fonte única de
+verdade do projeto. O que faz dele um contrato para um modelo, e não uma lista
+de desejos:
+
+- **Seções numeradas.** Um commit, um comentário de revisão ou uma skill cita
+  "§10" em vez de parafrasear uma regra.
+- **Decisões datadas.** "owner rule, 2026-10-23", "rule since 2026-09-25":
+  dentro da própria regra, a data e quem decidiu. Uma sessão posterior sabe
+  qual regra é mais nova e por que ela existe.
+- **A política de afirmações** (§10). Toda afirmação é de mecanismo, de
+  condição ou de magnitude, e magnitude exige medição com método declarado. É
+  a regra que impede um texto gerado de inventar números.
+- **Uma lista do que está fora do escopo** (§13), tão útil para um modelo
+  quanto o escopo.
+
+## Regras que são testes
+
+O CI (`.github/workflows/ci.yml`) bloqueia o merge em qualquer falha:
+
+| Verificação | O que pega que um modelo poderia errar |
+|---|---|
+| Lint, type-check, 33 arquivos do Vitest | código quebrado, construtores de schema, leitura de conteúdo |
+| Loader de conteúdo (`src/lib/content.ts`) | título acima de 60 caracteres, descrição acima de 155, resposta curta acima de 300, eixo inexistente |
+| `content-code-paths.test.ts` | um artigo citando um caminho do repositório que não existe |
+| `hreflang.test.ts` | um par de tradução declarado de um lado só |
+| `design-rules.test.ts`, `design-tokens.test.ts` | cor fixa no código, utilitário proibido, token fora de sincronia |
+| 8 specs do Playwright | um H1, título e descrição, canonical, tipos de JSON-LD, hreflang nos dois sentidos, contraste, acessibilidade |
+| Lighthouse CI | orçamentos de performance |
+
+Quando uma regra importa e ainda não é teste, ela tende a ser quebrada. A nota
+de tradução no fim dos artigos em inglês era convenção, não verificação, e os
+dois pares publicados em 23 de outubro saíram sem ela. A falha apareceu quando
+o script de pares da skill de criação de páginas passou a conferir isso.
+
+## Diminuir uma afirmação
+
+Vários commits existem só para deixar uma frase menor e verdadeira. Um
+exemplo: na auditoria de rastreamento de outubro, o domínio raiz recusou
+conexão na minha rede e num verificador externo. A primeira leitura foi de
+queda do site. O commit
+`e376922` reduziu essa leitura ao que a evidência sustentava: um teste só de
+TCP chegou ao endereço a partir de 17 de 18 nós pelo mundo e de um nó em São
+Paulo, então o endereço estava no ar e era a rota de algumas redes até ele que
+falhava. As notas de pesquisa seguem o mesmo hábito, com rótulos como
+**[documented]**, **[inference]** e **[observation]** em cada afirmação.
+
+## O que fica comigo
+
+- **O merge.** Nenhuma sessão faz o merge do próprio pull request.
+- **Os segredos.** Chaves de API ficam nas variáveis de ambiente da Vercel. O
+  Search Console e o GA4 do projeto ficam na minha conta pessoal do Google.
+- **Os dados do Search Console, à mão.** Nenhuma API puxa esses dados. As
+  ferramentas de monitoramento listadas no `CLAUDE.md` (`gsc-monitor`,
+  `nextjs-cwv-toolkit`, `ai-search-monitor`) nunca rodaram contra este site.
+  Cada número do Search Console no repositório vem de uma exportação manual,
+  datada no arquivo que a registra.
+- **A decisão de publicar.** Se um assunto merece uma página e se a página está
+  pronta.
+- **A divulgação.** Pedidos de indexação e posts acontecem depois do merge, à
+  mão.
+
+O Google trata o uso de IA da mesma forma: o problema que a política de spam
+descreve é escala sem valor, não a ferramenta, como mostra o artigo sobre
+[abuso de conteúdo em escala](/blog/scaled-content-abuse). O método de
+registrar a hipótese antes do dado, usado nos experimentos daqui, está em
+[teste de SEO com pré-registro](/blog/pre-registro-seo). E a outra página que
+explica uma decisão do site por dentro é o [colofão do design](/design).
+
+## Como reproduzir os números
+
+```bash
+git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
+git rev-list --count b141722
+git log --merges --oneline b141722 | wc -l
+git rev-list --no-merges --count b141722
+git log --no-merges --format='%(trailers:key=Co-Authored-By,valueonly)' b141722 \
+  | grep -i claude | sed 's/<.*//' | sort | uniq -c
+git log --no-merges --format='%s' b141722 \
+  | sed -E 's/^([a-z]+)(\([^)]*\))?:.*/\1/' | sort | uniq -c | sort -rn
+```
+
+Rodados num commit mais novo, os números crescem: as tabelas acima são uma foto
+datada, não um contador ao vivo.
