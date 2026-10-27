@@ -24,6 +24,7 @@ playwright-report/
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/content-page/
+!.claude/skills/english-version/
 
 # OS
 .DS_Store

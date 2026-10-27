@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: translate-new-article
+expected_outcome: |
+  The run reads references/structure.md and references/style-guide.md, builds an intent map of the Portuguese page before writing English, writes the English side as a new file under content/en/blog with an English slug and title written for English searchers, keeps every number, date, hedge, code block (including Portuguese comments), H2 count and FAQ count identical, links only to /en pages, uses American spelling and Month D, YYYY dates in prose, and ends with the translation note as the last line. It runs check-english.mjs (0 errors) and check-pair.mjs (0 errors), and reports its judgment calls (title, headings, glossary choices) instead of a list of edits. It does not change the Portuguese file's facts.

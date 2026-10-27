@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: revise-literal-page
+expected_outcome: |
+  Given an English page seeded with literal calques, the run executes check-english.mjs first, then does a native read of the English alone, rewrites the flagged and unflagged translationese (colon chains, "it is worth", "that is why", "readings", day-month dates, British spellings, "defects"), keeps facts, numbers, hedges, links, code, slug, primaryQuery, H2 count and FAQ count unchanged, updates any link to a heading whose anchor changed, does not bump dateModified and says so, and reruns check-english.mjs with 0 errors and check-pair.mjs with 0 errors.

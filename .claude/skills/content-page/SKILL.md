@@ -7,7 +7,7 @@ description: >-
   Covers the whole pipeline the site uses: research note with dated sources,
   brief, draft (written here, by the owner, or in an external writing session
   through a handoff kit), the verification pass against sources and code, the
-  English version, hreflang registration, experiment-log row, scripted checks
+  English version (through the english-version skill), hreflang registration, experiment-log row, scripted checks
   and the PR. Use it whenever the owner asks to write, publish, plan,
   research, translate, review or update an article, post or page, hands back a
   draft or a writing-session delivery, or asks for "the English version" —
@@ -37,7 +37,7 @@ to fix.
 | 2 Brief | here or the editorial session | `brief-<slug>.md` | no — owner rule: briefs stay untracked and are deleted after use |
 | 3 Draft | here, the owner, or an external writing session | PT MDX (+ delivery notes) | no, until phase 4 ends |
 | 4 Verification | **here, always** | corrected PT MDX | yes |
-| 5 English | here | EN MDX | yes |
+| 5 English | here, with the `english-version` skill | EN MDX | yes |
 | 6 Register | here | `hreflang.ts`, log row, sitemap images | yes |
 | 7 Checks | here | script and test output | in the PR |
 | 8 PR | here | PR for the owner to merge | — |
@@ -133,10 +133,22 @@ summarise it away.
 
 ## Phase 5 — English version
 
-Follow `references/translation.md`: adapt, do not transliterate; the English
-slug and title carry the English query; same facts, dates, FAQ count and H2
-structure; English text links only to English pages; `translationOf` points
-to the Portuguese slug; the closing translation note is the last line.
+Run the **`english-version`** skill (`.claude/skills/english-version/`) on the
+verified Portuguese file. It is a separate skill because writing English that
+does not read as translated is its own procedure: an intent map before any
+prose, an English draft written from it, a native read of the English alone,
+then a fidelity check against the Portuguese. The structural contract (same
+facts, dates, FAQ count and H2 structure; English slug and title for the
+English query; English text links only to English pages; `translationOf`;
+the closing note on the last line) is its `references/structure.md`.
+
+Gate: `check-english.mjs` and `check-pair.mjs` with 0 errors, and the list of
+judgment calls the skill reports goes into the PR description.
+
+Why: until 2026-10-27 this phase was one paragraph, and every English page
+came out sentence-by-sentence from the Portuguese. Outside feedback noticed; the
+revision found 263 script-detectable calques across 28 pages
+(`docs/research/2026-10-27-english-translation-quality.md`).
 
 ## Phase 6 — Register
 
@@ -159,6 +171,7 @@ there is no second file to edit.
 node .claude/skills/content-page/scripts/check-draft.mjs content/blog/<pt>.mdx
 node .claude/skills/content-page/scripts/check-draft.mjs content/en/blog/<en>.mdx
 node .claude/skills/content-page/scripts/check-pair.mjs <pt-slug>          # project entry: --type project
+node .claude/skills/english-version/scripts/check-english.mjs content/en/blog/<en>.mdx
 npm test
 NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run build
 NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run test:seo
@@ -167,7 +180,7 @@ NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run test:se
 The overrides are the README's: a local `.env.local` pointing the domain to
 localhost makes every canonical and sitemap assertion fail.
 
-Both scripts exit 1 on any ERROR. Each WARN is a question to answer in the PR
+The scripts exit 1 on any ERROR. Each WARN is a question to answer in the PR
 description. Before trusting a change to either script, run it on everything
 published (`check-draft.mjs --published`, `check-pair.mjs --all`): a check that
 flags correct published pages is wrong, not strict.
@@ -183,7 +196,8 @@ One branch; English commits (§10):
 - test updates in their own commit, with the reason
 
 The PR description carries: the brief (or its summary — the file is not
-committed), each level-3 claim with its source, both scripts' output, open
+committed), each level-3 claim with its source, the scripts' output, the English
+judgment calls from `english-version`, open
 `NOTA-REDACAO` decisions, and the after-merge steps: request indexing for
 **both** URLs, distribute once (LinkedIn PT + EN, one developer community),
 write that date into the log row.
@@ -193,6 +207,7 @@ Never merge. The owner reviews and merges every PR (§14).
 ## Updating an existing pair
 
 Change both sides in the same PR. Bump `dateModified` on a side only when its
-text changed in substance (a link target is not, commit `8aba089`). Run both
+text changed in substance (a link target is not, commit `8aba089`; nor is a
+language-only revision of the English, 2026-10-27). Run the
 scripts; a WARN that PT `dateModified` is newer than EN means the change was
 not carried over.

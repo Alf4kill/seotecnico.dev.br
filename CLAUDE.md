@@ -404,6 +404,12 @@ colors:
   `/en` paired by hreflang. **Every new article ships in both languages in the
   same PR** (owner rule, 2026-10-23); a Portuguese-only article is not
   published.
+- The English side is written for an English reader, not transliterated:
+  American English, US dates in prose (ISO in tables and logs), the site's
+  glossary, and a native read of the English kept separate from the fidelity
+  check against the Portuguese. Procedure: the `english-version` skill
+  (`.claude/skills/english-version/`), since 2026-10-27, after feedback that
+  the English pages read as translated.
 - Code identifiers, commits, README, and `/docs`: **English**.
 - MDX frontmatter schema (enforced):
 

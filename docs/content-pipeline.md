@@ -1,6 +1,6 @@
 # How a content page is made here
 
-> **Status:** reference · first written 2026-10-26
+> **Status:** reference · first written 2026-10-26 · English step revised 2026-10-27
 > **Evidence rule:** as in `docs/ai-workflow.md` — **[repo]** is checkable in
 > this repository or its PRs; **[owner]** is the owner's description of work
 > done outside it (editorial sessions, briefs, session logs), not versioned.
@@ -26,7 +26,7 @@ that pass found (§4).
 | Brief | repo or editorial session | `brief-<slug>.md` | no — briefs are deleted after use **[owner]** |
 | Draft | external writing session, the owner, or the repo session | MDX + delivery notes + session log | no **[owner]** |
 | Verification pass | repo session | corrected MDX; corrections listed in the commit body | **[repo]** yes |
-| English version | repo session | `content/en/blog/<slug>.mdx` | **[repo]** yes |
+| English version | repo session, `english-version` skill: intent map, English draft, native read, fidelity check | `content/en/blog/<slug>.mdx` + list of judgment calls in the PR | **[repo]** yes |
 | Register | repo session | `src/lib/hreflang.ts`, `docs/experiment-log.md` | **[repo]** yes |
 | Checks | repo session + CI | script output, CI run | **[repo]** in the PR |
 | Merge, indexing request, distribution | owner | log row date | **[repo]** the row |
@@ -79,7 +79,8 @@ claim when it can.
 | One H1, title, description, canonical, JSON-LD, hreflang, contrast, a11y | Playwright suite | CI |
 | Placeholders left, body H1, `{{`, unmapped components, untokenised SVG colours, banned framings, quote length, pillar and tool links, lead paragraph | `check-draft.mjs` | on arrival and before the PR |
 | Both sides exist, same facts and dates, links inside their language, closing note, log row | `check-pair.mjs` | before the PR |
-| Is the topic worth a page; is a fact still true; does the code shown match the repo's lines | **nobody** — the verification pass and the owner | every page |
+| British spelling, day-month dates, closing note not last (errors); known PT → EN calques and register patterns (warnings) | `check-english.mjs` (`english-version` skill) | after the native read, before the PR |
+| Is the topic worth a page; is a fact still true; does the code shown match the repo's lines; does the English read as written in English | **nobody** — the verification pass, the native read and the owner | every page |
 
 `check-draft.mjs` was written from the defects of §4 and run on all 48
 published articles before being trusted. The first run failed 6 files and
@@ -90,7 +91,29 @@ date-format table in the pre-registration pair read as a placeholder, SVG
 lead paragraph. After the fixes: 48 files, 0 errors, 0 warnings; a draft
 broken on purpose in ten ways failed on all ten.
 
-## 6. Open questions for the owner
+## 6. The English step, revised 2026-10-27 **[repo]**
+
+Until 2026-10-27 the English version was one step with a structural
+checklist. Feedback that the English read as translated led to a
+revision of all 28 English pages and a dedicated skill, `english-version`
+(`docs/skills.md` §6). What changed in the method:
+
+- **Intent before words.** The English is written from a per-section map of
+  what the Portuguese claims and how it hedges, not sentence by sentence.
+- **Two separate reads.** A native read of the English alone (by a reader
+  that has not seen the Portuguese, when a subagent is available), then a
+  fidelity check against the Portuguese for facts, hedges, links and code.
+- **A style guide and a glossary.** American English, US dates in prose, ISO
+  in tables; the site's terms (fetch, round, prompt, run, bug, log).
+- **A script for the known calques.** `check-english.mjs`: 263 findings and
+  28 of 28 files with errors at `e39de3b`; 0 errors and 1 warning after the
+  revision.
+- **A report of judgment calls** in the PR, so the owner reviews the places
+  that needed judgment instead of diffing prose.
+
+The research and the counts: `docs/research/2026-10-27-english-translation-quality.md`.
+
+## 7. Open questions for the owner
 
 1. **Session logs.** The writing session's log is the best record of phase 3,
    and it is not versioned. Commit it to `docs/sessions/` (in Portuguese, as
