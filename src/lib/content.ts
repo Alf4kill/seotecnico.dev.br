@@ -225,24 +225,48 @@ function readMdxFile(filePath: string): Post {
   }
 }
 
-/** All blog posts, newest first. Returns [] while content/blog is empty. */
-export function getAllPosts(): Post[] {
-  const dir = path.join(CONTENT_DIR, 'blog')
-  if (!fs.existsSync(dir)) return []
+interface CollectionRules {
+  /** Blog: eixo obrigatório. Seção do projeto: proibido (fica fora dos eixos). */
+  category: 'required' | 'forbidden'
+  /** Idioma que todo arquivo da coleção precisa declarar, quando a pasta fixa um. */
+  lang?: 'pt-BR' | 'en'
+}
 
-  const posts = fs
+/**
+ * Lê e valida uma coleção de MDX (`content/<...segments>`), sem ordenar: cada
+ * coleção tem a própria ordem. [] enquanto a pasta não existe. As três coleções
+ * (blog, blog inglês, seção do projeto) passam por aqui, para que a mesma regra
+ * não exista em três cópias que podem divergir.
+ */
+function readCollection(segments: string[], rules: CollectionRules): Post[] {
+  const dir = path.join(CONTENT_DIR, ...segments)
+  if (!fs.existsSync(dir)) return []
+  const label = segments.join('/')
+
+  return fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.mdx'))
     .map((f) => {
       const post = readMdxFile(path.join(dir, f))
-      if (!post.frontmatter.category) {
-        throw new Error(`[content] "blog/${f}": missing required frontmatter field "category"`)
+      if (rules.category === 'required' && !post.frontmatter.category) {
+        throw new Error(`[content] "${label}/${f}": missing required frontmatter field "category"`)
+      }
+      if (rules.category === 'forbidden' && post.frontmatter.category) {
+        throw new Error(`[content] "${label}/${f}": category is not allowed here (project entries stay out of the blog axes, CLAUDE.md §5.4)`)
+      }
+      if (rules.lang && post.frontmatter.lang !== rules.lang) {
+        throw new Error(`[content] "${label}/${f}": lang must be "${rules.lang}"`)
       }
       return post
     })
-    .sort((a, b) =>
-      b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
-    )
+}
+
+const newestFirst = (a: Post, b: Post) =>
+  b.frontmatter.datePublished.localeCompare(a.frontmatter.datePublished)
+
+/** All blog posts, newest first. Returns [] while content/blog is empty. */
+export function getAllPosts(): Post[] {
+  const posts = readCollection(['blog'], { category: 'required' }).sort(newestFirst)
   assertBasedOn(posts, 'blog')
   return posts
 }
@@ -285,22 +309,7 @@ export function getEnglishCaseStudy(slug: string): Post {
  * portfolio and distribution, not for ranking.
  */
 export function getAllEnglishPosts(): Post[] {
-  const dir = path.join(CONTENT_DIR, 'en', 'blog')
-  if (!fs.existsSync(dir)) return []
-
-  const posts = fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith('.mdx'))
-    .map((f) => {
-      const post = readMdxFile(path.join(dir, f))
-      if (!post.frontmatter.category) {
-        throw new Error(`[content] "en/blog/${f}": missing required frontmatter field "category"`)
-      }
-      if (post.frontmatter.lang !== 'en') {
-        throw new Error(`[content] "en/blog/${f}": lang must be "en"`)
-      }
-      return post
-    })
+  const posts = readCollection(['en', 'blog'], { category: 'required', lang: 'en' })
   const originals = new Map(getAllPosts().map((p) => [p.frontmatter.slug, p.frontmatter.datePublished]))
   const sorted = sortEnglishPosts(posts, (slug) => originals.get(slug))
   assertBasedOn(sorted, 'en/blog')
@@ -343,4 +352,28 @@ export function getRelatedPosts(slug: string, limit = 3, lang: 'pt-BR' | 'en' = 
   const sameAxis = others.filter((p) => p.frontmatter.category === self?.frontmatter.category)
   const rest = others.filter((p) => !sameAxis.includes(p))
   return [...sameAxis, ...rest].slice(0, limit)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seção do projeto (CLAUDE.md §5.4): entradas que documentam como este site é
+// feito. Coleção própria, em content/projeto e content/en/project, e não um
+// eixo do blog: fica fora de /blog, dos relacionados e do feed, para o cluster
+// temático do blog continuar só no nicho (§13). O frontmatter é o do artigo
+// sem `category` — o loader recusa uma entrada com eixo.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PROJECT_DIRS: Record<'pt-BR' | 'en', string[]> = {
+  'pt-BR': ['projeto'],
+  en: ['en', 'project'],
+}
+
+/** Entradas da seção do projeto num idioma, mais recentes primeiro. */
+export function getProjectEntries(lang: 'pt-BR' | 'en' = 'pt-BR'): Post[] {
+  return readCollection(PROJECT_DIRS[lang], { category: 'forbidden', lang }).sort(
+    (a, b) => newestFirst(a, b) || a.frontmatter.slug.localeCompare(b.frontmatter.slug)
+  )
+}
+
+export function getProjectEntry(slug: string, lang: 'pt-BR' | 'en' = 'pt-BR'): Post | undefined {
+  return getProjectEntries(lang).find((p) => p.frontmatter.slug === slug)
 }
