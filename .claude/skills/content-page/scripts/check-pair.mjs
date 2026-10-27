@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // ─────────────────────────────────────────────────────────────────────────────
-// check-pair.mjs — pair-level checks for a Portuguese/English article pair.
+// check-pair.mjs — pair-level checks for a Portuguese/English page pair: a
+// blog article (default) or a project entry (--type project, CLAUDE.md §5.4).
 //
 // The build (src/lib/content.ts) already validates each file on its own:
 // required fields, title/description/tldr lengths, category, status, basedOn.
@@ -9,8 +10,8 @@
 // their own language. This script covers that gap. It never edits a file.
 //
 // Usage (from the repository root):
-//   node .claude/skills/content-page/scripts/check-pair.mjs <pt-slug>
-//   node .claude/skills/content-page/scripts/check-pair.mjs --all [--verbose]
+//   node .claude/skills/content-page/scripts/check-pair.mjs <pt-slug> [--type blog|project]
+//   node .claude/skills/content-page/scripts/check-pair.mjs --all [--type blog|project] [--verbose]
 //
 // Exit code 1 when any ERROR is found; WARN lines never fail the run. NOTE
 // lines (links whose counterpart is missing on the other side) are printed for
@@ -22,20 +23,39 @@ import path from 'node:path'
 import matter from 'gray-matter'
 
 const ROOT = process.cwd()
-const PT_DIR = path.join(ROOT, 'content', 'blog')
-const EN_DIR = path.join(ROOT, 'content', 'en', 'blog')
 const HREFLANG = path.join(ROOT, 'src', 'lib', 'hreflang.ts')
 const LOG = path.join(ROOT, 'docs', 'experiment-log.md')
 
+// Where each kind of page lives and what its links must reach. A blog article
+// links the pillar and a tool (CLAUDE.md §6); a project entry instead links at
+// least one versioned artifact in the repository (§5.4, the evidence rule).
+const TYPES = {
+  blog: {
+    ptDir: ['content', 'blog'],
+    enDir: ['content', 'en', 'blog'],
+    ptPrefix: '/blog/',
+    enPrefix: '/en/blog/',
+    hubLinks: true,
+  },
+  project: {
+    ptDir: ['content', 'projeto'],
+    enDir: ['content', 'en', 'project'],
+    ptPrefix: '/projeto/',
+    enPrefix: '/en/project/',
+    hubLinks: false,
+  },
+}
+
 const PT_PILLAR = '/guia/seo-tecnico-nextjs'
 const EN_PILLAR = '/en/guide/technical-seo-nextjs'
+const REPOSITORY = 'github.com/Alf4kill/seotecnico.dev.br'
 const TRANSLATION_NOTE = 'first published in Portuguese'
 // CLAUDE.md §10, owner rule of 2026-10-23: every new article ships in both
 // languages in the same PR, so pairs from that date on share datePublished.
 // Older translations were published later and keep their own (later) date.
 const SAME_PR_RULE = '2026-10-23'
 
-if (!fs.existsSync(HREFLANG) || !fs.existsSync(PT_DIR)) {
+if (!fs.existsSync(HREFLANG)) {
   console.error('Run this from the root of the seotecnico.dev.br repository.')
   process.exit(2)
 }
@@ -73,35 +93,38 @@ function readPost(file) {
   return { data, body: content }
 }
 
-function checkPair(ptSlug, pairs, logText) {
+function checkPair(ptSlug, pairs, logText, type) {
   const errors = []
   const warns = []
   const notes = []
   const err = (m) => errors.push(m)
   const warn = (m) => warns.push(m)
   const note = (m) => notes.push(m)
+  const { ptPrefix, enPrefix } = type
+  const ptRel = type.ptDir.join('/')
+  const enRel = type.enDir.join('/')
 
-  const ptFile = path.join(PT_DIR, `${ptSlug}.mdx`)
+  const ptFile = path.join(ROOT, ...type.ptDir, `${ptSlug}.mdx`)
   if (!fs.existsSync(ptFile)) {
-    err(`content/blog/${ptSlug}.mdx does not exist`)
+    err(`${ptRel}/${ptSlug}.mdx does not exist`)
     return { errors, warns, notes }
   }
   const pt = readPost(ptFile)
 
   // 1. Pair registered in hreflang.ts, with the Portuguese path matching the slug.
-  const pair = pairs.find((p) => p.pt === `/blog/${ptSlug}`)
+  const pair = pairs.find((p) => p.pt === `${ptPrefix}${ptSlug}`)
   if (!pair) {
-    err(`no TRANSLATION_PAIRS entry with 'pt-BR': '/blog/${ptSlug}' in src/lib/hreflang.ts`)
+    err(`no TRANSLATION_PAIRS entry with 'pt-BR': '${ptPrefix}${ptSlug}' in src/lib/hreflang.ts`)
     return { errors, warns, notes }
   }
   if (pair.id !== ptSlug) err(`TRANSLATION_PAIRS id is '${pair.id}', expected the Portuguese slug '${ptSlug}'`)
-  if (!pair.en.startsWith('/en/blog/')) err(`English path '${pair.en}' is not under /en/blog/`)
-  const enSlug = pair.en.replace('/en/blog/', '')
+  if (!pair.en.startsWith(enPrefix)) err(`English path '${pair.en}' is not under ${enPrefix}`)
+  const enSlug = pair.en.replace(enPrefix, '')
 
   // 2. English file exists and declares the pair.
-  const enFile = path.join(EN_DIR, `${enSlug}.mdx`)
+  const enFile = path.join(ROOT, ...type.enDir, `${enSlug}.mdx`)
   if (!fs.existsSync(enFile)) {
-    err(`content/en/blog/${enSlug}.mdx does not exist (TRANSLATION_PAIRS points to it)`)
+    err(`${enRel}/${enSlug}.mdx does not exist (TRANSLATION_PAIRS points to it)`)
     return { errors, warns, notes, enSlug }
   }
   const en = readPost(enFile)
@@ -153,17 +176,23 @@ function checkPair(ptSlug, pairs, logText) {
     if (!post.data.tldr) warn(`${label} has no tldr`)
   }
 
-  // 5. Links stay inside their own language and reach the pillar and a tool.
+  // 5. Links stay inside their own language and reach what the page type requires.
   const ptLinks = internalLinks(pt.body)
   const enLinks = internalLinks(en.body)
   const enToPt = enLinks.filter((l) => !l.startsWith('/en'))
   if (enToPt.length) err(`EN links to non-English pages: ${enToPt.join(', ')}`)
   const ptToEn = ptLinks.filter((l) => l === '/en' || l.startsWith('/en/'))
   if (ptToEn.length) warn(`PT links to English pages: ${ptToEn.join(', ')}`)
-  if (!ptLinks.includes(PT_PILLAR)) err(`PT does not link the pillar ${PT_PILLAR}`)
-  if (!enLinks.includes(EN_PILLAR)) err(`EN does not link the pillar ${EN_PILLAR}`)
-  if (!ptLinks.some((l) => l.startsWith('/ferramentas/'))) err('PT links no tool (/ferramentas/...)')
-  if (!enLinks.some((l) => l.startsWith('/en/tools/'))) err('EN links no tool (/en/tools/...)')
+  if (type.hubLinks) {
+    if (!ptLinks.includes(PT_PILLAR)) err(`PT does not link the pillar ${PT_PILLAR}`)
+    if (!enLinks.includes(EN_PILLAR)) err(`EN does not link the pillar ${EN_PILLAR}`)
+    if (!ptLinks.some((l) => l.startsWith('/ferramentas/'))) err('PT links no tool (/ferramentas/...)')
+    if (!enLinks.some((l) => l.startsWith('/en/tools/'))) err('EN links no tool (/en/tools/...)')
+  } else {
+    for (const [label, post] of [['PT', pt], ['EN', en]]) {
+      if (!prose(post.body).includes(REPOSITORY)) err(`${label} links no versioned artifact (${REPOSITORY}/...), CLAUDE.md §5.4`)
+    }
+  }
 
   // Every internal link on one side should have its counterpart on the other.
   const counterpart = (p, from, to) => pairs.find((x) => x[from] === p)?.[to]
@@ -190,9 +219,16 @@ function checkPair(ptSlug, pairs, logText) {
 // ── main ────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2)
 const verbose = args.includes('--verbose')
-const arg = args.find((a) => a !== '--verbose')
+const typeIdx = args.indexOf('--type')
+const typeName = typeIdx >= 0 ? args[typeIdx + 1] : 'blog'
+const type = TYPES[typeName]
+if (!type) {
+  console.error(`unknown --type '${typeName}' (expected: ${Object.keys(TYPES).join(', ')})`)
+  process.exit(2)
+}
+const arg = args.find((a, i) => a !== '--verbose' && a !== '--type' && (typeIdx < 0 || i !== typeIdx + 1))
 if (!arg) {
-  console.error('usage: check-pair.mjs <pt-slug> | --all')
+  console.error('usage: check-pair.mjs <pt-slug> | --all [--type blog|project]')
   process.exit(2)
 }
 
@@ -200,13 +236,13 @@ const pairs = readPairs()
 const logText = fs.existsSync(LOG) ? fs.readFileSync(LOG, 'utf8') : ''
 const slugs =
   arg === '--all'
-    ? pairs.filter((p) => p.pt.startsWith('/blog/')).map((p) => p.pt.replace('/blog/', ''))
+    ? pairs.filter((p) => p.pt.startsWith(type.ptPrefix)).map((p) => p.pt.replace(type.ptPrefix, ''))
     : [arg.replace(/\.mdx$/, '')]
 
 const showNotes = slugs.length === 1 || verbose
 let failed = 0
 for (const slug of slugs) {
-  const { errors, warns, notes, enSlug } = checkPair(slug, pairs, logText)
+  const { errors, warns, notes, enSlug } = checkPair(slug, pairs, logText, type)
   const shownNotes = showNotes ? notes : []
   const head = `${slug}${enSlug ? ` ↔ ${enSlug}` : ''}`
   if (!errors.length && !warns.length && !shownNotes.length) {
