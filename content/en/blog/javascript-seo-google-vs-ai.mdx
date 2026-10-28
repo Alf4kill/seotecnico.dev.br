@@ -1,109 +1,115 @@
 ---
 title: "JavaScript SEO: what Google renders and AI doesn't"
-description: "Googlebot renders JavaScript; in 2026 tests, three of five AI assistants didn't run the page's JS. Why the first render is now the rule."
+description: "Googlebot renders JavaScript, but in 2026 tests three of five AI assistants didn't run the page's JS. Why the first render is now the rule."
 slug: "javascript-seo-google-vs-ai"
+datePublished: "2026-10-06"
+dateModified: "2026-10-18"
 primaryQuery: "javascript seo"
-keywords: ['english', 'inglês', 'javascript', 'javascript seo', 'rendering', 'googlebot', 'csr', 'ssr', 'spa', 'react', 'vite', 'wordpress', 'use client', 'useEffect', 'first render', 'chatgpt', 'gemini', 'deepseek', 'grok', 'ai']
 lang: "en"
 translationOf: "javascript-seo-google-vs-ia"
 category: indexacao
 basedOn: ['which-ai-assistants-run-javascript', 'does-chatgpt-read-javascript']
+keywords: ['english', 'inglês', 'javascript', 'javascript seo', 'rendering', 'googlebot', 'csr', 'ssr', 'spa', 'react', 'vite', 'wordpress', 'use client', 'useEffect', 'first render', 'chatgpt', 'gemini', 'deepseek', 'grok', 'ai']
 tldr: >-
   Googlebot renders JavaScript after a queue with no published deadline. In
-  this site's tests, ChatGPT, Claude and Gemini didn't run the page's
-  JavaScript; DeepSeek ran it but sometimes lost the value; Grok always got
-  it. Visible text in the first render reached all five.
-datePublished: "2026-10-06"
-dateModified: "2026-10-18"
+  this site's tests, ChatGPT, Claude, and Gemini didn't run the page's
+  JavaScript, DeepSeek ran it but sometimes lost the value, and Grok always
+  delivered it. Visible text in the first render reached all five.
 faq:
   - question: "Does Google read content loaded by JavaScript?"
-    answer: "Yes. According to Google Search Central's documentation (updated March 2026), Googlebot queues pages that return a 200 status for rendering, unless a robots meta tag or header tells Google not to index them, then runs the JavaScript in an evergreen Chromium and indexes the rendered HTML. The documentation gives no deadline for that queue: it says it may take a few seconds or longer."
+    answer: "Yes. According to Google Search Central documentation, updated in March 2026, Googlebot queues pages that return a 200 status for rendering, unless a robots meta tag or header asks it not to index them. It runs the JavaScript in an evergreen (always current) Chromium and indexes the rendered HTML. The docs give no deadline for that queue, which may take a few seconds or longer."
   - question: "Do AI assistants read content loaded by JavaScript?"
-    answer: "It depends on the assistant. In this site's test, between September and October 2026, ChatGPT (Go plan), Claude (Pro) and Gemini (free) didn't run the page's JavaScript in any round. DeepSeek (free) ran it every time but only returned the loaded value in 3 of 5 neutral rounds; Grok (free) returned it in 5 of 5."
+    answer: "It depends on the assistant. In this site's test, between September and October 2026, ChatGPT (Go plan), Claude (Pro), and Gemini (free) didn't run the page's JavaScript in any round. DeepSeek (free) ran it in every round but returned the loaded value in only 3 of 5 neutral rounds. Grok (free) returned it in 5 of 5."
   - question: "Is a React site bad for SEO?"
-    answer: "React itself isn't. What matters is what's in the served HTML: if the main content only appears after JavaScript runs, Google depends on the rendering step and some of the AI assistants tested never see that content. If the content ships in the first render, through SSR or pre-rendering, both kinds of reader get the same text."
-  - question: "Does a Client Component show up for AI?"
-    answer: "Whatever it outputs in the first render does. In Next.js, a component marked use client is still pre-rendered on the server. In this site's test, between September and October 2026, the text of a Client Component present in the first render showed up in all five assistants' answers in all 28 neutral rounds. What gets left out is content that only exists after an effect runs, like a fetch inside useEffect."
+    answer: "React itself isn't. What matters is what's in the served HTML. If the main content appears only after JavaScript runs, Google depends on its rendering step, and some of the AI assistants tested never see that content. If the content ships in the first render, through SSR or pre-rendering, both kinds of reader get the same text."
+  - question: "Does a Client Component show up for AI assistants?"
+    answer: "What it outputs in the first render does. In Next.js, a component with use client is still pre-rendered on the server. In this site's test, between September and October 2026, Client Component text present in the first render appeared in all five assistants' answers in all 28 neutral rounds. What's left out is content that exists only after an effect, such as a fetch inside useEffect."
 ---
 
-Googlebot renders JavaScript. Google's documentation describes three stages
-(crawling, rendering and indexing), and content built by scripts makes it into
-the index once the page has gone through the rendering queue. AI assistants
-are a different kind of reader. In the test I ran on this site between
-September and October 2026, ChatGPT (Go plan), Claude (Pro) and Gemini (free)
-didn't run the page's JavaScript in any round. DeepSeek (free) ran it every
-time but only returned the loaded value in 3 of 5, and Grok (free) in 5 of 5.
-The only content that reached all five was visible text already present in the
-first render.
+JavaScript SEO now has two readers to satisfy, and they behave differently.
+Google's documentation says Googlebot renders JavaScript. It crawls a page,
+renders it, and indexes the result, so content built by a script enters the
+index once the page has gone through the rendering queue. AI assistants are
+a different kind of reader, and in a test I ran on this site between
+September and October 2026, most of them didn't run the script. ChatGPT (Go
+plan), Claude (Pro), and Gemini (free) didn't run the page's JavaScript in
+any round. DeepSeek (free) ran it in every round but returned the loaded
+value in only 3 of 5, and Grok (free) returned it in 5 of 5. Only visible
+text that was already in the first render reached all five.
 
 For years, "Google renders JavaScript" was the argument for not worrying
-about what the server sends. Now that AI assistants read pages too, that
-argument only covers one of the readers. This article treats them separately
-and says where each claim comes from: Googlebot's behavior comes from the
-official documentation; the assistants' behavior comes from this site's
-measurements.
+about what the server delivers. Now that AI assistants fetch pages too, that
+argument covers only one of the readers. This article keeps the two apart
+and says where each claim comes from. Everything about Googlebot comes from
+Google's official documentation. Everything about the assistants comes from
+my measurements on this site.
 
-One note on scope before going further: what I measured was **assistants
-responding to a user's prompt** that includes a page's address, on specific
-plans and dates. I didn't measure training crawlers (the ones that collect
-pages in bulk), and the results don't automatically apply to them.
+Keep the scope in mind. I measured **assistants responding to a user's
+prompt** that includes a page's address, on specific plans and dates.
+I didn't measure training crawlers, the ones that collect pages in bulk, and
+the result doesn't automatically carry over to them.
 
 ## How Google handles JavaScript
 
-Google Search Central's [JavaScript SEO
-basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
-page (updated March 4, 2026) describes the process like this:
+Google describes a three-step pipeline in the Search Central page
+[JavaScript SEO
+basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics),
+last updated March 4, 2026:
 
-1. **Crawling.** Googlebot fetches the URL, checks `robots.txt` and reads the
-   response HTML. Links in `<a href>` are added to the crawl queue at this
-   stage.
-2. **Rendering.** Pages that return a `200` status go into a rendering queue,
-   whether or not they use JavaScript, unless a robots meta tag or header
-   tells Google not to index them. When resources allow, a headless Chromium
-   runs the scripts. The documentation says a page may sit in the queue for a
-   few seconds, but it can take longer. There's no published deadline.
-3. **Indexing.** Google uses the rendered HTML for indexing and to discover
-   new links.
+1. **Crawling.** Googlebot fetches the URL, checks `robots.txt`, and reads
+   the HTML in the response. Links in `<a href>` already go into the crawl
+   queue at this stage.
+2. **Rendering.** Pages that return a `200` status go into a rendering
+   queue, whether or not they use JavaScript, unless a robots meta tag or
+   header asks Google not to index them. When resources are available, a
+   headless Chromium runs the scripts. According to the docs, a page may sit
+   in the queue for a few seconds, but it may take longer. Google doesn't
+   publish a deadline.
+3. **Indexing.** Google uses the rendered HTML to index the page and to
+   discover new links.
 
-The renderer's Chromium is "evergreen": it tracks the current stable browser
-rather than being stuck on an old version. In practice, modern JavaScript
-APIs work; what the documentation asks is that you be careful with features
-that can't be used without a polyfill.
+Rendering runs on an "evergreen" Chromium, which tracks the stable browser
+version instead of staying stuck on an old one. In practice, modern
+JavaScript APIs work. The docs do ask you to be careful with features you
+can't use without a polyfill.
 
-Three details from the same documentation matter for this article:
+Three more details from the same docs matter here:
 
 - **The page itself recommends server-side rendering or pre-rendering**,
-  because it makes the site faster for users and crawlers alike, and because
-  not every bot runs JavaScript.
+  because it makes the site faster for users and crawlers, and because not
+  every bot runs JavaScript.
 - **A `noindex` in the original HTML may make Google skip rendering.** A
-  script that removes the `noindex` later may simply never run.
-- **A canonical changed by JavaScript** shouldn't point somewhere other than
-  the canonical in the original HTML.
+  script that removes the `noindex` later may never run.
+- **A canonical changed by JavaScript** shouldn't point somewhere other
+  than the canonical in the original HTML.
 
-Dynamic rendering (serving pre-rendered HTML only to bots) is now described
-in the documentation as a [workaround, not a recommended
-solution](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering);
-Google points to SSR, static rendering or hydration instead.
+Google now presents dynamic rendering (serving pre-rendered HTML only to
+bots) as a
+[workaround, not a recommended
+solution](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering).
+It points to server-side rendering, static rendering, or hydration instead.
 
 ## How the AI assistants handled it
 
-The test is described in detail in [Which AI assistants run
-JavaScript?](/en/blog/which-ai-assistants-run-javascript), which extends the
-positive control summarized in the [AI crawler detection case
-study](/en/case-studies/ai-crawler-detection). Here's the minimum you need to
-read the numbers.
+I wrote up the full test in
+[Which AI assistants run
+JavaScript?](/en/blog/which-ai-assistants-run-javascript).
+It extends the positive control I published in
+[Does ChatGPT read JavaScript?](/en/blog/does-chatgpt-read-javascript).
+You need only a little of the method to read the numbers.
 
-A lab page shows two codes. The first, `UC-`, is text a Client Component
-outputs in the first render, so it's in the HTML the server sends. The
-second, `JS-`, only exists after a `fetch` inside `useEffect` completes, so it
-only shows up if something runs the page's JavaScript and waits for the
-response. Each assistant gets its own secret URL, so the URL, not the user
-agent, tells me who fetched the page. The server also logs whether the
-`fetch` endpoint was called, which shows whether the script ran regardless of
-what the assistant says.
+A lab page shows two codes. `UC-` is text that a Client Component outputs in
+the first render, so it's in the HTML the server delivers. `JS-` exists only
+after a `fetch` inside `useEffect` finishes, so it shows up only if
+something runs the page's JavaScript and waits for the response. Each
+assistant gets its own secret URL, which tells me who fetched the page
+without relying on the user agent. The server also logs whether the `fetch`
+endpoint was called, so I know whether the script ran regardless of what the
+assistant says.
 
-In the neutral rounds (a plain prompt to read the page, with no hint about
-where the value is), between September and October 2026:
+In the neutral rounds, run between September and October 2026, a plain
+prompt asked the assistant to read the page and gave no hint about where the
+value was.
 
 | Reader | How far it got | `UC-` code (first render) | `JS-` value in the answer | Script ran (server log) | Source |
 |---|---|---|---|---|---|
@@ -150,87 +156,94 @@ where the value is), between September and October 2026:
   <figcaption>Googlebot's dashed box is documentation, not measurement. The other bars come from the server log and the answers in the neutral rounds.</figcaption>
 </figure>
 
-There are two conclusions the table doesn't support:
+Don't read two things into this table.
 
-**Zero doesn't mean "never".** With 0 of 5, a true rate of nearly half of all
-visits is still consistent with the result (one-sided 95% upper bound). With
-0 of 8, in Gemini's case, the ceiling drops to about a third. What you can
-say is what happened in those rounds, on those plans, on those dates. An
-assistant may behave differently the following week.
+**Zero doesn't mean "never."** With 0 of 5, a true frequency of nearly half
+the visits is still compatible with the result (one-sided 95% upper bound).
+For Gemini's 0 of 8, the ceiling drops to about a third. I can only state
+what happened in those rounds, on those plans, on those dates. An assistant
+may behave differently the following week.
 
 **The result doesn't explain why.** Gemini comes from the same company as
-Googlebot and still didn't run the script in any of its 8 rounds. I don't
-know what the assistant's page-reading pipeline looks like, and the table
-doesn't tell us. What it does show is that "Google renders" and "Google's
-assistant renders" were, in this test, two different things.
+Googlebot, and it still didn't run the script in any of its 8 rounds. I
+don't know what Gemini's reading pipeline looks like, and the table doesn't
+explain it. It does show that, in this test, "Google renders" and
+"Google's assistant renders" were different things.
 
-The practical conclusion is narrow, and that's what makes it reliable:
-visible text in the served HTML reached all of them; what depended on the
-`fetch` reached two out of five. Note the word "visible": JSON-LD is also in
-the served HTML, and only Grok read it, as covered in [structured data and
-AI](/en/blog/structured-data-and-ai).
+You can take away only a narrow conclusion, and that's what makes it
+reliable. Visible text in the served HTML reached all five assistants.
+Anything that depended on the `fetch` reached two of five. Note the word
+"visible." JSON-LD is in the served HTML too, and only Grok read it, as I
+cover in
+[structured data and AI](/en/blog/structured-data-and-ai).
 
 ## The middle case: rendering isn't enough
 
-DeepSeek (free) is the most useful result in the table, because it pulls
-apart two things usually treated as one: running JavaScript, and returning
-the content that JavaScript produces.
+DeepSeek (free) is the most useful result in the table. It pulls apart two
+things that usually get treated as one: running the JavaScript and
+delivering the content that JavaScript produces.
 
-According to the server log, the script ran in all 11 of DeepSeek's rounds,
-across the experiment's three conditions. Even so, the value only made it
-into some of the answers:
+According to the server log, the script ran in all 11 DeepSeek rounds,
+across the experiment's three conditions. Only some of those answers carried
+the value:
 
 - **Neutral rounds:** 3 of 5.
 - **With a hint about where the value was:** 0 of 3.
 - **With the endpoint's address in the prompt:** 3 of 3.
 
-In the 5 rounds where the value didn't come through, the answer said the page
-only showed "carregando…" ("loading…"), the state before the `fetch`
-completes. That's consistent with the text being captured before the value
-arrived, but it's my interpretation, not something the log proves. With the
-address in the prompt, the log shows something different: besides rendering
-the page, DeepSeek opened the JSON address directly, the way you'd open a
-link. That the answer took the value from that direct request rather than the
-rendered page **is an inference**: the server records the requests, not the
-order in which the assistant read things.
+In the 5 rounds where the value didn't arrive, the answer said the page
+showed only "carregando…" ("loading…"), the state before the `fetch`
+finishes. That fits text captured before the value arrived, but it's my
+interpretation, not something the log proves.
 
-The lesson for publishers: even with a reader that runs JavaScript, content
-that depends on an asynchronous request is at the mercy of when that reader
-decides the page is "done". The first render doesn't have that problem.
+With the address in the prompt, the log shows something else. Besides
+rendering the page, DeepSeek requested the JSON address directly, the way
+you'd open a link. I **infer** that the answer took the value from that
+direct request and not from the built page. The server records requests,
+not DeepSeek's internal reading order.
+
+If you publish content, the lesson holds even for readers that run
+JavaScript. Content that depends on an asynchronous request is at the mercy
+of whenever the reader decides the page is "done." Anything in the first
+render avoids that problem.
 
 ## What usually ends up outside the first render
 
-The only pattern I measured was a `fetch` inside `useEffect`. The rest of
-this list follows from the mechanism: if the content isn't in the served
-HTML, it depends on something running the JavaScript. I don't have numbers
-for these.
+I measured only one of these patterns, a `fetch` inside `useEffect`. The
+rest follow from the mechanism, and I don't have numbers for them. If
+content isn't in the served HTML, it depends on something running the
+JavaScript.
 
-- **Data fetched on the client after mount.** This is the measured case:
-  `fetch` in `useEffect`, or SWR and React Query with no initial data from the
-  server.
-- **Client-only components.** In Next.js, `dynamic(() => import('./X'), { ssr:
-  false })` deliberately removes the component from the served HTML.
-- **Content that only mounts after an interaction.** Tabs, accordions and
-  modals that **only mount** their content on click don't have it in the HTML.
-  If the content is rendered and just hidden with CSS, it's there.
+- **Data fetched on the client after mount.** This covers a `fetch` in
+  `useEffect`, the case I measured, and SWR or React Query with no initial
+  data from the server.
+- **Client-only components.** In Next.js,
+  `dynamic(() => import('./X'), { ssr: false })`
+  leaves the component out of the served HTML on purpose.
+- **Content that only mounts after an interaction.** Tabs, accordions, and
+  modals that **only mount** their content on click don't have it in the
+  HTML. If the content is rendered and just hidden with CSS, it's there.
 - **"Load more" lists and infinite scroll.** The first batch may be in the
-  HTML; the rest isn't.
-- **Third-party widgets.** Reviews, prices and stock levels injected by an
+  HTML. The batches after it aren't.
+- **Third-party widgets.** Reviews, prices, or stock levels injected by an
   external script.
 - **Metadata and structured data injected by JavaScript.** Google accepts
-  script-generated JSON-LD, but it depends on rendering. For the assistants,
-  JSON-LD is a problem even when it comes straight from the server; I cover
-  that in [structured data and AI](/en/blog/structured-data-and-ai).
+  JSON-LD generated by a script, but that depends on rendering. For the
+  assistants, JSON-LD is a problem even when it comes ready from the server,
+  as I explain in [structured data and AI](/en/blog/structured-data-and-ai).
 
 ## How to get content into the first render, stack by stack
 
-The goal is the same in any stack: the text that matters has to ship in the
-response HTML, before any script runs. The examples below are illustrative;
-only Next.js was measured here.
+Whatever your stack, the goal is the same. Text that matters has to ship in
+the response HTML, before any script runs. The examples below are
+illustrative, and Next.js is the only stack I measured here.
 
-**Next.js (App Router).** Server Components already render on the server, and
-Client Components are pre-rendered on first load too. The fix is to fetch
-data on the server instead of in `useEffect`. An illustrative example:
+**Next.js (App Router).** Server Components already render on the server,
+and Client Components are pre-rendered on first load too. To keep content
+in the first render, fetch data on the server instead of in `useEffect`.
+To pick a rendering mode, see
+[SSR, SSG, and ISR in Next.js](/en/blog/nextjs-ssr-ssg-isr). Here's an
+illustrative example:
 
 ```tsx
 // app/product/[id]/page.tsx (illustrative)
@@ -246,9 +259,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
 **WordPress and PHP.** PHP builds the page on the server, so you get the
 first render for free. People who come from shared hosting, like me, tend to
-underestimate that advantage. The risk shows up when a plugin or theme starts
-fetching content via AJAX or REST after the page loads. Here's the
-difference, in illustrative form:
+underestimate that advantage. The risk starts when a plugin or theme fetches
+content through AJAX or REST after load. Here's an illustrative version of
+the difference:
 
 ```php
 <?php // illustrative: the price ships in the served HTML ?>
@@ -263,8 +276,8 @@ difference, in illustrative form:
 </script>
 ```
 
-**React SPA built with Vite.** By default, the served HTML is an empty shell,
-and everything the user sees is built by the script:
+**React SPA built with Vite.** By default, the served HTML is an empty
+shell, and the script builds everything the user sees:
 
 ```html
 <!-- illustrative: the index.html a React SPA built with Vite serves -->
@@ -282,15 +295,15 @@ and everything the user sees is built by the script:
 ```
 
 To a reader that doesn't run JavaScript, this page has a title and nothing
-else. The way out is to pre-render routes at build time, or to move the pages
-that need to be read to a framework with SSR. I didn't test an SPA in the
-lab, so I'll stick to the mechanism here: I have no data on how each
+else. You can pre-render routes at build time, or move the pages that need
+to be read to a framework with SSR. I haven't measured an SPA in the lab, so
+this stays at the level of mechanism, and I have no data on how each
 assistant handles a page built entirely on the client.
 
 ## How to check
 
-The test is always the same: is the text that matters in the HTML the server
-sends?
+Every check here asks one question. Is the text that matters in the HTML the
+server delivers?
 
 1. **Fetch the raw HTML.** A `curl` shows exactly what a reader without
    JavaScript receives:
@@ -301,26 +314,22 @@ sends?
    ```
 
    If the result is `0`, the text isn't in the first render.
-
-2. **Compare the page source with the DOM.** The browser's "View page source"
-   (Ctrl+U) shows the served HTML; the DevTools Elements panel shows the DOM
-   after JavaScript has run. Anything that only appears in the second depends
-   on rendering.
-
-3. **Disable JavaScript.** In DevTools, open the command menu (Ctrl+Shift+P),
-   run "Disable JavaScript" and reload. What's left on screen is what a text
-   extractor gets.
-
-4. **Check the metadata.** The [meta tag
-   validator](/en/tools/meta-tag-validator) shows whether `title`,
-   `description` and the canonical are present in the HTML the server sends.
-
-5. **See Google's version.** In Search Console's URL Inspection tool, the
-   live test shows the HTML Google rendered for the tested page. That's
-   confirmation from Googlebot's side, and only from its side.
-
-6. **Automate it.** On this site, a Playwright test checks the lab's codes in
-   the served HTML without running the page's JavaScript. It strips out every
+2. **Compare the page source with the DOM.** Your browser's "View page
+   source" (Ctrl+U) shows the served HTML. The Elements panel in DevTools
+   shows the DOM after JavaScript runs. Anything that appears only in the
+   Elements panel depends on rendering.
+3. **Disable JavaScript.** In DevTools, open the command menu
+   (Ctrl+Shift+P), run "Disable JavaScript", and reload. What's left on
+   screen is what a text extractor gets.
+4. **Check the metadata.** The
+   [meta tag validator](/en/tools/meta-tag-validator) shows whether `title`,
+   `description`, and the canonical are present in the HTML the server
+   delivers.
+5. **See Google's version.** In Search Console, the live URL test in URL
+   Inspection shows the HTML Google rendered for the tested page. That
+   confirms Googlebot's side, and only its side.
+6. **Automate it.** On this site, a Playwright test checks for the lab codes
+   in the served HTML without running the page's JavaScript. It strips every
    `<script>` and searches for each code in what's left:
 
 ```ts
@@ -339,20 +348,22 @@ expect(jsonLd.map((node) => node.identifier)).toContain(codes.LD)
 expect(html, 'JS- must not be in the served HTML at all').not.toContain(codes.JS)
 ```
 
-The comments are in Portuguese, as they are in the repository. The first
-says the visible text is the HTML without any `<script>`, JSON-LD and the RSC
-payload included; the last says `JS-` appears neither in the text nor in any
-script, because it only exists after the `fetch`.
+The comments are in Portuguese, as they are in the repository. The first one
+says visible text means the HTML with every `<script>` removed, JSON-LD and
+the RSC payload among them. The last one says `JS-` is neither in the text
+nor in any script, because it exists only after the `fetch`.
 
-A note on logs: in the lab, each assistant's identity comes from its secret
-URL. In your own server log, all you have is a request profile. The most you
-can say is "requests identifying themselves as X", and an assistant's own
-explanation of what it read is no substitute for the server log.
+A note on logs. In the lab, I identify each assistant by its secret URL.
+In your own server log, you only have a request profile, so the
+most you can write is "requests identifying themselves as X." And an
+assistant's explanation of what it read is no substitute for the server
+log.
 
 ## In Next.js: the probe's two components
 
-The lab page uses two components side by side. Both are Client Components in
-the same file. The difference is **when** the content exists:
+On the lab page, two components sit side by side. Both are Client
+Components, in the same file, and they differ in **when** their content
+exists:
 
 ```tsx
 // src/components/lab/ControlCodes.tsx (lines 19–44)
@@ -384,28 +395,29 @@ export function FetchedCode({ endpoint }: { endpoint: string }) {
 }
 ```
 
-The page's labels are in Portuguese: "Código do componente cliente" means
-"Client Component code", "Código carregado no navegador" means "code loaded
-in the browser", and "carregando…" means "loading…".
+Labels on the page are in Portuguese. "Código do componente cliente" means
+"Client Component code," "Código carregado no navegador" means "code loaded
+in the browser," and "carregando…" means "loading…".
 
-The `UC-` component is marked `'use client'`, but its text is in the served
-HTML, because Next.js pre-renders Client Components on the server. Across the
-28 neutral rounds, between September and October 2026, that text showed up in
-all five assistants' answers every single time. The `JS-` component builds its
-value inside `useEffect`, which only runs in the browser after hydration. So
-for a reader that doesn't run the script, the value simply doesn't exist:
-what's left in the HTML is the "carregando…" that the answers without the
-value reported.
+Even with `'use client'`, the `UC-` component's text is in the served HTML,
+because Next.js pre-renders Client Components on the server. In all 28
+neutral rounds, between September and October 2026, that text appeared in
+the answers of all five assistants, every time.
 
-The takeaway for a Next.js project is straightforward: `'use client'` isn't
-the problem. The problem is putting content that needs to be read behind an
-effect, a `dynamic` import with `ssr: false`, or a user interaction.
+`JS-` works differently. Its component builds the value inside `useEffect`,
+which runs only in the browser after hydration. For a reader that doesn't
+run the script, the value doesn't exist. The HTML keeps only the
+"carregando…" that the answers without the value reported.
 
-Outside the lab, no text on this site's pages depends on JavaScript to exist.
-I don't use `dynamic`, and the few `useEffect` calls in the codebase handle
-the consent banner, search, the copy-code button and Web Vitals measurement,
-never content. The probe exists precisely to measure what happens when
-someone does the opposite.
+For a Next.js project, then, `'use client'` isn't the problem. Trouble
+starts when you put content that needs to be read behind an effect, a
+`dynamic` with `ssr: false`, or an interaction.
+
+Outside the lab, no text on this site's pages depends on JavaScript to
+exist. I don't use `dynamic`, and the few `useEffect` hooks I have handle
+the consent banner, search, the copy-code button, and Web Vitals
+measurement, never content. The probe exists precisely to measure what
+happens when someone does the opposite.
 
 For the full picture of technical SEO in Next.js projects, start with the
 [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs).
