@@ -1,43 +1,56 @@
 ---
 title: "INP in Next.js: how to diagnose and fix it"
-description: "INP in Next.js: why Lighthouse doesn't measure it, how to diagnose it with your own field data, and the fixes that work in the App Router."
+description: "Lighthouse doesn't measure INP. In Next.js, diagnose it with your own field data, then apply the fixes that work in the App Router."
 slug: "nextjs-inp"
+datePublished: "2026-10-18"
+dateModified: "2026-10-18"
 primaryQuery: "inp next.js"
-keywords: ['english', 'inglês', 'inp', 'interaction to next paint', 'core web vitals', 'cwv', 'tbt', 'long tasks', 'scheduler.yield', 'usetransition', 'hydration', 'input delay', 'rum', 'web-vitals', 'fid']
 lang: "en"
 translationOf: "inp-nextjs"
 category: cwv
+keywords: ['english', 'inglês', 'inp', 'interaction to next paint', 'core web vitals', 'cwv', 'tbt', 'long tasks', 'scheduler.yield', 'usetransition', 'hydration', 'input delay', 'rum', 'web-vitals', 'fid']
 tldr: >-
-  INP measures the time from an interaction to the next painted frame; good
-  means ≤200 ms at the field p75. Lighthouse doesn't measure INP, only TBT as a
-  proxy. Below the CrUX threshold, your own RUM is all you have: with 9
-  measurements, this site's p75 is 144 ms, too few to prove a good INP.
-datePublished: "2026-10-18"
-dateModified: "2026-10-18"
+  INP is the time from an interaction to the next painted frame, good at
+  ≤200 ms at the p75 of field data. Lighthouse doesn't measure it and offers
+  only TBT as a proxy. Below the CrUX threshold, only your own RUM shows it.
+  This site has 9 measurements with a p75 of 144 ms, too few to prove a good
+  INP.
 faq:
   - question: "Did INP replace FID?"
-    answer: "Yes. INP became a Core Web Vital on March 12, 2024, replacing FID. FID only measured the input delay of a visit's first interaction; INP looks at every interaction and the full cycle, up to the next painted frame."
+    answer: "Yes. INP became a Core Web Vital on March 12, 2024, in place of FID. FID measured only the input delay of a visit's first interaction. INP covers every interaction and the full cycle, up to the next painted frame."
   - question: "What is a good INP?"
-    answer: "At the p75 of field data: ≤200 ms is good, 200 ms to 500 ms needs improvement, and above 500 ms is poor. The p75 is calculated over page loads: each load has a single INP, which roughly matches its worst interaction, and 75% of those loads have to stay under the threshold."
+    answer: "At the p75 of field data, INP is good at ≤200 ms, needs improvement from 200 ms to 500 ms, and is poor above 500 ms. The p75 is computed over page loads. Each load has a single INP, which roughly matches its worst interaction, and 75% of those loads have to stay below the threshold."
   - question: "Why doesn't Lighthouse show INP?"
-    answer: "Because INP requires a real user actually interacting, and Lighthouse runs in a lab environment where nobody clicks anything. The lab proxy is TBT (Total Blocking Time). INP only exists in field data: CrUX or your own RUM."
+    answer: "INP needs a real user interacting with the page, and Lighthouse runs in a lab where nobody clicks. Its lab proxy is TBT (Total Blocking Time). INP exists only in field data, from CrUX or from your own RUM."
   - question: "How do I measure INP if my site isn't in CrUX?"
-    answer: "With your own RUM: the web-vitals library's onINP sending an event to GA4. Sites below CrUX's traffic threshold have no public data, but they can collect their own. That's what this site does, and the code is in the article."
-  - question: "How many INP measurements do you need to claim the p75 is good?"
-    answer: "If no measurement goes over 200 ms, at least 11. With zero measurements above the threshold in n page loads, the 95% upper bound on the true share above 200 ms is 1 − 0.05^(1/n), and it only drops below the 25% the p75 allows once n reaches 11. With 9 measurements, all good, the bound is still 28.3%."
+    answer: "Set up your own RUM with the web-vitals library, using onINP to send an event to GA4. Sites below CrUX's traffic threshold have no public data, but they can collect their own. This site does, and the code is in this article."
+  - question: "How many INP measurements do I need to say the p75 is good?"
+    answer: "If no measurement exceeds 200 ms, at least 11. With zero above the threshold in n loads, the 95% upper bound on the true share above 200 ms is 1 − 0.05^(1/n), and it only drops below the 25% the p75 allows from n = 11. With 9 measurements, all good, the bound is still 28.3%."
   - question: "Are TBT and INP the same thing?"
-    answer: "No. They're correlated, but TBT is a lab metric that adds up main-thread blocking during page load; INP is real interaction latency, measured at any point during the visit."
+    answer: "No. They correlate, but TBT is a lab metric that adds up main-thread blocking during load. INP is the latency of real interactions, measured at any point in the visit."
   - question: "What causes high INP in Next.js?"
-    answer: "Hydration competing with the first interaction, long event handlers, expensive synchronous re-renders and a large DOM at paint time. Each of those has a specific fix in the App Router."
+    answer: "Hydration competing with the first interaction, long event handlers, expensive synchronous re-renders, and a large DOM at paint time. Each cause has a specific fix in the App Router."
 ---
 
-INP (Interaction to Next Paint) measures the time between a user interaction and the next frame painted on screen; a good value is ≤200 ms at the p75 of field data. In Next.js, the usual culprits are hydration competing with the first click and long handlers tying up the main thread. And this metric comes with a trap of its own: **Lighthouse doesn't measure INP**. If you only audit in the lab, you can't see it at all. This article shows how to collect your own field data and what to fix once you have it.
+INP (Interaction to Next Paint) measures the time between a user's
+interaction and the next frame the browser paints on screen. It's good at
+≤200 ms at the p75 of field data. In Next.js, overruns typically come from
+hydration competing with the first click and from long handlers that hold
+the main thread. INP also comes with a trap of its own. **Lighthouse doesn't measure
+INP**, so if you only audit in the lab, you can't see it. This
+article shows how to collect your own field data and what to fix once you
+have it.
 
 ## What INP is and why Lighthouse doesn't show it
 
-INP replaced FID as a Core Web Vital on March 12, 2024. The difference is scope: FID only measured the *input delay* of a visit's first interaction, the time until the browser starts responding. INP looks at every interaction during the visit and measures the full cycle, including the handler's processing and painting the resulting frame. It's a tougher metric, which is why it catches problems FID let slide.
+INP replaced FID as a Core Web Vital on March 12, 2024. They differ in
+scope. FID measured only the *input delay* of a visit's first interaction,
+meaning how long the browser took to start responding. INP covers every
+interaction in the visit and its full cycle, including handler processing
+and painting the frame that results. It's a harder metric, and that's why it
+catches problems FID let through.
 
-The field thresholds, at the p75:
+Here are the field thresholds at the p75:
 
 | Rating | Value at the p75 |
 |---|---|
@@ -45,15 +58,28 @@ The field thresholds, at the p75:
 | Needs improvement | 200–500 ms |
 | Poor | >500 ms |
 
-Now for the point that changes how you work: **Lighthouse has no INP metric.** That's not a gap in the interface; it's conceptually impossible. INP needs a real user actually interacting, and Lighthouse runs in a lab environment where nobody clicks anything. What the lab audit offers instead is TBT (Total Blocking Time), a proxy that adds up how long the main thread was blocked during load. It correlates with INP, but it isn't INP.
+One point changes how you work. **Lighthouse has no INP metric.** It isn't
+missing from the interface. It can't exist there at all, because INP needs a
+real user interacting with the page, and Lighthouse runs in a lab where
+nobody clicks anything.
 
-This site's Lighthouse CI budget works on exactly that logic: TBT ≤200 ms as a lab proxy, checked on every pull request. It's the best the lab can give you, and it's worth keeping. But it's a proxy, and a proxy is no substitute for measurement.
+What the lab offers instead is TBT (Total Blocking Time), a proxy that adds
+up how long the main thread was blocked during load. It correlates with
+INP, but it isn't INP. This site's Lighthouse CI budget uses exactly that,
+TBT ≤200 ms as a lab proxy, checked on every pull request. It's the best the
+lab can give you, and it's worth keeping. It's still a proxy, though, and a
+proxy doesn't replace measurement.
 
-For small sites, that adds up to a double blind spot. With no interaction in the lab, there's no INP in Lighthouse. And below CrUX's traffic threshold, there's no INP in PageSpeed Insights or Search Console either, which is where this site is today. There's only one way out: measure your own INP in the field.
+Small sites have a double blind spot. With no interaction in the lab,
+Lighthouse has no INP. Below CrUX's traffic threshold, PageSpeed Insights
+and Search Console have no INP either, and that's where this site is today.
+All that's left is to measure your own INP in the field.
 
 ## The 3 subparts of every interaction
 
-Before you measure, you need to know what you're measuring. Every interaction breaks down into three phases, and the right fix depends on which one is running long.
+Before you measure, you need to know what you're measuring. Every
+interaction breaks down into three phases, and the right fix depends on
+which one runs long.
 
 <figure>
   <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Timeline of an interaction split into input delay, processing duration and presentation delay, from the user's click to the next painted frame">
@@ -80,17 +106,23 @@ Before you measure, you need to know what you're measuring. Every interaction br
 
 INP is the sum of the three phases:
 
-| Phase | What happens | Typical reason it runs long |
+| Phase | What happens | Typical cause of an overrun |
 |---|---|---|
-| **Input delay** | Time between the click and the handler starting | A busy main thread: hydration, third-party scripts, long tasks |
-| **Processing duration** | Running the handler and the re-render | A long handler, an expensive synchronous re-render, forced layout |
+| **Input delay** | Time from the click until the handler starts | A busy main thread (hydration, a third-party script, a long task) |
+| **Processing duration** | The handler and the re-render run | A long handler, an expensive synchronous re-render, forced layout |
 | **Presentation delay** | Time until the browser paints the frame | A large DOM, expensive styles, a long list without virtualization |
 
-That breakdown isn't academic: it's what `web-vitals` attribution reports, and it's what lets you fix the actual cause instead of guessing.
+This split isn't academic. It's what `web-vitals` attribution reports, and
+it lets you fix the actual cause instead of guessing.
 
 ## How this site measures its own INP
 
-Without CrUX, the alternative is your own RUM. The code below is what's running in production in `src/lib/rum.ts` right now: it imports from `web-vitals/attribution` (v5) and sends a single `web_vitals` event to the dataLayer through a typed helper. The Portuguese comment says an empty `interactionTarget` means the element was removed from the DOM after the interaction:
+Without CrUX, the alternative is to run your own RUM. This is the code
+running in production in `src/lib/rum.ts` today. It imports from
+`web-vitals/attribution` (v5) and sends a single `web_vitals` event to the
+dataLayer through a typed helper. The code comment is in Portuguese. It says
+that an empty `interactionTarget` means the element left the DOM after the
+interaction.
 
 ```ts
 // src/lib/rum.ts
@@ -113,7 +145,8 @@ export function reportINP(metric: INPMetricWithAttribution): void {
 }
 ```
 
-Initialization is trivial, with guards against SSR and against being called twice:
+Initializing it is trivial, with one guard for SSR and another against a
+double call.
 
 ```ts
 // src/lib/rum.ts
@@ -125,27 +158,57 @@ export function initRum(): void {
 }
 ```
 
-Three details in that code aren't obvious, and each one cost me time:
+Three details here aren't obvious, and each one cost me time:
 
-- **`MAX_SELECTOR_LENGTH = 100`.** GA4 truncates event parameters at 100 characters. Without the `slice`, long selectors show up in the report silently cut off; better to cut them deliberately and know about it.
-- **`interactionTarget` can come back empty.** When the element leaves the DOM after the interaction (a modal that closes, a list item that disappears), attribution can no longer resolve the selector. Hence the `'(unknown)'` fallback; without it, the per-element breakdown has gaps.
-- **INP can report more than once.** When the page comes back from `hidden`, the library can emit a worse value with the **same `metric_id`**. Any analysis that sums or counts events will inflate the number. The right reading is the **maximum per `metric_id`**. In this site's field data, it happened in 1 of the 9 page loads measured.
+- **`MAX_SELECTOR_LENGTH = 100`.** GA4 truncates event parameters at 100
+  characters. Without the `slice`, long selectors show up in the report
+  silently truncated. It's better to cut them yourself and know it.
+- **`interactionTarget` can come back empty.** When the element leaves the
+  DOM after the interaction (a modal closes, a list item disappears),
+  attribution can no longer resolve the selector. That's what the
+  `'(unknown)'` fallback is for. Without it, the per-element breakdown has
+  gaps.
+- **INP reports again.** When the page comes back from `hidden`, the library
+  may send a worse value with the **same `metric_id`**. If you sum or count
+  events, you inflate the number. Take the **maximum per `metric_id`**
+  instead. In this site's field data, this happened in 1 of the 9 page loads
+  measured.
 
-From the dataLayer, the data keeps moving: GTM reads six `inp_*` Data Layer Variables mapped in the tag, and GA4 receives three custom dimensions (element, interaction type, load state) and three event-scoped custom metrics in milliseconds. The pipeline has been live in production since July 22, 2026.
+After the dataLayer, GTM reads six `inp_*` Data Layer Variables mapped in
+the tag, and GA4 receives three custom dimensions (element, interaction
+type, and load state) and three event-scoped custom metrics in milliseconds.
+This pipeline has been live in production since July 22, 2026.
 
-A note on privacy (Brazil's data protection law, the LGPD), since this is about analytics: the site runs Consent Mode v2 in advanced mode. When consent is denied, the hit becomes a cookieless ping, so performance data doesn't turn into user tracking.
+Because this is analytics, a word on LGPD, Brazil's data protection law.
+The site runs Consent Mode v2 in advanced mode. When consent
+is denied, the hit becomes a cookieless ping, so performance data doesn't
+turn into user tracking.
 
 ### What the field data showed (and what it hasn't yet)
 
-**Update (September 2026):** when this article was published on July 22, the pipeline had been in production for a few hours, and I promised to publish the real percentiles after 28 days of collection, the same window CrUX uses. This section keeps that promise as far as the data allows, and says where the data stops supporting conclusions.
+**Update (September 2026):** when this article came out on July 22, the
+pipeline had been in production for a few hours. I promised to publish real
+percentiles after 28 days of collection, the same window CrUX uses. This
+section keeps that promise as far as the data allows, and says where it
+runs out.
 
-The data comes from a GA4 Exploration filtered on `metric_name = INP`, from July 22 to September 12, 2026, with one row per `metric_id`. Three rules were set before calculating any numbers:
+These numbers come from a GA4 Exploration filtered by `metric_name = INP`,
+covering July 22 to September 12, 2026, with one row per `metric_id`. I set
+three rules before I calculated anything:
 
-- **July 22 was excluded.** That was the day the pipeline was set up and validated. One of that day's two measurements came in without any `inp_*` parameters, which fits with the GTM tag still being put together. Test traffic isn't field data.
-- **August 30 and September 4 were kept.** There's no way to know whether those visits were tests, and excluding them without evidence would mean choosing the result.
-- **The maximum per `metric_id` is what counts.** One page load reported twice, first 8 ms and then 56 ms; it counts as 56.
+- **July 22 excluded.** I set up and validated the pipeline that day. One of
+  its two measurements arrived without any `inp_*` parameter, which is
+  consistent with the GTM tag still being put together. Test traffic isn't
+  field data.
+- **August 30 and September 4 kept.** There's no way to know whether those
+  visits were tests, and excluding them without evidence would mean picking
+  the result.
+- **Maximum per `metric_id` counts.** One load reported twice, first 8 ms
+  and then 56 ms. It counts as 56.
 
-That leaves **9 page loads with a measured INP over 52 days** (July 23 to September 12). In the promised 28-day window, there were 5. The site gets little traffic, and only visitors who don't block GTM show up in GA4.
+That leaves **9 page loads with measured INP over 52 days** (July 23 to
+September 12). Only 5 fall inside the promised 28-day window. The site gets
+little traffic, and only visitors who don't block GTM reach GA4.
 
 | Metric | 52 days (n = 9) | Last 28 days (n = 5) |
 |---|---|---|
@@ -154,77 +217,146 @@ That leaves **9 page loads with a measured INP over 52 days** (July 23 to Septem
 | Maximum | 168 ms | 168 ms |
 | Above 200 ms | 0 | 0 |
 
-The p75 was calculated using the *nearest rank* method: the smallest value that covers at least 75% of the measurements.
+I computed the p75 with the *nearest rank* method, which takes the smallest
+value that covers at least 75% of the measurements.
 
 #### Does this prove this site's INP is good? Not yet
 
-All 9 measurements came in under 200 ms, and the data still doesn't settle the question. The p75 stays under 200 ms as long as no more than 25% of page loads go over that value. With 0 of 9 measurements above the threshold, the 95% upper bound (Clopper-Pearson) on the true share above 200 ms is **28.3%**. Since that's above 25%, the data is consistent with a good INP and with an INP right on the edge.
+All 9 measurements are below 200 ms, and the data still doesn't settle the
+question. For the p75 to be below 200 ms, at most 25% of loads can exceed
+it. With 0 of 9 above the threshold, the 95% upper bound (Clopper-Pearson)
+on the true share above 200 ms is **28.3%**. That's above 25%, so the data
+is consistent with both a good INP and an INP right at the limit.
 
-The calculation has a closed form: with zero measurements above the threshold out of *n*, the 95% upper bound is 1 − 0.05^(1/*n*). It only drops below 25% once **n = 11**. In the last 28 days, with n = 5, the bound is 45.1%.
+In closed form, with zero above the threshold in *n* loads, the 95% upper
+bound is 1 − 0.05^(1/*n*). It doesn't drop below 25% until **n = 11**. For
+the last 28 days, with n = 5, the bound is 45.1%.
 
-The exclusion rule had to be set before the calculation for a concrete reason. With July 22 included, n would be 11 and the bound would drop to 23.8%, which would flip the conclusion. The exclusion was based on where the visits came from, not on how it affected the number.
+That's why the exclusion rule had to come before the calculation. With
+July 22 included, n would be 11 and the bound would fall to 23.8%, which
+would flip the conclusion. I based the exclusion on where the visits came
+from, not on its effect on the number.
 
 #### By subpart
 
-| Subpart | Total across the 9 measurements | Share | Largest subpart in |
+| Subpart | Sum across the 9 measurements | Share | Largest subpart in |
 |---|---|---|---|
 | Input delay | 215 ms | 25% | 1 measurement |
 | Processing duration | 194 ms | 22% | 3 measurements |
 | Presentation delay | 456 ms | 53% | 5 measurements |
 
-On this site, the biggest cost is **painting the frame**, not running JavaScript. And all 9 interactions happened with `inp_load_state = complete`: none during hydration, which is the classic case in item 7 of the fixes below. With n = 9, that's a pattern to keep an eye on, not a proven trait of the site.
+What weighs most on this site is **painting the frame**, not running
+JavaScript. All 9 interactions had `inp_load_state = complete`, so none of
+them happened during hydration, the classic case behind item 7 in the fixes
+below. With n = 9, this is a pattern to watch, not a proven characteristic
+of the site.
 
 #### By element
 
+These routes are the Portuguese pages' paths, as GA4 recorded them.
+
 | Route recorded in GA4 | Element | INP | Input delay | Processing | Presentation |
 |---|---|---|---|---|---|
-| `/ferramentas/validador-meta-tags` | the "Validar" (validate) button | 168 ms | 60 | 20 | 88 |
+| `/ferramentas/validador-meta-tags` | "Validar" (validate) button | 168 ms | 60 | 20 | 88 |
 | `/ferramentas/validador-meta-tags` | `(unknown)` | 168 ms | 62 | 28 | 78 |
-| `/blog/hreflang-nextjs` | the description in a listing card | 144 ms | 2 | 4 | 138 |
-| `/guia/seo-tecnico-nextjs` | the theme toggle icon | 88 ms | 18 | 3 | 67 |
-| `/ferramentas` | a social media icon in the footer | 80 ms | 9 | 68 | 3 |
+| `/blog/hreflang-nextjs` | Description on a listing card | 144 ms | 2 | 4 | 138 |
+| `/guia/seo-tecnico-nextjs` | Theme toggle icon | 88 ms | 18 | 3 | 67 |
+| `/ferramentas` | Social media icon in the footer | 80 ms | 9 | 68 | 3 |
 | `/` | `(unknown)` | 64 ms | 15 | 29 | 20 |
-| `/ferramentas/validador-meta-tags` | the URL field | 64 ms | 15 | 0 | 49 |
+| `/ferramentas/validador-meta-tags` | URL field | 64 ms | 15 | 0 | 49 |
 | `/ferramentas` | `(unknown)` | 56 ms | 1 | 42 | 13 |
 | `/guia/seo-tecnico-nextjs` | `(unknown)` | 32 ms | 33 | 0 | 0 |
 
-Subparts are in ms and rounded individually, which is why the last row adds up to 33. With one or two measurements per element, there's no per-element percentile: the table shows individual measurements, not distributions. Here's what it suggests looking into:
+Subparts are in milliseconds, and each is rounded separately, which is why
+the last row adds up to 33. With one or two measurements per element,
+there's no per-element percentile. The table shows measurements, not
+distributions.
 
-- **The two highest INPs are on the meta tag validator**, and they have the two highest input delays (60 and 62 ms), with the page already loaded. Something was tying up the main thread before the handler started. The `(unknown)` in the second row fits a click on that same button's icon: during validation, the icon is swapped for a spinner, so the clicked element leaves the DOM. It's the first thing to record in the Performance panel.
-- **A tap on text cost 138 ms in presentation alone.** Processing took 4 ms; nearly all the time went between the end of the handler and the next frame, on a tap that navigated to another route.
-- **4 of the 9 measurements came in with an `(unknown)` element.** That's the fallback in the code above: the clicked element was no longer in the DOM when attribution tried to resolve the selector, which happens when a click swaps out content on screen or navigates to another route.
+It still points to what to investigate:
+
+- **The two highest INPs are on the meta tag validator**, with the two
+  highest input delays (60 and 62 ms), on a page that had already loaded.
+  Something held the main thread before the handler started. The second
+  row's `(unknown)` is consistent with a click on that button's icon.
+  During validation, the icon is swapped for a spinner, so the clicked
+  element leaves the DOM. It's the first thing to record in the Performance
+  panel.
+- **A tap on text cost 138 ms of presentation alone.** Processing took
+  4 ms. Almost all of it went between the handler finishing and the next
+  frame, on a tap that navigated to another route.
+- **4 of the 9 measurements came with an `(unknown)` element.** That's the
+  fallback in the code above. The clicked element was no longer in the DOM
+  when attribution tried to resolve the selector, which happens when the
+  click swaps what's on screen or goes to another route.
 
 #### A trap that only showed up in the data: the event's route can be wrong
 
-The third row of the table has an inconsistency: the selector belongs to the description of a card in the home page and `/blog` listings, an element that doesn't exist on an article page, yet the event arrived with the route `/blog/hreflang-nextjs`. The explanation lies in the `metric_id`. `web-vitals` (5.3.0) builds the id from `v5-` + `Date.now()` + a random number, and in this site's data the LCP and INP for each page load were created in the same millisecond, or 1 ms apart. Matching each INP with the LCP from the same page load:
+Row 3 doesn't add up. Its selector is the description of a card in the
+listings on the home page and `/blog`, an element that doesn't exist on an
+article page. Yet the event arrived with the route `/blog/hreflang-nextjs`.
 
-- the card's page load started at `/blog` (that's where the LCP was recorded), the tap on the card navigated to the article, and the INP was sent from the article;
-- one page load started at `/ferramentas/checador-cwv` and had its INP recorded at `/ferramentas`;
-- the page load with two reports started at `/`: the first arrived with `/`, and the second, worse one with `/ferramentas`.
+The `metric_id` explains it. `web-vitals` (5.3.0) builds the id from `v5-`,
+`Date.now()`, and a random number. In this site's data, each load's LCP and
+INP were created in the same millisecond, or 1 ms apart. If you match each
+INP with the LCP from the same load, you can see what happened:
 
-**3 of the 9 measurements reached GA4 with a different route from the one where the page loaded.** The mechanism is the App Router itself: navigation happens on the client, the page load stays the same, the INP belongs to that entire page load, and GA4 records whatever route is current when the event is sent, which is when the page becomes hidden. A per-route INP report in GA4 can attribute an interaction to the wrong page without any warning. In the card's case, that's certain; for the other two, the data doesn't say which route the click happened on. To break INP down by route reliably, send the route along with the metric, captured at the moment of the interaction, instead of relying on the event's route.
+- The card's load started at `/blog`, where its LCP was recorded. The tap on
+  the card navigated to the article, and the INP was sent from the article.
+- One load started at `/ferramentas/checador-cwv` and had its INP recorded
+  at `/ferramentas`.
+- The load with two reports started at `/`. The first report arrived with
+  `/`, and the second, worse one with `/ferramentas`.
+
+**3 of the 9 measurements reached GA4 with a route different from the one
+where the page loaded.**
+
+The App Router itself causes this. Navigation happens on the client, so the
+page load stays the same. INP belongs to that whole page load, and GA4
+records the route at send time, when the page becomes hidden.
+
+In GA4, a per-route INP report can attribute the interaction to the wrong
+page without any warning. For the card, that's certain. For the other two,
+the data doesn't say which route the click happened on. If you want to
+break INP down by route with confidence, capture the route at the moment of
+the interaction and send it with the metric, instead of relying on the
+event's route.
 
 ## Diagnosis: DevTools and Long Animation Frames
 
-RUM tells you *that* INP is high and *on which element*. To find out *why*, go to the Performance panel in DevTools: record a session, interact with the element RUM flagged, and look for long tasks around the interaction.
+RUM tells you *that* INP is high and *on which element*. To find out *why*,
+use the DevTools Performance panel. Record a session, interact with the
+element RUM pointed to, and look for long tasks around the interaction.
 
-What makes that diagnosis much more direct today is the Long Animation Frames API (`long-animation-frame`), available in Chrome and Edge. It's what `web-vitals` attribution uses to point to the script responsible for holding up the frame: instead of "something blocked the main thread", you get the actual script.
+Today, the Long Animation Frames API (`long-animation-frame`) makes this
+much more direct. It's available in Chrome and Edge, and `web-vitals`
+attribution uses it to point to the script that held the frame. You get the
+script itself, not just "something blocked the main thread."
 
-A combination that works well: field data gives you the element and the phase; the Performance panel gives you the script and the stack trace. Without the first, you end up optimizing things that aren't hurting you.
+The two work well together. Field data gives you the element and the
+phase, and the Performance panel gives you the script and the stack.
+Without field data, you end up optimizing what doesn't hurt.
 
 ## Fixes for INP in Next.js
 
-Ordered from cheapest to most expensive.
+Here are the fixes, from cheapest to most expensive.
 
 ### 1. Less JavaScript to hydrate
 
-The best value-for-effort fix in the App Router is structural: Server Components by default, and `'use client'` only at the leaves of the tree. Every component that hydrates ties up the main thread at the worst possible moment, during load, which is exactly when the user makes their first interaction.
+In the App Router, the best-value fix is structural. Use Server Components
+by default, and put `'use client'` only at the leaves of the tree. Every
+component that hydrates keeps the main thread busy at the worst possible
+moment, during load, exactly when the user first interacts. For heavy
+islands below the fold, `next/dynamic` defers the cost.
 
-For heavy islands below the fold, `next/dynamic` defers the cost. To be upfront: this site hasn't needed dynamic imports yet, because the bundle is small enough not to justify them. I mention that because the alternative would be pretending to an optimization that doesn't exist here.
+To be honest, this site hasn't needed a dynamic import yet. Its bundle is
+small enough not to justify one. I'm saying so because the alternative
+would be to fake an optimization that doesn't exist here.
 
 ### 2. Break up long tasks with `scheduler.yield()`
 
-A handler that runs for 300 ms holds up the frame for 300 ms. The solution is to yield the main thread partway through: paint the visual feedback first, then do the rest.
+A handler that runs for 300 ms holds the frame for 300 ms. Instead, yield
+the main thread partway through. Paint the visual feedback first, then do
+the rest.
 
 ```ts
 // utils/yield-to-main.ts
@@ -236,47 +368,90 @@ export function yieldToMain(): Promise<void> {
 }
 ```
 
-The fallback isn't optional. `scheduler.yield()` is available in Chrome 129 and Edge 129 (September 2024) and Firefox 142 (August 2025), and still isn't supported in Safari (checked on July 22, 2026), so it isn't Baseline. In Safari, `setTimeout(0)` yields the thread just the same; what you lose is the prioritized continuation.
+Don't skip the fallback. `scheduler.yield()` is available in Chrome 129 and
+Edge 129 (September 2024) and in Firefox 142 (August 2025). Safari still
+doesn't support it (checked July 22, 2026), so it isn't Baseline. In Safari,
+`setTimeout(0)` yields the thread just the same, but you lose the
+prioritized continuation.
 
 ### 3. `useTransition` and `useDeferredValue`
 
-When the problem is the re-render (processing duration), React 19 lets you mark urgency: `useTransition` wraps the expensive update and `useDeferredValue` defers a derived value. The input stays responsive while the heavy list recalculates.
+If the re-render is the problem (processing duration), React 19 lets you
+mark what's urgent. Wrap the expensive update in `useTransition`, and use
+`useDeferredValue` to defer a derived value. The input stays responsive
+while the heavy list recalculates.
 
 ### 4. Avoid forced synchronous layout
 
-The pattern that causes it is reading layout (`offsetHeight`, `getBoundingClientRect`), writing to the DOM and reading again in the same handler; every read after a write forces the browser to recalculate everything. The fix is to batch: do all your reads first, then all your writes.
+It happens when a handler reads layout (`offsetHeight`,
+`getBoundingClientRect`), writes to the DOM, and then reads again. Each read
+after a write forces the browser to recalculate everything. Fix it by
+batching. Do all the reads first, then all the writes.
 
 ### 5. Presentation delay: DOM and styles
 
-If attribution points to a high `inp_presentation_delay`, the handler has already finished and the bottleneck is painting. That makes DOM size and style cost the targets: virtualize long lists, and use `content-visibility` on off-screen blocks where it makes sense.
+If attribution shows a high `inp_presentation_delay`, the handler has
+already finished and painting is the bottleneck. Go after DOM size and style
+cost. Virtualize long lists, and use `content-visibility` on off-viewport
+blocks where it fits.
 
 ### 6. Third-party scripts compete for the same thread
 
-Every tag and analytics script competes with your UI for the main thread, including the GTM that feeds the measurement described above. It's worth being honest about that: this site's RUM pipeline has a cost. To measure it, record the Performance panel twice, once with the GTM request blocked and once without, and compare the long tasks.
+Every tag and analytics script competes with your UI for the main thread,
+and that includes GTM, which feeds the measurement described above. This
+site's RUM pipeline has a cost, and I'd rather say so.
+
+To measure it, record the Performance panel twice, once with the GTM
+request blocked and once without, and compare the long tasks.
 
 ### 7. Input delay is rarely the problem on its own
 
-If `inp_input_delay` is high, the handler hadn't even started yet; the main thread was busy with something else. It's a symptom of items 1 and 2, not a separate category. The `inp_load_state` field usually gives away the most common case: an interaction during hydration.
+Input delay is almost never the problem by itself. If `inp_input_delay` is
+high, the handler hadn't even started, because the main thread was busy
+with something else. That's a symptom of items 1 and 2, not a separate
+category. `inp_load_state` usually reveals the most common case, an
+interaction during hydration.
 
 ## What NOT to do
 
-The obvious temptation is to strip out interactivity to get a better score: removing the filter users rely on, cutting the JavaScript that makes the product work, delaying things people need. That improves the number and makes the site worse.
+It's tempting to remove interactivity to score better. You drop the filter
+users rely on, cut the JavaScript that makes the product work, or delay
+loading things people need. The number improves and the site gets worse.
 
-INP exists to measure how responsive a site feels, not to be gamed. A site with no interaction has a perfect INP and zero usefulness.
+INP exists to measure how responsive a page feels, not to be beaten. A site
+with no interaction has a perfect INP and no use at all.
 
 ## How to check
 
-After applying any of the fixes above:
+After any fix, verify it in four places:
 
-1. **In GA4**, build an Exploration with `metric_name = INP`, `metric_id` as the rows and Event count among the metrics, then export it. Explorations **sum** custom metrics, so the **maximum per `metric_id`** has to be calculated outside GA4: a row with an Event count above 1 is a sum of reports, not a single measurement. Then break it down by `inp_element` and the three subparts, without trusting the event's route (see the trap above), and compare the windows before and after the deploy.
-2. **In DevTools**, record the same interaction in the Performance panel again and check whether the long task you were chasing is gone from the trace.
-3. **In Lighthouse**, what will move is **TBT**, not INP; treat it as an indirect signal and don't confuse the two.
-4. **In CrUX**, if and when the site crosses the traffic threshold, remember the window is 28 days, so field data takes time to reflect a fix. To find out whether your domain is in CrUX yet, and what its field INP is if so, use the [Core Web Vitals checker](/en/tools/cwv-checker).
+1. **In GA4**: build an Exploration with `metric_name = INP`, `metric_id` in
+   the rows, and Event count among the metrics, then export it. Explorations
+   **sum** custom metrics, so you have to calculate the **maximum per
+   `metric_id`** outside GA4. A row with an Event count above 1 is a sum of
+   reports, not a measurement. Then break the data down by `inp_element` and
+   the three subparts without trusting the event's route (see the trap
+   above), and compare the window before the deploy with the one after.
+2. **In DevTools**: repeat the Performance panel recording on the same
+   interaction, and check whether the long task you went after has left the
+   trace.
+3. **In Lighthouse**: **TBT** is what moves, not INP. Use it as an indirect
+   signal, and don't confuse the two.
+4. **In CrUX**: if and when the site crosses the traffic threshold, the
+   window is 28 days, so field data takes a while to reflect the fix. To
+   check whether your domain is in CrUX yet, and see its field INP if it is,
+   use the [Core Web Vitals checker](/en/tools/cwv-checker).
 
-The order of operations never changes: a fix without field measurement is just a guess with nice syntax.
+Whatever you fix, the order stays the same. A fix without field measurement
+is a guess with nice syntax.
 
 ---
 
-This article is track 6 of the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs). If your problem is loading rather than interaction, start with [how to improve LCP in Next.js](/en/blog/improve-lcp-nextjs), which is also where this RUM pipeline started. And to validate this article's own FAQPage markup, the [JSON-LD generator](/en/tools/json-ld-generator) will do the job.
+This article is the INP chapter of the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs). If your
+problem is loading rather than interaction, start with
+[how to improve LCP in Next.js](/en/blog/improve-lcp-nextjs), which is also
+where this RUM pipeline was born. To validate this article's own FAQPage,
+use the [JSON-LD generator](/en/tools/json-ld-generator).
 
 This is the English version of an article first published in Portuguese; the two declare each other.
