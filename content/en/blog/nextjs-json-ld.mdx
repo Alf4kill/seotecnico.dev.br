@@ -1,6 +1,6 @@
 ---
 title: "How to implement JSON-LD in Next.js (App Router)"
-description: "Adding JSON-LD in the App Router: Article, FAQPage and BreadcrumbList in Server Components, schema for dynamic routes and validation, with real code."
+description: "How to add JSON-LD in the Next.js App Router: Article, FAQPage, and BreadcrumbList in Server Components, dynamic routes, validation, and real code."
 slug: "nextjs-json-ld"
 primaryQuery: "json-ld next.js"
 keywords: ['english', 'inglês', 'json-ld', 'structured data', 'schema.org', 'app router', 'faqpage', 'breadcrumblist', 'article', 'rich results', 'server component', 'dangerouslySetInnerHTML']
@@ -8,99 +8,71 @@ lang: "en"
 translationOf: "json-ld-nextjs"
 category: dados-estruturados
 tldr: >-
-  Render a <script type="application/ld+json"> tag in a Server Component, with
-  the object passed through JSON.stringify. It doesn't go in next/head and
-  doesn't need next/script. The real gain comes from deriving the schema from
-  the frontmatter and locking it in with a test, not writing it by hand.
+  Render a <script type="application/ld+json"> tag inside a Server Component
+  and pass the object through JSON.stringify. It doesn't go in next/head and
+  doesn't need next/script. The real gain is deriving the schema from the
+  frontmatter and locking it with a test, instead of writing it by hand.
 datePublished: "2026-10-18"
 dateModified: "2026-10-18"
 faq:
-  - question: "Should JSON-LD go in the page or the layout in the App Router?"
-    answer: >-
-      It depends on the schema's scope. Schema that changes on every route,
-      like Article and BreadcrumbList, goes in the route's page.tsx, because
-      that's the only place the data for that content exists. Schema that's
-      stable across the whole site, like WebSite or Organization, can live in
-      the layout. The practical rule: render the schema at the level where the
-      data behind it actually lives.
-  - question: "Can I have more than one JSON-LD block on the same page?"
-    answer: >-
-      Yes. Googlebot reads multiple application/ld+json blocks on a page
-      without any trouble, so declaring Article, BreadcrumbList and other types
-      in separate scripts is a valid approach. The alternative is to put
-      everything in a single block using an @graph array, with each entity
-      referenced by @id. Both work; what you can't do is have the same type
-      contradict itself across blocks.
+  - question: "In the App Router, should JSON-LD go in the page or the layout?"
+    answer: "It depends on the schema's scope. Schema that changes per route, such as Article and BreadcrumbList, goes in the route's page.tsx, because that's the only place the content's data exists. Schema that's stable for the whole site, such as WebSite or Organization, can stay in the layout. The practical rule is to render the schema at the level where the data feeding it actually lives."
+  - question: "Can a page have more than one JSON-LD block?"
+    answer: "Yes. Googlebot reads several application/ld+json blocks on the same page without problems, so declaring Article, BreadcrumbList, and other types in separate scripts is a valid approach. The alternative is a single block with an @graph array, with each entity referenced by @id. Both work. What you can't do is have the same type contradict itself across blocks."
   - question: "Does Google read JSON-LD generated in a client component?"
-    answer: >-
-      It depends on when the schema comes into existence. A client component is
-      also rendered on the server, so its script ships in the initial HTML as
-      usual. The problem is schema that only gets created after hydration,
-      inside a useEffect or from state that only exists in the browser: then
-      Googlebot depends on the second rendering wave, which is queued. Derive
-      the schema from data available on the server and that dependency goes
-      away.
+    answer: "It depends on when the schema comes into existence. A client component is also rendered on the server, so its script ships in the initial HTML as usual. The problem is schema that only appears after hydration, inside a useEffect or from state that exists only in the browser. Then Googlebot depends on the second rendering wave, which is queued. If you derive the schema from data available on the server, that dependency goes away."
   - question: "Is FAQPage still worth it after May 2026?"
-    answer: >-
-      As a visual feature in Google, no: since May 7, 2026 the FAQ rich result
-      is no longer shown, and on June 15, 2026 Google removed the feature's
-      documentation. But FAQPage is still a valid schema.org type and the
-      markup causes no problems. If your FAQPage comes from the same source as
-      the visible FAQ, keeping it costs practically nothing. Just don't expect
-      the dropdown in search results anymore.
-  - question: "How do I write JSON-LD for a dynamic route in Next.js?"
-    answer: >-
-      Derive the schema from the same data that generates the page, inside
-      the route's async function. Fetch the content using the route parameter,
-      build the schema object from those fields and render the script in the
-      component's return. That way the schema can never drift from the
-      content, because both come from the same source of truth.
+    answer: "Not as a visual feature in Google. Since May 7, 2026, Google no longer shows the FAQ rich result, and on June 15, 2026, it removed the feature's documentation. FAQPage is still a valid schema.org type, though, and the markup causes no problems. If your FAQPage comes from the same source as the visible FAQ, keeping it costs practically nothing. Just don't expect the dropdown in search results anymore."
+  - question: "How do you write JSON-LD for a dynamic route in Next.js?"
+    answer: "Derive the schema from the same data that generates the page, inside the route's async function. Fetch the content by the route parameter, build the schema object from those fields, and render the script in what the component returns. That way the schema never falls out of sync with the content, because both come from the same source of truth."
 ---
 
-To add JSON-LD in Next.js with the App Router, render a
-`<script type="application/ld+json">` tag inside a Server Component (in the
-route's `page.tsx` or in `layout.tsx`, depending on the schema's scope) and
+To add JSON-LD to a Next.js site that uses the App Router, render a
+`<script type="application/ld+json">` tag inside a Server Component, in the
+route's `page.tsx` or in `layout.tsx` depending on the schema's scope, and
 put the data object inside it with `JSON.stringify`. It doesn't go in
-`<Head>`, and it doesn't need `next/script`. That's Next.js's own official
-recommendation. The rest of this article covers where each schema type should
+`<Head>`, and it doesn't need `next/script`. This is what Next.js itself
+recommends. The rest of this article covers where each schema type should
 live, how to derive it from your source of truth instead of writing it by
-hand, and how to keep it from silently breaking later on.
+hand, and how to keep it from breaking silently later on.
 
-This is the second track of the [technical SEO guide for
-Next.js](/en/guide/technical-seo-nextjs): not "how to paste a script", but
-what a structured data implementation looks like as production code, derived
-from the content and locked in by an automated test. Each section below is an
-architecture decision: where the schema comes from, what feeds it, and what
-happens when it stops making sense.
+This article is the second track of the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs). It isn't
+about how to paste a script. It's about what structured data looks like as
+production code, derived from the content and locked by an automated test.
+Each section below is an architecture decision: where the schema is born,
+what feeds it, and what happens when it stops making sense.
 
-One caveat has to come before any code, because half of what's written about
-this in Portuguese gets it wrong: **structured data is not a direct ranking
-factor.** JSON-LD won't push your position up. What it does is make the page
-eligible for rich results (a breadcrumb trail instead of the URL, the
-article's author and dates) and help search engines understand how the page is
-structured. The gain is in eligibility and presentation, not rankings.
+One caveat comes before any code, because half of what's written about this
+in Portuguese gets it wrong. **Structured data is not a direct ranking
+factor.** JSON-LD won't push your
+position up. What it does is make the page eligible for rich results, such
+as the breadcrumb trail shown in place of the URL or an article's author
+and dates, and help search engines understand how the page is structured.
+You gain eligibility and presentation, not rankings.
 
 ## Where JSON-LD lives in the App Router
 
-JSON-LD has to be in the HTML Googlebot reads on its first visit. That one
-rule drives the whole architecture. In the App Router, the natural way to do
-that is to render the script in a Server Component, which is the default for
-any `page.tsx` or `layout.tsx` without `"use client"` at the top.
+One rule decides the whole architecture. JSON-LD has to be in the HTML that
+Googlebot reads on its first visit. In the App Router, the natural way to
+get it there is to render the script in a Server Component, which is what
+any `page.tsx` or `layout.tsx` is by default when it has no `"use client"`
+at the top.
 
-Here's the mechanism. Googlebot reads pages in two waves. In the first, it
-processes the HTML that comes from the server. Only later, in a separate
-rendering queue, does it run the JavaScript and look at the final DOM. If your
-JSON-LD block only comes into existence after React hydrates on the client,
-there's a window where the crawler sees the initial HTML with no schema at
-all, and the second-wave render can take a while.
+This matters because Googlebot reads a page in two waves. First it
+processes the HTML the server sends. Later, in a separate rendering queue,
+it runs the JavaScript and looks at the final DOM. If your JSON-LD block
+only comes into existence after React hydrates on the client, there's a
+window in which the crawler sees the initial HTML with no schema at all,
+and the second-wave render may take a while.
 
-There's a subtlety here that almost every article on the topic gets wrong.
-The problem is **not** a file having `"use client"` at the top. A client
-component is still rendered on the server: its HTML ships in the initial
-response, schema script included. What breaks is schema that only gets
-**created** after hydration, assembled inside a `useEffect` or derived from
-state that only exists in the browser. That schema isn't in the initial HTML,
-because it didn't exist yet when the server responded.
+Almost every article on the subject gets the next part wrong. The problem
+is **not** that the file has `"use client"` at the top. A client component
+is also rendered on the server, so its HTML ships in the initial response,
+schema script included. What breaks is schema that's only **created** after
+hydration, built inside a `useEffect` or derived from state that exists
+only in the browser. That schema isn't in the initial HTML because it
+didn't exist yet when the server responded.
 
 <figure>
   <svg viewBox="0 0 680 392" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="When Googlebot sees the JSON-LD, depending on whether the schema is derived on the server or created after hydration">
@@ -146,28 +118,28 @@ because it didn't exist yet when the server responded.
 
 | How the schema is built | In the initial HTML? | When Googlebot sees it |
 |---|---|---|
-| Derived from server data | yes | 1st wave, with the HTML |
-| Rendered inside a client component, from server data | yes | 1st wave, with the HTML |
-| Created in `useEffect` or from client state | no | only in the 2nd wave, after queuing |
+| Derived from server data | Yes | In the first wave, with the HTML |
+| Rendered in a client component, from server data | Yes | In the first wave, with the HTML |
+| Created in `useEffect` or from client state | No | Only in the second wave, which is queued |
 
-This site follows the rule from both directions. The page-level schema
-components are pure Server Components; the `FAQPage` block lives inside the
-FAQ component, which is a client component because of the accordion, and the
-script still ships in the initial HTML, because the questions come from the
-frontmatter, not from state. It's the case that proves the rule: what matters
-is where the data comes from.
+This site follows the rule on both sides. Its page-level schema components
+are pure Server Components. Its `FAQPage` block lives inside the FAQ
+component, which is a client component because of its accordion, and that
+script still ships in the initial HTML because the questions come from
+frontmatter, not from state. That case proves the point. What matters is
+where the data comes from.
 
 ## The base component: a `<script>` and nothing else
 
-The component that emits the schema is deliberately dumb: it takes an object,
-serializes it with `JSON.stringify` and injects the result into a `<script>`
-tag. No state, no effects, no `next/script`. That last point is intentional,
-and the Next.js documentation explains why: `next/script` is for loading and
-running JavaScript, and JSON-LD is data, not executable code, so the native
-`<script type="application/ld+json">` tag is the right choice.
-
-This is the pattern running in production on this site; every schema on the
-site goes through these few lines:
+Start with the component that emits the schema. It's deliberately dumb. It
+takes an object, serializes it with `JSON.stringify`, and injects the
+result into a `<script>` tag. It has no state, no effect, and no
+`next/script`. Leaving out `next/script` is intentional, and the Next.js
+documentation explains why. `next/script` is for loading and running
+JavaScript. JSON-LD is data, not executable code, so the native
+`<script type="application/ld+json">` tag is the right choice. This pattern
+runs in production on this site, and every schema the site emits goes
+through these few lines.
 
 ```tsx
 // src/components/seo/JsonLd.tsx
@@ -181,45 +153,46 @@ function JsonLdScript({ schema }: { schema: Record<string, unknown> }) {
 }
 ```
 
-`dangerouslySetInnerHTML` sounds scary, but here it's the right tool. It's
-how you inject the schema text without React escaping the quotes in the JSON.
-The "dangerous" in the name is a legitimate reminder, though, and worth
-taking seriously: the Next.js documentation warns that `JSON.stringify`
-doesn't sanitize strings used in XSS attacks, and recommends replacing the
-less-than character with its Unicode escape before injecting. That's exactly
-what the `.replace()` does: inside a JSON string, `\u003c` is the escaped form
-of the `<` character. The parser reads the same data, but no text in the
-schema can ever write a literal `</script>` that closes the tag in the middle
-of the HTML.
+`dangerouslySetInnerHTML` sounds alarming, but here it's the correct path.
+It lets you inject schema text without React escaping the JSON's quotes.
+Still, "dangerous" in its name is a legitimate reminder, and you should
+take it seriously. Next.js documentation warns that `JSON.stringify`
+doesn't sanitize strings used in XSS injection, and it recommends
+replacing the less-than character with its Unicode equivalent before you
+inject anything. That's exactly what `.replace()` does here.
+Inside a JSON string, `\u003c` is the escaped form of the `<` character.
+A parser reads the same data, but no text in the schema can produce a
+literal `</script>` and close the tag in the middle of the HTML.
 
-The question that tells you how big the risk is: where does the schema's data
-come from? If it comes from user input, this sanitization isn't optional. On
-this site, every object is built from the content's own frontmatter and from
-repository constants, sources I control, never text typed by a third party.
-In other words, here the escape doesn't fix a vulnerability; it removes the
-need for editorial discipline. Without it, the day an FAQ answer mentions an
-HTML tag becomes a broken-HTML bug. It's one line of code so I never have to
-remember that, which is why it lives in the component rather than in a code
-review checklist.
+How big is the risk? It depends on where the schema's data comes from. If
+it comes from user input, this sanitization isn't optional. On this site,
+every object is built from the content's own frontmatter and from
+repository constants, sources I control and never text typed by a third
+party. So here the escape doesn't fix a vulnerability. It removes a
+dependency on editorial discipline. Without it, the first FAQ answer that
+mentions an HTML tag would break the page's HTML. One line of code
+means I never have to remember this, which is why it sits in the component
+and not in a code review checklist.
 
-With that component in place, the work for each schema type comes down to
-building the right object and passing it in. The next sections do exactly
-that, one type at a time.
+With this component in place, each schema type comes down to building the
+right object and passing it on. The next sections do exactly that, type by
+type.
 
 ## `Article`: schema that comes from the frontmatter, not your keyboard
 
-The most common mistake with `Article` is writing the object by hand in every
-post. That guarantees that sooner or later the schema's `headline` will drift
-from the page's `<title>`, or `dateModified` will be stuck on a date that no
-longer matches the last edit. Hand-written schema rots.
+The most common mistake with `Article` is writing the object by hand in
+each post. Sooner or later, that guarantees the schema's `headline` drifts
+away from the page's `<title>`, or `dateModified` stays frozen on a date
+that no longer matches the last edit. Hand-written schema rots.
 
-The solution is to derive `Article` from the same source that generates the
-page. On this site, every blog post and the guide have a frontmatter block at
-the top of the MDX file, and the `Article` component takes that whole
-frontmatter instead of individually typed values (the comments are in
-Portuguese: they say `abstract` is the frontmatter's short answer, the same
-sentence the reader sees at the top of the page, and that the page's single
-target query is also its subject, so both are declared from the same source):
+Instead, derive `Article` from the same source that generates the page.
+Every blog post on this site, and the guide, starts its MDX file with a
+frontmatter block, and the `Article` component receives that whole block
+instead of typed values. The comments in the code below are in Portuguese.
+The first says `abstract` is the frontmatter's short answer, the sentence
+readers see at the top of the page, available as data for anyone who extracts it. The
+second says a page's single target query is also its subject, so both are
+declared from one source, which keeps them from diverging.
 
 ```tsx
 // src/components/seo/JsonLd.tsx
@@ -263,39 +236,46 @@ export function ArticleJsonLd({
 }
 ```
 
-The mapping is direct, and that's the whole point: `headline` comes from the
-frontmatter's `title`, `description` from `description`, `abstract` from the
-short answer (`tldr`) when there is one, the dates from the dates,
-`inLanguage` from `lang`, and `keywords` and `about` from `primaryQuery`. The
-`url`, the `@id` and `mainEntityOfPage` come from the canonical URL, built
-from the site's base URL plus the route's path. `author` and `publisher` are
-never typed in: they come from shared functions that other pages use too. I
-wrote the frontmatter once, and the schema is derived from it. There's no
-second place for the date to drift, because there's only one place it's
-written.
+The mapping is direct, and that's the whole point:
 
-That principle runs through the rest of the article: **schema isn't written
-per page; it's derived from the source of truth.** If you have to update the
-content in one place and the schema in another, it's only a matter of time
-before they disagree, and a schema that disagrees with the page is worse than
-no schema, because it describes a page that doesn't exist.
+- `headline` comes from the frontmatter's `title`.
+- `description` comes from `description`.
+- `abstract` comes from the short answer (`tldr`), when there is one.
+- The dates come from the dates.
+- `inLanguage` comes from `lang`.
+- `keywords` and `about` come from `primaryQuery`.
+- `url`, `@id`, and `mainEntityOfPage` come from the canonical URL, built
+  from the site's base URL plus the route's path.
+- `author` and `publisher` are never typed. They come from central
+  functions, the same ones other pages use.
 
-Note that `Article` still produces a rich result: with a `headline`, dates and
-author and publisher entities, it makes the page eligible to show the author
-and the publication and modification dates in search results. Unlike FAQ,
-which comes up below, here the effort still pays off visually in search.
+I wrote the frontmatter once, and the schema derives from it. Since the
+date is written in only one place, there's no second copy to drift. That's
+the principle behind the rest of this article. **Schema is not written per
+page. It is derived from the source of truth.**
+
+If you update content in one place and schema in another, it's only a
+matter of time before they disagree. A schema that disagrees with the page
+is worse than no schema, because it describes a page that doesn't exist.
+
+`Article` still produces a rich result. With `headline`, the dates, and the
+author and publisher entities in place, it makes the page eligible to show
+its author and its publication and modification dates in search results.
+Unlike FAQ, covered below, this is effort that still pays off visually in
+search.
 
 ## `BreadcrumbList`: the schema almost everyone forgets
 
-`BreadcrumbList` is the best value-for-effort schema that most sites ignore.
-It describes the navigation trail to the page (Home › Blog › post title), and
-it's one of the rich results that's still fully active: in search results, it
-replaces the raw URL with that readable path. It's a small amount of work with
-a concrete visual payoff, which is why it's worth doing systematically.
+`BreadcrumbList` is the best-value schema that most sites ignore. It
+describes the navigation trail to the page, as in Home › Blog › post title.
+It's also one of the rich results that are still fully active, and in
+search results it replaces the raw URL with that readable path. It takes
+little work and the visual return is concrete, so it's worth being
+systematic about it.
 
-"Systematically" here means not writing the breadcrumb page by page. It's
-built from the route's hierarchy, the same way `Article` is derived from the
-frontmatter:
+Systematic here means you don't write the breadcrumb per page. You build it
+from the route's hierarchy, the same way `Article` is derived from the
+frontmatter.
 
 ```tsx
 // src/components/seo/JsonLd.tsx
@@ -314,48 +294,54 @@ export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
 }
 ```
 
-Google requires two things, and the mapping above handles both: each
-`ListItem` needs a sequential `position` starting at 1, and it needs a `name`.
-The `item` (the URL for that level) is what makes each step in the trail
-clickable. A `BreadcrumbList` needs at least two levels to make sense; a
-single item isn't a trail. That's the same rule this site's [JSON-LD
-generator](/en/tools/json-ld-generator) enforces before it lets you generate a
-breadcrumb: with fewer than two levels, it refuses.
+This mapping covers two details Google requires. Each `ListItem` needs a
+sequential `position` starting at 1, and it needs a `name`. Its `item`, the
+URL of that level, makes each step of the trail clickable. A
+`BreadcrumbList` also needs at least two levels to make sense, since a
+single item isn't a trail. This site's
+[JSON-LD generator](/en/tools/json-ld-generator) applies the same rule and
+refuses to generate a breadcrumb with fewer than two levels.
 
 ## `FAQPage`: what changed in May 2026 and why I still use it
 
-This is where most Portuguese-language content is out of date, so I'll be
-blunt: **since May 7, 2026, Google no longer shows the FAQ rich result.** The
-dropdown of questions and answers that used to expand under your search
-result doesn't appear anymore, for any site. This isn't a restriction to
-certain categories, like in 2023, when the feature was limited to government
-and health sites. This time the feature is gone entirely, and on June 15, 2026
-Google removed the feature's documentation as well.
+Most of the Portuguese-language content on this topic is out of date, so
+here's the blunt version. **Since May 7, 2026, Google no longer shows the
+FAQ rich result.** The dropdown of questions and answers that used to
+expand under your search result doesn't appear anymore, for any site. This
+isn't a restriction to certain categories, as in 2023, when the feature was
+limited to government and health sites. This time Google took the feature
+down entirely, and on June 15, 2026, it removed the feature's own
+documentation.
 
-That has an awkward practical consequence: much of what you'll find searching
-for "FAQPage schema" today describes a feature that no longer exists, and the
-official page that would set the record straight isn't there anymore. In
-structured data, checking a source's date has stopped being pedantic.
+That has an uncomfortable consequence. Much of what you find when you
+search for "FAQPage schema" today describes a feature that no longer
+exists, and the official page that would serve as a reference isn't there
+to contradict it. With structured data, checking a source's date isn't
+pedantry anymore.
 
-Two wrong reactions went around when the announcement came out, and both are
-worth debunking. The first: "schema is dead". It isn't. `FAQPage` is still a
-valid schema.org type, the markup doesn't cause errors or harm the page, and
-other types like `Article` and `BreadcrumbList` still produce rich results as
-usual. The second: "so FAQPage is now essential for AI". Not that either. In
+Two wrong reactions circulated when the notice came out. Neither holds up.
+
+The first was "schema is dead." It isn't. `FAQPage` is still a valid
+schema.org type, the markup doesn't generate errors or harm the page, and
+other types such as `Article` and `BreadcrumbList` still produce rich
+results normally.
+
+The second was "so FAQPage is now essential for AI." That's wrong too. In
 its official guide to optimizing for generative AI search, published in May
-2026, Google says no special markup or schema.org is required to appear in AI
-Overviews or AI Mode. Schema is still useful for traditional rich results
-(which in turn feed AI answers indirectly), but it isn't a direct lever for
-getting cited by AI. Anyone who traded "it'll become a rich result" for "it'll
-get cited by AI" just swapped one unfounded promise for another.
+2026, Google says you don't need any special markup or schema.org to appear
+in AI Overviews or AI Mode. Schema stays useful for traditional rich
+results, which in turn feed AI answers indirectly, but it isn't a direct
+lever for getting cited by AI. Anyone who swapped "it'll become a rich
+result" for "it'll get cited by AI" just traded one baseless promise for
+another.
 
-So why do I keep `FAQPage` on this site if the rich result is gone? For an
-architectural reason: here, the FAQ visible on the page and the structured
-FAQPage come from the same source. There's no hand-written `FAQPage`
-component. There's a `faq` array in the article's frontmatter (the same
-questions and answers you'll see at the end of this page) and a single
-component that reads that array to render two things at once: the visible
-accordion and the matching JSON-LD.
+So why do I keep `FAQPage` here, with the rich result gone? The reason is
+architectural. The FAQ you see on this page and its `FAQPage` markup come
+from one source. There's no hand-written `FAQPage` component. There's
+a `faq` array in this article's frontmatter, holding the questions and
+answers you'll find at the end of the page, and a single component reads
+that array to render two things at once: a visual accordion and its
+matching JSON-LD.
 
 ```tsx
 // src/components/sections/FaqSection.tsx
@@ -375,33 +361,35 @@ accordion and the matching JSON-LD.
 />
 ```
 
-The `items` in that snippet is exactly the same array the accordion loops
-over to draw the questions on screen, a few lines up in the same file. Since
-there's a single source, the marginal cost of keeping `FAQPage` is
-practically zero: I write the FAQ for readers anyway, and the schema comes
-from the same array with no extra work. It also satisfies, by design, the
-requirement Google always had for FAQPage: the schema's content has to be
-visible on the page. It can't drift, because it's literally the same data.
+Here, `items` is the same array the accordion loops over, a few lines
+higher in this file, to draw the questions on screen. With one source, keeping
+`FAQPage` costs practically nothing. I write the FAQ for readers anyway,
+and the schema comes out of that array with no extra work.
 
-That matters more than it seems, because automated validation doesn't catch
-drift. The Rich Results Test, back when it still validated FAQ, never compared
-the JSON-LD with the visible text: it checked syntax and properties, not
-whether the schema matched what users see. A schema that declares one answer
-on a page that shows another passes validation and still violates the policy.
-Deriving both from the same source eliminates that kind of error before it can
-happen.
+It also meets, by construction, the requirement Google always had for
+FAQPage, that the schema's content be visible on the page. The two can't
+diverge, because they're literally the same data.
 
-So the recommendation isn't "add FAQPage to get the rich result"; that advice
-died in May. It's this: if you have a genuine FAQ on the page, answering real
-questions, marking it up with FAQPage costs little and keeps the page well
-described for the engines that still read the markup. If your FAQ only
-existed to chase the dropdown in search results, now's the time to rethink it.
+This matters more than it seems, because automated validation doesn't
+catch divergence. Back when the Rich Results Test still validated FAQ, it
+never compared the JSON-LD with the visible text. It checks syntax and
+properties, not whether the schema matches what the user sees. A schema
+that declares one answer on a page that shows another passes validation
+and still violates the policy. Deriving both from the same source rules out
+this class of error before it can exist.
+
+So my recommendation isn't "add FAQPage to win the rich result." That
+advice died in May. If you have a genuine FAQ on the page that answers real
+questions, marking it up with `FAQPage` costs little and keeps the page
+well described for the engines that still read the markup. If your FAQ
+existed only to chase the dropdown in search results, now is the time to
+rethink it.
 
 ## `Person` and `Organization`: the author entity and E-E-A-T
 
-The `author` in the `Article` above isn't just a name in a string. It's a
+The `author` in the `Article` above isn't a bare name in a string. It's a
 reference to a single `Person` entity, built once from the site's central
-config and reused by every article:
+config and reused by every article.
 
 ```tsx
 // src/components/seo/JsonLd.tsx
@@ -417,25 +405,25 @@ function personSchema() {
 }
 ```
 
-The field doing the heavy lifting is `sameAs`: it links the site's `Person`
-entity to the external profiles (GitHub, LinkedIn) that corroborate who the
-author is. It's not a claim that the person exists; it's a set of anchors to
-other verifiable places the same person shows up online. That's how
-structured data plays into E-E-A-T: not by claiming expertise, but by tying
-authorship to a traceable identity.
+`sameAs` does the heavy lifting. It links the site's `Person` entity to
+external profiles (GitHub, LinkedIn) that corroborate who the author is.
+Rather than state that the person exists, it anchors the entity to other
+verifiable places where that same person appears on the web. That's how
+structured data takes part in E-E-A-T, not by asserting expertise but by
+connecting authorship to a traceable identity.
 
-Notice the `filter(Boolean)` and the conditional spread: if a profile isn't
-filled in, the field simply doesn't make it into the schema. That rule applies
-to every type. An empty field is worse than a missing one, because it
-describes the page with information that doesn't exist. The site's generator
-follows the same policy: blank fields are left out of the output instead of
-becoming empty strings.
+Notice the `filter(Boolean)` and the conditional spread. If a profile isn't
+filled in, the field stays out of the schema. That rule holds for every
+type. An empty field is worse than an absent one, because it describes the
+page with information that doesn't exist. The site's generator follows the
+same policy and omits blank fields from its output instead of turning them
+into empty strings.
 
 ## `SoftwareApplication` and tool pages
 
-Not every page is an article. A page that offers an interactive tool is
-described by the `SoftwareApplication` type, not `Article`. On this site, tool
-pages emit that schema with the fields that describe what the tool is:
+Not every page is an article. You describe a page that delivers an
+interactive tool with `SoftwareApplication`, not `Article`. Tool pages on
+this site emit this schema, with fields that describe what the tool is.
 
 ```json
 {
@@ -448,33 +436,36 @@ pages emit that schema with the fields that describe what the tool is:
 }
 ```
 
-The values aren't decoration: `applicationCategory` says it's a developer
-tool, `operatingSystem` says it runs in the browser, and `isAccessibleForFree`
-plus an `offers` with a price of zero declare that it's free. It's an honest
-description of a tool that runs entirely on the client and costs nothing. The
-general principle applies to every type: the `@type` you choose has to match
-what the page actually is. Marking a tool page as `Article`, or an article as
+None of these values are decorative. `applicationCategory` says it's a tool
+for developers, `operatingSystem` says it runs in the browser, and
+`isAccessibleForFree` plus `offers` with a price of zero declare that it's
+free. Together they honestly describe a tool that runs entirely on the
+client and charges nothing.
+
+Across all types, the `@type` you choose has to match what the page really
+is. Marking a tool page as `Article`, or an article as
 `SoftwareApplication`, is the kind of inconsistency Google treats as a bad
 signal.
 
 ## Page vs. layout: where each schema should be rendered
 
-With the types defined, one architecture decision remains that trips up a lot
-of people: does the schema go in the route's `page.tsx` or in `layout.tsx`?
-The answer isn't a matter of style; it follows directly from asking "where
-does this schema's data come from?".
+With the types defined, one architecture decision is left, and it confuses
+a lot of people. Does the schema go in the route's `page.tsx` or in
+`layout.tsx`? The answer isn't a matter of style. It falls straight out of
+one question: where does this schema's data come from?
 
-Schema that depends on a route's specific content goes in `page.tsx`. A
-post's `Article` and `BreadcrumbList` are like that: the data behind them
-(title, dates, trail) only exists at that page's level. You can't build them
+Schema that depends on the route's specific content goes in `page.tsx`. A
+post's `Article` and `BreadcrumbList` are fed by its title, dates, and
+trail, and that data exists only at the page's level. You can't build them
 in the layout, because the layout doesn't know about the post.
 
-Schema that's stable across a whole section can live in the corresponding
-`layout.tsx`. A `WebSite` or an `Organization` that applies to the entire site
-doesn't need to be rebuilt on every route. The rule that settles every case:
-**render each schema at the level where the data behind it actually lives.**
-If the data belongs to the page, the schema belongs to the page. If the data
-belongs to the section, the schema belongs to the layout.
+Schema that's stable for a whole section can live in the matching
+`layout.tsx`. A `WebSite` or `Organization` that's valid for the whole site
+doesn't need to be rebuilt on every route.
+
+One rule settles every case: **render each schema at the level where the
+data feeding it actually lives.** Page data means page schema. Section data
+means layout schema.
 
 <figure>
   <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JSON-LD schema types emitted by each type of route on the site">
@@ -518,68 +509,77 @@ belongs to the section, the schema belongs to the layout.
 | Guide | `Article`, `BreadcrumbList` |
 | Tool | `SoftwareApplication`, `BreadcrumbList` |
 
-The same applies to the most dynamic case of all, a route with a parameter
-like `/blog/[slug]`. The schema isn't written for each slug; it's derived,
-inside the route's async function, from the same data that generates the
-page. You fetch the content using the parameter, build the schema object from
-those fields, and render the script component in the return. A dynamic
-route's schema is dynamic for the same reason the page is: both come from the
-same fetch.
+It works the same way even in the most dynamic case, a route with a
+parameter like `/blog/[slug]`. You don't write a schema per slug. You
+derive it inside the route's async function, from the data that also
+generates the page. Fetch content by the parameter, build a schema object
+from its fields, and render the script component in what the function
+returns. A dynamic route's schema is dynamic for the same reason its page
+is, because both come from one fetch.
 
 ## How to validate: which tool for which schema
 
-Validating structured data now requires a distinction that's new this year:
-not every tool validates every schema type, because FAQ is no longer in
-Google's rich results catalog. Your routine depends on which `@type` you're
+Validating structured data now takes a distinction that's new in 2026.
+Because FAQ left Google's rich results catalog, not every tool validates
+every schema type, and your routine depends on which `@type` you're
 checking.
 
-For the types that still produce rich results (`Article`, `BreadcrumbList`,
-`SoftwareApplication`), Google's [Rich Results
-Test](https://search.google.com/test/rich-results) is still the right tool.
-Paste the URL, not the code: with the URL, the tool renders the page the way
-Google sees it, which matters precisely when anything in your schema depends
-on rendering. Then check two things. Errors block eligibility: a missing
-required property, an `@type` Google doesn't recognize, JSON that doesn't
-parse. Warnings don't. They point to missing recommended properties, and the
-rich result still works without them, just with less detail. Fix every error;
-treat warnings as optional improvements.
+For the types that still produce rich results, `Article`, `BreadcrumbList`,
+and `SoftwareApplication`, Google's
+[Rich Results Test](https://search.google.com/test/rich-results) is still
+the right tool. Paste the URL, not the code. With a URL, the tool renders
+the page the way Google sees it, which matters if anything in your schema
+depends on rendering. Then check two things:
+
+- Errors block eligibility. Examples are a missing required property, an
+  `@type` Google doesn't recognize, or JSON that doesn't parse.
+- Warnings don't. They point to missing recommended properties, and the
+  rich result still works without them, just with less detail.
+
+Fix every error, and treat warnings as optional improvements.
 
 For `FAQPage`, the routine has changed. With no FAQ rich result, there's no
-eligibility to test; what still makes sense is validating the schema's
-**syntax**, and for that the tool is the [schema.org
-validator](https://validator.schema.org/), which checks whether the markup
-follows the vocabulary regardless of whether Google produces any visual
-feature from it.
+eligibility to test. What still makes sense is validating the schema's
+**syntax**, and the tool for that is the
+[schema.org validator](https://validator.schema.org/). It checks whether
+the markup conforms to the vocabulary, whether or not Google builds any
+visual feature from it.
 
-Once you've published, Search Console handles ongoing monitoring. The
+After you publish, Search Console handles continuous monitoring. Its
 enhancement reports show, at site scale, when a schema type breaks on many
-pages at once: a template change that knocks out `Article` on two hundred
-posts shows up there as a spike in invalid items that no single-URL test
-would catch. It's the tool for monitoring over time, complementing the
-one-off test before publishing. One honest caveat: this site is new, so I
-don't have enhancement report history to show yet. What I'm describing is the
-tool's role, not a result of mine.
+pages at once. A template change that knocks out `Article` on two hundred
+posts, for example, shows up there as a spike of invalid items that no
+single-URL test would catch. It's the tool for monitoring over time, and it
+complements the one-off test before publishing.
+
+One honest caveat. This site is new, so I don't have enhancement report
+history to show yet. What I'm describing is the tool's role, not one of my
+results.
 
 ## How to keep it from breaking: the test that runs in my CI
 
-Validating before publishing takes care of launch day. It doesn't take care
-of month three, when someone (maybe you) touches a template and knocks out the
-schema on every page without noticing. The way to make sure that doesn't slip
-by is to turn validation into an automated test that blocks deploys.
+Validating before you publish takes care of launch day. It doesn't take
+care of month three, when someone, maybe you, touches a template and knocks
+out the schema on every page without noticing. To catch that, turn
+validation into an automated test that blocks the deploy.
 
-The suite runs on every pull request in GitHub Actions and blocks the merge
-if it fails. What makes it robust is that the routes it tests aren't listed
-by hand: they come from `sitemap.ts`, which in turn derives from every post in
-`/content`. In practice, **a new article joins the suite the moment its file is
-committed**, including the one you're reading now. I don't have to remember
-to add the post to the test; the test finds the post on its own.
+On this site the suite runs on every pull request, in GitHub Actions, and
+blocks the merge if it fails. What makes it robust is that the tested
+routes aren't a hand-written list. They come from `sitemap.ts`, which in
+turn derives from every post in `/content`. In practice,
+**a new article enters the suite the moment its file is committed**,
+including the one you're reading. I don't have to remember to add a post to
+the test, because the test finds the post on its own.
 
-For each route, the suite checks a set of invariants. There's exactly one
-non-empty `<h1>`. The `<title>` is present and at most 60 characters. The meta
-description is present and at most 155. The canonical is self-referencing.
-And, most relevant here: **every `application/ld+json` block on the page
-passes through `JSON.parse` without errors**, and the set of `@type` values
-expected for that kind of route is present.
+For each route, the suite asserts a set of invariants:
+
+- exactly one non-empty `<h1>`
+- a `<title>` that's present and at most 60 characters
+- a meta description that's present and at most 155
+- a self-referencing canonical
+- and, what matters here, **every `application/ld+json` block on the page
+  passes `JSON.parse` without error**, and the set of `@type` expected for
+  that route type is present
 
 ```ts
 // tests/seo/seo.spec.ts — trecho da suíte de regressão de SEO
@@ -606,44 +606,50 @@ for (const type of expectedJsonLdTypes(route)) {
 }
 ```
 
-`expectedJsonLdTypes` is the map from the diagram above, written as a
-function: a blog route must have `Article` and `BreadcrumbList`, plus
-`FAQPage` if and only if that post's frontmatter has a `faq` array; a tool
-route must have `SoftwareApplication` and `BreadcrumbList`, and so on. Which
-leads to the sentence that sums up why the test exists: **if a JSON-LD block
-stops parsing, or an `@type` disappears from a template, the test fails and
-the merge is blocked.**
+`expectedJsonLdTypes` is the map you already saw in the diagram, written as
+a function. A blog route must contain `Article` and `BreadcrumbList`, plus
+`FAQPage` if, and only if, that post's frontmatter has a `faq` array. A
+tool route must contain `SoftwareApplication` and `BreadcrumbList`. And so
+on. The test exists for one reason. **If a JSON-LD block stops parsing, or
+an `@type` disappears from a template, the test fails and the merge is
+blocked.**
 
-There's a second layer, in the build itself. The frontmatter is validated when
-the page is built: if a required field is missing, or the `title` goes over 60
-characters, or the `description` over 155, the build breaks. It's not a
-warning you can ignore; it's a failure that stops generation. Between a build
-that rejects invalid frontmatter and a suite that rejects invalid schema, the
-two places where these errors usually sneak in are both closed off.
+A second layer sits in the build itself, which validates the frontmatter
+of every page it generates. If a required field is missing, or `title` runs
+over 60 characters, or `description` over 155, the build breaks. That
+isn't a warning you can ignore. It's a failure that stops the page from
+being generated. Between a build that refuses invalid frontmatter and a
+suite that refuses invalid schema, the path to publishing a page with
+broken structured data is closed at the two points where the error usually
+gets in.
 
 ## What not to chase
 
-I'll close with an honest reality check, because half the value of a
-technical article is saying what not to do. Don't chase rankings with
-JSON-LD: it isn't a ranking factor, and no amount of schema will change that.
-Don't add `FAQPage` expecting the dropdown in search results; it was
-discontinued in May 2026 and won't come back, however well-intentioned your
-markup is. Don't treat schema as a shortcut to getting cited by AI; Google
-itself says no special markup is required for that. And don't write schema by
-hand page by page: what's derived from the source of truth doesn't drift,
-while what's typed twice does.
+I'll close with an honest calibration, because half the value of a
+technical article is in saying what not to do.
 
-What structured data actually delivers is more modest and more real: it
-makes the page eligible for the rich results that still exist, describes the
-content's structure for whatever reads the markup, and, if you lock it in with
-a test, stays correct over time without anyone having to watch it. That wraps
-up the second track of the [technical SEO guide for
-Next.js](/en/guide/technical-seo-nextjs); the other topics follow the same
-logic of deriving from content instead of writing by hand. When you need to
-generate a quick schema for a specific case, the [JSON-LD
-generator](/en/tools/json-ld-generator) produces the object and the Next.js
-component ready to use, following the same Server Component pattern described
-here. This article is the architecture; the tool is the shortcut for when you
-already understand the architecture and just want the result.
+- Don't chase rankings with JSON-LD. It isn't a ranking factor, and no
+  amount of schema will change that.
+- Don't add `FAQPage` expecting the dropdown in search results. Google
+  discontinued it in May 2026, and it won't come back, however
+  well-intentioned your markup is.
+- Don't treat schema as a shortcut to getting cited by AI. Google itself
+  says no special markup is required for that.
+- Don't write schema by hand for each page. What's derived from the source
+  of truth doesn't diverge, and what's typed twice does.
+
+What structured data actually delivers is more modest and more real. It
+makes the page eligible for the rich results that still exist, describes
+the content's structure for whoever reads the markup, and, if you lock it
+with a test, stays correct over time without anyone watching it by hand.
+
+That closes the second track of my
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs). Its
+other topics follow the same logic of deriving from content instead of
+writing by hand. When you need a quick schema for a specific case, my
+[JSON-LD generator](/en/tools/json-ld-generator) produces the object and a
+ready-to-use Next.js component, following the Server Component pattern
+described here. This article is the architecture. The tool is a shortcut
+for when you already understand that architecture and just want a result.
 
 This is the English version of an article first published in Portuguese; the two declare each other.

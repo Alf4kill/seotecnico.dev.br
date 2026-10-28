@@ -1,98 +1,66 @@
 ---
 title: "High LCP in Next.js: the mistakes that keep it high"
-description: "Why LCP stays high in Next.js after optimizing: background-images the scanner can't see, self-inflicted render delay and preloads that backfire."
+description: "Why LCP stays high in Next.js after you optimize: a CSS background-image the preload scanner can't see, a render delay you added, a preload that backfires."
 slug: "nextjs-high-lcp"
 primaryQuery: "high lcp next.js"
 keywords: ['english', 'inglês', 'high lcp', 'lcp', 'preload scanner', 'background-image', 'use client', 'render delay', 'fade-in', 'anti-flicker', '@import', 'preload', 'skeleton', 'hydration']
 lang: "en"
 translationOf: "lcp-alto-next-js"
-category: cwv
+category: "cwv"
 tldr: >-
-  When LCP won't improve after optimizing, the cause is usually a resource the
-  preload scanner can't see (a CSS background-image, a hero behind "use
-  client"), a render delay you caused yourself with an animation or an A/B
-  script, or too many preloads fighting over bandwidth.
+  When LCP won't improve after you've optimized, the cause is usually one of
+  three: a resource the preload scanner can't see (a CSS background-image, a
+  hero behind "use client"), a render delay you added with an animation or an
+  A/B script, or too many preloads competing for bandwidth.
 datePublished: "2026-10-18"
 dateModified: "2026-10-18"
 faq:
-  - question: "I optimized everything and my Next.js LCP doesn't improve. Why?"
-    answer: >-
-      It's almost always a resource the preload scanner can't see: a CSS
-      background-image, a hero behind use client, or an import chain that
-      forces CSS to download in sequence. It can also be a render delay you
-      caused yourself (a fade-in, an A/B anti-flicker snippet) or too many
-      preloads fighting over bandwidth. Before touching the code, open
-      DevTools and confirm which element is the LCP and which phase is eating
-      the time.
+  - question: "I've optimized everything and my Next.js LCP won't improve. Why?"
+    answer: "Almost always, it's a resource the preload scanner can't see: a CSS background-image, a hero behind use client, or an import chain that serializes the CSS. It can also be a render delay you created yourself (a fade-in, an A/B anti-flicker snippet) or too many preloads competing for bandwidth. Before you touch any code, open DevTools and confirm which element is the LCP and which phase the time goes to."
   - question: "I switched everything to next/image and LCP is still high. What did I miss?"
-    answer: >-
-      next/image doesn't touch CSS background-image. If your hero is a
-      background set in CSS, the browser only discovers it after building the
-      DOM, and Lighthouse's image audit stays green because there's no
-      misconfigured img on the page. The fix is to move the hero into a real
-      img above the fold, with a high fetchPriority.
-  - question: "I added preload to the hero and LCP got worse. How is that possible?"
-    answer: >-
-      It makes sense. Preload tells the browser a resource is urgent; if
-      several resources are marked urgent, they compete for bandwidth and the
-      actual LCP arrives later. The rule is to preload only the LCP element.
-      For fonts, preload only helps when the font is the real bottleneck; when
-      the LCP is text and the font already uses display optional, preloading
-      it just gets in the way.
+    answer: "Nothing in next/image touches a CSS background-image. If your hero is a background defined in CSS, the browser only discovers it after building the DOM, and Lighthouse's image audit stays green because there's no misconfigured img on the page. Move the hero to a real img above the fold, with high fetchPriority."
+  - question: "I added a preload to the hero and LCP got worse. Does that make sense?"
+    answer: "Yes. A preload tells the browser a resource is urgent. When several resources are marked urgent, they compete for bandwidth, and the real LCP arrives later. Preload only the LCP element. With fonts, a preload helps only when the font is the real bottleneck. When LCP is text and the font already uses display optional, a font preload only gets in the way."
   - question: "My LCP element is text, not an image. How do I fix it?"
-    answer: >-
-      A text LCP usually gets held up by render-blocking CSS and a font on the
-      critical path. Inlining critical CSS into the HTML removes a request
-      that stands in front of the paint, and loading the font with display
-      optional lets the browser paint with a system font instead of waiting
-      for the web font. In Next.js, you do that with next/font and inlined
-      critical CSS.
-  - question: "In Next.js 16, do I use priority or preload on the image?"
-    answer: >-
-      Next.js 16 deprecated the priority prop in favor of preload, and for
-      most cases the recommendation is now loading eager or fetchPriority
-      high. Older material still teaches priority, which no longer exists.
-      The goal hasn't changed: make sure the browser discovers and prioritizes
-      the LCP resource early.
-  - question: "LCP is good in PageSpeed but bad in the field. Which one should I believe?"
-    answer: >-
-      Both, for different things. PageSpeed runs a simulated, consistent lab
-      test, which is good for diagnosis. Field data (CrUX, RUM) measures real
-      users on all kinds of networks and devices, and it's what Google uses
-      for ranking. Use the lab to find and fix the problem, and the field to
-      confirm the fix reached your users.
+    answer: "Text LCP usually stalls on render-blocking CSS and a font on the critical path. Inlining critical CSS into the HTML removes one request from in front of the paint, and loading the font with display optional lets the browser paint with the system font instead of waiting for the web font. In Next.js, that means next/font plus inlined critical CSS."
+  - question: "In Next.js 16, should I use priority or preload on the image?"
+    answer: "Next.js 16 deprecated the priority prop in favor of preload, and for most cases the recommendation is now loading eager or fetchPriority high. Older material still teaches priority, which no longer exists. What you're after hasn't changed. The browser still needs to discover and prioritize the LCP resource early."
+  - question: "My LCP is good in PageSpeed but bad in the field. Which one should I believe?"
+    answer: "Both, for different things. PageSpeed runs a lab test that's simulated and consistent, which makes it good for diagnosis. Field data (CrUX, RUM) comes from real users on varied networks and devices, and it's what Google uses for ranking. Use the lab to find and fix problems, and the field to confirm the fix reached your users."
 ---
 
-If your Next.js LCP stays high even after switching everything to
-`next/image` and marking the hero as priority, the culprit is almost never
-what Lighthouse points to. It's usually a pattern that hides the resource
-from the preload scanner (a CSS `background-image`, a hero behind `"use
-client"`), a render delay you caused yourself with an animation or an A/B
-script, or a preload that competes for bandwidth and slows down the very
-element it was meant to speed up. This cluster's hub explains [how LCP breaks
-down into phases and how to fix each one](/en/blog/improve-lcp-nextjs); this
-article covers the other side of the problem: why it **won't improve** after
-you've already optimized. Each section below is one mistake: the symptom you
+If your Next.js LCP is still high after you've moved every image to
+`next/image` and marked the hero as priority, the culprit is almost never
+what Lighthouse points to. It's usually one of three things: a pattern that
+hides the resource from the preload scanner (a CSS `background-image`, a
+hero behind `"use client"`), a render delay you created yourself with an
+animation or an A/B script, or a preload that competes for bandwidth and
+delays the very element it was supposed to speed up.
+
+[How to improve LCP in Next.js](/en/blog/improve-lcp-nextjs) is the cluster
+hub. It explains how LCP breaks down into phases and how to fix each one.
+This article covers the other side: why LCP **won't improve** once you've
+already optimized. Each section below is one mistake, with the symptom you'll
 see in PageSpeed Insights or the waterfall, the mechanism behind it, and what
 to do about it.
 
 ## `next/image` doesn't fix a hero in `background-image`
 
-This one is frustrating precisely because everything looks right: you
-switched every image to `next/image`, Lighthouse's image audit is all green,
-and LCP is still high. In most diagnoses I run, when the audit passes but LCP
-won't budge, the LCP element is a CSS `background-image`, and `next/image`
-never touches it.
+This one is frustrating because everything looks right. You've switched every
+image to `next/image`, Lighthouse's image audit is all green, and LCP is still
+high. In most of the cases I diagnose where the audit passes but LCP doesn't
+improve, the LCP element is a CSS `background-image`, and `next/image` doesn't
+touch it.
 
-The mechanism comes down to the preload scanner. Before building the DOM, the
-browser runs a secondary parser that skims the raw HTML for resources it can
-start downloading early. It sees what's declared in the markup: an `<img>`
-with a `src`, a `<link rel="preload">` in the `head`. A `background-image`
-lives in CSS, not markup, so the scanner never sees it: the download only
-gets queued once the browser has built the DOM, applied the styles and
-figured out that element needs an image. Late discovery turns into a high
-LCP, and the image audit flags nothing because, as far as it's concerned,
-there's no misconfigured `<img>` on the page.
+It comes down to the preload scanner. Before it builds the DOM, the browser
+runs a secondary parser over the raw HTML, looking for resources it can start
+downloading early. That parser sees only what's declared in the markup, such
+as an `<img>` with `src` or a `<link rel="preload">` in the `head`. A
+`background-image` lives in CSS, not in the markup, so the scanner never sees
+it. Its download isn't queued until the browser has built the DOM, applied
+styles, and worked out that this element needs an image. Discovering it that
+late is what keeps LCP high. Lighthouse's image audit flags nothing, because
+from its point of view there's no misconfigured `<img>` on the page.
 
 <figure>
   <svg viewBox="0 0 680 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="What the preload scanner sees in the markup and what it can't see">
@@ -132,15 +100,15 @@ there's no misconfigured `<img>` on the page.
   </figcaption>
 </figure>
 
-| The scanner sees it (discovered early) | The scanner misses it (discovered late) |
+| Scanner sees it (discovered early) | Scanner doesn't see it (discovered late) |
 |---|---|
 | `<img>` with `src` in the markup | `background-image` in CSS |
-| `<link rel="preload">` in the `head` | hero behind `"use client"` |
-| downloads with the HTML | only downloads after the DOM/JS |
+| `<link rel="preload">` in the `head` | Hero behind `"use client"` |
+| Downloads along with the HTML | Downloads only after the DOM/JS |
 
-The fix is to put the hero back in the markup. Replace the
-`background-image` with a real `<img>` above the fold; in Next.js, that's a
-`next/image` with the image declared in JSX:
+To fix it, move the hero back into the markup. Replace the
+`background-image` with a real `<img>` above the fold. In Next.js, that means
+a `next/image` with the image declared in JSX:
 
 ```tsx
 // app/(marketing)/hero.tsx
@@ -161,56 +129,57 @@ export function Hero() {
 }
 ```
 
-Two things changed in Next.js 16 that are worth updating in your head: the
-`priority` prop was deprecated in favor of `preload`, and for most cases the
+Next.js 16 changed two things here, so update your mental model. It
+deprecated the `priority` prop in favor of `preload`, and for most cases the
 recommendation is now `loading="eager"` or `fetchPriority="high"` rather than
-an explicit preload. The practical effect is the same (restoring the early
-discovery the `background-image` took away), but much of the material still
-ranking for this question teaches `priority`, which no longer exists. If you
-really do need a background (a decorative texture behind the content, say),
-the workaround is to preload the resource yourself with a
-`<link rel="preload" as="image">` in the `head`, but that only makes sense if
-that background really is the LCP element.
+an explicit preload. Either way, the practical effect is the same. It restores the early discovery
+that `background-image` took away. Much of the material that still ranks for
+this question teaches `priority`, though, and that prop no longer exists.
+
+If you do need a background, such as a decorative texture behind the
+content, preload it by hand with a `<link rel="preload" as="image">` in the
+`head`. Save this for a background that really is the LCP element.
 
 ## Hero behind `"use client"`: discovered too late
 
-The audit passes here too, but for a different reason: the `<img>` is in the
-JSX, just inside a component marked `"use client"`. In the trace, the symptom
-is a hero that only appears after hydration, with LCP recorded well after what
-the filmstrip suggests.
+Here the audit passes too, but for a different reason. Your `<img>` does
+exist in JSX, inside a component marked `"use client"`. A trace shows your
+hero appearing only after hydration, with LCP recorded well past what the
+filmstrip suggests.
 
-The mechanism is the same as the previous case, arrived at differently. If
-the hero only comes into existence once the client component mounts in the
-browser, the initial HTML the scanner reads doesn't contain that `<img>`. The
-resource is invisible to early discovery, not because it's in CSS, but
-because it sits behind JavaScript that hasn't run yet. The component may even
-render on the server by default, but if the image depends on client state (a
-`useState` value, a viewport calculation, data that only arrives after mount),
-the markup SSR produces won't include it.
+It's the same problem as before, by a different route. If your hero exists
+only once a client component mounts in the browser, that `<img>` isn't in the
+initial HTML the scanner reads. Early discovery misses it, not because it's
+in CSS this time, but because it sits behind JavaScript that hasn't run yet.
 
-The fix is to keep the LCP element in a server component. Render the hero on
-the server, with its `src` resolved at build or request time, and isolate the
-interactive bits in a smaller island (a button, a control) instead of
-wrapping the whole hero in `"use client"`. The hub covers how early discovery
-works in detail in the section on [the browser needing to find the image
-early](/en/blog/improve-lcp-nextjs#resource-load-delay-the-browser-needs-to-discover-the-image-early);
-the point here is to recognize the pattern: if the hero depends on the client,
-the scanner can't see it.
+That component may even render on the server by default. But if the image
+depends on client state (a `useState` value, a viewport calculation, data
+that only arrives after mount), the server-rendered markup won't include it.
+
+Keep the LCP element in a server component. Render the hero on the server,
+with its `src` resolved at build or request time, and isolate the interactive
+parts in a smaller island, such as a button or a control, instead of wrapping
+the whole hero in `"use client"`.
+
+I cover early discovery in detail in
+[the hub's section on why a browser needs to discover an image
+early](/en/blog/improve-lcp-nextjs#resource-load-delay-the-browser-needs-to-discover-the-image-early).
+For now, learn to recognize the pattern. A hero that depends on the client is
+invisible to the scanner.
 
 ## An `@import` chain: CSS that downloads one file at a time
 
-The last late-discovery pattern isn't an image at all; it's the CSS itself.
-The symptom shows up in the waterfall: stylesheet requests cascading one
-after another, each starting only when the previous one finishes, pushing
-first paint to the back of the line.
+This last late-discovery pattern involves the CSS itself, not an image. In
+the waterfall, you'll see stylesheet requests in a cascade, each one starting
+only when the previous one finishes, which pushes first paint to the end of
+the queue.
 
-The mechanism is how `@import` works. An `@import` inside a CSS file is only
-discovered after the file containing it has finished downloading and been
-parsed. Chaining imports (a CSS file that imports a theme, which imports the
-fonts) forces the downloads into a sequence: nothing downloads in parallel,
-and everything waits its turn. Since the browser needs CSS to paint, that
-cascade directly delays rendering of the LCP element, whether it's an image
-or text.
+Blame the way `@import` works. An `@import` inside a CSS file isn't discovered until the file that contains
+it has downloaded and been parsed. Chain a few imports together (a stylesheet
+that imports a theme, which imports the fonts) and you serialize the
+downloads. Nothing happens in parallel, and each file waits its turn. Because
+the browser needs CSS before it can paint, this cascade directly delays
+rendering of the LCP element, whether it's an image or text.
 
 <figure>
   <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparison of CSS requests in sequence with chained @import versus in parallel with links in the head">
@@ -243,72 +212,75 @@ or text.
   </figcaption>
 </figure>
 
-The fix is to flatten the chain. Replace the chained `@import`s with parallel
-`<link>`s in the `head`, or let your bundler resolve the imports at build time
-so the CSS arrives in a single request instead of a sequence. In Next.js,
-styles imported in your components already take that optimized path; the
-trap is usually third-party or legacy CSS that still uses `@import` to pull in
-its dependencies. It's worth opening the waterfall to check: if stylesheets
-are waiting on each other, that's where your first paint is stuck.
+Flatten the chain. Replace chained `@import`s with parallel `<link>`s in the
+`head`, or let the bundler resolve the imports at build time so the CSS
+arrives in a single request instead of a sequence.
+
+In Next.js, styles you import in your components already take that optimized
+path. The trap usually sits in third-party or legacy CSS that still uses
+`@import` to pull in its dependencies. Open the waterfall and check. If your
+stylesheets wait on each other, that's where first paint is stuck.
 
 ## A fade-in on the hero: LCP doesn't count until the animation ends
 
-This is the first of the render delays you inflict on yourself. The symptom
-is misleading: the element shows up quickly in the filmstrip, but LCP is
-recorded much later. Nothing is slow to download; the problem is when the
-browser considers the element "painted".
+This is the first render delay you inflict on yourself, and its
+symptom is misleading. Your element shows up quickly in the filmstrip, but
+LCP is recorded much later. Nothing is slow to download. What matters is
+*when* the browser considers the element "painted."
 
-The mechanism is in LCP's definition. The browser doesn't count an element
-as painted until it's actually visible, and an element with `opacity: 0` that
-fades up to `1` in an entrance animation only becomes visible when the
-animation ends. If your hero has a half-second fade-in, you've added half a
-second of render delay to LCP, even if the image was on screen, transparent,
-the whole time.
+That follows from how LCP is defined. A browser doesn't count an element as
+painted until it's actually visible, and an element that starts at
+`opacity: 0` and rises to `1` in an entrance animation becomes visible only
+when the animation ends. If your hero has a half-second fade-in, you've added
+half a second of render delay to LCP, even if the image was on screen,
+transparent, the whole time.
 
-The fix is to not animate the LCP element's `opacity`. If the entrance effect
-matters to the design, animate something else (a neighboring element, a
-secondary detail) and let the hero paint right away. The hub covers [the
-render delay phase in
-detail](/en/blog/improve-lcp-nextjs#element-render-delay-the-image-has-arrived-but-still-has-to-paint);
-the pattern to recognize here is that a beautiful animation on the wrong
-element costs you LCP.
+Don't animate the `opacity` of the LCP element. If the entrance effect
+matters to the design, animate something else, such as a neighboring element
+or a secondary detail, and let the hero paint immediately.
+
+[The hub's section on render
+delay](/en/blog/improve-lcp-nextjs#element-render-delay-the-image-has-arrived-but-still-has-to-paint)
+covers this phase in detail. What you want to spot here is a nice animation
+on the wrong element, because it costs you LCP.
 
 ## An A/B testing anti-flicker snippet: rendering blocked on purpose
 
 If you run A/B tests with a tool that injects a snippet into the `head`, you
-may have imported a render delay without realizing it. The symptom is a high
-render delay, with the page body hidden for the first moments of the load.
+may have imported a render delay without noticing. It shows up as high render
+delay, with the page body hidden during the first moments of the load.
 
-The mechanism is intentional, and that's the trap. Experimentation tools
-hide the page (typically with `opacity: 0` or `visibility: hidden` on the
-`<body>`) until the script decides which variant to show, so users don't see
-the original version "flicker" before the variant appears. That anti-flicker
-snippet blocks painting of everything, the LCP element included, by design.
-The longer the script takes, the longer the render delay.
+Here the delay is intentional, and that's what makes it a trap. Experiment
+tools hide your page until their script decides which variant to show,
+typically with `opacity: 0` or `visibility: hidden` on the `<body>`, so users
+never see your original version "flicker" before a variant replaces it. By
+design, this snippet blocks all painting, your LCP element included. A
+slower script means a longer render delay.
 
-The fix depends on how much control you have over the tool. The safest
-approach is to run the experiment on the server, or load it asynchronously as
-early as possible with a short anti-flicker timeout, so the page isn't held
-hostage by a slow script. Where the test isn't critical to the above-the-fold
-area, taking the snippet out of the hero's render path removes the problem.
-The principle is the same as with the fade-in: nothing that hides the LCP
-element belongs on the critical path.
+How you fix it depends on how much control you have over the tool. Your
+safest option is to load experiments on the server, or asynchronously as
+early as possible, with a short anti-flicker timeout so a slow script can't
+hold your page hostage. Where a test isn't critical above the fold, taking
+its snippet out of your hero's render path eliminates the problem.
+
+It's the same principle as the fade-in. Nothing that hides the LCP element
+belongs on the critical path.
 
 ## Render-blocking CSS plus a font on the critical path: the text LCP
 
-Not every LCP is an image, and when it's text, the conversation changes. The
-symptom is a high LCP on an element that has nothing to download: a
-paragraph, a heading. Image optimization won't help here, because the
-bottleneck is the CSS and the font holding back the text's paint.
+Not every LCP element is an image, and when it's text, the problem lives
+somewhere else. You'll see a high LCP on an element with nothing to download,
+such as a paragraph or a heading. Optimizing images won't help, because CSS
+and the font are what hold back the text's paint.
 
-This is the case I measured on this very site, and I use it as an example
-because the before-and-after is clean. The home page's LCP was a hero
-paragraph, with PageSpeed Insights mobile at 78, an LCP of 4.9 s and a render
-delay of 1,280 ms. Two fixes solved it: inlining critical CSS (via
-`experimental.inlineCss` in the config) and loading the Inter font with
-`display: 'optional'` and `preload: false`, which took the woff2 off the
-critical path. The result, measured after the deploy: PSI mobile 100, an LCP
-of 0.9 s, a render delay of 530 ms and zero CLS.
+I measured this case on this site, and I use it as an example because the
+before and after are clean. On my home page, the LCP element was a paragraph
+in the hero. Before the fixes, PageSpeed Insights scored it 78 on mobile,
+with an LCP of 4.9 s and 1,280 ms of render delay. Two changes solved it. I
+inlined critical CSS with `experimental.inlineCss` in the config, and I
+loaded the Inter font with `display: 'optional'` and `preload: false`, which
+took the woff2 off the critical path. Measured after the deploy, mobile PSI
+went to 100, LCP to 0.9 s, render delay to 530 ms, and CLS to zero.
 
 <figure>
   <Image
@@ -324,102 +296,116 @@ of 0.9 s, a render delay of 530 ms and zero CLS.
   </figcaption>
 </figure>
 
-Both fixes work the same way: they remove obstacles between the page and the
-text's first paint. External CSS is render-blocking (the browser won't paint
-until it has downloaded and parsed the stylesheet), so inlining critical CSS
-into the HTML removes an entire request from in front of the paint. A font on
-the critical path holds text back for the same reason. With
-`display: 'optional'`, the browser stops waiting for the web font and paints
-with a system font, without blocking. In Next.js, `next/font` is how you do
-it; the nuance is that `display: 'swap'` still leaves a swap window, and
-`'optional'` is what removes the block when the LCP is text. One caveat:
-those numbers come from a single measurement of mine, on one specific site;
-yours will depend on your CSS and your fonts. What carries over is the
-mechanism, not "4.9 s becomes 0.9 s".
+Both fixes work the same way. They clear blockers from the path to your
+text's first paint. External CSS is render-blocking. A browser won't paint
+until it has downloaded and parsed its stylesheets, so inlining critical CSS
+in your HTML removes a whole request from in front of the paint.
+A font on the critical path holds back text for the same reason. With
+`display: 'optional'`, a browser stops waiting for the web font and paints in
+a system font, without blocking.
+
+In Next.js, `next/font` is how you do this. Keep in mind that
+`display: 'swap'` still leaves a swap window. When LCP is text, `'optional'`
+is the setting that removes the block.
+
+These magnitudes come from one measurement of mine, on one specific site.
+Your numbers will depend on your CSS and your fonts. What transfers is the
+mechanism, not the "4.9 s becomes 0.9 s."
 
 ## Hydration, sliders and skeletons: LCP recorded again, later
 
-There's a class of mistake where LCP isn't high because anything is slow,
-but because it got **recorded again** later. The symptom is an LCP worse than
-the filmstrip suggests: the page looks ready, but the reported number is
-still late.
+In this case LCP isn't high because anything is slow. It's high because the
+browser **recorded it again**, later. You'll notice it when LCP looks worse
+than the filmstrip suggests. The page appears ready, but the reported number
+is late.
 
-The mechanism is that the LCP element can change while the page loads. LCP
-isn't locked in at first paint: if something renders a larger element later,
-the browser records LCP again at that later moment. A carousel that switches
-slides after hydration, a skeleton replaced by bigger content, a block that
-only reaches its final size once JavaScript runs: in each case, the "largest
-element" shows up late, and LCP follows it.
+LCP can switch to a different element during the load. It isn't locked in at
+first paint, so if something renders a larger element later, the browser
+records LCP again at that later moment. This happens with a carousel that
+changes slides after hydration, a skeleton replaced by larger content, or a
+block that reaches its final size only once JavaScript runs. In each case,
+the "largest element" shows up late, and LCP follows it.
 
-The fix is to stabilize the LCP element before hydration. Render the hero at
-its final size during SSR, so the largest element doesn't change once the
-client takes over. If you use a skeleton, size it like the real content; a
-skeleton smaller than the content makes the element grow on hydration and
-resets LCP. And don't let sliders or carousels promote a larger element after
-first paint. The practical rule: whatever the browser sees as the largest
-element at the start needs to stay the largest.
+Stabilize the LCP element before hydration. Render the hero at its final size
+during SSR so the largest element doesn't change once the client takes over.
+If you use a skeleton, give it the same size as the real content. A skeleton
+smaller than the content makes the element grow on hydration, and LCP gets
+recorded again. Also avoid sliders and carousels that promote a larger
+element after first paint.
+
+As a rule, whatever the browser sees as largest at the start has to stay the
+largest.
 
 ## Too many preloads: competing for bandwidth delays LCP itself
 
-The last mistake is the most counterintuitive, because it comes from trying
-to optimize. The symptom is simple: you added a preload and LCP got worse.
+This last mistake is the most counterintuitive, because it comes from trying
+to optimize. You add a preload, and LCP gets worse.
 
-The mechanism is bandwidth competition. A preload tells the browser "this is
-urgent, download it now". If you mark five resources as urgent (the hero, the
-font, a script, a CSS file), they fight for bandwidth with each other and
-with the critical CSS and JS. When everything is urgent, nothing is: the LCP
-resource that actually mattered gets drowned out by the other preloads and
-arrives later than it would have on its own.
+It's a matter of bandwidth. A preload tells the browser "this is urgent,
+download it now." Mark five resources as urgent (the hero, a font, a script,
+a CSS file) and they fight over bandwidth with each other and with the
+critical CSS and JS. If everything is urgent, nothing is. Your LCP resource,
+the one that really mattered, gets demoted by the noise from the other
+preloads and arrives later than it would have on its own.
 
-There's a nuance I measured that shows the "it depends" nicely. In the case
-of the home page's text LCP, preloading the woff2 font (about 48 KB) was
-**adding** roughly 1.7 s of render delay to Lighthouse's simulated LCP,
-because with a text LCP and the font set to `display: optional`, that preload
-only competed for bandwidth without speeding up anything that mattered.
-Taking it off the critical path was one of the fixes. But the conditions
-matter: a font preload isn't always bad. It's bad when the LCP is text and
-the font already has a non-blocking `display`. When the font is the
-bottleneck, the preload helps.
+My own measurement shows why "it depends." In the home page's text-LCP case,
+preloading the woff2 font (about 48 KB) was **adding** roughly 1.7 s of
+render delay to Lighthouse's simulated LCP. With text as the LCP element and
+the font available with `display: optional`, that preload only competed for
+bandwidth without speeding up anything that mattered. Taking it off the
+critical path was one of the fixes.
 
-The fix is to preload only the LCP resource, nothing else. In Next.js 16,
-`fetchPriority="high"` on the element itself marks the hero as a priority
-without adding a separate hint, and `fetchPriority="low"` does the opposite:
-it deprioritizes above-the-fold resources that aren't the LCP, freeing
-bandwidth for the one that is. The hub's FAQ covers the same preload trap;
-the rule I follow is that I have to be able to explain in one sentence why
-each preload is there. If I can't, it goes.
+A font preload isn't always bad. It's bad when LCP is text and the font
+already has a non-blocking `display`. When the font is the bottleneck, the
+preload helps.
+
+Preload only your LCP resource, nothing else. In Next.js 16,
+`fetchPriority="high"` on the hero element itself marks it as a priority
+without adding a separate hint. `fetchPriority="low"` does the opposite. It
+deprioritizes above-the-fold resources that aren't your LCP, which frees
+bandwidth for the one that is. This same preload trap also comes up in the
+hub's FAQ.
+
+My rule is to be able to explain, in one sentence, why each preload is there.
+If I can't, it goes.
 
 ## How to check that LCP really improved
 
-None of these fixes means anything until you've confirmed they worked, and
-"PSI went up" isn't enough. My routine goes from lab to field, in this order.
+None of these fixes counts until you've confirmed it worked, and "PSI went
+up" isn't enough confirmation. My routine goes from lab to field, in that
+order.
 
-Start with PageSpeed Insights for the lab number and the breakdown of the
-four phases, which tell you which phase got shorter. Then open DevTools, record
-a trace and confirm two things: which element was recorded as LCP, and which
-phase the time is going to. If the element isn't the one you expected (a
-background-image, a skeleton), you've found the problem before touching any
-code. Next, view the page source: does the initial markup contain the LCP
-resource, or is it hidden in CSS or behind a client component? That's the
-direct test of "can the scanner see this?".
+1. Run PageSpeed Insights for the lab number and the breakdown of LCP's four
+   phases. It tells you which phase shrank.
+2. Record a trace in DevTools and confirm two things: which element was
+   marked as LCP, and which phase the time is going to. If the element isn't
+   the one you expected (a background-image, a skeleton), you've found the
+   problem before touching any code.
+3. Use view-source to check whether the initial markup contains the LCP
+   resource, or whether it's hidden in CSS or behind a client component. It's
+   a direct test of "does the scanner see this?"
 
-Lab isn't field, and that's where RUM comes in. This site has been
-collecting real users' LCP since mid-2026 (web-vitals with attribution,
-sending the four subparts to GA4), though there isn't yet a statistical
-window large enough to draw conclusions, and the site is still below CrUX's
-traffic threshold. Even so, RUM is what closes the loop: the lab simulates,
-the field measures. If your site already has enough traffic, the [Core Web
-Vitals checker](/en/tools/cwv-checker) shows field data straight from CrUX,
-with no instrumentation needed.
+Lab data isn't field data, though, and for the field you need RUM. This site
+has collected LCP from real users since mid-2026, using web-vitals with
+attribution to send the four subparts to GA4. It doesn't have a statistical
+window large enough for conclusions yet, and it's still outside CrUX because
+its traffic is below the threshold. Even so, RUM closes the loop. Lab tests
+simulate, and field data measures.
 
-One last note on what **not** to chase. Not every PSI warning is worth
-hunting down: Next.js ships about 14 KiB of legacy JavaScript (the
-unconditional core-js polyfills in the framework chunk) that PSI flags and you
-can't remove; a modern browserslist produces byte-for-byte identical output.
-Hours spent on those 14 KiB would pay off far more on any of the mistakes
-above. If you need a starting point for verification, this cluster collects
-the [validators and measurement tools](/en/tools) I use in this routine, and
-for context beyond LCP (metadata, structured data, rendering), the entry
-point is the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs).
+If your site already gets enough traffic, the
+[Core Web Vitals checker](/en/tools/cwv-checker) shows field data straight
+from CrUX, with no instrumentation.
+
+**Not** every PSI flag is worth hunting down. Next.js ships about 14 KiB of
+legacy JavaScript (the unconditional core-js polyfills in the framework
+chunk) that PSI flags and you can't remove. A modern browserslist produces
+byte-for-byte identical output. Any of the mistakes above will repay your
+hours far better than chasing those 14 KiB.
+
+To get started with verification, use
+[the cluster's validators and measurement tools that I rely on in this
+routine](/en/tools).
+For context beyond LCP (metadata, structured data, rendering), start with
+[the technical SEO guide for Next.js](/en/guide/technical-seo-nextjs).
 
 This is the English version of an article first published in Portuguese; the two declare each other.
