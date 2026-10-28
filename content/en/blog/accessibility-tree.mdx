@@ -1,110 +1,115 @@
 ---
 title: "Accessibility tree: how AI agents read a web page"
-description: "Agents like Playwright MCP read a page through its accessibility tree, not the screen. Here is this site's tree before and after fixing 266 findings."
+description: "Agents such as Playwright MCP read a page through its accessibility tree, not the screen. Here's this site's tree before and after fixing 266 findings."
 slug: "accessibility-tree"
-primaryQuery: "accessibility tree"
-keywords: ['english', 'inglês', 'accessibility tree', 'accessibility', 'a11y', 'ai agents', 'browser agent', 'playwright mcp', 'chrome devtools mcp', 'aria', 'accessible name', 'axe-core', 'wcag', 'label in name', 'computer use']
-lang: "en"
-translationOf: "arvore-de-acessibilidade"
-category: indexacao
-tldr: >-
-  The accessibility tree is the page as the browser builds it for assistive
-  technology: elements with a role, a name and a state. Playwright MCP reads it
-  instead of the screen. On this site, a name that left out the visible text
-  meant the brand link couldn't be found by the words on it.
 datePublished: "2026-10-23"
 dateModified: "2026-10-23"
+primaryQuery: "accessibility tree"
+lang: "en"
+translationOf: "arvore-de-acessibilidade"
+category: "indexacao"
+keywords: ['english', 'inglês', 'accessibility tree', 'accessibility', 'a11y', 'ai agents', 'browser agent', 'playwright mcp', 'chrome devtools mcp', 'aria', 'accessible name', 'axe-core', 'wcag', 'label in name', 'computer use']
+tldr: >-
+  An accessibility tree is the page as the browser builds it for assistive
+  technology, each element reduced to a role, a name, and a state. Playwright
+  MCP reads it instead of the screen. On this site, a name that didn't contain
+  the visible text hid the brand link from a search by its on-screen words.
 faq:
   - question: "What is the accessibility tree?"
-    answer: "A tree the browser builds from the DOM for screen readers and other assistive technology. Each node has a role (link, button, region, heading), an accessible name and, where relevant, a state (checked, expanded, disabled). Elements that only exist for layout, like most divs, don't become nodes."
+    answer: "It's a tree the browser builds from the DOM for screen readers and other assistive technology. Each node has a role (link, button, region, heading), an accessible name, and, when there is one, a state (checked, expanded, disabled). Elements that exist only for layout, like most divs, don't become nodes."
   - question: "Do AI agents use the accessibility tree?"
-    answer: "Some do. Playwright MCP gives the model a snapshot of the accessibility tree instead of a screenshot, and Chrome DevTools MCP has a snapshot tool built on it. Others, like Anthropic's computer use, work from screenshots and click coordinates. A site has no way to tell which kind is reading it."
-  - question: "How do you see a page's accessibility tree?"
-    answer: "In Chrome, open DevTools, go to the Elements panel and select the Accessibility tab: it shows the selected node, or the whole page if you turn on the full-page tree option. In code, Playwright's ariaSnapshot() method returns the tree for part of a page as YAML, in the same format Playwright MCP gives the model."
+    answer: "Some do. Playwright MCP gives the model a snapshot of the accessibility tree instead of a screenshot, and Chrome DevTools MCP has a snapshot tool based on it. Others work from screenshots and click coordinates, such as Anthropic's computer use. A site can't tell which kind is reading it."
+  - question: "How can you see a page's accessibility tree?"
+    answer: "In Chrome DevTools, open the Elements panel and then the Accessibility tab. It shows the selected node, or the whole page once you turn on the full-tree option. In code, Playwright's ariaSnapshot() method returns the tree for part of a page as YAML, in the same format Playwright MCP gives the model."
   - question: "Does fixing accessibility improve SEO?"
-    answer: "Not in any way this site has measured. Googlebot indexes the HTML and its text, and the fixes in this article changed very few words of HTML: a hidden hint in the brand link and the name of the search button. What changes is the page for people using assistive technology and, through the same mechanism, for agents that read the tree."
+    answer: "Not that this site has measured. Googlebot indexes the HTML and its text, and the fixes in this article changed only a few words of HTML: a hidden hint in the brand link and the search button's name. What changes is the page for people who use assistive technology and, through the same mechanism, for agents that read the tree."
 ---
 
-The accessibility tree is the version of a page the browser builds for
-assistive technology. Every relevant element becomes a node with a role
-(link, button, region), an accessible name and a state. Some AI agents that
-browse the web read this tree instead of an image of the screen: Playwright
-MCP gives the model an accessibility snapshot, and Chrome DevTools MCP has a
-snapshot tool "based on the a11y tree". For those agents, a control with no
-name, or with a name that doesn't match the text on screen, can't be found by
-the words written on it. An axe-core audit found exactly that on this site, in
-the header of every page.
+An accessibility tree is the version of a web page that the browser builds
+for assistive technology. Each element that matters becomes a node with a
+role (link, button, region), an accessible name, and a state. Some AI agents
+that browse the web read this tree instead of the screen image. Playwright
+MCP hands the model an accessibility snapshot, and Chrome DevTools MCP has a
+snapshot tool that its docs describe as "based on the a11y tree". For those
+agents, a control with no name, or with a name that differs from its
+on-screen text, can't be found by the words written on it. An axe-core audit
+found exactly that in the header of every page on this site.
 
-This article shows this site's tree before and after the fixes, along with
-the script that captured it, and keeps what was measured separate from what
-follows from the mechanism. No agent success rate was measured here.
+Below, you'll see the site's tree before and after the fixes, and the script
+that captured it. I keep what I measured separate from what follows from the
+mechanism. I didn't measure any agent's success rate.
 
 ## What the tree looks like, with an example from this site
 
-The browser reads the DOM, drops anything that exists only for layout, and
-builds a tree of what matters to someone who can't see the screen. Here is
-the brand link in the header, as Playwright describes it after the fix:
+A browser reads the DOM, drops whatever exists only for layout, and builds a
+tree of what matters to someone who can't see the screen. Here's the brand
+link in this site's header, as Playwright describes it after the fix:
 
 ```yaml
 - link "SEO Técnico .DEV.BR — home":
   - /url: /en
 ```
 
-A role (`link`), a name in quotes and a destination. Two `span` elements with
-font and color classes, plus a third that is visually hidden, collapse into a
-single line. That line is what an agent like Playwright MCP receives, along
-with a reference (`[ref=e5]`, for example) it uses to click.
+Read it as a role (`link`), a name in quotes, and a destination. In the HTML,
+two `span` elements with font and color classes, plus a third one that's
+visually hidden, collapse into that single line. An agent like Playwright MCP
+receives exactly this line, plus a reference (`[ref=e5]`, for example) that
+the agent uses to click.
 
-Notice that the screen shows "SEO TÉCNICO" in capitals while the tree keeps
-"SEO Técnico". The capitals come from CSS (`text-transform`); the tree carries
-the HTML text. An agent that reads pixels and one that reads the tree see the
-same brand spelled two different ways.
+Look at the casing, too. On screen, the brand reads "SEO TÉCNICO" in capitals,
+while the tree holds "SEO Técnico" as it's written in the HTML. CSS applies
+the capitals (`text-transform`), and the tree carries the HTML text. So an
+agent that reads pixels and one that reads the tree get the same brand written
+two ways.
 
 ## Which agents read the tree and which read the screen
 
+Here's what three agents get from a page and how each one targets an element:
+
 | Agent | What it gets from the page | How it targets an element |
 |---|---|---|
-| Playwright MCP | Accessibility snapshot, "instead of screenshots" | Node reference (`ref`) |
-| Chrome DevTools MCP | Text snapshot "based on the a11y tree" | Node identifier (`uid`) |
-| Computer use (Anthropic) | Screenshot | Pixel coordinates |
+| Playwright MCP | An accessibility snapshot, "instead of screenshots" | A node reference (`ref`) |
+| Chrome DevTools MCP | A text snapshot "based on the a11y tree" | A node identifier (`uid`) |
+| Computer use (Anthropic) | A screenshot | Pixel coordinates |
 
-The three descriptions come from each tool's documentation, read on
-2026-10-23. A site doesn't get to choose which of them visits, and a single
-agent can combine both approaches. So the argument in this article is
-conditional: **if** the agent reads the tree, **then** what's in the tree is
-all the agent has.
+All three descriptions come from each agent's own documentation, which I read on
+October 23, 2026. A site doesn't get to choose which of them visits it, and
+one agent can combine both modes. So this article makes a conditional argument.
+**If** an agent reads the tree, **then** what's in the tree is all it has.
 
 ## What the audit found
 
-The test suite runs axe-core through Playwright on every route in the
-sitemap, in both themes, against the WCAG 2.0 and 2.1 rules at levels A and
-AA. That adds up to 148 audits. Against the code in production at the time,
-it flagged 266 nodes, every one rated *serious*:
+My test suite runs axe-core with Playwright on every route in the sitemap, in
+both the dark and light themes, against WCAG 2.0 and 2.1 rules at levels A
+and AA. That's 148 audits in total. When I ran them against the code that was
+in production at the time, they found 266 nodes with violations, all of them
+with *serious* impact:
 
-| axe rule | Nodes | What it means |
+| axe rule | Nodes | What it is |
 |---|---|---|
 | `label-content-name-mismatch` | 224 | Accessible name doesn't contain the visible text (WCAG 2.5.3) |
 | `scrollable-region-focusable` | 16 | Table or code block that scrolls but can't receive keyboard focus |
 | `color-contrast` | 14 | Text below the minimum contrast |
-| `listitem` | 8 | List item with no parent list in the tree |
-| `link-in-text-block` | 4 | Link distinguished from surrounding text by color alone |
+| `listitem` | 8 | List item with no list around it in the tree |
+| `link-in-text-block` | 4 | Link that only its color sets apart from the text around it |
 
-The first 224 are a single component repeated: the brand link, on every page,
-in both themes. Contrast doesn't change the tree, and keyboard focus makes
-little difference to anyone not using a keyboard. Two findings change what an
-agent can find, and those are the two I measured.
+All 224 mismatches come from one component, the brand link, repeated on every
+page in both themes. Contrast doesn't change the tree, and keyboard focus
+changes little for anyone who isn't using a keyboard. Two findings do change
+what an agent can find, and I measured those two.
 
 ## Before and after: the brand link
 
-The link had an `aria-label` of "SEO Técnico — home". An `aria-label`
-replaces the element's content as its accessible name, so the name left out
-".DEV.BR", which is right there on screen. The fix removed the `aria-label`
-and added a hint visible only to screen readers.
+Before the fix, the brand link carried an `aria-label` of
+"SEO Técnico — home". An `aria-label` replaces the element's content as its
+accessible name, so the name left out ".DEV.BR", even though that text is on
+screen. To fix it, I removed the `aria-label` and added a hint that only
+screen readers get.
 
-To capture the "before" state without reverting the code, the script opens
-the live page, snapshots the tree, then puts the `aria-label` back and
-removes the hint directly in the DOM (the fix's diff applied in reverse) and
-snapshots again:
+To capture the "before" state without reverting any code, a script opens the
+live page and snapshots the tree. It then reverses the fix's diff in the DOM
+itself, putting the `aria-label` back and removing the hint, and snapshots the
+tree again:
 
 ```yaml
 # before (aria-label restored)
@@ -117,11 +122,11 @@ snapshots again:
   - /url: /en
 ```
 
-Both names describe the link, and an agent reading the whole tree would have
-seen both the name and the text even before the fix. The difference shows up
-when something looks for the link by the words written on it. That's how an
-agent gets instructions from a human ("click SEO Técnico .DEV.BR"), and it's
-how voice-control users speak:
+Both names describe the link, and before the fix, an agent reading the whole
+tree would have seen both the name and the text. The difference shows up when
+you look for the link by the words written on it. That's how a person phrases
+an instruction to an agent ("click SEO Técnico .DEV.BR"), and it's what
+someone using voice control says.
 
 | Search by role + visible text | Before | After |
 |---|---|---|
@@ -130,26 +135,31 @@ how voice-control users speak:
 
 Playwright matches the name as a case-insensitive substring. Before the fix,
 "SEO Técnico .DEV.BR" wasn't a substring of "SEO Técnico — home", so the
-search came back empty. WCAG 2.5.3 (Label in Name, level A) asks for exactly
-this: the name must contain the visible text, ideally at the start.
+search found nothing. WCAG 2.5.3 (Label in Name, level A) covers exactly this
+case. A control's name must contain its visible text, preferably at the start.
 
-The search button in the header had the same problem in Portuguese: it showed
-"buscar…" but was named "Abrir busca". The English button already matched.
+In the Portuguese interface, the header's search button had the same problem.
+It showed "buscar…" ("search…") but was named "Abrir busca" ("Open search").
+Its Portuguese name is now "Buscar no site" ("Search the site"). In English,
+the button's name already matched its visible text.
 
 ## Before and after: the JSON-LD generator's output
 
-In the [JSON-LD generator](/en/tools/json-ld-generator), the result appears
-in a `<pre>` once you click "Generate JSON-LD". A `<pre>` has no role of its
-own in the tree. The generated code was there as text, but no named node said
-"this is the result". The component test caught it by looking for the result
-the way a screen reader would:
+When you click "Generate JSON-LD" in the
+[JSON-LD generator](/en/tools/json-ld-generator), the result goes into a
+`<pre>`, which has no role of its own in the tree. So the generated code was
+there as text, but no named node marked it as the result.
+
+A component test caught this. It looked for the result the way a screen
+reader would:
 
 ```ts
 screen.getByRole('region', { name: /resultado/i })
 ```
 
-It found nothing. The fix gave the `<pre>` a region role, a name and keyboard
-focus:
+It came up empty. To fix it, I gave the `<pre>` a region role, a name, and
+keyboard focus. Here's the tree after the fix. I took it from the Portuguese
+page, which is why it shows "Resultado" and "Gerar":
 
 ```yaml
 # after, with the form filled in and "Gerar" clicked (Portuguese page)
@@ -157,49 +167,49 @@ focus:
   - code: "{ \"@context\": \"https://schema.org\", \"@type\": \"Article\", ... }"
 ```
 
-With those three attributes stripped out again in the DOM, the same search by
-role and name finds 0 regions. After the fix, an agent told to "copy the
-generated JSON-LD" has a node named "Result" to read. Before, it had just one
-block of text among many.
+With those three attributes removed again in the DOM, the same search by role
+and name finds 0 regions. Now an agent told to "copy the generated JSON-LD"
+has a node named "Result" to read. Before the fix, it had just another block
+of text.
 
-The same component had `role="alert"` on the error `<ul>`. Putting the alert
-role on the list itself wipes out its list role and leaves every `<li>`
-orphaned in the tree; that's the `listitem` row in the table above. The alert
-role now sits on a wrapper around the list.
+This component also had `role="alert"` on the `<ul>` that lists errors. An
+alert role on the list itself overrides its list role, which leaves every
+`<li>` orphaned in the tree. That's the `listitem` row in the audit
+table. The alert now sits on a wrapper around the list.
 
 ## What this changes, and what it doesn't
 
-Here is what the measurements support:
+Here's what the measurements support:
 
-- **Measured:** the tree for the brand link and for the generator's output,
-  before and after; the search by visible text going from 0 to 1; axe
-  violations going from 266 nodes to 4, all of them contrast warnings on
-  decorative text that was left as-is on purpose.
+- **Measured:** the brand link's tree and the generator output's tree, before
+  and after. A search by visible text went from 0 links to 1. Axe violations
+  dropped from 266 nodes to 4, all of them contrast warnings on a piece of
+  decorative text I kept on purpose.
 - **Mechanism:** an agent that reads the tree only has what's in it. A name
-  that doesn't contain the visible text breaks any search by that text, and an
-  element with no role and no name can't be found by role and name.
-- **Not measured:** whether any real agent succeeded or failed more often
-  because of this. No agent was tested against the "before" and "after"
-  versions, and an agent that works from screenshots wouldn't see any
-  difference at all.
+  that doesn't contain the visible text breaks a search by visible text, and
+  an element with no role and no name can't be found by role and name.
+- **Not measured:** whether any real agent failed more, or succeeded more,
+  because of this. I didn't test any agent against the "before" and "after"
+  versions, and an agent that works from screenshots sees no difference at all
+  from these fixes.
 
-In a separate experiment, this site measures [which AI assistants run
+In another experiment, I measure [which AI assistants run
 JavaScript](/en/blog/which-ai-assistants-run-javascript) when they fetch a
-page. That's about what arrives in the HTML. The accessibility tree is the
-next layer: what an agent with a browser can actually target once the page
-has rendered.
+page. That experiment is about what reaches the HTML. This
+article covers the next stage: what an agent with a browser can target once
+the page has rendered.
 
-None of this affects search SEO directly. Googlebot reads the HTML and its
-text. The crawler audit run the same day is written up in the
-[Screaming Frog free version case](/en/blog/screaming-frog-free-version), and
-each report caught things the other missed.
+None of this affects SEO for search engines directly, since Googlebot reads
+the HTML and its text. This audit round also included a crawler run, which I
+wrote up in my article on the
+[Screaming Frog free version](/en/blog/screaming-frog-free-version). Each
+report caught what the other one missed.
 
 ## In Next.js: the name comes from the visible text
 
-The [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) uses
-the App Router as its reference implementation, and both fixes are plain JSX.
-In the brand link, the name comes from the content, plus a visually hidden
-hint:
+My [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) uses the
+App Router as the reference implementation. Both fixes here are plain JSX. For
+the brand link, the name comes from the content plus a visually hidden hint:
 
 ```tsx
 // src/components/layout/Header.tsx
@@ -212,9 +222,8 @@ hint:
 </Link>
 ```
 
-In the generator's output, the role, name and focus go directly on the
-`<pre>`, which scrolls horizontally and therefore has to be reachable by
-keyboard:
+For the generator output, the role, name, and focus go on the `<pre>` itself.
+Because it scrolls horizontally, it has to be reachable by keyboard:
 
 ```tsx
 // src/components/tools/JsonLdGenerator.tsx
@@ -226,8 +235,8 @@ keyboard:
 >
 ```
 
-And here is the script that snapshots the tree before and after, if you want
-to repeat the measurement on another site:
+To repeat the measurement on another site, use the script that snapshots the
+tree before and after:
 
 ```js
 // audits/scripts/aria-snapshot.mjs (excerpt)
@@ -240,8 +249,9 @@ await brand.evaluate((a, l) => {
 console.log(await brand.ariaSnapshot())
 ```
 
-`ariaSnapshot()` returns the same YAML Playwright MCP gives the model, minus
-the references. You don't need an MCP server to see what the agent would see.
+`ariaSnapshot()` returns the same YAML that Playwright MCP gives the model,
+minus the references. You don't need an MCP server to see what the model
+would get.
 
 ## Sources
 

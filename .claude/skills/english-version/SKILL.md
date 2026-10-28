@@ -53,6 +53,7 @@ any conflict.
 | `scripts/check-english.mjs` | after the native read, and on every published page before trusting a change to it |
 | `scripts/register.mjs`, `register-thresholds.json` | how the register warnings are measured, and the native thresholds |
 | `scripts/calibrate-register.mjs`, `native-corpus.json` | to re-measure the thresholds (network; record the run in a research note) |
+| `scripts/placeholders.mjs` | steps 2 and 4: moves code blocks and figures out of the draft and back in byte for byte; `compare` lists inline code, link targets and numbers a rewrite lost |
 
 ## Inputs
 
@@ -109,10 +110,22 @@ Without a subagent: write it yourself from the fact sheet, with the
 Portuguese file closed. You do not need it: everything verbatim is a
 placeholder.
 
-Then fill every placeholder verbatim from the Portuguese file (code with its
-Portuguese comments, SVG geometry and tokens; translate only `<text>` labels,
-`aria-label` and table cells) and check the frontmatter
-(`structure.md`): slug and `primaryQuery` of a published page never change.
+The placeholders come from and go back through a script, never through a
+prompt or a retyped block (a `\u003c` retyped through a tool call came back
+as `<` on 2026-10-27):
+
+```bash
+# before step 2: the blocks, and the list of placeholders for the fact sheet
+node .claude/skills/english-version/scripts/placeholders.mjs extract <source.mdx> <workdir>
+# after step 2: the draft with every block back in, prose wrapped at 78 columns
+node .claude/skills/english-version/scripts/placeholders.mjs assemble <workdir>/draft.mdx <workdir> content/en/blog/<slug>.mdx
+```
+
+The source is the Portuguese file for a new page (then translate only the
+figure's `<text>` labels, `aria-label` and caption) and the published English
+page for a revision (its figures are already in English). Then check the
+frontmatter (`structure.md`): slug and `primaryQuery` of a published page
+never change.
 
 ## Step 3 — Native read (the English alone)
 
@@ -153,7 +166,11 @@ not an explanation.
 
 ## Step 4 — Fidelity check (the English against the Portuguese)
 
-Open both. Section by section (paragraphs need not line up; facts must):
+Start with the mechanical half: `placeholders.mjs compare <old> <new>` lists
+the inline code, link targets and numbers of the old file (the published
+English for a revision, the Portuguese for a new page) that the new English
+lacks. Resolve every line. Then open both. Section by section (paragraphs
+need not line up; facts must):
 
 - every claim in the Portuguese is in the English, and the English adds none;
 - every number, date, count and verdict matches; every hedge survived;

@@ -1,98 +1,110 @@
 ---
 title: "Does llms.txt work? What a real site measured"
-description: "Over 57 days, this site's llms.txt was fetched 9 times and nobody followed its trap link. What that proves, what it doesn't, and the next test."
+description: "In 57 days, this site's llms.txt was fetched 9 times and no client followed its trap link. What that proves, what it doesn't, and the test that came next."
 slug: "does-llms-txt-work"
 primaryQuery: "does llms.txt work"
 keywords: ['english', 'inglês', 'llms.txt', 'llms txt', 'llmstxt', 'ai text file', 'markdown for ai', 'text/markdown', 'accept: text/markdown', 'robots.txt', 'ai crawler', 'aeo', 'geo', 'ai']
 lang: "en"
 translationOf: "llms-txt-funciona"
-category: medicao
+category: "medicao"
 basedOn: ['detect-ai-crawlers']
-status: em-medicao
+status: "em-medicao"
 tldr: >-
-  On this site, almost nothing reads it: 9 fetches in 57 days, versus 1,191
-  for robots.txt, and no client followed the link that existed only inside
-  it. Google's documentation says Search ignores the file. If code already
-  generates it, keeping it is cheap; just don't expect an effect.
+  On this site, almost nothing fetches it: 9 fetches in 57 days, against
+  1,191 for robots.txt, and no client followed the link that existed only in
+  it. Google's documentation says Google Search ignores the file. If your
+  existing code can generate it, keeping it costs little. Don't expect an
+  effect.
 datePublished: "2026-10-06"
 dateModified: "2026-10-18"
 faq:
   - question: "What is llms.txt?"
-    answer: "A proposed Markdown file, served from the site root as /llms.txt, that summarizes the site and lists its most important links for language models. Jeremy Howard published the proposal on September 3, 2024, at llmstxt.org. It isn't a ratified standard."
-  - question: "Does any AI read llms.txt?"
-    answer: "On this site, the file was fetched 9 times in 57 days, between July and September 2026, and no client followed the link that existed only inside it. In a 28-day slice, August 16 to September 12, none of the 5 fetches came from a client identifying itself as an AI agent; the registered prediction about that closes on October 23, 2026. Google's official documentation says Search ignores the file."
+    answer: "It's a proposed Markdown file, served at the site root as /llms.txt, that summarizes a site and lists its most important links for language models. Jeremy Howard published it on September 3, 2024, at llmstxt.org. It isn't a ratified standard."
+  - question: "Does any AI actually fetch llms.txt?"
+    answer: "On this site, it was fetched 9 times in 57 days, between July and September 2026, and no client followed the link that existed only inside it. In a 28-day slice, from August 16 to September 12, none of the 5 fetches came from a client that identified itself as an AI agent. The pre-registered prediction about that closes on October 23, 2026. For Google Search, the official documentation says the file is ignored."
   - question: "Is it worth creating an llms.txt?"
-    answer: "It depends on what it costs you. If code can generate the file from content the site already has, keeping it is cheap. But this site's data shows no effect, and the file is no substitute for content in the served HTML, which is where the answers from the assistants tested here came from."
+    answer: "It depends on the cost. If code can generate it from content your site already has, keeping it is cheap. This site's data shows no effect, though, and the file doesn't replace content in the served HTML, which is where the assistants tested on this site got their answers."
   - question: "Does llms.txt replace robots.txt?"
-    answer: "No. robots.txt is an access directive: it says what each crawler may or may not crawl. llms.txt is a list of content with no effect on permissions. Listing a URL in it doesn't grant access, and leaving one out doesn't protect it."
+    answer: "No. robots.txt is an access directive that tells each crawler what it may or may not crawl. llms.txt is a list of content with no effect on permissions. Listing a URL in it doesn't grant access, and leaving one out doesn't protect it."
   - question: "Does serving Markdown to AI help?"
-    answer: "There's no data to answer that yet. Until December 24, 2026, this site is measuring whether any client requests pages with the Accept: text/markdown header. A Markdown version will only be built if there's measurable demand."
+    answer: "There's no data to answer that yet. Until December 24, 2026, this site is measuring whether any client requests pages with the Accept: text/markdown header. I'll build a Markdown version only if that measurement shows demand."
 ---
 
-llms.txt is a proposed Markdown file, served from the site root
-(`/llms.txt`), that summarizes the site and lists the content language models
-should read. On this site, between July 25 and September 20, 2026, the file
-was fetched 9 times, and no client (browser, crawler or agent) followed the
-link that existed only inside it. That doesn't prove llms.txt is useless. It
-proves that, here, almost nothing reads it.
+On this site, hardly at all, and Google Search ignores it. llms.txt is a
+proposed Markdown file, served at the site root (`/llms.txt`), that
+summarizes a site and lists the content language models should read.
+Between July 25 and September 20, 2026, mine was fetched 9 times, and no
+client (browser, crawler, or agent) followed the link that existed only
+inside it.
 
-For Google Search, there's already an official answer: Google ignores the
-file. The rest of this article covers what a small site can measure on its
-own, where my test fell short and what I'm measuring now.
+That doesn't prove llms.txt is useless. It proves that almost nothing
+fetches it here. For Google Search, an official answer already exists:
+Google ignores the file. The rest of this article covers what a small site
+can measure on its own, where my test failed, and what I'm measuring now.
 
 ## What llms.txt is
 
 Jeremy Howard published the proposal on September 3, 2024, at
-[llmstxt.org](https://llmstxt.org/). The format is deliberately simple: an H1
-with the site's name (the only required part), a summary in a blockquote,
-optional paragraphs, and H2 sections containing lists of Markdown links. A
-section named `Optional` marks what can be dropped when the model's context
-window is tight.
+[llmstxt.org](https://llmstxt.org/). He kept the format deliberately
+simple:
 
-Two details of the proposal tend to get lost in summaries. First, the stated
-target is inference, the moment a model answers someone, not training.
-Second, the proposal also suggests serving a Markdown version of each page at
-the same address, with `.md` appended or replacing the extension. That second
-idea comes back later, in H14.
+- an H1 with the site's name, which is the only required part
+- a summary in a blockquote
+- optional paragraphs
+- H2 sections with lists of Markdown links
 
-llms.txt isn't a directive. robots.txt says what a crawler may crawl;
-llms.txt only suggests what to read. Listing a URL in it doesn't grant access,
-and leaving a URL out doesn't protect it.
+A section named `Optional` marks what a model can drop when it's short on
+context.
+
+Summaries of the proposal, at least in Portuguese, tend to leave out two
+details. First, its stated
+target is inference (the moment a model answers someone), not training.
+Second, it also suggests serving a Markdown version of each page at the
+same address, with `.md` appended or replacing the extension. That second
+idea comes back later, as hypothesis H14.
+
+llms.txt isn't a directive. robots.txt tells a crawler what it may crawl,
+while llms.txt only suggests what to read. Listing a URL in it doesn't
+grant access, and leaving a URL out doesn't protect it.
 
 ### What the vendors say
 
-Google has a position on record. Its [official guide to optimizing for
-generative AI features in
+Google has a written position. Its
+[official guide to optimizing for generative AI features in
 Search](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide),
-updated on July 10, 2026, says you don't need to create AI text files,
-Markdown or new markup to appear in Search, because Google Search ignores
-them. Keeping such a file for other services, the same guide says, neither
-helps nor hurts your visibility in Search.
+updated July 10, 2026, says you don't need to create AI text files,
+Markdown, or new markup to appear in Search, because Google Search ignores
+them. According to the same guide, keeping such a file for other services
+neither helps nor hurts your visibility in Search.
 
-For OpenAI and Anthropic, I checked their official crawler pages in October
-2026 and found nothing about reading other sites' llms.txt. OpenAI's
-documentation publishes its own llms.txt, which shows it uses the format as a
-publisher, not as a reader. The lack of documentation doesn't prove they
-don't read it; it's simply what's on the record.
+For OpenAI and Anthropic, I found nothing. In October 2026, I checked both
+companies' official pages about their crawlers and found no mention of
+reading llms.txt from third-party sites. OpenAI's documentation does publish
+its own llms.txt, which shows OpenAI using the format as a publisher, not as
+a reader. Missing documentation doesn't prove they don't read it. It only
+tells you what's written down.
 
 ## How I tested it: a link that exists only in llms.txt
 
-Counting fetches of the file is easy: filter requests to `/llms.txt`. The hard
-part is knowing whether anyone uses what they read. To find out, during the
-crawler detection pilot I ran on this site ([the full case
-study](/en/case-studies/ai-crawler-detection)), I added a link in llms.txt to
-a URL that existed nowhere else on the site: no page linked to it and it
-wasn't in the sitemap. I called that URL Trap B.
+Counting fetches is easy. You filter requests to `/llms.txt`. Knowing
+whether anyone uses what they fetched is the hard part.
 
-The logic is simple. If a client reads llms.txt and follows its links, sooner
-or later it hits the trap. If the trap is never hit, nobody followed the
-file, at least not through that link.
+For the
+[crawler detection pilot I ran on this
+site](/en/case-studies/ai-crawler-detection),
+I put a link in llms.txt to a URL that existed nowhere else on the site. No
+page linked to it, and it wasn't in the sitemap. I called that URL Trap B.
+The pilot's write-up has the full method and all six hypotheses.
 
-The pilot was planned for 90 days. I closed it at 57, running from July 25 to
-September 20, 2026, when the site's redesign was deployed. The early close and
-the reason for it are documented in the pilot's write-up.
+If a client fetches llms.txt and follows its links, it hits the trap sooner
+or later. If nobody ever hits the trap, nobody followed the file, at least
+not through that link.
 
-## The result: 9 fetches, 0 clicks
+I planned the pilot for 90 days and closed it after 57, when I deployed the
+site redesign. It ran from July 25 to September 20, 2026, and its write-up
+states that it closed early and why.
+
+## The result: 9 fetches, 0 hits
 
 | Measure (Jul 25 to Sep 20, 2026) | Count |
 |---|---|
@@ -100,59 +112,59 @@ the reason for it are documented in the pilot's write-up.
 | Hits on Trap B (link only in llms.txt) | 0 |
 | Fetches of `/robots.txt`, same period | 1,191 |
 
-The robots.txt comparison is only an order-of-magnitude check: over the same
-period, the access-rules file was fetched 1,191 times and llms.txt 9 times.
-That's a difference of two orders of magnitude in how much interest clients
-showed in the two files.
+Read the robots.txt row as an order of magnitude and nothing more. Over the
+same period, clients fetched the access-rules file 1,191 times and llms.txt
+9 times. That's a gap of two orders of magnitude in how interested clients
+were in each file.
 
-Zero out of nine looks conclusive, but it isn't. With zero hits in n fetches,
+Zero out of nine looks conclusive. It isn't. With zero hits in n fetches,
 the one-sided 95% upper bound on the true follow rate is `1 − 0.05^(1/n)`.
-For n = 9, that comes to 28%. Put simply, the result is consistent with up
-to 28% of fetches following the link. The verdict I recorded for the
-hypothesis was "supported, but the bound is useless": with nine fetches,
-"nothing follows llms.txt" can't be told apart from "almost nothing reads
-it". The real finding is the low exposure, not the zero.
+For n = 9, that comes to 28%, so the result is compatible with up to 28% of
+fetches following the link. I logged the verdict for this hypothesis as
+"supported, but the bound is useless." With nine fetches, you can't tell
+"nothing follows llms.txt" apart from "almost nothing reads it." What the
+test found is how little exposure the file got, not the zero.
 
 ### Who fetched it
 
-The pilot's write-up doesn't identify who fetched the file, and I won't name
-anyone here either. There is a partial picture: in an interim 28-day pull,
-August 16 to September 12, 2026, excluding traffic from my own network, the
-file was fetched 5 times, all by clients that did **not** identify themselves
-as AI agents, and none by a declared AI agent.
+The pilot's write-up doesn't identify who fetched the file, and I won't
+name anyone here either. An interim 28-day pull from August 16 to September
+12, 2026, with my own network's traffic excluded, gives a partial picture.
+In that slice, the file was fetched 5 times, all by clients that did
+**not** identify themselves as AI agents. No declared AI agent fetched it.
 
-That bears on a separate prediction, registered the day the file went live:
-**no fetch of `/llms.txt` by a major vendor's AI agent within 90 days**. The
-window closes on October 23, 2026, and the verdict will be added to this
-article when it does. Until then, the 5 fetches in that slice are an interim
+That ties to a separate prediction I pre-registered the day the file went
+live: **no fetch of `/llms.txt` by a major vendor's AI agent within 90
+days**. Its window closes October 23, 2026, and I'll add the verdict to this
+article when it does. Until then, those 5 fetches are an interim
 observation, not a result.
 
 ## Why the test isn't conclusive
 
-There are two problems, and the second is worse.
+My design had two limits, and the second is worse than the first.
 
-**Low statistical power.** Nine fetches isn't much. A quick calculation shows
-the scale of the problem: if 1 in 10 readers followed the link, the chance of
-still seeing zero hits in 9 fetches would be 0.9⁹, about 39%. Even with a
-real effect, the test had almost a four-in-ten chance of coming back empty.
+**Low statistical power.** Nine fetches isn't many. If 1 in 10 readers
+followed the link, a simple calculation puts the chance of still seeing
+zero hits in 9 fetches at 0.9⁹, about 39%. So even with a real effect, the
+test had nearly a 4 in 10 chance of coming back zero.
 
-**A confound from the public repository.** The trap's address was in a
-versioned file in the site's repository, which is public on GitHub. Any hit
-on the trap could have come from someone (or some bot) reading the repository
-rather than llms.txt. So even a hit on the trap wouldn't have proved that
-anyone follows llms.txt. The design could only say something if it returned
-zero, and zero, with 9 fetches, says very little.
+**A confound from the public repository.** The site's repository is public
+on GitHub, and the trap's address sat in a versioned file there. Any hit on
+the trap could have come from someone, or some bot, reading the repository
+rather than llms.txt. So even a hit wouldn't have proved that anyone
+follows llms.txt. Only a zero could tell me anything, and a zero from 9
+fetches says little.
 
-That mistake was mine, and I'm sharing it because it's an easy one to repeat
-when setting up this kind of test in an open-source project: the file you use
-to configure the trap is itself a discovery channel.
+That mistake was mine, and I'm describing it because anyone setting up
+this kind of test in an open-source project can make it too. The file you
+configure the trap in is itself a discovery channel.
 
-The lesson I recorded when closing the pilot was to pre-register statistical
-power, not just the hypothesis. Another hypothesis in the same pilot, H5, made
-the problem obvious at closing: it needed roughly ten times as many crawler
-visits as the site got, and no extension of the window would fix that. Since
-then, every hypothesis registered here states, next to its window, the
-smallest effect it can detect.
+When I closed the pilot, the lesson I recorded was to pre-register the
+power, not just the hypothesis. H5, another hypothesis in that pilot, showed the
+problem at closing. It needed roughly ten times as many crawler visits as
+the site got, and no longer window would have fixed that. Since then, every
+hypothesis I pre-register here states, next to its window, the smallest
+effect it can detect.
 
 <figure>
   <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three discovery channels for the traps and what each proves: robots.txt, llms.txt and the public repository, which confounds the first two">
@@ -194,29 +206,32 @@ smallest effect it can detect.
 |---|---|---|
 | `robots.txt` → Trap A (path in `Disallow`) | That a client read the rules and fetched a forbidden path | 1,191 fetches; 0 hits |
 | `llms.txt` → Trap B (link) | That a client read llms.txt and followed one of its links | 9 fetches; 0 hits |
-| Public repository (GitHub) → both | Nothing on its own: both addresses were in a versioned file | Confounds the other two channels |
+| Public repository (GitHub) → both | Nothing on its own, since both addresses were in a versioned file | Confounds the other two channels |
 
 ## What came next: asking for Markdown with `Accept: text/markdown`
 
-The proposal's second idea, serving Markdown instead of HTML, has a variant
-that needs no new URLs: content negotiation. The client sends an `Accept:
-text/markdown` header and the server picks the response format. Cloudflare
-documents exactly this mechanism in its [Markdown for
+There's a variant of the proposal's second idea, serving Markdown instead
+of HTML, that needs no new URLs. It's called content negotiation. A client
+sends the
+`Accept: text/markdown` header, and the server decides what format to
+respond with. Cloudflare documents exactly this mechanism in its
+[Markdown for
 Agents](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/)
 feature, which converts HTML to Markdown at the edge when the client asks
 for it.
 
 Before building anything, I want to know whether anyone asks. H14 runs from
-September 25 to December 24, 2026 and only measures: every response stays
-HTML. The hypothesis is that at least one genuine request asks for a page in
-Markdown during the window. Based on the pilot's volume, the window should
-see around 2,700 requests that don't come from a browser, so a zero would cap
-the share asking for Markdown at about 0.1% of them. The decision rule was
-published before the window opened: Markdown serving will only be built if
-the requests come from at least 5 distinct networks or from 2 agents with
-verified identity.
+September 25 to December 24, 2026, and only measures. Every response stays
+HTML. It predicts that at least one real request asks for a page in
+Markdown within the window. At the pilot's volume, the window should bring
+close to 2,700 requests that don't come from a browser, so a zero would cap
+the share asking for Markdown at about 0.1% of them.
 
-To see what your own server does when a client asks for Markdown:
+I published the decision rule before H14 started. I'll build Markdown
+serving only if those requests come from at least 5 distinct networks or
+from 2 agents with verified identity.
+
+To see what your own server does when a client asks for Markdown, run this:
 
 ```bash
 # illustrative: replace with your domain
@@ -225,45 +240,47 @@ curl -s -o /dev/null -w "%{content_type}\n" \
   https://your-domain.com/
 ```
 
-If it returns `text/html`, your server ignores the preference, which is the
-default for most sites, and for this one during H14.
+If you get `text/html` back, your server ignores the preference. That's the
+default behavior of most sites, and of this one during H14.
 
-Alongside this, the second version of the detection instrument, with
-hypotheses H7 to H13 pre-registered, plans discovery channels whose addresses
+I've also pre-registered a second version of the detection instrument, with
+hypotheses H7 to H13. Its design calls for discovery channels whose addresses
 never go into a versioned file, plus a trap that exists only in the
 repository, to measure how big the leak is. That's the direct fix for the
-Trap B confound. It's registered but not built yet.
+Trap B confound. It's pre-registered but not built yet.
 
 ## Is it worth creating an llms.txt?
 
-The honest answer depends on your situation.
+Honestly, it depends.
 
-- **If code can generate the file** from something the site already has, like
-  the post index, keeping it costs next to nothing. Creating it does no harm:
-  Google itself says the file neither helps nor hurts in Search.
-- **If it needs manual upkeep**, it goes stale. A hand-written llms.txt that
-  nobody maintains points to URLs that have changed or disappeared, and
-  anything that follows it gets a wrong map of your site.
-- **If the goal is to show up in AI answers**, the file isn't where to put
-  your effort. When I tested five assistants between September and October
-  2026, their answers drew on the text of the served HTML of whatever page
-  they opened ([the experiment, with dates, plans and
-  conditions](/en/blog/which-ai-assistants-run-javascript)). The test neither
-  offered nor measured llms.txt; what it shows is that HTML is enough to get
-  read. To check what that HTML puts in the `<head>`, the [meta tag
-  validator](/en/tools/meta-tag-validator) reads the same raw server response.
+- **If code can generate the file** from something your site already has,
+  such as its post index, keeping it costs close to nothing. Creating it
+  does no harm either. Google itself says the file neither helps nor hurts
+  in Search.
+- **If you have to maintain it by hand**, it goes stale. A forgotten
+  hand-written llms.txt points to URLs that have changed or vanished, and
+  anyone who follows it gets a wrong map of the site.
+- **If your goal is to appear in AI answers**, put your effort somewhere
+  else. When I tested five assistants between September and October 2026,
+  their answers carried text from the served HTML of the page they opened
+  ([the experiment, with dates, plans, and conditions](/en/blog/which-ai-assistants-run-javascript)).
+  That test didn't offer or measure llms.txt. It does show that the HTML is
+  enough to get read. To check what your HTML delivers in the `<head>`, use
+  the [meta tag validator](/en/tools/meta-tag-validator), which reads the
+  same raw server response.
 
-This site still serves the file. Code generates it and it's part of the
-measurement instrument, so keeping it costs little and it still produces
+I keep serving this site's file. Code generates it, and it's part of the
+measurement instrument, so it costs little to keep and still produces
 data.
 
 ## In Next.js: how this site generates the file
 
-This site's llms.txt is built by `src/lib/llms-txt.ts`, from the same source as
-the sitemap: the guide and the list of posts read from `/content`. The file's
-header reuses `site.description`, the site's canonical description, instead
-of separately written text, so if the description changes, llms.txt changes
-with it.
+`src/lib/llms-txt.ts` builds this site's llms.txt from the same source as
+the sitemap, which is the guide plus the list of posts read from
+`/content`.
+Its header reuses `site.description`, the site's central description,
+instead of separate text, so when that description changes, llms.txt
+follows.
 
 ```ts
 // src/lib/llms-txt.ts (lines 71–79)
@@ -278,14 +295,14 @@ export function buildLlmsTxt(guide: Post, posts: Post[], guideEn?: Post, postsEn
     linkLine('/guia/seo-tecnico-nextjs', guide.frontmatter.title, guide.frontmatter.description),
 ```
 
-The file is written in Portuguese, the site's primary language. The
-blockquote says the content is in Portuguese, written by the author, and that
-every technique documented is implemented on this domain and measured before
-it's published.
+llms.txt itself is in Portuguese, the site's primary language. Its
+blockquote says the content is in Portuguese and written by the author,
+and that every technique it documents is implemented on this domain and
+measured before it's published.
 
 A static route handler, `src/app/llms.txt/route.ts`, serves the file. Like
-`feed.xml`, it's built at deploy time: new content arrives by commit, and
-every commit already triggers a deploy.
+`feed.xml`, it's generated at build time. New content arrives by commit,
+and every commit already triggers a deploy.
 
 ```ts
 // src/app/llms.txt/route.ts (lines 6–12)
@@ -298,15 +315,15 @@ export function GET() {
 }
 ```
 
-An excerpt of the file appears in the Portuguese version of this article. It
-deliberately stops at the first block of links: further down, the file
-contains the trap's section, and reproducing it would open a new path to the
-trap. For the same reason, neither version links to the file itself, since
-every human visit from here would be added to the fetch count the prediction
-above is still measuring.
+This article's Portuguese version shows an excerpt of the generated file,
+cut off on purpose at the first block of links. Further down, the file has
+a section with the trap, and reproducing it would open a new path to it.
+For the same reason, neither version links to the file itself. Every human
+visit from these pages would land in the fetch count my prediction above
+is still measuring.
 
-For the rest of this site's reference implementation, see the [technical SEO
-guide for Next.js](/en/guide/technical-seo-nextjs).
+For the rest of this site's reference implementation, see the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs).
 
 ## How to check whether anyone reads your llms.txt
 
@@ -317,29 +334,29 @@ guide for Next.js](/en/guide/technical-seo-nextjs).
 curl -sI https://your-domain.com/llms.txt
 ```
 
-You want a `200` status and a text `content-type`. If you get a 404, the rest
-is just theory.
+You should see status `200` and a text `content-type`. If you get a 404
+here, everything else is theory.
 
-**2. Count the fetches in your access log** by filtering for the `/llms.txt`
-path, and compare with `/robots.txt` over the same period. That comparison
-gives you the order of magnitude without needing a share of all requests.
-Filter out your own requests: in the pilot, traffic from my own network made
-up 24% of everything recorded.
+**2. Count the fetches in your access log.** Filter for `/llms.txt` and
+compare the count with `/robots.txt` over the same period. That gives you
+the order of magnitude without computing a share of total requests. Leave
+out your own requests, too. In the pilot, my own network accounted for 24%
+of all recorded traffic.
 
-**3. Be careful how you name agents.** What your log contains is the user
-agent the request claims. Without verifying identity (vendor-published IP
-ranges, reverse DNS), the accurate sentence is "requests identifying
-themselves as X", not "X read my file". The [case
-study](/en/case-studies/ai-crawler-detection) shows how I did that
-verification.
+**3. Be careful how you name agents.** Your log shows the user agent each
+request claims. Unless you verify identity (against the IP ranges the
+vendor publishes, or with reverse DNS), say "requests identifying
+themselves as X," not "X read my file." The
+[case study](/en/case-studies/ai-crawler-detection) shows how I verified
+identity in the pilot.
 
-**4. To find out whether anyone follows the file, use a trap link**: a URL
-that exists only in llms.txt. And learn from my mistake: the address can't
-appear in a versioned file in a public repository, in the sitemap, or on any
-page.
+**4. To learn whether anyone follows the file, use a trap link**, a URL
+that exists only in llms.txt. Learn from my mistake and keep its address
+out of any versioned file in a public repository, out of the sitemap, and
+off every page.
 
-**5. Before you start, work out how many fetches you'll need.** With zero
-hits, the 95% upper bound is `1 − 0.05^(1/n)`:
+**5. Calculate how many fetches you need before you start.** With zero
+hits, the 95% upper bound is `1 − 0.05^(1/n)`.
 
 | Fetches of llms.txt (n) | Upper bound with 0 hits |
 |---|---|
@@ -348,13 +365,13 @@ hits, the 95% upper bound is `1 − 0.05^(1/n)`:
 | 59 | 5% |
 | 100 | 3% |
 
-At the pilot's rate (9 fetches in 57 days), getting to 59 fetches would take
-just over a year. On a small site, "does anyone follow my llms.txt?" probably
-won't get a solid answer within a few months. Better to know that before you
-start than to find out at the end, as I did.
+At the pilot's rate of 9 fetches in 57 days, reaching 59 fetches would take
+a little over a year. A small site probably can't get a strong answer to
+"does anyone follow my llms.txt?" within a few months. It's better to know
+that before you start than to find out at closing, as I did.
 
-> This article is still being measured. I'll update the numbers when the
-> 90-day prediction closes, on October 23, 2026, and when H14 closes, on
-> December 24, 2026.
+> Measurement for this article is still running. I'll update the numbers
+> when the 90-day prediction closes on October 23, 2026, and when H14
+> closes on December 24, 2026.
 
 This is the English version of an article first published in Portuguese; the two declare each other.
