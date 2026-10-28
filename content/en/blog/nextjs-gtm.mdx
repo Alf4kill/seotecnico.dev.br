@@ -1,67 +1,74 @@
 ---
 title: "GTM in Next.js: SPA pageviews without double counting"
-description: "GTM in the Next.js App Router: why All Pages isn't enough, the History Change trigger, double counting with Enhanced Measurement, and Consent Mode v2."
+description: "GTM in the Next.js App Router: why All Pages isn't enough, the History Change trigger, double counting with GA4 Enhanced Measurement, Consent Mode v2."
 slug: "nextjs-gtm"
+datePublished: "2026-10-18"
+dateModified: "2026-10-18"
 primaryQuery: "gtm next.js"
-keywords: ['english', 'inglês', 'gtm', 'google tag manager', 'ga4', 'analytics', 'pageview', 'spa', 'history change', 'enhanced measurement', 'consent mode', 'lgpd', 'datalayer', 'cookieless', 'element visibility']
 lang: "en"
 translationOf: "gtm-nextjs"
 category: medicao
+keywords: ['english', 'inglês', 'gtm', 'google tag manager', 'ga4', 'analytics', 'pageview', 'spa', 'history change', 'enhanced measurement', 'consent mode', 'lgpd', 'datalayer', 'cookieless', 'element visibility']
 tldr: >-
-  GTM's All Pages trigger only fires on the first load: SPA navigation uses
-  history.pushState and never reloads the page. The fix is the History Change
-  trigger, but turn on either that or GA4's Enhanced Measurement, never both,
-  or every pageview gets counted twice.
-datePublished: "2026-10-18"
-dateModified: "2026-10-18"
+  In Next.js, GTM's All Pages trigger fires only on the first load. Later
+  navigations use history.pushState and never reload the page, so you need a
+  History Change trigger. Turn on that trigger or GA4's Enhanced Measurement,
+  never both. With both on, every pageview is counted twice.
 faq:
-  - question: "Why doesn't the pageview fire on Next.js navigations?"
-    answer: "Because navigation in a Next.js app uses history.pushState: the page doesn't reload, so the page load event behind GTM's All Pages trigger only happens once, on the first visit. Subsequent navigations need their own trigger: History Change, which listens for changes to the History API."
-  - question: "Should I use GTM's History Change or GA4's Enhanced Measurement?"
-    answer: "One or the other, never both. The two mechanisms listen for the same history events, and with both turned on, every navigation produces two page_view events. This site uses GTM's History Change and keeps Enhanced Measurement's history option off, because GTM keeps the logic versioned and visible in the container. The opposite choice works too, as long as it's a deliberate choice."
-  - question: "Where do I put the GTM script in the App Router?"
-    answer: "The container goes in through the GoogleTagManager component from @next/third-parties. If you use Consent Mode, the script that sets the consent default has to run before the container loads, as a beforeInteractive script. Order is what matters: a consent default set after the container means data has already leaked before the user made a choice."
+  - question: "Why doesn't the pageview fire when I navigate in Next.js?"
+    answer: "Navigation in a Next.js app uses history.pushState, and the page doesn't reload. The page load event behind GTM's All Pages trigger happens only once, on the first visit. Later navigations need their own trigger, History Change, which listens for changes in the History API."
+  - question: "Should I use GTM's History Change trigger or GA4's Enhanced Measurement?"
+    answer: "Use one, never both. Both mechanisms listen for the same history events, so with both on, every navigation becomes two page_view events. This site uses GTM's History Change trigger and keeps the history option in Enhanced Measurement off, because in GTM the logic is versioned and visible in the container. The opposite choice also works, as long as it is a choice."
+  - question: "Where does the GTM script go in the Next.js App Router?"
+    answer: "Load the container with the GoogleTagManager component from @next/third-parties. If you use Consent Mode, the script that sets the consent default has to come before the container loads, as a beforeInteractive script. Order is the critical point. A consent default set after the container means data has already leaked before the user made a choice."
   - question: "Does Brazil's LGPD require Consent Mode v2?"
-    answer: "That's not what the LGPD says: it requires a legal basis for processing and a genuine choice by the data subject, without naming any Google product. Consent Mode v2 is Google's mechanism for making tags respect that choice. This site uses it with a denied default because it's a verifiable way to honor consent in the tags; what I describe here is that implementation, not legal advice."
-  - question: "What happens to the data while consent is denied?"
-    answer: "In Consent Mode's advanced mode, tags still load but don't write cookies: GA4 sends pings with no identifier (cookieless), flagged in the request with gcs=G100. On this site that was verified by inspecting the real /g/collect requests: after declining, no _ga cookie is created and only cookieless pings go out; after accepting, the hits switch to G101."
-  - question: "Why does my visibility trigger only work on the first page?"
-    answer: "Because in SPA navigation the DOM is swapped out without a page load, and the Element Visibility trigger doesn't re-arm itself. The fix is to turn on the Observe DOM changes option in the trigger; without it, an event like end-of-article fires on the first article in the session and never again."
+    answer: "That's not what the LGPD says. It requires a legal basis for processing and a real choice by the data subject, and it names no Google product. Consent Mode v2 is Google's mechanism for making tags respect that choice. This site uses it with a denied default because it's the verifiable way to honor consent in the tags. What I describe is this implementation, not legal advice."
+  - question: "What happens to data while consent is denied?"
+    answer: "In Consent Mode's advanced mode, tags load but write no cookies. GA4 sends pings with no identifier (cookieless), flagged in the request with gcs=G100. I verified this on this site by inspecting real /g/collect requests. After a visitor declines, no _ga cookie is created and only cookieless pings go out. After they accept, hits switch to G101."
+  - question: "Why does a visibility trigger only work on the first page?"
+    answer: "In SPA navigation, the DOM is replaced without a page load, and the Element Visibility trigger doesn't re-arm by itself. Turn on the Observe DOM changes option in the trigger itself. Without it, an event like end-of-article (article read) fires on the first article of the session and never again."
 ---
 
-In a Next.js app, GTM's **All Pages** trigger only fires on the first load;
-every navigation after that uses `history.pushState` and doesn't reload the
-page. The fix is the **History Change** trigger, and the mistake almost
-everyone makes is turning it on in GTM **and** leaving GA4's Enhanced
-Measurement listening for the same events, which counts every pageview twice.
-This article documents this site's full implementation (one pageview per
-navigation, Consent Mode v2 with a denied default, and validation against real
-requests), because the hard part was never getting the event to fire. It's
-getting it to fire **exactly once**, and only after consent.
+In a Next.js app, GTM's **All Pages** trigger fires only on the first load.
+Every navigation after that is a `history.pushState` call, and the page never
+reloads. The fix is the **History Change** trigger. Then comes the decision
+almost everyone gets wrong. If you turn that trigger on in GTM **and** leave
+GA4's Enhanced Measurement listening for the same events, every pageview gets
+counted twice.
+
+This article walks through this site's full implementation, which counts one
+pageview per navigation, keeps Consent Mode v2 denied by default, and was
+validated against real requests. Making the event fire was never the problem. Making it fire **only
+once**, and only after consent, is.
 
 ## Why All Pages stops firing after the first page
 
-Under the hood, GTM's All Pages trigger is the classic page view event: it
-fires when the container loads along with the page. On a traditional site,
-every navigation is a new page load, so the container reloads and the trigger
-fires. In a Next.js app, the container loads **once**; from then on, the
-router swaps content through the History API without reloading. The result:
-GA4 records the landing page and goes blind for the rest of the session, the
-bounce rate drops artificially and inner pages vanish from your reports.
+Under the hood, GTM's All Pages trigger is the classic page view event. It
+fires when a page loads and brings the container with it. On a traditional
+site, every navigation loads a new page, so the container loads again and All
+Pages fires again.
+
+A Next.js app loads the container **once**. After that, its router swaps
+content through the History API, with no page load. GA4 records the landing
+page and goes blind to everything after it. Your "bounce" rate drops
+artificially, and inner pages disappear from your reports.
 
 ## Installing GTM in the App Router
 
 ### @next/third-parties, and why not a hand-written script
 
-The sanctioned approach is the `GoogleTagManager` component from the
-`@next/third-parties` package, which injects the container with the right
-loading strategy for the App Router: no `<script>` pasted by hand into the
-layout, no snippet copied from the dashboard. Below is the document shell this
-site's root layouts share (there's one layout per language, and both render
-the same component, `RootShell`), in the order the pieces load. The
-Portuguese comment says: Consent Mode v2, default "denied" BEFORE any Google
-tag loads; the banner (`ConsentBanner`) updates `analytics_storage` after the
-user's choice; `ad_*` stay denied (the site doesn't run ads):
+Load the container with the `GoogleTagManager` component from
+`@next/third-parties`. It's the sanctioned path, and it injects GTM with a
+loading strategy built for the App Router. You don't hand-paste a `<script>`
+into your layout or copy a snippet from GTM's dashboard.
+
+Below is the HTML document that both of this site's root layouts share. Each
+language has its own layout, and both render one component, `RootShell`. I
+show its pieces in the order they enter the page. Comments stay in
+Portuguese, as they are in the repository. The first one says three things:
+the Consent Mode v2 default is "denied" before any Google tag loads, the
+banner (`ConsentBanner`) updates `analytics_storage` once the user chooses,
+and `ad_*` types stay denied because this site runs no ads.
 
 ```tsx
 // src/components/layout/RootShell.tsx
@@ -106,35 +113,38 @@ gtag('consent', 'default', {
 
 ### Order matters: consent before the container
 
-Notice how the snippet above is structured: the script that sets the
-**consent default** runs `beforeInteractive`, and the container comes later,
-at the end of the body. That order isn't cosmetic: the consent default has to
-exist **before** any tag wakes up. The Consent Mode section below explains
-what happens when the order is reversed.
+Look at where each script sits in that snippet. The **consent default**
+script runs `beforeInteractive`, and the container comes after it, at the end
+of the body. That order isn't cosmetic. A consent default has to exist
+**before** any tag wakes up. The Consent Mode section below shows what happens
+if you reverse it.
 
 ## History Change: the trigger that fixes SPA pageviews
 
-In the container (with the UI in English, as this project has it set up):
-one trigger of type **History Change**, and the GA4 `page_view` event tag it
-fires, with the path and title taken from the built-in variables
-(`{{Page Path}}`, `{{Page Title}}`). The trigger listens for changes to the
-History API, which is exactly what the Next.js router does on every
-navigation, and it covers what All Pages misses.
+In the container (this project runs it with English UI labels), create a
+**History Change** trigger and a GA4 event tag that sends `page_view`, fired
+by that trigger. Take the path and title from the built-in variables
+`{{Page Path}}` and `{{Page Title}}`.
 
-The detail that prevents a classic bug: the initial page load has to be
-covered either by the GA4 configuration tag's automatic page view **or** by
-History Change, never both added together without thinking. On this site,
-the container's full recipe (tags, triggers, variables and the decision on
-how the initial load is covered) is documented in `docs/measurement-plan.md`,
-and the container implements the plan, not the other way around.
+This trigger listens for History API changes, which is exactly what the
+Next.js router produces on every navigation, so it covers what All Pages
+misses.
+
+One detail avoids a classic bug. For the initial load, your GA4 configuration
+tag needs either its automatic page view **or** a History Change trigger that
+covers that load. Never both, stacked blindly.
+
+On this site, `docs/measurement-plan.md` holds the full recipe for the
+container: tags, triggers, variables, and how the initial load is covered.
+The container implements the plan, not the other way around.
 
 ## The duplication nobody notices
 
-This is the heart of the article, because it's the part no "History Change in
-5 minutes" tutorial mentions: GA4 has its own SPA pageview mechanism. In
-Enhanced Measurement, the page views option based on browser history events
-does the same job as the History Change trigger, and with both turned on, they
-count **every navigation twice**.
+This is what the article is really about, because no "History Change in 5
+minutes" tutorial mentions it. GA4 has its own pageview mechanism for SPAs. In
+Enhanced Measurement, the page views setting for browser history events does
+the same job as the History Change trigger. Turn both on and you count **each
+navigation twice**.
 
 <figure>
   <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="In a four-page session, GTM's History Change trigger and GA4's Enhanced Measurement turned on together produce eight pageviews instead of four">
@@ -171,50 +181,55 @@ count **every navigation twice**.
   <figcaption>Both mechanisms listen for the same history events; turned on together, they double the count.</figcaption>
 </figure>
 
-The same diagram, as a table:
+Here's the same diagram as a table:
 
 | Active mechanism | Pageviews in a 4-page session |
-| --- | --- |
-| Just one (GTM **or** Enhanced Measurement) | 4 |
-| Both at once | 8, each navigation counted twice |
+|---|---|
+| Only one (GTM **or** Enhanced Measurement) | 4 |
+| Both together | 8, every navigation counted twice |
 
 ### GTM or Enhanced Measurement: pick one
 
-Both work; the mistake is not picking. This site chose **GTM** as its single
-pageview source, for an engineering reason: in GTM, the logic is versioned and
+Both work. Not choosing is the mistake. I picked **GTM** as this site's single
+pageview source, for an engineering reason. In GTM, the logic is versioned and
 visible in the container, so you can audit when and why each event fires.
-Enhanced Measurement is a panel of checkboxes in the GA4 dashboard, and it's
-easy for someone to switch an option back on without realizing the
-consequences. The opposite choice (Enhanced Measurement on, no history
-trigger in GTM) is just as valid. What isn't valid is running both.
+Enhanced Measurement is a set of toggles in the GA4 panel, and it's easy for
+someone to turn one back on without noticing the consequence.
+
+Choosing the opposite, with Enhanced Measurement on and no history trigger in
+GTM, is just as valid. Running both isn't.
 
 ### The same logic applies to scrolls and outbound clicks
 
-Duplication isn't limited to pageviews. Enhanced Measurement's "Scrolls" and
-"Outbound clicks" are also **off** on this site, for the same reason: their
-equivalents (`scroll_depth`, outbound clicks) are tracked through GTM, where
-the thresholds and conditions are documented in the measurement plan. One
-source per metric, for every metric.
+Duplication isn't limited to pageviews. On this site, Enhanced Measurement's
+"Scrolls" and "Outbound clicks" options are also **off**, for the same
+reason. GTM measures the equivalents (`scroll_depth` and outbound clicks), and
+the measurement plan documents their thresholds and conditions. One source per
+metric, for every metric.
 
 ## Consent Mode v2 and the LGPD: denied by default
 
-This site's position: **no analytics cookies before explicit consent**.
-Consent Mode v2 is the mechanism that makes Google's tags respect that
-choice, and the implementation has three pitfalls, all verified here in
-production.
+A note on scope first. The LGPD, Brazil's data protection law, doesn't require
+"Consent Mode". It requires a legal basis and a real choice by the data
+subject. Here I describe how this site implemented that choice in Google's
+tags. It isn't legal advice.
 
-A note on scope first: Brazil's data protection law (LGPD) doesn't require
-"Consent Mode"; it requires a legal basis and a genuine choice by the data
-subject. What I'm describing is how this site implemented that choice in
-Google's tags. It isn't legal advice.
+This site follows one rule: **no analytics cookie before explicit consent**.
+Consent Mode v2 is the mechanism that makes Google tags respect that choice.
+Implementing it has three pitfalls, and I verified all three here in
+production.
 
 ### The default has to come before the container loads
 
-The correct sequence is strict: first the consent default command (everything
-denied), then the container, then, only if and when the user accepts, the
-consent update. If the default is set after the container loads, the tags
-wake up with no instructions and act as if everything were allowed: data has
-already leaked before the banner even appears.
+Only one sequence works:
+
+1. the consent default command, with everything denied
+2. the container
+3. only if and when the user accepts, the consent update
+
+If you set the default after the container loads, the tags wake up with no
+instruction and act as if everything were allowed. Data leaks before the
+banner even appears.
 
 <figure>
   <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Consent Mode loading order: denied default, the GTM container, tags in cookieless mode and, finally, the update with the user's choice">
@@ -251,23 +266,26 @@ already leaked before the banner even appears.
   <figcaption>The denied default has to be in place before any Google tag wakes up.</figcaption>
 </figure>
 
-Step by step, the order is:
+Here's the same order in text:
 
-1. `consent default` with everything denied, as a `beforeInteractive` script;
-2. the GTM container loads;
-3. the tags run in cookieless mode (pings with no identifier);
-4. the user makes a choice in the banner → `consent update` with that choice.
+1. `consent default` with everything denied, as a `beforeInteractive` script
+2. the GTM container loads
+3. tags run in cookieless mode (pings with no identifier)
+4. the user chooses in the banner, and a `consent update` sends the real
+   choice
 
 ### The `arguments` trap
 
-This is the classic silent Consent Mode bug: consent commands have to reach
-the `dataLayer` as the function's `arguments` object, **not** as an array. In
-practice, that means `gtag` has to be a *function declaration*: an arrow
-function has no `arguments` of its own, so the push still happens but consent
-never updates, and nothing throws an error. This site's actual code carries a
-comment and an `eslint-disable` explaining the exception (the comment says
-consent commands must be sent as the `arguments` object, not an array, hence
-a function declaration instead of an arrow function):
+This is Consent Mode's classic silent bug. Consent commands have to reach the
+`dataLayer` as the function's `arguments` object, **not** as an array. In
+practice, that means `gtag` has to be a *function declaration*. An arrow
+function has no `arguments` of its own, so the push still happens, but consent
+never updates and nothing throws an error.
+
+In this site's real code, a comment and an `eslint-disable` explain the
+exception. The comment, in Portuguese, says consent commands must go out as
+the `arguments` object rather than an array, which is why `gtag` is a
+function declaration and not an arrow function.
 
 ```ts
 // src/lib/analytics.ts
@@ -292,23 +310,24 @@ export function applyConsent(choice: ConsentChoice): void {
 
 ### What a cookieless ping is
 
-In Consent Mode's advanced mode, denying consent doesn't silence the tags:
-they send pings **with no cookies and no user identifier**, which Google uses
-for aggregate modeling. This site's validation, on 2026-07-13, was done by
-inspecting real `/g/collect` requests rather than trusting preview mode. With
-the denied default, the consent state shows up in the initial `dataLayer` and
-**no `_ga` cookie is created**; pings go out with `gcs=G100`. After clicking
-"Aceitar" (accept), hits switch to `gcs=G101`. After "Recusar" (decline), they
-stay at G100, cookieless. The `page_view` was confirmed to fire on load
-**and** on SPA navigation, with the correct URL and title parameters on every
-hit.
+In advanced Consent Mode, denying consent doesn't silence the tags. They send
+pings **with no cookies and no user identifier**, and Google uses them for
+aggregate modeling.
+
+I validated this site on July 13, 2026, by inspecting the real `/g/collect`
+requests instead of trusting preview mode. With the default denied, that state
+shows up in the initial `dataLayer`, **no `_ga` cookie is created**, and pings
+go out with `gcs=G100`. After "Aceitar" (accept), hits switch to `gcs=G101`.
+After "Recusar" (decline), they stay at G100, cookieless. I also confirmed
+that `page_view` fires on load **and** on SPA navigation, with the correct
+URL and title parameters in every hit.
 
 ## A typed dataLayer: no stray pushes in components
 
-This site has an architectural rule: **no** stray `window.dataLayer.push`
-calls inside components. There's a union type listing the allowed events and
-a single `pushEvent()` function; an event that isn't in the type won't
-compile:
+This site has one rule for custom events: **no** stray `window.dataLayer.push`
+in a component. Instead, a union type lists the allowed events, and a single
+function, `pushEvent()`, sends them. An event that isn't in the type doesn't
+compile.
 
 ```ts
 // src/lib/analytics.ts
@@ -336,20 +355,23 @@ export function pushEvent(e: AnalyticsEvent): void {
 }
 ```
 
-TypeScript becomes the line of defense against "let me just quickly track
-this one thing" analytics. If an event hasn't been documented and typed, it
-doesn't exist. The site's own RUM follows the same path, and the `web_vitals`
-events behind the [INP analysis](/en/blog/nextjs-inp) go through the same
-helper, under the same contract. It's a philosophy that runs through the whole
-project, from the [JSON-LD generator](/en/tools/json-ld-generator) to the
-sitemap: one typed source, nothing assembled ad hoc.
+TypeScript becomes the line of defense against "let me just measure this
+little thing" analytics. If an event wasn't documented and typed, it doesn't
+exist.
+
+This site's own RUM works the same way. Its `web_vitals` events, which feed
+my [INP analysis](/en/blog/nextjs-inp), go through that helper under the same
+contract. One idea runs through the whole project, from the
+[JSON-LD generator](/en/tools/json-ld-generator) to the sitemap. Everything
+comes from one typed source, with zero ad hoc assembly.
 
 ## DOM triggers in an SPA: re-arming after navigation
 
-This site's `article_read` event fires when the reader reaches the end of an
-article, using an **Element Visibility** trigger aimed at a stable `id` (the
-comment says it's a stable id, the target of the element visibility trigger
-for the `article_read` event in GTM):
+This site's `article_read` event fires when you reach the end of an article.
+It uses an **Element Visibility** trigger pointed at a stable `id`. In the
+code, a Portuguese comment marks that `id` as the target of GTM's element
+visibility trigger for `article_read`, documented in
+`docs/measurement-plan.md`.
 
 ```tsx
 // src/components/article/ArticleLayout.tsx
@@ -360,52 +382,53 @@ for the `article_read` event in GTM):
             </footer>
 ```
 
-Here's the detail search results almost never mention: in SPA navigation the
-DOM gets replaced without a page load, and the visibility trigger **doesn't
-re-arm itself**. Without the **Observe DOM changes** option turned on in the
-trigger, `article_read` works on the first article in the session and never
-again. With it on, GTM watches for DOM mutations and re-arms the trigger when
-the next article's `#article-end` shows up.
+Here's the detail search results almost never mention. In SPA navigation,
+Next's router replaces the DOM without a page load, and a visibility trigger
+**doesn't re-arm by itself**. Unless you turn on **Observe DOM changes** in
+the trigger, `article_read` works on a session's first article and never
+again. With it on, GTM watches DOM mutations and re-arms the trigger when the
+next article's `#article-end` appears.
 
 ## Document before you implement
 
-The rule that ties all of this together: **no event gets implemented before
-it's documented** in `docs/measurement-plan.md`, which holds the event table
-(name, parameters, trigger and purpose), the container setup recipe and the
-validation checklist. The plan is the source of truth; the container and the
-typed helper are the implementation. When the three disagree, the plan wins
-and everything else is a bug. Without that, six months from now nobody will
-know why there's a trigger called "scroll 75 old v2", and everyone will be
-afraid to delete it.
+**No event is implemented before it is documented** in
+`docs/measurement-plan.md`. That file holds the event table (name,
+parameters, trigger, purpose), the recipe for setting up the container, and a
+validation checklist. I treat the plan as the source, and the container and
+typed helper as its implementation. When the three diverge, the plan wins and
+everything else is a bug.
 
-It's the same discipline the [technical SEO guide for
-Next.js](/en/guide/technical-seo-nextjs) applies to the rest of the stack:
-anything that matters becomes a versioned artifact (schema derived from the
-frontmatter, a sitemap derived from the content, events derived from a plan
-written before the code).
+Skip this, and six months later nobody knows why there's a trigger called
+"scroll 75 old v2", and everyone is afraid to delete it.
 
-## How to validate: Tag Assistant, DebugView and the real hit
+It's the same discipline the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) applies to
+everything else in the stack. Whatever matters becomes a versioned artifact: schema
+derived from frontmatter, a sitemap derived from content, an event derived
+from a plan written before the code.
 
-Three layers, in increasing order of confidence:
+## How to validate: Tag Assistant, DebugView, and the real hit
 
-1. **Tag Assistant (GTM preview).** Confirm the sequence: on the initial
-   load, the consent default appears **before** the container; on SPA
+Validate in three layers, in increasing order of confidence:
+
+1. **Tag Assistant (GTM preview).** Confirm the sequence. On the initial
+   load, the consent default appears **before** the container. On SPA
    navigations, History Change fires once per route, and no tag fires twice.
-2. **GA4 DebugView.** Check that events arrive with the measurement plan's
-   parameters, one navigation at a time.
-3. **The real requests.** The layer that doesn't lie: DevTools → Network,
-   filtered by `collect`. One `page_view` per navigation, a `gcs` parameter
-   that matches the consent state, and, when consent is declined, no `_ga`
-   cookie under Application → Cookies. That's how this site's implementation
-   was validated, and it's the only method that tests what real users
-   actually experience.
+2. **GA4 DebugView.** Check that events arrive with the parameters from the
+   measurement plan, navigation by navigation.
+3. **The real requests.** This is the layer that doesn't lie. In DevTools →
+   Network, filter by `collect`. You should see one `page_view` per
+   navigation and a `gcs` parameter consistent with the consent state. In the
+   decline scenario, Application → Cookies shows no `_ga` cookie. That's how I
+   validated this site's implementation, and it's the only method that tests
+   what a real user experiences.
 
-One practical caveat I ran into while validating this site: triggers based
-on `IntersectionObserver` and `requestAnimationFrame` (like `article_read` and
-`scroll_depth`) **can't be exercised in a headless or background tab**,
-because browsers suspend that work in tabs that aren't visible. Validating
-those events had to be done by hand, in Tag Assistant, with the tab in the
-foreground. If your automated QA script says the scroll event "doesn't work",
-it may just be running in a tab that was never visible.
+One honest, practical note from validating this site. Triggers based on
+`IntersectionObserver` and `requestAnimationFrame`, like `article_read` and
+`scroll_depth`, **can't be exercised in a headless or hidden tab**, because
+browsers suspend that work in tabs that aren't visible. I had to validate
+those events manually in Tag Assistant, with the tab in the foreground. If
+your automated QA script says the scroll event "doesn't work," maybe it's
+just running in a tab that was never visible.
 
 This is the English version of an article first published in Portuguese; the two declare each other.
