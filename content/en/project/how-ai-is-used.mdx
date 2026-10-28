@@ -1,45 +1,48 @@
 ---
 title: "How AI is used in this technical SEO project"
-description: "A technical SEO site built with Claude: what the Git history shows, who decides what, and which rules are enforced as CI tests."
+description: "A technical SEO site built with Claude: what the Git history shows, who decides what, and which rules are enforced as tests in CI."
 slug: "how-ai-is-used"
 primaryQuery: "how ai is used in this project"
 keywords: ['english', 'inglês', 'ai', 'artificial intelligence', 'claude', 'claude code', 'llm', 'process', 'co-authored', 'how the site is built']
 lang: "en"
 translationOf: "uso-de-ia"
 tldr: >-
-  One person plus Claude sessions with repository access: Claude writes code,
-  tests and drafts; I make the decisions, review and merge every PR. CI blocks
-  anything that breaks a rule.
+  One person builds this site with Claude sessions that have repository
+  access. Claude writes code, tests, and drafts. I decide what goes in,
+  review every pull request, and merge each one. CI blocks anything that
+  breaks a rule.
 datePublished: "2026-10-27"
 dateModified: "2026-10-27"
 ---
 
-This site is built by one person working with Claude, Anthropic's model. I
-decide what gets built, supply the data only I can access (Search Console and
-GA4), review every change and merge every pull request. Claude writes most of
-the code, tests, documentation and article drafts, within rules the
-repository enforces on its own. The model isn't what makes that output
-usable. What does is that almost every rule a model could break is checked by
-a test.
+One person builds this site, working with Claude, Anthropic's model. I decide
+what goes in, bring the data only I can access (Search Console and GA4),
+review every change, and merge every pull request. Claude writes most of the
+code, tests, documentation, and article drafts, within rules the repository
+checks for itself. What makes that output usable isn't the model. It's
+that almost every rule a model could break is also a rule a test checks.
 
-This page is part of the [Project](/en/project) section, which documents how
-the site is built. Everything here comes from the
-[AI workflow document in the repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/ai-workflow.md),
-and every number below comes with the command that reproduces it.
+This page is part of the [Project section](/en/project), which documents how
+the site is built. Everything here comes from
+[my AI workflow
+doc](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/ai-workflow.md)
+in the repository, and every number below comes with the command that
+reproduces it.
 
 ## What the history shows
 
-Measured at commit `b141722`, the merge of PR #114, on October 23, 2026:
+These counts come from commit `b141722` (the merge of PR #114), measured on
+October 23, 2026.
 
 | Measure | Value |
 |---|---|
 | Commits on `main` | 468 |
 | Merged pull requests | 117 merge commits, PRs #1 → #114 |
 | Non-merge commits | 351 |
-| …with a `Co-Authored-By: Claude` trailer | 351, all of them |
-| First commit | July 12, 2026 |
+| …with the `Co-Authored-By: Claude` trailer | 351, all of them |
+| First commit | 2026-07-12 |
 
-The co-author trailer names the model behind each commit:
+Each commit's co-author trailer names the model that produced it.
 
 | Model in the trailer | Commits | First → last |
 |---|---|---|
@@ -48,108 +51,116 @@ The co-author trailer names the model behind each commit:
 | Claude Opus 5 | 101 | 2026-07-24 → 2026-10-15 |
 | Claude Opus 5.5 | 176 | 2026-09-23 → 2026-10-23 |
 
-By commit type (the `type: subject` convention, merges excluded): `docs` 131,
-`feat` 67, `content` 59, `fix` 35, `test` 18, `ci` 10, others 31.
-Documentation is the biggest category, because in this project the record of
-a decision is part of the deliverable.
+Sorted by type, following the `type: subject` convention and leaving merges
+out, the commits break down as `docs` 131, `feat` 67, `content` 59, `fix` 35,
+`test` 18, `ci` 10, and others 31. Documentation comes first because in this
+project, recording a decision is part of the deliverable.
 
 **What these numbers don't tell you.** A trailer records that a Claude session
 produced the commit. It doesn't measure how much of the text the model wrote
-versus how much I edited, dictated or threw out before the commit existed.
-That measurement doesn't exist for this project, and this page doesn't guess
-at one.
+versus how much I edited, dictated, or rejected before the commit existed.
+That measurement doesn't exist for this project, and this page doesn't
+estimate it.
 
-The history was rewritten on October 19, 2026 to unify the author identity,
-so every SHA changed that day. The SHAs cited here come from the current
-history; older pull request pages on GitHub still show the original ones.
+On October 19, 2026, the history was rewritten to unify the author identity,
+so every SHA changed that day. SHAs on this page come from the current
+history. GitHub's pages for older PRs still show the original ones.
 
 ## Who does what
 
 | Step | Me | Claude |
 |---|---|---|
-| Decide what to work on next | yes | proposes it, in research notes and proposals |
-| Search Console and GA4 data | exported by hand from the project's properties | reads the exports; never has the credentials |
-| Research | review | writes dated notes, with an evidence label on every claim |
-| Code, tests, documentation, drafts | review and correct | writes them, in a session with repository access |
-| Pull request | review and merge | opens it; never merges |
-| After merge | request indexing and share | — |
+| Decide the next piece of work | Yes | Proposes it, in research notes and proposals |
+| Search Console and GA4 data | I export it by hand from the project's properties | Reads the exports, never has the credentials |
+| Research | I review | Writes dated notes, with an evidence label on each claim |
+| Code, tests, documentation, drafts | I review and correct | Writes them, in a session with repository access |
+| Pull request | I review and merge | Opens it, never merges |
+| After merge | I request indexing and share it | — |
 
-Editorial work (briefs, draft review) happens in a session without repository
-access; implementation happens in one with it. Since the first session can't
-see the code, it leaves `[CODE-n]` placeholders wherever the site's code
-belongs, and the second fills them in by copying from the file. Before that
-rule, drafts came back with made-up code: component files and prop shapes
-that don't exist in the repository, as PR #17 shows.
+Work happens in two kinds of session. Editorial work, such as briefs and
+draft reviews, runs in a session without repository access. Implementation
+runs in one with access. Since the editorial session can't see the code, it
+leaves `[CODE-n]` placeholders wherever any of the site's code would go, and
+the implementation session fills them in by copying from the source file.
+Before that rule, as PR #17 records, drafts arrived with invented code, such as
+component files and prop shapes that don't exist in the repository.
 
 ## The contract: CLAUDE.md
 
-`CLAUDE.md` is read at the start of every session and describes itself as the
-project's single source of truth. A few things make it a contract a model can
-follow rather than a wish list:
+Every session starts by reading `CLAUDE.md`, which declares itself the
+project's single source of truth. Four things make it a contract for a model
+rather than a wish list:
 
-- **Numbered sections.** A commit, a review comment or a skill cites "§10"
+- **Numbered sections.** A commit, a review comment, or a skill cites "§10"
   instead of paraphrasing a rule.
-- **Dated decisions.** "owner rule, 2026-10-23", "rule since 2026-09-25":
-  the rule itself records when it was made and by whom, so a later session
-  knows which rule is newer and why it exists.
-- **The claims policy** (§10). Every claim is a mechanism, a condition or a
-  magnitude, and a magnitude needs a measurement with a declared method. This
-  is the rule that stops generated text from making up numbers.
-- **An out-of-scope list** (§13), which matters as much to a model as the
-  scope does.
+- **Dated decisions.** Each rule carries its own date and who made it, as in
+  "owner rule, 2026-10-23" or "rule since 2026-09-25". A later session can
+  tell which rule is newer and why it exists.
+- **The claims policy** (§10). Every claim is a mechanism, a condition, or a
+  magnitude, and a magnitude requires a measurement with a declared method.
+  This is the rule that keeps generated text from inventing numbers.
+- **An out-of-scope list** (§13). It's as useful to a model as the scope
+  itself.
 
 ## Rules that are tests
 
-CI (`.github/workflows/ci.yml`) blocks a merge if anything fails:
+CI (`.github/workflows/ci.yml`) blocks the merge on any failure. Here's what
+each check catches:
 
-| Check | What a model might get wrong that it catches |
+| Check | What it catches that a model could get wrong |
 |---|---|
-| Lint, type-check, 33 Vitest files | broken code, schema builders, content parsing |
-| Content loader (`src/lib/content.ts`) | a title over 60 characters, a description over 155, a short answer over 300, an unknown axis |
-| `content-code-paths.test.ts` | an article citing a repository path that doesn't exist |
-| `hreflang.test.ts` | a translation pair declared on only one side |
-| `design-rules.test.ts`, `design-tokens.test.ts` | a hardcoded color, a forbidden utility, tokens drifting apart |
-| 8 Playwright specs | one H1, title and description, canonical, JSON-LD types, hreflang in both directions, contrast, accessibility |
-| Lighthouse CI | performance budgets |
+| Lint, type-check, 33 Vitest files | Broken code, schema builders, content parsing |
+| Content loader (`src/lib/content.ts`) | A title over 60 characters, a description over 155, a short answer over 300, an unknown category |
+| `content-code-paths.test.ts` | An article citing a repository path that does not exist |
+| `hreflang.test.ts` | A translation pair declared on only one side |
+| `design-rules.test.ts`, `design-tokens.test.ts` | A hardcoded color, a forbidden utility, a token out of sync |
+| 8 Playwright specs | One H1, title and description, canonical, JSON-LD types, hreflang in both directions, contrast, accessibility |
+| Lighthouse CI | Performance budgets |
 
-A rule that matters but isn't a test yet tends to get broken. The closing
-translation note on English articles was a convention, not a check, and the
-two pairs published on October 23 shipped without it. Nobody noticed until
-the page-creation skill's pair script started checking for it.
+A rule that matters but isn't a test yet tends to get broken. Take the
+closing translation note on English articles. It was a convention,
+not a check, and the two pairs published on October 23 went out without it.
+That surfaced when the page-creation skill's pair script started checking
+for the note.
 
 ## Scaling a claim down
 
-Several commits exist only to make a sentence smaller and true. One example:
-during the October crawl audit, the apex domain refused connections from my
-network and from an external fetcher. The first interpretation was an
-outage. Commit `e376922` scaled that down to what the evidence supported: a
-TCP-only check reached the address from 17 of 18 nodes worldwide and from a
-node in São Paulo, so the server was up; what failed was the route to it from
-some networks. The research notes follow the same habit, labeling every claim
-**[documented]**, **[inference]** or **[observation]**.
+Several commits exist only to make a sentence smaller and true. During the
+October crawl audit, the apex domain refused connections from my network and
+from an external checker. At first it looked like the site was down.
+Commit `e376922` cut that reading down to what the evidence supported. A
+TCP-only test reached the address from 17 of 18 nodes worldwide, and from a
+node in São Paulo, Brazil. So the address was up. What failed was the route to
+it from some networks.
+
+Research notes follow the same habit, with a label such as **[documented]**,
+**[inference]**, or **[observation]** on every claim.
 
 ## What stays with me
+
+Five things I never delegate:
 
 - **Merging.** No session merges its own pull request.
 - **Secrets.** API keys live in Vercel environment variables. The project's
   Search Console and GA4 properties live in my personal Google account.
-- **Search Console data, by hand.** No API pulls it. The monitoring toolkits
-  listed in `CLAUDE.md` (`gsc-monitor`, `nextjs-cwv-toolkit`,
+- **Search Console data, by hand.** No API pulls this data. The monitoring
+  tools listed in `CLAUDE.md` (`gsc-monitor`, `nextjs-cwv-toolkit`,
   `ai-search-monitor`) have never run against this site. Every Search Console
   number in the repository comes from a manual export, dated in the file that
   records it.
-- **The decision to publish.** Whether a topic deserves a page, and whether a
-  page is ready.
-- **Distribution.** Indexing requests and posts happen by hand, after merge.
+- **The decision to publish.** Whether a topic deserves a page, and whether
+  the page is ready.
+- **Distribution.** I request indexing and post about the page by hand,
+  after the merge.
 
-Google takes the same view of AI use: as the article on
-[scaled content abuse](/en/blog/scaled-content-abuse) shows, the problem its
-spam policy describes is scale without value, not the tool. The method of
-registering a hypothesis before seeing the data, used in this site's
-experiments, is explained in
-[SEO testing with pre-registration](/en/blog/seo-testing-pre-registration).
-And the other page that explains a site decision from the inside is the
-[design colophon](/en/design).
+Google looks at AI use the same way. Its spam policy targets scale without
+value, not the tool, as the article on
+[scaled content abuse](/en/blog/scaled-content-abuse) shows. This site's
+experiments pre-register each hypothesis before the data comes in, a method
+covered in [SEO testing with
+pre-registration](/en/blog/seo-testing-pre-registration).
+The [design colophon](/en/design) is the other page that explains a site
+decision from the inside.
 
 ## Reproducing the numbers
 
@@ -164,7 +175,7 @@ git log --no-merges --format='%s' b141722 \
   | sed -E 's/^([a-z]+)(\([^)]*\))?:.*/\1/' | sort | uniq -c | sort -rn
 ```
 
-On a later commit the numbers will be higher: the tables above are a dated
-snapshot, not a live counter.
+Run on a newer commit, these commands return bigger numbers. The tables above
+are a dated snapshot, not a live counter.
 
 This is the English version of a page first published in Portuguese; the two declare each other.
