@@ -192,11 +192,13 @@ so there is one place for "the English side".
 
 | File | Role |
 |---|---|
-| `SKILL.md` | intent map → English draft → native read (by a subagent that has not seen the Portuguese, when available) → fidelity check → mechanics → report of judgment calls; a section for revising published pages |
-| `references/structure.md` | what stays identical and what is adapted (moved from `content-page/references/translation.md`) |
-| `references/style-guide.md` | American English, dates, numbers, register, the site's PT → EN glossary |
-| `references/calques.md` | every calque found in the 2026-10-27 revision, with before/after and counts |
-| `scripts/check-english.mjs` | British spelling, day-month and Portuguese dates, translation note not last (ERROR); 15 calque and register patterns (WARN) |
+| `SKILL.md` | fact sheet (a file) → English draft by a writer who never reads the Portuguese prose → native read by a second reader → fidelity check → mechanics → report of judgment calls; a section for revising published pages |
+| `references/structure.md` | what stays identical and what is adapted, including free paragraph order inside a section (moved from `content-page/references/translation.md`) |
+| `references/style-guide.md` | the Google developer documentation style guide as the base, the site's deviations, register, the site's PT → EN glossary |
+| `references/calques.md` | every calque found in the 2026-10-27 revision, with before/after and counts, and the structural interference that survives without calques |
+| `scripts/check-english.mjs` | British spelling, day-month and Portuguese dates, translation note not last (ERROR); 19 calque and pattern rules, a heading rule and a register profile against native thresholds (WARN); `--summary` ranks pages by distance from native |
+| `scripts/register.mjs`, `register-thresholds.json` | the register features and their native thresholds |
+| `scripts/calibrate-register.mjs`, `native-corpus.json` | re-measures the thresholds on 27 native pages (counts only, no text stored) |
 | `evals/` | three prompts: a new English version from a verified Portuguese page, a revision of a literal page, a request for a third language (declined) |
 
 **The first runs of the script.**
@@ -218,16 +220,31 @@ so there is one place for "the English side".
   produced 20 findings and exit code 1 (the first run missed lower-case "in
   the case of"; the rule is now case-insensitive).
 
+**Second iteration, same day: structure.** The owner's review of a page
+written in that revision (`/en/project/how-a-page-is-made`) found English
+free of calques and still built on Portuguese structure: runs of "the",
+noun-phrase subjects, colons between clauses. Measured against 26 native
+pages (`docs/research/2026-10-27-english-register-profile.md`), every
+English page used colons above the native p90, and 23 of 28 were past it for
+"the". The cause was the method: the English writer had the Portuguese prose
+open, and the intent map was not a file. What changed: the fact sheet is
+written to a file and the English is drafted from it without the
+Portuguese; the style guide takes the Google developer documentation style
+guide as its base (which brought the serial comma back); the script
+measures register; the native reader gets a list of structural patterns
+instead of "make it natural".
+
 **What it does not do.** It does not change a fact, translate into a third
 language, or certify that the English is native: a clean script run means no
-known calque is left.
+known calque is left, and register values inside the thresholds mean the
+structure is closer to native prose, not that a native reader would agree.
 
 ## 7. Catalog
 
 | Skill | Status | Trigger | Output |
 |---|---|---|---|
 | `content-page` | versioned | write, research, plan, verify, translate or update a page; a returned draft | research note → brief → draft → verification → PT + EN MDX → hreflang entry → log row → PR |
-| `english-version` | versioned | the English side of a page (content-page phase 5); "the English sounds translated"; English UI strings | English MDX from an intent map, native read, fidelity check, `check-english.mjs` output, list of judgment calls |
+| `english-version` | versioned | the English side of a page (content-page phase 5); "the English sounds translated"; English UI strings | English MDX drafted from a fact sheet without the Portuguese prose, native read, fidelity check, `check-english.mjs` output with register values, list of judgment calls |
 | `research-note` | absorbed into `content-page` (`references/research-note.md`) | "research X before we write about it" | `docs/research/YYYY-MM-DD-<topic>.md` with evidence labels, a dated sources table and the one-quote-per-source rule (pattern of the two existing notes) |
 | `experiment-log-row` | idea | any deliberate SEO change, publication or evaluation pass | a row with hypothesis, window and power note (§7.3), and later its verdict |
 | `session-handoff` | absorbed into `content-page` (`references/handoff-kit.md`) | moving work from an editorial session to a repository session | a handoff file with `[CODE-n]` placeholders, `[NOTA-REDACAO]` decisions and the questions the repo session must verify |

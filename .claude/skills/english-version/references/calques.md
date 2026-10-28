@@ -49,10 +49,46 @@ Rules with no hit on the site, kept because they are classic PT → EN calques:
 | Doubled possessive | o arquivo do site | the file of the site | the site's file |
 | "Next," opening every step | em seguida | Next, … Next, … | vary, or number the steps |
 
+## Structural interference
+
+Found after the calques above were gone (owner review of
+`/en/project/how-a-page-is-made`, 2026-10-27; measured in
+`docs/research/2026-10-27-english-register-profile.md`). No single sentence
+is wrong. The page reads as translated because the same Portuguese shapes
+repeat. `check-english.mjs` measures them per page against native technical
+English (`register-*` warnings) and flags the patterns it can see.
+
+The fix is always a new sentence. Deleting an article where English needs
+one ("the same", superlatives, a referent already introduced) is a new
+error.
+
+| id | Portuguese shape | Before | After |
+|---|---|---|---|
+| `the-coord` | article on every coordinated item ("as fontes e o código") | against the sources and the code | against sources and code / against the sources and code |
+| — | generic list items with "o/a" | the English version, registration, the check scripts and a pull request | an English version, registration, check scripts, and a pull request |
+| `the-genitive` | "o X do Y", "o X no Y" | the process document in the repository · the actual code of the English route | my pipeline doc · the English route's code |
+| — | a general noun with an article ("a verificação faz…") | The verification does the heavy lifting. | Verification does most of the work. |
+| — | the noun repeated instead of a pronoun | the procedure… the skill… the procedure | it · this · that |
+| `the-heading` | nominal section titles ("A cadeia", "A skill") | The chain · The skill · The English version | How the pipeline works · The content-page skill · Writing the English version |
+| `is-the-same` | "o X é o mesmo" | The mechanism is the same as the previous case. | It works the same way as the previous case. |
+| `register-the-opener` | definite noun-phrase subject | The bigger problem is the explanation. | The explanation is the bigger problem. / What goes wrong is the explanation. |
+| `register-colons` | "setup: payoff" as the default sentence | The practical takeaway is different: important facts need to be in the visible text too. | Put important facts in the visible text too. |
+| `register-you` | impersonal "é possível", "o leitor" | It's possible to check it in the HTML. | You can check it in the HTML. |
+| `between-me` | "entre mim e o Claude" | split between me and Claude | how Claude and I split the work |
+
+A useful order for a paragraph that warns: find its subject (who acts?), make
+that the subject; cut every colon that is not introducing a list; then
+read the "the" that remain aloud and keep only the ones that point at
+something specific.
+
 ## What not to "fix"
 
 - A colon that introduces a list or a label is English. One colon per
-  sentence, introducing an explanation, is fine.
+  sentence, introducing an explanation, is fine now and then; the warning is
+  about the rate, not the colon.
+- A `the-coord` or `the-genitive` hit that names two specific things ("the
+  vendor and the IP") is English. About 4 in 10 paragraphs the density rule
+  flags are fine as they stand.
 - "Actually", "really", "simply" are English; flag them only when they add
   emphasis the Portuguese does not have.
 - Technical terms the English documentation itself uses (render-blocking,

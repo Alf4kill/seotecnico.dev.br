@@ -26,7 +26,7 @@ that pass found (§4).
 | Brief | repo or editorial session | `brief-<slug>.md` | no — briefs are deleted after use **[owner]** |
 | Draft | external writing session, the owner, or the repo session | MDX + delivery notes + session log | no **[owner]** |
 | Verification pass | repo session | corrected MDX; corrections listed in the commit body | **[repo]** yes |
-| English version | repo session, `english-version` skill: intent map, English draft, native read, fidelity check | `content/en/blog/<slug>.mdx` + list of judgment calls in the PR | **[repo]** yes |
+| English version | repo session, `english-version` skill: fact sheet, English draft written without the Portuguese prose, native read, fidelity check | `content/en/blog/<slug>.mdx` + list of judgment calls in the PR | **[repo]** yes |
 | Register | repo session | `src/lib/hreflang.ts`, `docs/experiment-log.md` | **[repo]** yes |
 | Checks | repo session + CI | script output, CI run | **[repo]** in the PR |
 | Merge, indexing request, distribution | owner | log row date | **[repo]** the row |
@@ -79,7 +79,7 @@ claim when it can.
 | One H1, title, description, canonical, JSON-LD, hreflang, contrast, a11y | Playwright suite | CI |
 | Placeholders left, body H1, `{{`, unmapped components, untokenised SVG colours, banned framings, quote length, pillar and tool links, lead paragraph | `check-draft.mjs` | on arrival and before the PR |
 | Both sides exist, same facts and dates, links inside their language, closing note, log row | `check-pair.mjs` | before the PR |
-| British spelling, day-month dates, closing note not last (errors); known PT → EN calques and register patterns (warnings) | `check-english.mjs` (`english-version` skill) | after the native read, before the PR |
+| British spelling, day-month dates, closing note not last (errors); known PT → EN calques, article patterns and a register profile against native technical English (warnings) | `check-english.mjs` (`english-version` skill) | after the native read, before the PR |
 | Is the topic worth a page; is a fact still true; does the code shown match the repo's lines; does the English read as written in English | **nobody** — the verification pass, the native read and the owner | every page |
 
 `check-draft.mjs` was written from the defects of §4 and run on all 48
@@ -98,8 +98,10 @@ checklist. Feedback that the English read as translated led to a
 revision of all 28 English pages and a dedicated skill, `english-version`
 (`docs/skills.md` §6). What changed in the method:
 
-- **Intent before words.** The English is written from a per-section map of
-  what the Portuguese claims and how it hedges, not sentence by sentence.
+- **Intent before words.** The English is written from a per-section fact
+  sheet of what the Portuguese claims and how it hedges, saved to a file. The
+  writer of the English draft never reads the Portuguese prose (added the
+  same day, see below).
 - **Two separate reads.** A native read of the English alone (by a reader
   that has not seen the Portuguese, when a subagent is available), then a
   fidelity check against the Portuguese for facts, hedges, links and code.
@@ -112,6 +114,17 @@ revision of all 28 English pages and a dedicated skill, `english-version`
   that needed judgment instead of diffing prose.
 
 The research and the counts: `docs/research/2026-10-27-english-translation-quality.md`.
+
+**Second iteration, same day.** A page written in that revision, with the
+Portuguese open, came out free of calques and still built on Portuguese
+structure. Measured against 26 native pages, every English page used colons
+above the native p90, and 23 of 28 were past it for "the"
+(`docs/research/2026-10-27-english-register-profile.md`). Three changes:
+the English draft is written from the fact sheet without the Portuguese
+prose; the style guide takes the Google developer documentation style guide
+as its base; `check-english.mjs` measures register (article density,
+sentences opening with "The", colons, semicolons, "you") against native
+thresholds and ranks the pages furthest from native first.
 
 ## 7. Open questions for the owner
 
