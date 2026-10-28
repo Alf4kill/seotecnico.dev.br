@@ -11,6 +11,13 @@
 // file, and a clean run does not mean the English is good: it means none of
 // the known calques is left.
 //
+// Calques are words; translation also survives as structure. Since the
+// register calibration of 2026-10-27
+// (docs/research/2026-10-27-english-register-profile.md) each page is also
+// compared with native technical English on the features of register.mjs
+// ("the" density, sentences opening with "The", colons, semicolons, "you"),
+// against the thresholds in register-thresholds.json.
+//
 // Usage (from the repository root):
 //   node .claude/skills/english-version/scripts/check-english.mjs <file.mdx>…
 //   node .claude/skills/english-version/scripts/check-english.mjs --published
@@ -19,21 +26,28 @@
 //                 studies, project): the regression test for this script
 //                 (expected: 0 errors)
 //   --summary     after the per-file report, the count of each rule over all
-//                 files (the before/after figure of a revision)
+//                 files (the before/after figure of a revision) and the pages
+//                 ranked by distance from the native register (the order to
+//                 revise them in)
 //   --quiet       print only files with findings
 //
 // ERROR: British spelling, a day-month date, the translation note not on the
 // last line. These have one right answer under the style guide.
-// WARN: a calque or register pattern. Each is a question for the reviser; a
-// WARN that survives the native pass is fine, and goes unexplained.
+// WARN: a calque, a register pattern or a register feature past its native
+// threshold. Each is a question for the reviser; a WARN that survives the
+// native pass is fine, and goes unexplained. On a hand-checked sample of
+// paragraphs past the "the" threshold, about 4 in 10 were fine as they stood.
 // Exit code 1 when any ERROR is found.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import matter from 'gray-matter'
+import { FEATURES, PARAGRAPH_MIN_WORDS, mdxParagraphs, profile, theDensity, wordsOf } from './register.mjs'
 
 const ROOT = process.cwd()
+const THRESHOLDS = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'register-thresholds.json'), 'utf8'))
 const NOTE_MARK = 'first published in Portuguese'
 const MONTHS = 'January|February|March|April|May|June|July|August|September|October|November|December'
 const PT_MONTHS = 'janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro'
@@ -91,6 +105,17 @@ const CALQUES = [
     hint: 'check the sense: eventualmente = possibly, pretender = intend, pontual = one-off' },
   { id: 'defect', re: /\bdefects?\b/gi,
     hint: '"defeito" in software: "bug", "flaw", "problem"' },
+  // Article patterns (references/calques.md, "Structural interference").
+  // Many of these "the" are required; the fix is a new sentence, never a
+  // deleted article.
+  { id: 'the-coord', re: /\bthe [\w-]+ and the [\w-]+/gi,
+    hint: '"as fontes e o código": one article for the pair ("the sources and code"), or none'  },
+  { id: 'the-genitive', re: /\bthe [\w-]+ (of|in) the [\w-]+/gi,
+    hint: '"o X do Y": possessive ("the route\'s code"), compound ("pipeline doc") or pronoun ("its")' },
+  { id: 'is-the-same', re: /\b[Tt]he [\w-]+ (is|was) the same\b/g,
+    hint: '"o X é o mesmo": say what repeats ("It works the same way", "Same fix:")' },
+  { id: 'between-me', re: /\bbetween me and\b/gi,
+    hint: '"entre mim e o Claude": "between Claude and me", or "Claude and I" as the subject' },
   { id: 'colon-chain', paragraph: true,
     hint: '3+ colons in one paragraph: Portuguese chains clauses with ":"; English uses a period, "so" or a dash' },
 ]
@@ -204,6 +229,47 @@ function checkFile(file) {
     warns.push(`[no-contractions] ${uncontracted} uncontracted negatives and no contractions: the style guide uses contractions in explanatory prose`)
   }
 
+  // Headings named by a bare noun phrase ("The chain") mirror Portuguese
+  // section titles ("A cadeia"). English, but a verb or a description reads
+  // better and makes a better anchor.
+  const allLines = raw.split(/\r?\n/)
+  allLines.forEach((line, i) => {
+    if (i >= bodyStart && /^#{2,3} The [\w-]+(?: [\w-]+){0,2}\s*$/.test(line)) {
+      hit('the-heading')
+      warns.push(`line ${i + 1}: [the-heading] "${line.replace(/^#+\s*/, '')}" — "A cadeia" style title: describe or use a verb ("How the pipeline works")`)
+    }
+  })
+
+  // Register profile against native technical English. Page features, then
+  // the paragraphs with the densest run of "the".
+  const paragraphs = mdxParagraphs(content)
+  const prof = profile(paragraphs)
+  const register = { prof, past: 0, dense: 0, worst: 0 }
+  if (prof) {
+    for (const f of FEATURES) {
+      const t = THRESHOLDS.features[f.id]
+      if (!t) continue
+      const value = prof[f.id]
+      if (t.dir === 'high' ? value > t.value : value < t.value) {
+        register.past++
+        hit(`register-${f.id}`)
+        warns.push(`[register-${f.id}] ${f.label} ${value.toFixed(1)} (native median ${t.nativeMedian}, ${t.dir === 'high' ? 'p90' : 'p10'} ${t.value}) — ${f.hint}`)
+      }
+    }
+  }
+  const limit = THRESHOLDS.paragraphTheDensity.value
+  const dense = paragraphs
+    .filter((p) => wordsOf(p).length >= PARAGRAPH_MIN_WORDS)
+    .map((p) => ({ p, d: theDensity(p) }))
+    .filter(({ d }) => d > limit)
+    .sort((a, b) => b.d - a.d)
+  register.dense = dense.length
+  register.worst = dense[0]?.d || 0
+  for (const { p, d } of dense) {
+    hit('the-density')
+    warns.push(`[the-density] ${d.toFixed(1)} "the" per 100 words (native p95 ${limit}) in "${p.slice(0, 60)}…" — rewrite the sentences (verbs, possessives, pronouns), never just delete articles`)
+  }
+
   // The translation note closes the page (references/structure.md).
   const lines = content.trimEnd().split(/\r?\n/)
   const noteAt = lines.findIndex((l) => l.includes(NOTE_MARK))
@@ -213,7 +279,7 @@ function checkFile(file) {
   }
   if (data.lang && data.lang !== 'en') errors.push(`lang is "${data.lang}": this script checks English pages`)
 
-  return { errors, warns, counts }
+  return { errors, warns, counts, register }
 }
 
 // ── main ────────────────────────────────────────────────────────────────────
@@ -234,18 +300,31 @@ if (!files.length) {
 
 let failed = 0
 const totals = {}
+const ranking = []
 for (const file of files) {
-  const { errors, warns, counts } = checkFile(path.resolve(ROOT, file))
+  const { errors, warns, counts, register } = checkFile(path.resolve(ROOT, file))
   for (const [k, v] of Object.entries(counts)) totals[k] = (totals[k] || 0) + v
+  ranking.push({ file, ...register })
+  if (errors.length) failed++
   if (args.includes('--quiet') && !errors.length && !warns.length) continue
   console.log(`${errors.length ? 'FAIL' : warns.length ? 'WARN' : 'OK  '}  ${file}`)
   for (const e of errors) console.log(`  ERROR ${e}`)
   for (const w of warns) console.log(`  WARN  ${w}`)
-  if (errors.length) failed++
 }
 if (args.includes('--summary')) {
   console.log('\nrule totals:')
-  for (const [k, v] of Object.entries(totals).sort((a, b) => b[1] - a[1])) console.log(`  ${k.padEnd(18)} ${v}`)
+  for (const [k, v] of Object.entries(totals).sort((a, b) => b[1] - a[1])) console.log(`  ${k.padEnd(22)} ${v}`)
+
+  // Revision order: most register features past threshold first, then the
+  // most paragraphs past the "the" threshold, then the densest paragraph.
+  console.log(`\nregister, furthest from native first (thresholds measured ${THRESHOLDS.measured} at ${THRESHOLDS.commit}):`)
+  console.log(`  ${'past'.padStart(4)} ${'dense'.padStart(5)} ${'worst'.padStart(5)} ${FEATURES.map((f) => f.id.padStart(11)).join('')}  file`)
+  ranking.sort((a, b) => b.past - a.past || b.dense - a.dense || b.worst - a.worst)
+  for (const r of ranking) {
+    const cols = FEATURES.map((f) => (r.prof ? r.prof[f.id].toFixed(1) : '—').padStart(11)).join('')
+    console.log(`  ${String(r.past).padStart(4)} ${String(r.dense).padStart(5)} ${r.worst.toFixed(1).padStart(5)} ${cols}  ${r.file}`)
+  }
+  console.log(`  ${'native median'.padEnd(16)} ${FEATURES.map((f) => String(THRESHOLDS.features[f.id]?.nativeMedian ?? '—').padStart(11)).join('')}`)
 }
 if (files.length > 1) console.log(`\n${files.length} files checked, ${failed} with errors`)
 process.exit(failed ? 1 : 0)

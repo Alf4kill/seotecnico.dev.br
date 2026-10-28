@@ -1,0 +1,32 @@
+{
+  "purpose": "Native American-English technical prose, the yardstick for register-thresholds.json. Two kinds: documentation edited to the Google developer documentation style guide, and first-person write-ups by US-based engineers (the genre of this site's lab pages). Only aggregate counts are computed from these pages; no text is stored.",
+  "pages": [
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/specialty/international/localized-versions" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/fundamentals/creating-helpful-content" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/crawling-indexing/robots/intro" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview" },
+    { "kind": "docs", "url": "https://developers.google.com/search/docs/appearance/title-link" },
+    { "kind": "docs", "url": "https://web.dev/articles/vitals" },
+    { "kind": "docs", "url": "https://web.dev/articles/lcp" },
+    { "kind": "docs", "url": "https://web.dev/articles/optimize-lcp" },
+    { "kind": "docs", "url": "https://web.dev/articles/inp" },
+    { "kind": "docs", "url": "https://web.dev/articles/optimize-inp" },
+    { "kind": "docs", "url": "https://web.dev/articles/cls" },
+    { "kind": "docs", "url": "https://web.dev/articles/optimize-cls" },
+    { "kind": "docs", "url": "https://web.dev/articles/ttfb" },
+    { "kind": "docs", "url": "https://web.dev/articles/rendering-on-the-web" },
+    { "kind": "first-person", "url": "https://vercel.com/blog/how-google-handles-javascript-throughout-the-indexing-process" },
+    { "kind": "first-person", "url": "https://danluu.com/web-bloat/" },
+    { "kind": "first-person", "url": "https://danluu.com/input-lag/" },
+    { "kind": "first-person", "url": "https://infrequently.org/2022/12/performance-baseline-2023/" },
+    { "kind": "first-person", "url": "https://infrequently.org/2024/01/performance-inequality-gap-2024/" },
+    { "kind": "first-person", "url": "https://timkadlec.com/remembers/2020-04-21-the-cost-of-javascript-frameworks/" },
+    { "kind": "first-person", "url": "https://nolanlawson.com/2023/12/02/lets-learn-how-modern-javascript-frameworks-work-by-building-one/" },
+    { "kind": "first-person", "url": "https://kentcdodds.com/blog/aha-programming" },
+    { "kind": "first-person", "url": "https://kentcdodds.com/blog/write-tests" },
+    { "kind": "first-person", "url": "https://bradfrost.com/blog/post/atomic-web-design/" }
+  ]
+}

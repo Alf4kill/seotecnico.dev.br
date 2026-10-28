@@ -135,9 +135,10 @@ summarise it away.
 
 Run the **`english-version`** skill (`.claude/skills/english-version/`) on the
 verified Portuguese file. It is a separate skill because writing English that
-does not read as translated is its own procedure: an intent map before any
-prose, an English draft written from it, a native read of the English alone,
-then a fidelity check against the Portuguese. The structural contract (same
+does not read as translated is its own procedure: a fact sheet written to a
+file, an English draft written from it by a writer who never reads the
+Portuguese prose, a native read of the English alone, then a fidelity check
+against the Portuguese. The structural contract (same
 facts, dates, FAQ count and H2 structure; English slug and title for the
 English query; English text links only to English pages; `translationOf`;
 the closing note on the last line) is its `references/structure.md`.
@@ -148,7 +149,10 @@ judgment calls the skill reports goes into the PR description.
 Why: until 2026-10-27 this phase was one paragraph, and every English page
 came out sentence-by-sentence from the Portuguese. Outside feedback noticed; the
 revision found 263 script-detectable calques across 28 pages
-(`docs/research/2026-10-27-english-translation-quality.md`).
+(`docs/research/2026-10-27-english-translation-quality.md`). Pages written
+afterwards with the Portuguese still open kept Portuguese structure without
+the calques, which is why the English writer no longer sees it
+(`docs/research/2026-10-27-english-register-profile.md`).
 
 ## Phase 6 — Register
 

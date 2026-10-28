@@ -1,0 +1,40 @@
+{
+  "measured": "2026-10-27",
+  "commit": "4a1f512",
+  "corpus": {
+    "pages": 26,
+    "words": 41097
+  },
+  "paragraphTheDensity": {
+    "minWords": 40,
+    "value": 12.2,
+    "percentile": 95
+  },
+  "features": {
+    "the": {
+      "dir": "high",
+      "value": 8.32,
+      "nativeMedian": 5.7
+    },
+    "the-opener": {
+      "dir": "high",
+      "value": 18.18,
+      "nativeMedian": 10.43
+    },
+    "colons": {
+      "dir": "high",
+      "value": 6.52,
+      "nativeMedian": 1.56
+    },
+    "semicolons": {
+      "dir": "high",
+      "value": 13.33,
+      "nativeMedian": 0
+    },
+    "you": {
+      "dir": "low",
+      "value": 0.44,
+      "nativeMedian": 1.52
+    }
+  }
+}

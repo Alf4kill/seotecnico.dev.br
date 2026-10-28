@@ -105,7 +105,7 @@ a um defeito real no código.
 | Um H1, título, descrição, canonical, JSON-LD, hreflang, contraste, acessibilidade | suíte do Playwright | CI |
 | Marcador esquecido, H1 no corpo, chaves duplas, componente não mapeado, cor de SVG fora dos tokens, enquadramento proibido, tamanho de citação, links obrigatórios, primeiro parágrafo | `check-draft.mjs` | na chegada do rascunho e antes do PR |
 | Os dois lados existem, mesmos fatos e datas, links dentro do próprio idioma, nota de tradução, linha no registro | `check-pair.mjs` | antes do PR |
-| Grafia britânica, data no formato dia-mês, nota de tradução fora da última linha; decalques conhecidos do português | `check-english.mjs` | depois da leitura nativa e antes do PR |
+| Grafia britânica, data no formato dia-mês, nota de tradução fora da última linha; decalques conhecidos do português e o registro comparado ao inglês técnico nativo | `check-english.mjs` | depois da leitura nativa e antes do PR |
 | O assunto merece uma página; um fato ainda é verdade; o código mostrado bate com as linhas do repositório; o inglês soa escrito em inglês | **ninguém**: a verificação, a leitura nativa e eu | toda página |
 
 A última linha é a que importa. Os scripts pegam o defeito que já aconteceu
@@ -152,8 +152,8 @@ segunda skill, a [english-version](https://github.com/Alf4kill/seotecnico.dev.br
 
 | Passo | O que faz |
 |---|---|
-| Mapa de intenção | por seção, o que o português afirma, em que nível e com que ressalva, antes de qualquer frase em inglês |
-| Rascunho em inglês | escrito a partir do mapa; código, números e links copiados |
+| Ficha de fatos | por seção, o que o português afirma, em que nível e com que ressalva, salvo num arquivo antes de qualquer frase em inglês |
+| Rascunho em inglês | escrito a partir da ficha por quem não lê a prosa em português; código e diagramas entram depois, copiados do original |
 | Leitura nativa | o inglês sozinho, de preferência por um revisor que não viu o português |
 | Checagem de fidelidade | o inglês contra o português: fatos, ressalvas, links, código, contagem de H2 e de FAQ |
 | Relatório | as decisões de julgamento vão no PR, para eu revisar o sentido sem comparar prosa |
@@ -172,6 +172,28 @@ JSON-LD, a frase que explica o escape mostrava `<` onde o código tem
 limpo não prova que o inglês é nativo; prova que nenhum decalque conhecido
 sobrou. Quem decide continua sendo a leitura.
 
+A leitura mostrou isso no mesmo dia. Revendo a versão em inglês desta página,
+escrita durante a revisão, achei um inglês sem nenhum decalque da lista e
+ainda montado como português: artigo definido em cada substantivo, frases
+abrindo com "The", dois-pontos ligando orações. Para saber se era impressão,
+medi o registro das 28 páginas contra 26 páginas de inglês técnico nativo
+(documentação do Google e do web.dev e relatos em primeira pessoa de empresas
+e engenheiros dos Estados Unidos). Todas as 28 usavam mais dois-pontos que 90%
+das páginas nativas, e 23 passavam desse mesmo limite em "the". Esta página
+passava do limite em quatro das cinco medidas.
+
+A causa era de novo o método: quem escrevia o inglês estava com o texto em
+português aberto, e a estrutura de cada frase vinha junto. Agora o mapa de
+intenção virou uma ficha de fatos salva em arquivo, e o rascunho em inglês é
+escrito a partir dela por quem não vê a prosa em português. O guia de estilo
+passou a ter como base o guia de documentação do Google, o que trouxe de volta
+a vírgula serial que o português não usa. E o `check-english.mjs` agora
+compara cada página com os limites medidos no inglês nativo e ordena as
+páginas pela distância. O corpus, os limites e a taxa de falsos positivos
+(cerca de 4 em cada 10 parágrafos apontados estavam bons) estão na [nota de
+pesquisa sobre o registro](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-10-27-english-register-profile.md).
+A versão em inglês desta página foi a primeira escrita assim.
+
 ## Como conferir
 
 ```bash
@@ -182,8 +204,14 @@ node .claude/skills/content-page/scripts/check-draft.mjs --published
 node .claude/skills/content-page/scripts/check-pair.mjs --all
 node .claude/skills/content-page/scripts/check-pair.mjs como-uma-pagina-nasce --type project
 node .claude/skills/english-version/scripts/check-english.mjs --published --summary
+git checkout 4a1f512 -- content/en
+node .claude/skills/english-version/scripts/calibrate-register.mjs
+git checkout HEAD -- content/en
 ```
 
 Quando a skill entrou no repositório, no PR #115, o comando
 `check-draft.mjs --published` deu 48 arquivos e 0 erros. Rodado num commit mais novo, o número
-cresce a cada artigo publicado.
+cresce a cada artigo publicado. As contagens de registro são do commit
+`4a1f512`, antes de qualquer página ser reescrita pelo método novo; as três
+últimas linhas do bloco refazem a medição nele (precisa de rede, e as páginas
+nativas podem ter mudado desde 27 de outubro de 2026).

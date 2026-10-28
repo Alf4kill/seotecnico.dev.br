@@ -35,6 +35,12 @@ pair a pair. `check-pair.mjs` (content-page skill) checks most of it.
   `nextjs-hreflang`, `arvore-de-acessibilidade` → `accessibility-tree`). The
   English title is written for English searchers, not translated from the
   Portuguese title.
+- **Paragraphs inside a section.** Their number and order, and the order of
+  sentences inside them, are free. Only the H2 sections and their order are
+  fixed. An English writer opens a section with the claim; the Portuguese may
+  build up to it. Keeping the Portuguese paragraph map is how the first
+  revision kept Portuguese structure in English words
+  (`docs/research/2026-10-27-english-register-profile.md`).
 - **Sentences.** Everything in `style-guide.md` and `calques.md`. Brazil-specific
   context (pt-BR SERPs, Brazilian impressions, LGPD) stays, with one clause of
   explanation for a reader who does not know it.
