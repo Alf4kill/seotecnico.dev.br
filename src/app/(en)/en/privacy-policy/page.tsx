@@ -41,7 +41,7 @@ export default function EnglishPrivacyPolicyPage() {
       </h1>
 
       <p className="mt-4 text-sm text-muted">
-        Updated <time dateTime={PRIVACY_POLICY_UPDATED}>18 October 2026</time>.
+        Updated <time dateTime={PRIVACY_POLICY_UPDATED}>October 18, 2026</time>.
       </p>
 
       <div className="rich-text mt-10 max-w-[68ch]">

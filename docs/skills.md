@@ -41,6 +41,7 @@ installed into the same folder never lands in a commit by accident:
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/content-page/
+!.claude/skills/english-version/
 ```
 
 A new project skill adds its own `!.claude/skills/<name>/` line in the PR that
@@ -110,12 +111,11 @@ ideas `research-note` and `session-handoff` became two of its references.
 
 | File | Role |
 |---|---|
-| `SKILL.md` | nine phases with where each runs: gates → research note → brief → draft (three routes) → verification → English → register → checks → PR |
+| `SKILL.md` | nine phases with where each runs: gates → research note → brief → draft (three routes) → verification → English (delegated to `english-version`, §6) → register → checks → PR |
 | `references/research-note.md` | the shape of the notes in `docs/research/`: dated sources, labels, claims to make and to avoid |
 | `references/brief-template.md` | the brief the owner reviews before any prose, including the drafting route and banned framings |
 | `references/handoff-kit.md` | what an external writing session receives, the instructions block, the return package |
 | `references/draft-verification.md` | the verification pass, with every correction the history records |
-| `references/translation.md` | what stays identical, what is adapted, link mapping, the closing note |
 | `references/page-types.md` | blog article (live) and project entry (proposed) |
 | `scripts/check-draft.mjs` | single-file checks on arrival and before the PR; exit 1 on error |
 | `scripts/check-pair.mjs` | pair-level checks; exit 1 on error |
@@ -158,15 +158,76 @@ One more defect was found by parsing the skill itself: the first draft's
 one-line `description` contained `: `, which is not valid YAML. It is now a
 folded block (`description: >-`).
 
-**What it does not do.** It does not judge whether a topic is worth a page,
-translate for you, or merge. Those stay with the owner (`docs/ai-workflow.md`
-§8).
+**What it does not do.** It does not judge whether a topic is worth a page or
+merge. Those stay with the owner (`docs/ai-workflow.md` §8). The English side
+is its own skill (§6).
 
-## 6. Catalog
+## 6. Worked example: `english-version`
+
+**Why.** Feedback the owner received in October 2026 said the English pages
+read like a translation. Phase 5 of `content-page` was one paragraph pointing to a
+structural checklist (`references/translation.md`): same facts, same H2s,
+links to `/en`, closing note. It said "adapt, do not transliterate" and
+nothing about how. All 28 English pages had been written sentence by sentence
+from the Portuguese. The three tests of §3: it happens with every page (1);
+the rules were scattered between that checklist, `CLAUDE.md` §10 and habits
+(2); and something was missed on every page (3) — the first run of the new
+script found errors in 28 of 28.
+
+**How it was built.** Research first
+(`docs/research/2026-10-27-english-translation-quality.md`): LLM translation
+defaults to literal output; explicit linguistic instructions and a separate
+refine pass reduce it; community translation skills start from intent but
+have no fidelity check. Then a full revision of the English pages, keeping a
+list of every calque found, before writing anything: the list became
+`references/calques.md` and the script's rules. A separate skill instead of a
+longer phase 5, because the procedure (four passes) and its references
+(style guide, glossary, calque catalog) are as long as the rest of
+`content-page`, and because revising published English is a task on its own
+that should not drag in the nine-phase pipeline. `content-page` phase 5 now
+calls it; the structural checklist moved into it as `references/structure.md`,
+so there is one place for "the English side".
+
+**What it contains.**
+
+| File | Role |
+|---|---|
+| `SKILL.md` | intent map → English draft → native read (by a subagent that has not seen the Portuguese, when available) → fidelity check → mechanics → report of judgment calls; a section for revising published pages |
+| `references/structure.md` | what stays identical and what is adapted (moved from `content-page/references/translation.md`) |
+| `references/style-guide.md` | American English, dates, numbers, register, the site's PT → EN glossary |
+| `references/calques.md` | every calque found in the 2026-10-27 revision, with before/after and counts |
+| `scripts/check-english.mjs` | British spelling, day-month and Portuguese dates, translation note not last (ERROR); 15 calque and register patterns (WARN) |
+| `evals/` | three prompts: a new English version from a verified Portuguese page, a revision of a literal page, a request for a third language (declined) |
+
+**The first runs of the script.**
+
+- *Round 1* on the revised pages: 0 errors, 86 WARN lines, mostly false
+  positives: "actually" (correct English in every case), colon chains
+  counted in lists, tables and SVG labels, and "make the measurement
+  reliable" read as "fazer uma medição". "Actually" left the false-friend
+  rule, colon chains now count only running prose, and `make-test` skips a
+  following adjective. Four real hits were fixed in the content.
+- *Round 2:* 28 files, 0 errors, 12 colon chains; eleven were split in the
+  content. The same round showed inline code broken across lines being
+  counted as prose; the script now strips multi-line code spans.
+- *Round 3:* 28 files, 0 errors, 1 WARN (a labeled list written as a
+  paragraph, kept).
+- *On `e39de3b`* (before the revision): 28 of 28 files with errors, 263
+  findings.
+- *Mutation test:* a page seeded with 20 calques, dates and spellings
+  produced 20 findings and exit code 1 (the first run missed lower-case "in
+  the case of"; the rule is now case-insensitive).
+
+**What it does not do.** It does not change a fact, translate into a third
+language, or certify that the English is native: a clean script run means no
+known calque is left.
+
+## 7. Catalog
 
 | Skill | Status | Trigger | Output |
 |---|---|---|---|
 | `content-page` | versioned | write, research, plan, verify, translate or update a page; a returned draft | research note → brief → draft → verification → PT + EN MDX → hreflang entry → log row → PR |
+| `english-version` | versioned | the English side of a page (content-page phase 5); "the English sounds translated"; English UI strings | English MDX from an intent map, native read, fidelity check, `check-english.mjs` output, list of judgment calls |
 | `research-note` | absorbed into `content-page` (`references/research-note.md`) | "research X before we write about it" | `docs/research/YYYY-MM-DD-<topic>.md` with evidence labels, a dated sources table and the one-quote-per-source rule (pattern of the two existing notes) |
 | `experiment-log-row` | idea | any deliberate SEO change, publication or evaluation pass | a row with hypothesis, window and power note (§7.3), and later its verdict |
 | `session-handoff` | absorbed into `content-page` (`references/handoff-kit.md`) | moving work from an editorial session to a repository session | a handoff file with `[CODE-n]` placeholders, `[NOTA-REDACAO]` decisions and the questions the repo session must verify |

@@ -17,65 +17,65 @@ datePublished: "2026-10-18"
 dateModified: "2026-10-18"
 faq:
   - question: "Does ChatGPT run JavaScript when it reads a page?"
-    answer: "It did not in any of the 5 rounds of this test, in September 2026. The code that only existed after a fetch in the browser was never reported, and the endpoint that fetch would call received no request. What ChatGPT read was the text of the HTML the server delivered."
+    answer: "Not in any of the 5 rounds of this test, run in September 2026. The code that only existed after a fetch in the browser was never reported, and the endpoint that fetch would have called never got a request. What ChatGPT read was the text of the HTML the server sent."
   - question: "Is a 'use client' component invisible to AI?"
-    answer: "No. A 'use client' component is also rendered on the server, and what it draws on the first render ships in the HTML like any other text. ChatGPT and Claude reported that content in all 10 rounds in which they read the page. What stays invisible is what only appears after the page runs in the browser, such as the result of a fetch inside useEffect."
+    answer: "No. A 'use client' component is still rendered on the server, and whatever it renders on the first pass ships in the HTML like any other text. ChatGPT and Claude reported that content in all 10 rounds where they read the page. What stays invisible is anything that only appears once the page runs in the browser, like the result of a fetch inside useEffect."
   - question: "Do ChatGPT and Claude read the page's JSON-LD?"
-    answer: "In this test, no: 0 of 10 rounds. Both assistants' reading tools extract the page's text and discard the content of script tags, where JSON-LD lives. JSON-LD remains useful for Google's rich results, but any fact you want an assistant to cite also has to be in the visible text."
+    answer: "In this test, no: 0 of 10 rounds. Both assistants' page-reading tools extract the text and throw away the contents of script tags, which is where JSON-LD lives. JSON-LD is still useful for Google's rich results, but any fact you want an assistant to cite also needs to be in the visible text."
   - question: "Why does Perplexity say it can't open my site?"
-    answer: "On the free plan, tested here, Perplexity answered from its own index and did not fetch the page live: its on-demand fetching agent never made a request to this domain in two months. When the page had already been crawled by PerplexityBot, it answered correctly; when it had not, it said it could not open it. To appear in Perplexity, the page has to be in its index before the question."
+    answer: "On the free plan, which is what was tested here, Perplexity answered from its own index and didn't fetch the page live: its on-demand fetching agent didn't send a single request to this domain in two months. When PerplexityBot had already crawled the page, it answered correctly; when it hadn't, it said it couldn't open it. To show up in Perplexity, a page has to be in its index before anyone asks."
 ---
 
-No. In 15 controlled rounds on this site, in September 2026, **ChatGPT and
-Claude read only the text of the HTML the server delivers**. Neither ran
-JavaScript and neither read the JSON-LD. The content of a `'use client'`
-component reached them normally, because that component is also rendered on
+No. In 15 controlled rounds on this site in September 2026, **ChatGPT and
+Claude read only the text of the HTML the server sends**. Neither ran
+JavaScript, and neither read the JSON-LD. The content of a `'use client'`
+component reached them just fine, because that component is also rendered on
 the server. Perplexity, on the free plan, didn't even fetch the page: it
-answered from its own index. And the server recorded, with verified identity,
-every reading the assistants said they made.
+answered from its own index. And the server logged, with verified identity,
+every page visit the assistants said they made.
 
 ## The result in one table
 
-Each assistant got the same request five times: open a page and report four
-codes. Each code reaches the page through a different rendering path, and it
-changes every round.
+Each assistant got the same prompt five times: open a page and report four
+codes. Each code reaches the page through a different rendering path, and
+they change every round.
 
-| Assistant | Opened the page | Server text | `'use client'` component | Only in JSON-LD | Only after JavaScript | Requests on the server |
+| Assistant | Opened the page | Server text | `'use client'` component | Only in JSON-LD | Only after JavaScript | Requests to the server |
 |---|---|---|---|---|---|---|
 | ChatGPT | 5 of 5 | **5 of 5** | **5 of 5** | 0 of 5 | 0 of 5 | 5, verified identity |
 | Claude | 5 of 5 | **5 of 5** | **5 of 5** | 0 of 5 | 0 of 5 | 5, verified identity |
 | Perplexity (free) | 0 of 5 | n/a | n/a | n/a | n/a | 0 |
 
-No assistant invented a code. Sixty codes were requested, and every time a code
-did not reach the assistant, the answer said it had not been found.
+No assistant made up a code. Sixty codes were requested, and every time a
+code didn't reach the assistant, the answer said it wasn't found.
 
 ## How the test was built
 
-The test page is a Next.js route at `/lab/<slug>`, outside the sitemap, outside
-the search index and linked from nowhere. The `<slug>` is secret and lives only
-in a production environment variable. The reason is specific to this test: the
-assistants can search GitHub, and this site's repository is public. If the
-address or the codes were in a versioned file, an assistant could answer by
-finding the code on GitHub, without opening the page, and the test would
-measure search instead of reading.
+The test page is a Next.js route at `/lab/<slug>`. It's left out of the
+sitemap and the site search, and nothing links to it. The `<slug>` is secret
+and lives only in a production environment variable. The reason is specific
+to this test: the assistants can search GitHub, and this site's repository is
+public. If the address or the codes were in a versioned file, an assistant
+could answer by finding the code on GitHub without opening the page, and the
+test would measure search instead of page reading.
 
-The page has four codes, one per rendering path:
+The page holds four codes, one per rendering path:
 
-| Code | Where it exists | If the assistant reports it, it proves that… |
+| Code | Where it lives | If the assistant reports it, that proves… |
 |---|---|---|
-| `SRV-` | text of a Server Component | it read the served HTML |
-| `UC-` | text rendered by a `'use client'` component | nothing beyond `SRV-`: it is also in the HTML |
-| `LD-` | only in the JSON-LD's `identifier` field | the reading keeps the content of `<script type="application/ld+json">` |
-| `JS-` | fetched by a `fetch` inside `useEffect`, after mounting | the assistant ran JavaScript |
+| `SRV-` | text in a Server Component | it read the served HTML |
+| `UC-` | text rendered by a `'use client'` component | nothing beyond `SRV-`: it's in the HTML too |
+| `LD-` | only in the JSON-LD's `identifier` field | its reader keeps the contents of `<script type="application/ld+json">` |
+| `JS-` | loaded by a `fetch` inside `useEffect`, after mount | the assistant ran JavaScript |
 
-The codes are an HMAC of the slug with the round number, so each round has new
-codes and no answer can be reused from an earlier round. The part that matters
-for people who write Next.js is the client component, in
+The codes are an HMAC of the slug and the round number, so each round gets
+fresh codes and no answer can be recycled from an earlier one. The part that
+matters to anyone writing Next.js is the client component, in
 [`src/components/lab/ControlCodes.tsx`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/src/components/lab/ControlCodes.tsx).
-The Portuguese comments say that the first component renders the code DURING
-render, so it ships in the HTML even though it is `'use client'`, and that the
-second only gets the code AFTER mounting, so without JavaScript it doesn't
-exist:
+The Portuguese comments explain that the first component renders the code
+DURING render, so it ships in the HTML even though it's `'use client'`, and
+that the second only gets the code AFTER mount, so without JavaScript it
+never exists:
 
 ```tsx
 'use client'
@@ -112,89 +112,92 @@ export function FetchedCode({ endpoint }: { endpoint: string }) {
 }
 ```
 
-The page's labels are in Portuguese: "Código do componente cliente" is "Client
-Component code", "Código carregado no navegador" is "code loaded in the
-browser", and "carregando…" is "loading…".
+The page's labels are in Portuguese: "Código do componente cliente" means
+"Client Component code", "Código carregado no navegador" means "code loaded
+in the browser", and "carregando…" means "loading…".
 
-Both components are in the same `'use client'` file on purpose: the difference
-between them is the whole experiment. The site's test suite checks in the served
-HTML that each code is exactly where the table says: `SRV-` and `UC-` in the
-text, `LD-` only inside the JSON-LD and `JS-` nowhere until the `fetch` runs
+Both components live in the same `'use client'` file on purpose: the
+difference between them is the whole experiment. The site's test suite
+checks the served HTML to confirm each code is exactly where the table says:
+`SRV-` and `UC-` in the text, `LD-` only inside the JSON-LD, and `JS-`
+nowhere until the `fetch` runs
 ([`tests/seo/lab-control.spec.ts`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/tests/seo/lab-control.spec.ts)).
 
-The request was the same in every round, always in a new conversation with web
-browsing on. It was written in Portuguese; in English it reads:
+The prompt was identical every round, always in a new conversation with web
+browsing turned on. It was written in Portuguese; in English it reads:
 
 > Open this page and tell me, exactly as they appear, every code starting with
-> SRV-, UC-, LD- or JS- that you find on it, and in which part of the page each
-> one was. If you don't find one, say you didn't find it; don't invent.
+> SRV-, UC-, LD- or JS- that you find on it, and which part of the page each
+> one was in. If you don't find one, say you didn't find it; don't make one up.
 
-The 15 rounds were interleaved (ChatGPT, Claude, Perplexity, and again), at
-least three minutes apart, on 25 September 2026, between 11:56 and 13:04 UTC.
-The protocol, the full answers and the deviations are recorded in the
+The 15 rounds were interleaved (ChatGPT, Claude, Perplexity, then again), at
+least three minutes apart, on September 25, 2026, between 11:56 and 13:04
+UTC. The protocol, the full answers and the deviations are recorded in the
 repository, in
 [`docs/lab-control-rounds.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/lab-control-rounds.md).
 
-## The server saw every reading
+## The server saw every visit
 
-Before interpreting what the assistants read, a question of method: does the
-instrument that records visits work? An instrument that doesn't see an agent
-arriving produces the same zero as an agent that never came. This test is,
-first of all, a **positive control**: a visit known to have happened, at a known
-time, to check that the record shows up.
+Before interpreting what the assistants read, there's a methodological
+question: does the instrument that records visits actually work? An
+instrument that fails to see an agent arrive produces the same zero as an
+agent that never came. So this test is, first and foremost, a **positive
+control**: a visit that's known to have happened, at a known time, to check
+that it shows up in the record.
 
-It showed up. The site's proxy recorded **5 requests from ChatGPT-User and 5
-from Claude-User**, all coming from IP ranges published by OpenAI and
-Anthropic. Each round used a URL that assistant had never fetched, and the codes
-only exist on this server. So each right answer required a new request, and
-each one was recorded. The identity verification method is in the [article on
-how to know if AI uses your content](/en/blog/detect-ai-crawlers).
+It did. The site's proxy logged **5 requests from ChatGPT-User and 5 from
+Claude-User**, all from IP ranges published by OpenAI and Anthropic. Each
+round used a URL that assistant had never fetched before, and the codes only
+exist on this server, so every correct answer required a fresh request, and
+every one was logged. The identity verification method is explained in the
+[article on how to tell if AI uses your content](/en/blog/detect-ai-crawlers).
 
-A detail about the instrument that almost became a false finding: the same GA4
-query, made on the day of the rounds, showed 3 and 2 requests instead of 5 and
-5. GA4's Explore had not finished processing the day yet. Taken literally, that
-export would have reported five instrument failures that never happened. Since
-then, this site's rule is to wait for the day to close plus 24 hours before
-analysing any export.
+One detail about the instrument nearly turned into a false finding: the same
+GA4 query, run on the day of the rounds, showed 3 and 2 requests instead of 5
+and 5. GA4's Explore reports simply hadn't finished processing that day. Read
+at face value, that export would have reported five instrument failures that
+never happened. Since then, this site's rule is to wait until the day closes,
+plus 24 hours, before analyzing any export.
 
 ## `'use client'` hides nothing
 
-`UC-` showed up every time `SRV-` showed up, for both assistants: 10 of 10. For
-them, the text a `'use client'` component draws on the first render is
+`UC-` appeared every time `SRV-` did, for both assistants: 10 out of 10. To
+them, the text a `'use client'` component renders on the first pass is
 indistinguishable from a Server Component's text.
 
-That contradicts a common reading of the directive. `'use client'` does not mean
-"rendered only in the browser". The component is rendered on the server like any
-other and then hydrated in the browser. What it produces on the first render
-ships in the HTML. The distinction that matters is not between Server and Client
-Components, but between **what exists on the first render** and **what only
-appears later**. It is the same point the [article on SSR, SSG and
-ISR](/en/blog/nextjs-ssr-ssg-isr) makes for Googlebot, now measured on AI
-assistants.
+That runs against a common reading of the directive. `'use client'` doesn't
+mean "rendered only in the browser". The component is rendered on the server
+like any other, then hydrated in the browser, and whatever it outputs on the
+first render ships in the HTML. The line that matters isn't between Server
+and Client Components; it's between **what exists on the first render** and
+**what only shows up later**. It's the same point the [article on SSR, SSG
+and ISR](/en/blog/nextjs-ssr-ssg-isr) makes about Googlebot, now measured on
+AI assistants.
 
 ## What gets left out: JavaScript and JSON-LD
 
-**JavaScript.** No assistant reported `JS-` in 10 rounds, and the endpoint the
-`fetch` would call received no request from either of them. In their answers,
-both described the code's line as "carregando…" (loading…), which is the text
-the component shows before the `fetch` finishes. The page they read is the page
-that exists before any JavaScript runs.
+**JavaScript.** Neither assistant reported `JS-` in 10 rounds, and the
+endpoint the `fetch` would have called got no request from either of them. In
+their answers, both described that line of the page as "carregando…"
+(loading…), the text the component shows before the `fetch` completes. The
+page they read is the page as it exists before any JavaScript runs.
 
-**JSON-LD.** `LD-` also stayed at 0 of 10, against 10 of 10 for `SRV-`, and it
-was in the same HTML. Claude explained why without being asked, in more than one
-round: its reading tool downloads the HTML, converts it to text and discards the
-content of `<script>` tags, which is where JSON-LD lives.
+**JSON-LD.** `LD-` also stayed at 0 of 10, versus 10 of 10 for `SRV-`, even
+though it was in the same HTML. Claude explained why without being asked, in
+more than one round: its page-reading tool downloads the HTML, converts it to
+text and throws away the contents of `<script>` tags, which is where JSON-LD
+lives.
 
-That doesn't make JSON-LD useless. It is still what Google uses for rich
-results, and the [article on JSON-LD in Next.js](/en/blog/nextjs-json-ld) shows
-how to generate it. But a fact that only exists in the JSON-LD doesn't reach
-these two assistants. If a piece of data needs to be cited by an AI, it also has
-to be in the visible text.
+That doesn't make JSON-LD useless. It's still what Google uses for rich
+results, and the [article on JSON-LD in Next.js](/en/blog/nextjs-json-ld)
+shows how to generate it. But a fact that only exists in JSON-LD never
+reaches these two assistants. If you want an AI to cite a piece of data, it
+also has to be in the visible text.
 
 <figure>
   <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The path from a page to the model in ChatGPT and Claude, and free Perplexity's path through its index">
-    <title>What reaches the model, and where the rest is lost on the way</title>
-    <desc>ChatGPT and Claude: the agent fetches the served HTML, the tool extracts the text and the model receives the SRV and UC codes. The JSON-LD is discarded in extraction, and the code that depends on JavaScript never exists, because nothing runs. Free Perplexity: the question goes to the index filled by PerplexityBot, with no request to the site; a page outside the index results in failure.</desc>
+    <title>What reaches the model, and where the rest gets lost along the way</title>
+    <desc>ChatGPT and Claude: the agent fetches the served HTML, the tool extracts the text and the model receives the SRV and UC codes. The JSON-LD is thrown away during extraction, and the code that depends on JavaScript never exists, because nothing runs. Free Perplexity: the question goes to the index PerplexityBot builds, with no request to the site; a page that isn't in the index means the answer fails.</desc>
 
     <text x="20" y="28" fontSize="13" fill="var(--foreground)">ChatGPT and Claude</text>
 
@@ -210,11 +213,11 @@ to be in the visible text.
 
     <rect x="400" y="44" width="300" height="62" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
     <text x="550" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">the model receives SRV and UC</text>
-    <text x="550" y="88" textAnchor="middle" fontSize="12" fill="var(--foreground)">(server text and the 'use client' one)</text>
+    <text x="550" y="88" textAnchor="middle" fontSize="12" fill="var(--foreground)">(server text and 'use client' text)</text>
 
     <line x1="285" y1="106" x2="285" y2="140" stroke="var(--color-accent)" strokeWidth="1.5" />
     <rect x="200" y="140" width="250" height="46" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
-    <text x="325" y="160" textAnchor="middle" fontSize="12" fill="var(--foreground)">discarded: JSON-LD (LD)</text>
+    <text x="325" y="160" textAnchor="middle" fontSize="12" fill="var(--foreground)">thrown away: JSON-LD (LD)</text>
     <text x="325" y="177" textAnchor="middle" fontSize="12" fill="var(--foreground)">never existed: browser fetch (JS)</text>
 
     <text x="20" y="226" fontSize="13" fill="var(--foreground)">Perplexity, free plan</text>
@@ -229,90 +232,91 @@ to be in the visible text.
     <text x="310" y="286" textAnchor="middle" fontSize="12" fill="var(--foreground)">by PerplexityBot): answers</text>
 
     <rect x="440" y="242" width="260" height="62" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="5 4" />
-    <text x="570" y="268" textAnchor="middle" fontSize="12" fill="var(--foreground)">outside the index: "couldn't</text>
+    <text x="570" y="268" textAnchor="middle" fontSize="12" fill="var(--foreground)">not in the index: "couldn't</text>
     <text x="570" y="286" textAnchor="middle" fontSize="12" fill="var(--foreground)">open it", no request to the site</text>
   </svg>
-  <figcaption>For the first two, the limit is text extraction. For free Perplexity, it is the index: no request reached the site in any attempt.</figcaption>
+  <figcaption>For the first two, the bottleneck is text extraction. For free Perplexity, it's the index: no request reached the site on any attempt.</figcaption>
 </figure>
 
-In words, what the figure shows:
+What the figure shows, as a table:
 
-| Assistant | The page's path to the answer | What gets lost |
+| Assistant | How the page gets to the answer | What gets lost |
 |---|---|---|
-| ChatGPT, Claude | the agent fetches the served HTML → the tool extracts the text without running JavaScript → the model receives the text | the JSON-LD (discarded in extraction) and everything that depends on JavaScript (it never comes into existence) |
-| Perplexity (free) | the question goes to Perplexity's index, with no request to the site | any page PerplexityBot has not crawled yet |
+| ChatGPT, Claude | the agent fetches the served HTML → the tool extracts the text without running JavaScript → the model receives the text | the JSON-LD (thrown away during extraction) and anything that depends on JavaScript (it never comes into existence) |
+| Perplexity (free) | the question goes to Perplexity's index, with no request to the site | any page PerplexityBot hasn't crawled yet |
 
 ## Perplexity: the answer comes from the index
 
-Perplexity failed in all five rounds, always with the same message: it could not
+Perplexity failed all five rounds, always with the same message: it couldn't
 open the page. Four checks outside the protocol explain why:
 
-1. **It wasn't a block.** The hosting firewall had no active bot rule, and none of
-   the IPs blocked that day belonged to the ranges Perplexity publishes. This
-   site's robots.txt allows both Perplexity agents.
-2. **The on-demand fetching agent never came.** In two months of logs,
+1. **It wasn't a block.** The hosting firewall had no active bot rule, and
+   none of the IPs blocked that day belonged to the ranges Perplexity
+   publishes. This site's robots.txt allows both Perplexity agents.
+2. **The on-demand fetching agent never showed up.** In two months of logs,
    PerplexityBot, the indexer, fetched this domain 6 times, all with verified
-   identity: the home, robots.txt, the guide and a sharing image.
-   Perplexity-User, the agent that should fetch a page when someone asks, made
-   **zero** requests. Not in the rounds, not outside them.
-3. **It answers from the index.** Asked about the home, a page PerplexityBot had
-   already visited, Perplexity answered correctly, with title and first
-   paragraph, **without any request reaching the server**. The test page and an
-   article the indexer had not visited failed.
-4. **Given room, it fills in.** With an open question ("analyse the content of
-   this page") about an article outside the index, Perplexity wrote a long,
-   convincing analysis, deduced from the words in the URL. The admission that it
-   had not read the page came in a single sentence, after a first section that
-   already presented the content as if it were the article's. With the test's
-   closed request ("don't invent"), it admitted failure five times out of five.
-   The form of the question decided between honesty and invention.
+   identity: the home page, robots.txt, the guide and a social sharing image.
+   Perplexity-User, the agent that's supposed to fetch a page when someone
+   asks, made **zero** requests, both during the rounds and outside them.
+3. **It answers from the index.** Asked about the home page, which
+   PerplexityBot had already visited, Perplexity got it right, title and first
+   paragraph included, **without a single request reaching the server**. The
+   test page and an article the indexer hadn't visited both failed.
+4. **Give it room and it fills in the gaps.** Given an open-ended prompt
+   ("analyze the content of this page") about an article that wasn't in the
+   index, Perplexity wrote a long, convincing analysis inferred from the words
+   in the URL. It admitted it hadn't read the page in a single sentence, after
+   an opening section that already presented the content as if it came from
+   the article. With the test's tightly worded prompt ("don't make one up"),
+   it admitted failure five times out of five. How the question was phrased
+   made the difference between honesty and invention.
 
-The conclusion holds for the **free plan**, which is what was tested. In at least
-two of the conversations, the interface showed a notice of a free preview of the
-paid plan's advanced search; the account remained free. A paid account may fetch
-pages live; that was not measured here.
+The conclusion applies to the **free plan**, which is what was tested. In at
+least two of the conversations, the interface showed a notice offering a free
+preview of the paid plan's advanced search; the account stayed on the free
+plan. A paid account may well fetch pages live; that wasn't measured here.
 
 ## What to do on a Next.js site
 
-- **Put what needs to be read in the first render.** Server Component text and
-  Client Component text on the first render reach the assistant. Content that
-  depends on a `fetch` in the browser, on a closed tab that loads on demand or on
-  a `useEffect` does not.
-- **The rest applies to any site.** Repeat in the visible text what is in the
-  JSON-LD, and check the raw HTML before trusting what the AI says: the full
-  rule, measured later with five assistants, is in [what to do on your
-  site](/en/blog/which-ai-assistants-run-javascript#what-to-do-on-your-site).
-  For the metadata, this site's [meta tag
-  validator](/en/tools/meta-tag-validator) reads the raw HTML.
-- **For Perplexity, the index comes before the question.** A page only appears on
-  the free plan after PerplexityBot crawls it. Leave the agent allowed in
-  robots.txt and the page in the sitemap, and give it time.
+- **Put anything that needs to be read in the first render.** Server
+  Component text and Client Component text from the first render reach the
+  assistant. Content that depends on a `fetch` in the browser, a collapsed tab
+  that loads on demand, or a `useEffect` doesn't.
+- **The rest applies to any site.** Repeat in the visible text whatever is in
+  your JSON-LD, and check the raw HTML before trusting what an AI tells you.
+  The full rule, measured later across five assistants, is in [what to do on
+  your site](/en/blog/which-ai-assistants-run-javascript#what-to-do-on-your-site).
+  For metadata, this site's [meta tag validator](/en/tools/meta-tag-validator)
+  reads the raw HTML.
+- **For Perplexity, the index comes before the question.** On the free plan, a
+  page only shows up after PerplexityBot has crawled it. Keep the agent
+  allowed in robots.txt and the page in your sitemap, and give it time.
 
 ## The limits of this test
 
-- **Five rounds per assistant measure capability, not rate.** "5 of 5" means,
-  with 95% confidence, that the behaviour happens at least 55% of the time; "0
-  of 5", at most 45%. Adding ChatGPT and Claude together, "0 of 10" for
-  JavaScript and for JSON-LD stays below 26%. The numbers above are counts with
-  that bound, never percentages.
-- **One site, one date.** The test was done on 25 September 2026. The assistants'
-  reading tools change without notice, and any claim about them holds for the
-  date it was measured.
-- **Recorded deviations.** The first three rounds mistakenly used the round number
-  from the initial check, and the names of the ChatGPT and Claude models were not
-  noted. Neither deviation changes the result, and both are in the test's public
-  record.
-- **Plans, confirmed later.** ChatGPT and Claude were not on the free plan:
-  ChatGPT ran on the Go plan, and Claude on the Pro plan, with the Opus 5.5
-  model. The result holds for those plans. (Note of 4 October 2026.)
+- **Five rounds per assistant measure capability, not frequency.** "5 of 5"
+  means, with 95% confidence, that the behavior happens at least 55% of the
+  time; "0 of 5" means at most 45%. Pooling ChatGPT and Claude, "0 of 10" for
+  JavaScript and for JSON-LD stays below 26%. The figures above are counts
+  with those bounds, never percentages.
+- **One site, one date.** The test ran on September 25, 2026. The assistants'
+  page-reading tools change without notice, and any claim about them only
+  holds for the date it was measured.
+- **Recorded deviations.** The first three rounds mistakenly used the round
+  number from the initial check, and the ChatGPT and Claude model names
+  weren't noted. Neither deviation changes the result, and both are in the
+  test's public record.
+- **Plans, confirmed afterward.** ChatGPT and Claude weren't on free plans:
+  ChatGPT was on the Go plan, and Claude on the Pro plan with the Opus 5.5
+  model. The result holds for those plans. (Added October 4, 2026.)
 
-**Follow-up:** in October, the same test was done with Gemini, DeepSeek and Grok,
-and the five assistants went through a round with hints. Two of them run
-JavaScript, and one reads the JSON-LD. The result is in [which AI assistants run
-JavaScript](/en/blog/which-ai-assistants-run-javascript).
+**Follow-up:** in October, the same test was run with Gemini, DeepSeek and
+Grok, and all five assistants went through a round with hints. Two of them
+run JavaScript, and one reads JSON-LD. The results are in [which AI
+assistants run JavaScript](/en/blog/which-ai-assistants-run-javascript).
 
 The question this test answers is part of what the [technical SEO guide for
 Next.js](/en/guide/technical-seo-nextjs) calls measuring instead of assuming:
-what each reader, human or automated, really receives from your page.
+what each reader, human or automated, actually gets from your page.
 
 This is the English version of an article first published in Portuguese; the two declare each other.

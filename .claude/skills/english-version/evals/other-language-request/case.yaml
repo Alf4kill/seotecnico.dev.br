@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: other-language-request
+expected_outcome: |
+  The run declines to create a Spanish version, explaining that the site publishes only Portuguese and English (CLAUDE.md §10) and that adding a language is an owner decision with routing, hreflang and sitemap consequences, and offers to revise the English version instead. It creates no files under content/.
