@@ -1,178 +1,225 @@
 ---
 title: "How a content page is made on this site"
-description: "From research note to merge: the steps behind every page, what fact-checking caught in each draft, and which parts are automated."
+description: "From research note to merge: the steps behind every page, what checking against sources and code corrected in each draft, and which parts are automated."
 slug: "how-a-page-is-made"
 primaryQuery: "how a content page is made"
 keywords: ['english', 'inglês', 'process', 'pipeline', 'editorial workflow', 'how a page is made', 'research note', 'brief', 'draft', 'verification', 'skill', 'check-draft', 'check-pair']
 lang: "en"
 translationOf: "como-uma-pagina-nasce"
 tldr: >-
-  Every page comes out of the same chain: a dated research note, an approved
-  brief, a draft, a check against sources and code, an English version,
-  registration, scripted checks and a PR. Every draft published so far needed
-  corrections at the checking stage.
+  Every page here goes through the same chain: a dated research note, an
+  approved brief, a draft, a check against sources and code, an English
+  version, registration, scripted checks, and a pull request. Every draft
+  published so far has needed corrections at the verification stage.
 datePublished: "2026-10-27"
 dateModified: "2026-10-27"
 ---
 
-Writing is the smallest part of a page on this site. Each one comes out of
+Writing is the smallest part of making a page here. Every page goes through
 the same chain: a dated research note, a brief I approve, a draft, a
-verification pass against the sources and the code, the English version,
-registration, the check scripts and a pull request I merge. Verification
-does the heavy lifting. Every draft published so far, wherever it came from,
-had at least one error that only that pass caught.
+verification pass against sources and code, an English version, registration,
+check scripts, and a pull request I merge. Verification matters most. So far,
+every published draft, wherever it came from, had something wrong that only
+verification found.
 
-This page belongs to the [Project](/en/project) section. How the work is
-split between me and Claude is covered in [how AI is used in this
-project](/en/project/how-ai-is-used); this entry covers the process itself.
-It is based on the
-[process document in the repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/content-pipeline.md),
-and the procedure is packaged as the
-[content-page skill](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/content-page),
-which any session with repository access follows step by step.
+This page is part of the [Project section](/en/project). How Claude and I
+split the work is covered in [how AI is used in this
+project](/en/project/how-ai-is-used). This one covers the process itself. It's
+based on my [pipeline
+doc](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/content-pipeline.md),
+and the [content-page
+skill](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/content-page)
+packages the procedure so any session with repository access can follow it
+step by step.
 
-## The chain
+## How the pipeline works
+
+This table lists every step, where it runs, what it produces, and whether that
+output stays in the repository.
 
 | Step | Runs in | Output | Kept in the repository |
 |---|---|---|---|
-| Gates: first-hand evidence, scope, no query overlap | session with the repository | go or stop, with the reason | no |
-| Research note | session with the repository and web access | `docs/research/YYYY-MM-DD-<topic>.md` | yes |
-| Brief | session with the repository or editorial session | the page plan, which I approve before any prose is written | no: the brief is deleted after use |
-| Draft | writing session, me, or the session with the repository | Portuguese MDX | only after verification |
-| Verification | session with the repository, always | corrected MDX; the corrections go in the commit body | yes |
-| English version | session with the repository, using the `english-version` skill | the pair in `content/en/`, plus the list of judgment calls in the PR | yes |
-| Registration | session with the repository | hreflang pair and a row in the experiment log | yes |
-| Checks | session with the repository and CI | script and test output | in the PR |
-| Merge, indexing request, distribution | me | the date in the log row | yes |
+| Gates: first-hand evidence, scope, no query overlap | Session with the repository | Go or stop, with the reason | No |
+| Research note | Session with the repository and web access | `docs/research/YYYY-MM-DD-<topic>.md` | Yes |
+| Brief | Session with the repository, or an editorial session | The page plan, which I approve before any prose is written | No, the brief is deleted after use |
+| Draft | Writing session, me, or the session with the repository | Portuguese MDX | Only after verification |
+| Verification | Session with the repository, always | Corrected MDX, with the corrections listed in the commit body | Yes |
+| English version | Session with the repository, using the `english-version` skill | The pair in `content/en/`, plus the list of judgment calls in the PR | Yes |
+| Registration | Session with the repository | Hreflang pair and a row in the experiment log | Yes |
+| Checks | Session with the repository and CI | Script and test output | In the PR |
+| Merge, indexing request, distribution | Me | The date in the log row | Yes |
 
-The three gates are there to kill a page that shouldn't exist. The first
-requires first-hand evidence: a measurement, an audit, an incident or a file
-in this repository. The second checks the blog's scope, which is how machines
-fetch, render, read and index pages. The third searches published content for
-an equivalent `primaryQuery`. On an exact-match domain, filler is the biggest
-risk, and stopping before the research note costs far less than stopping
-after the draft.
+Three gates stop a page that shouldn't exist. First, it needs first-hand
+evidence, such as a measurement, an audit, an incident, or a file in this
+repository. Second, its topic has to fit the blog's scope, which is how
+machines fetch, render, read, and index pages. Third, a search of published
+content must not turn up an equivalent `primaryQuery`. On an exact-match
+domain, filler is the main risk, and it's cheaper to stop before the research
+note than after the draft.
 
-The research note is what keeps a page well informed. Every external fact is
-read on the original page, on the date recorded in the note, along with the
-last-updated date the page shows. Each one is labeled by how certain it is:
-**[documented]**, **[inference]**, **[third-party]** or **[observation]**.
-The note ends with two lists: what the article may claim, and what it may not.
+A page is only as well informed as its research note. Every external fact in
+the note comes from the original page, read on the day, along with the
+last-updated date that page prints. Each fact gets a certainty label, verbatim
+and in bold: **[documented]**, **[inference]**, **[third-party]**, or
+**[observation]**. The note ends with a list of what the article may and may
+not claim.
 
 ## One page traced: scaled content abuse
 
-The article on [scaled content abuse](/en/blog/scaled-content-abuse),
-published on October 18, 2026, went through every step, and each one left a
-record:
+My [article on scaled content abuse](/en/blog/scaled-content-abuse), published
+October 18, 2026, went through every step, and each one left a record.
 
 | Step | What happened | Record |
 |---|---|---|
-| Research note | every Google page read that day from its HTML, with its last-updated date, a label for each claim, a list of claims to avoid and a proposed angle | commit `5adfded` |
-| Brief | approved with changes the same day: structure, FAQ, links, banned framings and a length cap | outside the repository |
-| Writing session | the research note wasn't handed over, so every Google source was researched again from scratch; the session delivered a self-check table and a list of open items | outside the repository |
-| Verification | the manual-action sentence brought in line with the help text; a "most visible sign" claim cut back to the mechanism; a timeline row corrected against the changelog; a source added for the live-test claim; the short answer trimmed to the 300-character limit the build enforces | body of commit `7e73fc1` |
-| English version | interface labels taken from the English help pages, plus the actual code of the English route | commit `ed4adb4` |
-| Links | English pages updated to link the new article; later, the rule that English text links only to English pages | `9742f18`, `62b32b7`, `8aba089` |
+| Research note | Every Google page read that day from its HTML, with its last-updated date. A label for each claim, a list of claims to avoid, and a proposed angle. | Commit `5adfded` |
+| Brief | Approved with changes the same day: structure, FAQ, links, banned framings, and a length cap | Outside the repository |
+| Writing session | Without the research note, the session researched every Google source again from scratch. It delivered a self-check table and a list of open items. | Outside the repository |
+| Verification | Aligned the manual-action sentence with the help text. Cut a "most visible sign" claim back to the mechanism. Corrected a timeline row against the changelog. Added a source for the live-test claim. Trimmed the short answer to the 300-character limit the build enforces. | Body of commit `7e73fc1` |
+| English version | Interface labels taken from the English help pages, and the English route's real code | Commit `ed4adb4` |
+| Links | English pages pointed at the new article. Later, the rule that English text links only to English pages. | `9742f18`, `62b32b7`, `8aba089` |
 
-Two things stand out. The writing session's self-check passed every
-mechanical check and still left four factual corrections for verification.
-And because the research note wasn't handed over, a full round of research
-had to be done twice. Since then, the note always ships with the brief.
+In its self-check, the writing session got every mechanical check right, and
+verification still had four factual corrections to make. Leaving the research
+note behind cost a whole extra round of research. Since then, the note always
+travels with the brief.
 
 ## What verification has corrected
 
+This table lists every correction on record.
+
 | Page | Draft from | Correction | Record |
 |---|---|---|---|
-| `melhorar-lcp-nextjs` | writing session | a placeholder for a lab measurement with nothing to fill it; a sentence about RUM while RUM was still only a plan | PR #7 |
-| `json-ld-nextjs` | writing session | made-up component files, props and author object; an argument resting on a Google page removed on 2026-06-15; the wrong mechanism for client components | PR #17 |
-| `inp-nextjs` | writing session | an H1 in the body; SVG colors outside the palette; an internal document cited in reader-facing text | `0b95d3c` |
-| five spokes | writing session, with placeholders | a "100% static" claim the build output contradicted; a missing link to the pillar | PR #27 |
-| `pre-registro-seo` | my draft | a title missing the query; a stimulus attributed to the wrong article; a list of deviations that didn't match the log | `0d997fb` |
-| `sec-fetch-mode` | my draft | a false claim about HTTP clients; testing it exposed a bug in the site's own classifier, fixed in PR #95 | `4de2df3` |
-| `scaled-content-abuse` | writing session | four factual fixes to match the sources; a short answer over the limit | `7e73fc1` |
+| `melhorar-lcp-nextjs` | Writing session | A placeholder for a lab measurement with nothing to fill it. A sentence about RUM while RUM was still only a plan. | PR #7 |
+| `json-ld-nextjs` | Writing session | Made-up component files, props, and author object. An argument resting on a Google page removed on 2026-06-15. The wrong mechanism for client components. | PR #17 |
+| `inp-nextjs` | Writing session | An H1 in the body. SVG colors outside the palette. An internal document cited in reader-facing text. | `0b95d3c` |
+| Five spokes | Writing session, with placeholders | A "100% static" claim the build output contradicted. A missing link to the pillar guide. | PR #27 |
+| `pre-registro-seo` | My draft | A title missing the query. A stimulus attributed to the wrong article. A list of deviations that did not match the log. | `0d997fb` |
+| `sec-fetch-mode` | My draft | A false claim about HTTP clients. Testing it exposed a bug in the site's own classifier, fixed in PR #95. | `4de2df3` |
+| `scaled-content-abuse` | Writing session | Four factual fixes to match the sources. A short answer over the limit. | `7e73fc1` |
 
-The `[CODE-n]` placeholders put an end to made-up code. The writing session
-can't see the repository, so it leaves the slot empty, and the session with
-the repository copies the excerpt straight from the file. Nothing equivalent
-stops a fact that merely sounds right. That's why verification re-reads the
-sources on the day and, when it can be done here, tests the claim that looks
-most testable. That is how the `sec-fetch-mode` draft led to a real bug in
-the code.
+`[CODE-n]` placeholders put an end to made-up code. A writing session can't
+see the repository, so it leaves the slot empty, and the session with the
+repository copies the excerpt from the file.
+
+Nothing has done the same for a fact that sounds right. So verification
+re-reads every source on the day and tests whichever claim looks most
+testable, when it can be tested here. That's how the `sec-fetch-mode` draft
+led to a real bug in the code.
 
 ## What is automated, and what is not
 
+This table splits what scripts check from what only reading can.
+
 | Check | Done by | When |
 |---|---|---|
-| Frontmatter fields, title ≤60, description ≤155, short answer ≤300, axis, `basedOn` | `src/lib/content.ts` | every build |
+| Frontmatter fields, title ≤60, description ≤155, short answer ≤300, topic, `basedOn` | `src/lib/content.ts` | Every build |
 | A cited repository path exists | `content-code-paths.test.ts` | CI |
 | Translation pair declared on both sides | `hreflang.test.ts` | CI |
-| One H1, title, description, canonical, JSON-LD, hreflang, contrast, accessibility | the Playwright suite | CI |
-| Leftover placeholder, H1 in the body, double braces, unmapped component, SVG color outside the tokens, banned framing, quote length, required links, lead paragraph | `check-draft.mjs` | when the draft arrives and before the PR |
-| Both sides exist, same facts and dates, links stay within their language, translation note, log row | `check-pair.mjs` | before the PR |
-| British spelling, day-month dates, translation note not on the last line; known calques from Portuguese | `check-english.mjs` | after the native read and before the PR |
-| Whether the topic deserves a page; whether a fact is still true; whether the code shown matches the repository; whether the English reads like English | **no script**: verification, the native read and me | every page |
+| One H1, title, description, canonical, JSON-LD, hreflang, contrast, accessibility | The Playwright suite | CI |
+| Leftover placeholder, H1 in the body, double braces, unmapped component, SVG color outside the tokens, banned framing, quote length, required links, lead paragraph | `check-draft.mjs` | When the draft arrives and before the PR |
+| Both sides exist, same facts and dates, links stay within their language, translation note, log row | `check-pair.mjs` | Before the PR |
+| British spelling, day-month dates, translation note not on the last line, known calques from Portuguese, register compared with native technical English | `check-english.mjs` | After the native read and before the PR |
+| Whether the topic deserves a page, whether a fact is still true, whether the code shown matches the repository's lines, whether the English reads as written in English | **No script**: verification, the native read, and me | Every page |
 
-The last row is the one that matters. The scripts catch mistakes that have
-already happened once. Deciding whether a page should exist, and whether a
-sentence is still true today, is still a job for a human reader.
+Look at the last row. A script catches a mistake that has already happened
+once. Deciding whether a page should exist, or whether a sentence is still
+true today, still takes reading.
 
-## The skill
+## Packaging the process as a skill
 
-The process used to be scattered across `CLAUDE.md`, the tests, two research
-notes and a trail of commit messages. The `content-page` skill pulls it into
-nine phases, each stating where it runs and what it produces, plus templates
-for the research note and the brief, the kit that goes to the writing
-session, a verification walkthrough listing every correction in the history,
-and the two scripts. It links to the relevant sections of `CLAUDE.md` instead
-of copying them: when the two disagree, `CLAUDE.md` wins and the skill gets
-fixed.
+My process used to be scattered across `CLAUDE.md`, the tests, two research
+notes, and commit messages. The `content-page` skill pulls it together into
+nine phases, and each phase says where it runs and what it delivers. It also
+holds templates for research notes and briefs, the kit that goes to a writing
+session, a verification walkthrough listing every correction on record, and
+both scripts. Rather than copy sections of `CLAUDE.md`, it points to them. If
+they ever disagree, `CLAUDE.md` wins and the skill is what changes.
 
-`check-draft.mjs` was built from the mistakes in the table above and run
-against every published article before anyone trusted it. The first run
-flagged six correct files, all false positives: the `<Image>` component,
-which the skill's own draft claimed didn't exist in MDX; a table of date
-formats mistaken for a placeholder; `aria-label` text counted as a long
-quote; and Windows line endings hiding the lead paragraph. With those four
-fixed, all 48 articles passed with no errors, and a draft deliberately broken
-in ten places failed on all ten. This page went through both scripts before
-its PR, using the `project` type, which swaps the requirement to link the
-pillar and a tool for a requirement to link a versioned file.
+`check-draft.mjs` grew out of the mistakes in the table above, and I didn't
+trust it until it had run against every published article. Its first run
+failed six correct files, all false positives, from four causes:
 
-## The English version
+- The `<Image>` component, which the skill's own draft said didn't exist in MDX.
+- A table of date formats, read as a placeholder.
+- `aria-label` text, counted as a long quote.
+- Windows line endings, which hid the lead paragraph.
 
-In October 2026, I got feedback that the English side of the site read like
-a literal translation of the Portuguese. It was right, and the cause was the
-method. The English step was one paragraph listing what had to stay the same
-(facts, dates, H2s, FAQ, links) and said nothing about how the English should
-sound. Every English page had been written sentence by sentence from the
-Portuguese one, so Portuguese structure survived in correct English words:
+With those four fixed, all 48 articles passed with no errors, and a draft
+broken on purpose in ten places failed on all ten.
+
+This page ran through both scripts before its PR, using the `project` type.
+That type drops the requirement to link the pillar guide and a tool, and
+requires a link to a versioned file instead.
+
+## Writing the English version
+
+In October 2026, I got feedback that the site's English pages read like a
+literal translation of the Portuguese. That was true, and my method was to
+blame. My English step was a single paragraph listing what had to stay the
+same (facts, dates, H2s, FAQ, links). It said nothing about how the English
+should sound.
+
+Each English page had been written sentence by sentence from its Portuguese
+original, so Portuguese structure survived inside correct English words:
 clauses chained with colons, "it is worth" for "vale a pena", "readings" for
-"leituras", day-month dates, British and American spelling side by side.
+"leituras", day-month dates, and British spelling mixed with American.
 
-The October 27 revision rewrote all 28 English pages and became a second
-skill, [english-version](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/english-version), which the English phase of `content-page` now
-calls. It never translates in one pass:
+On October 27, a revision rewrote all 28 English pages, and its method became
+a second skill,
+[english-version](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/english-version),
+which `content-page` now calls for its English phase. This skill never
+translates in one pass. It works in steps instead.
 
 | Step | What it does |
 |---|---|
-| Intent map | per section, what the Portuguese claims, at what level and with what hedge, before any English sentence |
-| English draft | written from the map; code, numbers and links copied over |
-| Native read | the English on its own, ideally by a reviewer who hasn't seen the Portuguese |
-| Fidelity check | the English against the Portuguese: facts, hedges, links, code, H2 and FAQ counts |
-| Report | the judgment calls go in the PR, so I can review meaning without diffing prose |
+| Fact sheet | Records, per section, what the Portuguese claims, at what level, and with what hedge, in a file saved before any English sentence is written |
+| English draft | Written from the fact sheet by someone who does not read the Portuguese prose. Code and diagrams are added afterward, copied from the original. |
+| Native read | The English alone, ideally read by a reviewer who has not seen the Portuguese |
+| Fidelity check | The English against the Portuguese: facts, hedges, links, code, and H2 and FAQ counts |
+| Report | The judgment calls go in the PR, so I can review meaning without diffing prose |
 
-It came with a style guide (American English, US dates in prose and ISO in
-tables, contractions in explanatory text, a glossary of the site's terms) and
-a script, `check-english.mjs`, that looks for the calques the revision
-cataloged. On the commit before the revision, it found 263 of them and errors
-in 28 of 28 pages; after it, 0 errors and 1 warning. The research and the
-counts are in the [research note on English quality](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-10-27-english-translation-quality.md).
+The skill came with a style guide (American English, US dates in prose and ISO
+dates in tables, contractions in explanatory text, and a glossary of the
+site's terms) and a script, `check-english.mjs`, that looks for the calques
+the revision cataloged. On the commit before the revision, it found 263
+occurrences, with errors in 28 of 28 pages. After the revision, it reported 0
+errors and 1 warning. My [research note on English
+quality](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-10-27-english-translation-quality.md)
+has the details.
 
-The same pass turned up two problems that had nothing to do with language. In
-the JSON-LD article, the sentence that explains the escape showed `<` where
-the code has `\u003c`, and one article had a paragraph after its
-translation note. A clean script run doesn't prove the English is native; it
-proves no known calque is left. Reading is still what decides.
+That pass also turned up two problems that had nothing to do with language.
+In the JSON-LD article, the sentence explaining the escape showed `<` where
+the code has `\u003c`, and one article had a paragraph after its translation
+note.
+
+A clean script run doesn't prove the English is native. It proves no known
+calque is left. Reading still decides.
+
+Reading proved that the same day. When I reviewed this page's English version,
+written during the revision, it had no calque from the list and was still
+built like Portuguese: a definite article on every noun, sentences opening
+with "The", and colons joining clauses.
+
+To make sure this wasn't just an impression, I measured the register of all
+28 English pages against 26 pages of native technical English (Google and
+web.dev documentation, and first-person write-ups by US companies and
+engineers). Every one of the 28 used more colons than 90% of the native pages,
+and 23 crossed that same threshold for "the". This page crossed it on four of
+the five measures.
+
+Again, the method was to blame. Whoever wrote the English had the Portuguese
+open, and its sentence structure came along. So I changed three things:
+
+1. The intent map became a fact sheet saved to a file, and someone who doesn't see the Portuguese prose writes the English draft from it.
+2. The style guide now builds on the Google developer documentation style guide, which brought back the serial comma that Portuguese doesn't use.
+3. `check-english.mjs` now compares each page with thresholds measured on native English and ranks the pages by distance.
+
+My [research note on
+register](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-10-27-english-register-profile.md)
+has the corpus, the thresholds, and the false-positive rate. About 4 in 10
+flagged paragraphs were fine as they stood.
+
+This page's English version was the first one written that way.
 
 ## How to check
 
@@ -184,10 +231,18 @@ node .claude/skills/content-page/scripts/check-draft.mjs --published
 node .claude/skills/content-page/scripts/check-pair.mjs --all
 node .claude/skills/content-page/scripts/check-pair.mjs como-uma-pagina-nasce --type project
 node .claude/skills/english-version/scripts/check-english.mjs --published --summary
+git checkout 4a1f512 -- content/en
+node .claude/skills/english-version/scripts/calibrate-register.mjs
+git checkout HEAD -- content/en
 ```
 
-When the skill was added to the repository in PR #115,
-`check-draft.mjs --published` reported 48 files and 0 errors. On a later
-commit, that number grows with every article published.
+When PR #115 added the skill to the repository, `check-draft.mjs --published`
+reported 48 files and 0 errors. If you run it on a newer commit, expect the
+file count to grow with every article published since.
+
+I took the register counts at commit `4a1f512`, before any page was rewritten
+with the new method. The last three lines of the block redo the measurement at
+that commit. You'll need network access for them, and the native pages may
+have changed since October 27, 2026.
 
 This is the English version of a page first published in Portuguese; the two declare each other.
