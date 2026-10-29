@@ -1,76 +1,79 @@
 ---
 title: "SSR, SSG and ISR in Next.js: what Googlebot sees"
-description: "SSR, SSG or ISR in Next.js: which ones Googlebot indexes safely, why CSR is the only risky one, and how to prove which one your route is using."
+description: "SSR, SSG, or ISR in Next.js? Googlebot indexes all three safely. Here's why CSR is the only risky one and how to prove which one your route uses."
 slug: "nextjs-ssr-ssg-isr"
-primaryQuery: "ssr ssg isr next.js"
-keywords: ['english', 'inglês', 'ssr', 'ssg', 'isr', 'csr', 'rendering', 'googlebot', 'render queue', 'generatestaticparams', 'dynamicparams', 'javascript seo', 'hydration', 'use client']
-lang: "en"
-translationOf: "ssr-ssg-isr-nextjs"
-category: indexacao
-tldr: >-
-  Indexing doesn't depend on the acronym; it depends on what's in the HTML of
-  the first response. SSG and SSR are equivalent for Googlebot; ISR sends full
-  HTML that may be stale between revalidations; CSR sends empty HTML and is
-  the only strategy with a real indexing risk.
 datePublished: "2026-10-18"
 dateModified: "2026-10-18"
+primaryQuery: "ssr ssg isr next.js"
+lang: "en"
+translationOf: "ssr-ssg-isr-nextjs"
+category: "indexacao"
+keywords: ['english', 'inglês', 'ssr', 'ssg', 'isr', 'csr', 'rendering', 'googlebot', 'render queue', 'generatestaticparams', 'dynamicparams', 'javascript seo', 'hydration', 'use client']
+tldr: >-
+  Indexing doesn't depend on the acronym. It depends on what the first
+  response's HTML contains. For Googlebot, SSG and SSR are equivalent. ISR sends
+  full HTML that can be stale between revalidations. CSR sends empty HTML and
+  is the only strategy with a real indexing risk.
 faq:
-  - question: "Does Google index React or CSR sites?"
-    answer: "It does, with an important caveat: content that only exists after JavaScript runs goes into a separate rendering queue, which Google works through as resources allow; that can take seconds or much longer, with no guaranteed deadline. The empty initial HTML is also all that most other crawlers (including AI search engines') ever see, because they don't run JavaScript."
+  - question: "Does Google index React sites that use client-side rendering?"
+    answer: "Yes, with one important caveat. Content that only exists after JavaScript runs goes into a separate rendering queue, which Google processes when resources allow. That can take seconds or much longer, and there's no guaranteed deadline. The empty initial HTML is also what most other crawlers see, including those of AI search engines, because they don't run JavaScript."
   - question: "Does SSR rank better than SSG?"
-    answer: "No. For indexing, SSR and SSG are equivalent: in both cases the full content arrives in the HTML of the first response, which Googlebot indexes without waiting on the rendering queue. The difference between them is operational (TTFB, since SSG served from a CDN responds faster, and data freshness), not visibility."
+    answer: "No. For indexing, SSR and SSG are equivalent. In both, the full content arrives in the first-response HTML, and Googlebot indexes it without depending on the rendering queue. Where they differ is operational, not visibility. SSG served from a CDN has a faster TTFB, and SSR has fresher data."
   - question: "Does ISR hurt SEO?"
-    answer: "Not for indexing: ISR sends full HTML in the first response, just like SSG. The cost is freshness: between revalidations, Googlebot may get a stale version of the page, and the first visit after it expires still gets the old version while the new one is generated in the background. For content that changes often and needs to reach the index quickly, that's a trade-off worth weighing."
-  - question: "How do I know whether my page is static or dynamic in Next.js?"
-    answer: "Three checks: the next build output prints a symbol for each route showing its strategy (read the legend at the bottom of your own build, because it changes between versions); a curl against the production URL shows whether the content is in the HTML of the first response; and Search Console's URL Inspection shows the HTML Google actually tested."
-  - question: "Does use client turn the page into CSR?"
-    answer: "No, and it's one of the most common misconceptions about the App Router. Client components are also pre-rendered on the server and arrive as HTML in the first response; the directive controls where the code hydrates and runs interactive logic, not whether the initial HTML is empty. Real CSR is content that only comes into existence in the browser, typically behind a fetch in useEffect."
-  - question: "Which strategy should a blog use?"
-    answer: "SSG. Editorial content is known at build time, doesn't change per request and benefits from the TTFB of a static file served from a CDN. It's the App Router's default when a route uses no dynamic APIs, and it's what this site uses on 100% of its pages, with generateStaticParams deriving the slugs from the content itself."
+    answer: "Not for indexing. Like SSG, ISR sends full HTML in the first response. What it costs is freshness. Between revalidations, Googlebot may receive a stale version, and the first visit after the interval expires still gets the old one while the new one is generated in the background. If your content changes often and has to show up in the index quickly, weigh that trade-off."
+  - question: "How do I know whether my Next.js page is static or dynamic?"
+    answer: "Run three checks. Your next build output prints a symbol for each route that shows its strategy. Read the legend printed at the bottom of your own build, because it changes between versions. A curl request against the production URL shows whether the content is in the first-response HTML. In Search Console, URL Inspection shows the HTML Google actually tested."
+  - question: "Does \"use client\" turn a page into CSR?"
+    answer: "No, and it's one of the most common misunderstandings of the App Router. Client components are also pre-rendered on the server and arrive as HTML in the first response. That directive controls where the code hydrates and runs its interactivity, not whether the initial HTML is empty. Real CSR is content that only comes into existence in the browser, typically behind a fetch in useEffect."
+  - question: "Which rendering strategy should a blog use?"
+    answer: "SSG. Editorial content is known at build time, doesn't change per request, and benefits from the TTFB of a static file served from a CDN. It's the App Router default when a route uses no dynamic APIs. This site uses it on 100% of its pages, with generateStaticParams deriving the slugs from the content itself."
 ---
 
-For Googlebot, the acronym doesn't matter; what matters is what's in the HTML
-of the **first response**. SSG and SSR both send the full content in that HTML
-and are equivalent for indexing; ISR sends full HTML that may be stale between
-revalidations; CSR sends empty HTML that depends on a second rendering pass,
-and it's the only one of the four that creates a real indexing risk. This
-article shifts the comparison from "which is fastest" to "what the indexer
-receives", and ends with something almost no guide covers: how to **prove**
-which strategy each of your routes is actually using.
+For Googlebot, the acronym doesn't matter. What matters is what's in the HTML
+of the **first response**. SSG and SSR both send the full content in that
+HTML, so they're equivalent for indexing. ISR also sends full HTML, though it
+can be stale between revalidations. CSR sends empty HTML that depends on a
+second rendering pass, and it's the only one of the four with a real
+indexing risk. This article moves the comparison from "which is fastest" to
+"what does the indexer receive," and it ends with a step almost no guide
+teaches: how to **prove** which strategy each of your routes actually uses.
 
 ## The four strategies in one sentence each
 
 - **SSG (static site generation):** the HTML is built once, at build time,
-  and served ready-made from a CDN. It's the App Router's default when a route
-  uses no dynamic APIs.
-- **ISR (incremental static regeneration):** SSG with an expiry date; the
-  static HTML is regenerated in the background after a revalidation interval.
-- **SSR (server-side rendering):** the HTML is built on the server for every
-  request, with the data as it stands at that moment.
-- **CSR (client-side rendering):** the server sends a skeleton, and JavaScript
-  builds the content in the browser after the page loads.
+  and a CDN serves it as is. It's the App Router default when a route uses
+  no dynamic APIs.
+- **ISR (incremental static regeneration):** SSG with an expiry. Next.js
+  regenerates the static HTML in the background after a revalidation
+  interval.
+- **SSR (server-side rendering):** the server builds the HTML on every
+  request, with whatever the data is at that moment.
+- **CSR (client-side rendering):** the server sends a skeleton, and
+  JavaScript fills it in after the page loads in the browser.
 
-Notice what that list is sorted by: **when the HTML gets its content**. That's
-the only dimension that matters for the rest of this article.
+All four definitions turn on one question, **when the HTML gets its
+content**. For the rest of this article, that's the only axis that matters.
 
 ## What Googlebot actually does with your HTML
 
-The reference here is Google Search Central's JavaScript SEO documentation,
-not guesswork from search results. The process has two queues.
+This section follows Google Search Central's JavaScript SEO documentation,
+not guesses pieced together from search results. Google describes a process
+with two queues.
 
 ### The two waves: crawl and render
 
-In the first pass, Googlebot makes the HTTP request, checks robots.txt,
-receives the HTML and processes it: it extracts the links from `href`s, adds
-them to the crawl queue and indexes whatever is there. If your content is in
-that HTML, the essential work is done at this stage.
+In the first pass, Googlebot requests the page over HTTP, checks
+robots.txt, receives the HTML, and processes it. It extracts links from
+`href`s, adds them to its crawl queue, and indexes whatever that HTML
+contains. If your content is already there, this pass does the essential
+work.
 
-Every page with a 200 status also goes into a **rendering queue**. Google's
-documentation is explicit about timing: a page may sit in that queue for a few
-seconds, but **it can take longer**, and there's no published or guaranteed
-deadline. When Google's resources allow, a headless Chromium renders the page
-and runs the JavaScript, and the rendered HTML is used to (re)index the page
-and discover links that only exist after the scripts run.
+Every page that returns status 200 also enters a **rendering queue**.
+Google's documentation is explicit about timing. A page may sit there for a
+few seconds, but **it can take longer**, and Google publishes no deadline or
+guarantee. When its resources allow, a headless Chromium renders the page
+and runs the JavaScript. Google then uses the rendered HTML to (re)index the
+page and to discover links that only exist after execution.
 
 <figure>
   <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The indexer's two waves: the HTML crawl indexes immediately, and JavaScript rendering enters a later queue with no guaranteed deadline">
@@ -111,34 +114,36 @@ and discover links that only exist after the scripts run.
 The same diagram, as a table:
 
 | Wave | What it sees |
-| --- | --- |
+|---|---|
 | 1, HTML crawl | Everything in the server's first response: text, links, meta tags. Indexed immediately. |
-| 2, rendering (queue) | Whatever only exists after JavaScript runs. It gets indexed when resources allow, with no guaranteed deadline. |
+| 2, rendering (queue) | Whatever only exists after JavaScript runs. Gets in when resources allow, with no guaranteed deadline. |
 
 ### Why "Google runs JavaScript" is not the end of the conversation
 
-It's true that Google renders JavaScript, and that's the standard defense
-from people who build SPAs. But the sentence hides three things. First,
-rendering is **deferred and has no SLA**: critical content stuck in a queue
-with variable capacity is a risk that ready-made HTML doesn't carry. Second,
-rendering can **partially fail** (a blocked script, a runtime error, an API
-timeout), and whatever didn't render doesn't exist as far as the index is
-concerned. Third, and increasingly relevant: **Googlebot is practically the
-only crawler that renders**. Other search engines' crawlers and AI search
-systems read the HTML of the first response and stop there. On a site
-competing to be cited in generated answers, content that only exists after
-hydration is invisible to half of its machine readers.
+Google does render JavaScript, and that's the standard defense from people
+who build SPAs. That sentence hides three things, though:
+
+1. Rendering is **deferred and has no SLA**. Critical content waiting in a
+   queue of variable capacity carries a risk that ready-made HTML doesn't.
+2. Rendering can **partially fail**. A blocked script, a runtime error, or an
+   API timeout is enough, and whatever didn't render doesn't exist for the
+   index.
+3. The one that matters more and more is that **Googlebot is practically
+   the only crawler that renders**. Crawlers from other search engines and
+   from AI search systems read the first-response HTML and stop there. If
+   your site competes to be cited in generated answers, content that only
+   exists after hydration is invisible to half the machine readers.
 
 ## SSG: the App Router's default (and the right one for content)
 
 In the App Router, a route that uses no dynamic APIs (`cookies()`,
 `headers()`, `searchParams`) is static by default. For dynamic routes like
-`/blog/[slug]`, `generateStaticParams()` lists the paths at build time.
+`/blog/[slug]`, `generateStaticParams()` enumerates the paths at build time.
 
-On this site, the slugs are derived from the content itself (the pipeline
-reads the filesystem at build time), which is the concrete reason the route is
-static. The Portuguese comment says only slugs that exist in `/content/blog`
-get generated, and everything else is a 404:
+On this site, slugs come from the content itself. My pipeline reads the
+filesystem at build time, and that's the concrete reason the route is
+static. In the code below, a comment in Portuguese says that only slugs that
+exist in `/content/blog` get generated and everything else is a 404.
 
 ```tsx
 // src/app/(pt)/blog/[slug]/page.tsx
@@ -175,58 +180,64 @@ export function getAllPosts(): Post[] {
 }
 ```
 
-`dynamicParams = false` shuts the door: a slug that doesn't exist in the
-content is a 404 decided at build time, not a rendering attempt at runtime.
-And the SEO by-products follow the same logic: the [sitemap derived from the
-content](/en/blog/nextjs-dynamic-sitemap) and the RSS feed are static routes
-generated in the same build, so the page, the sitemap and the feed never tell
-different stories.
+Setting `dynamicParams = false` closes the door. A slug that isn't in the
+content is a 404 at build time, not a render attempt at runtime. SEO
+by-products follow the same logic. Both the
+[sitemap derived from the content](/en/blog/nextjs-dynamic-sitemap) and the
+RSS feed are static routes generated in the same build, so page, sitemap,
+and feed never tell different stories.
 
 ## SSR: when the data can't wait for the build
 
-SSR solves a specific problem: data that changes per request or depends on
-who's asking (real-time prices, per-session content). The HTML still arrives
-complete in the first response, and that's what matters to the indexer.
+SSR is for a specific problem, data that changes per request or depends on
+who's asking (a real-time price, per-session content). Its HTML still
+arrives complete in the first response, which is what matters to the
+indexer.
 
 ### SSR doesn't index better than SSG: it indexes the same way, just more slowly
 
-It's worth saying plainly, because search results treat SSR as Next.js's "SEO
-mode": **for indexing, SSR and SSG are equivalent**. Googlebot gets the same
-kind of artifact (HTML with content) either way. The differences are
-operational: SSR pays the cost of building the page on every request (higher
-TTFB, a server that has to stay up and handle crawler load) in exchange for
-always-fresh data. If the page's data doesn't change between deploys, SSR is
-paying rent on a house you could have bought outright at build time.
+Search results treat SSR as Next.js's "SEO mode," so I'll say it outright.
+**For indexing, SSR and SSG are equivalent.** In both cases Googlebot
+receives the same kind of artifact, HTML with content.
+
+They differ operationally. SSR pays to build the page on every request,
+which means a higher TTFB and a server that has to stay up and withstand
+the crawler. In exchange, it gets absolute freshness. If your data doesn't
+change between deploys, SSR means paying rent on a property you could have
+bought at build time.
 
 ## ISR: static with an expiry date
 
-A disclaimer first: **this site doesn't use ISR in production**. It's 100%
-static, and I have no ISR measurements of my own to show. What follows is an
-analysis of the mechanism, not field experience.
+A disclaimer first. **This site doesn't use ISR in production.** It's 100%
+static, and I have no ISR measurements of my own to show you. What follows
+analyzes how the mechanism works. It isn't field experience.
 
-ISR is SSG with `revalidate`: the static HTML is served as usual, and once the
-interval has passed, the next visit triggers regeneration in the background.
-For Googlebot, the deal is the same as with SSG: full HTML in the first
-response, indexed with no rendering queue.
+ISR is SSG with `revalidate`. It serves static HTML as usual, and once the
+interval passes, the next visit triggers a background regeneration.
+Googlebot gets the same contract it gets from SSG, full HTML in the first
+response, so indexing skips the rendering queue.
 
 ### The SEO cost: the first visit after revalidation
 
-The trade-off is freshness. Between revalidations, any visitor, Googlebot
-included, may get a stale version. And the stale-while-revalidate model means
-the first visit **after** expiry still gets the old version while the new one
-is built in the background. For a blog, that doesn't matter. For a page whose
-content needs to reach the index quickly (prices, stock levels, a corrected
-news story), it's a built-in delay you accepted when you chose the strategy.
-I'd use ISR precisely where data changes at a known frequency and a lag of one
-interval is acceptable.
+You trade away freshness. Between revalidations, any visitor, Googlebot
+included, may receive a stale version. ISR follows a stale-while-revalidate
+model, so the first visit **after** expiry still gets the old version while
+a new one is built in the background.
+
+For a blog, that doesn't matter. For a page whose content has to reach the
+index fast (a price, stock levels, a corrected news story), it's a
+structural delay you accepted when you chose the strategy. I'd use ISR
+exactly where data changes at a known frequency and a one-interval lag is
+tolerable.
 
 ## CSR: the only one that really risks indexing
 
-CSR means skeleton HTML: the first response contains an empty `<div>` and a
-JavaScript bundle, and the content is created in the browser. The entire
-burden of indexing falls on the second wave (the rendering queue, with no
-deadline and subject to execution failures), and for crawlers that don't
-render, the content simply doesn't exist.
+With CSR, the HTML is a skeleton. Its first response carries an empty
+`<div>` and a JavaScript bundle, and the content only comes into existence
+in the browser.
+That puts the whole weight of indexing on the second wave, the rendering
+queue, which has no deadline and can fail during execution. For crawlers
+that don't render, the content simply doesn't exist.
 
 <figure>
   <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparison of when the HTML gets its content in SSG, ISR, SSR and CSR">
@@ -267,23 +278,25 @@ render, the content simply doesn't exist.
 The same diagram, as a table:
 
 | Strategy | When the HTML is built | What Googlebot receives in the first response |
-| --- | --- | --- |
-| SSG | at build time | full content |
-| ISR | at build time + revalidation | full content (possibly stale) |
-| SSR | on every request | full content |
-| CSR | in the browser | empty skeleton; the content depends on the rendering queue |
+|---|---|---|
+| SSG | At build time | Full content |
+| ISR | At build time + revalidation | Full content (possibly stale) |
+| SSR | On every request | Full content |
+| CSR | In the browser | Empty skeleton (content depends on the rendering queue) |
 
 ## How this site is rendered (and why TTFB came out at 0 ms)
 
-This site is the test bed for its own articles, so here's how it works: every
-page route is static, generated at build time from the content on disk. The
-only exception on the entire site was the route that generates each post's
-Open Graph image, rendered on demand, which no crawler needs to index (the
-update further down explains how that changed). There's also a performance
-decision in the config that only makes sense in this setup. The comment says
-the site's CSS is small (~22 KB raw, ~5 KB compressed), and inlining it in the
-`<head>` removes the only render-blocking request PSI flagged, at the cost of
-losing `.css` caching between pages, which is a good trade at this size:
+This site is the lab for its own articles. Every page route is static,
+generated at build time from the content on disk. Across the whole site, the
+only exception was the route that generates each post's Open Graph image. It
+was rendered on demand, and no crawler needs to index it (the update further
+down explains how that changed).
+
+One performance decision that only makes sense in this setup lives in the
+config. Its comment, in Portuguese, explains the trade. This site's CSS is
+small (about 22 KB raw, about 5 KB compressed), so inlining it in the
+`<head>` removes the only render-blocking request PSI flagged. It costs you
+`.css` caching between pages, which is a favorable trade at this size.
 
 ```ts
 // next.config.ts
@@ -296,30 +309,32 @@ losing `.css` caching between pages, which is a good trade at this size:
   },
 ```
 
-Two real numbers from that setup:
+Two real numbers come out of this setup:
 
-- In the 2026-07-18 production PSI run on mobile, the LCP's **TTFB subpart
-  came in at 0 ms**, the signature of static HTML served from the edge. SSR can't
-  produce that number by definition, because there's always a server building
-  the page between the request and the first byte. TTFB's role within LCP is
-  covered in the [guide to improving LCP](/en/blog/improve-lcp-nextjs).
-- In the 2026-07-20 baseline, all 10 of the site's URLs were indexable, with a
-  200 status, exactly one `<h1>` each, valid JSON-LD on every one, zero orphan
-  pages and a maximum depth of 2 clicks.
+- In the PSI mobile run on production on July 18, 2026, the LCP's **TTFB
+  subpart came in at 0 ms**, the signature of static HTML served from the
+  edge. SSR can't deliver that number by definition, because a server always
+  builds the page between request and first byte. For how TTFB fits
+  inside LCP, see the [guide to improving LCP](/en/blog/improve-lcp-nextjs).
+- In the July 20, 2026, baseline, all 10 of the site's URLs were indexable
+  and returned status 200, each with exactly one `<h1>` and valid JSON-LD.
+  There were zero orphan pages, and the maximum depth was 2 clicks.
 
 ## How to prove which strategy your route uses
 
-This is the part guides leave out. Three checks, from cheapest to most
-definitive.
+This is the part the guides leave out. Here are three checks, from cheapest
+to most definitive.
 
 ### The symbols in the next build output
 
-At the end of every `next build`, Next prints the list of routes with a symbol
-next to each one showing how it was generated, plus a legend just below
-explaining the symbols. **Read the legend in your own build**, not a
-tutorial's: it has changed between Next versions, and the symbol that meant
-"static" in one version may be a different glyph in yours. Here's this site's
-actual output, on Next.js 16.2.6:
+At the end of every `next build`, Next prints each route with a symbol
+showing how it was generated, and a legend right below explains the
+symbols. **Read your own build's legend**, not a tutorial's. It changed
+between Next versions, and the symbol that meant
+"static" in one version may be a different glyph in yours.
+
+Here's this site's real output on Next.js 16.2.6 (the routes are the
+Portuguese site's paths):
 
 ```
 Route (app)
@@ -349,77 +364,85 @@ Route (app)
 ƒ  (Dynamic)  server-rendered on demand
 ```
 
-Three symbols, three strategies. Notice that the legend distinguishes `○` from
-`●`: both are static, but `●` marks the routes that needed
-`generateStaticParams()` to list their paths. Those are the blog articles.
+Three symbols, three strategies. In the legend, `○` and `●` are both static,
+but `●` marks routes that needed `generateStaticParams()` to enumerate their
+paths. Those are the blog articles.
 
-And here's an honest admission from someone writing about their own site: **I
-expected no `ƒ` in this list.** The `/blog/-/opengraph-image` route (the Open
-Graph image generated for each post) shows up as dynamic, because it's the
-only route with a parameter that doesn't declare `generateStaticParams()`. It
-isn't an indexing problem (no crawler needs to index a card image, and it's
-served with caching), but it's exactly the kind of thing you only discover by
-reading your own build output. That's why this is the first of the three
-checks.
+Here's an honest admission about my own site. **I expected no `ƒ` in
+this list.** Yet `/blog/-/opengraph-image`,
+the route that generates the Open Graph image for each post, shows up as
+dynamic, because it's the only route with a parameter that doesn't declare
+`generateStaticParams()`. That isn't an indexing problem, since no crawler
+needs to index the card image and it's served with caching. It's exactly
+the kind of thing only your own build output reveals, though, which is why
+this check comes first.
 
-**Update (September 2026):** reading the build led to a fix. The card route
-now declares `generateStaticParams()` and `dynamicParams = false`, the same two
-declarations as the article route, and in the current build (Next.js 16.2.12)
-it shows up as `● /blog/-/opengraph-image`, with one pre-rendered path per
-post. The `ƒ` routes still on the list are ones that genuinely have to respond
-to every request, like the tools' APIs.
+**Update (September 2026):** reading the build led to a fix. Now the card
+route declares `generateStaticParams()` and `dynamicParams = false`, the
+same two declarations as the article route. In the current build (Next.js
+16.2.12) it shows as `● /blog/-/opengraph-image`, with one pre-rendered path
+per post. What's still marked `ƒ` are routes that must respond to every
+request, such as the tools' APIs.
 
-If a route you expected to be static shows up as dynamic, the build has just
-told you that a dynamic API slipped into it, or that you forgot to list its
-paths, before any crawler found out.
+If a route you expected to be static shows up as dynamic, your build has
+just told you that a dynamic API leaked into it, or that its paths weren't
+enumerated, before any crawler found out.
 
 ### curl vs. the rendered DOM
 
-The build tells you the intent; `curl` tells you what actually happens.
-Request the production URL without running JavaScript:
+Your build states the intent. `curl` states the fact. Request the production
+URL without running JavaScript:
 
 ```bash
 curl -s https://seotecnico.dev.br/en/blog/nextjs-ssr-ssg-isr | grep -o "<h1[^>]*>[^<]*</h1>"
 ```
 
-If the `<h1>` (along with the article text and the internal links) is in that
-response, Googlebot indexes it in the first wave. Then compare it with the
-rendered DOM (DevTools → Elements): whatever exists in the DOM but **not** in
-the `curl` output is exactly the content waiting in the rendering queue.
+If your `<h1>`, article text, and internal links are in that response,
+Googlebot indexes them in the first wave. Then compare it with the rendered
+DOM (DevTools → Elements). Anything in the DOM but **not** in your `curl`
+output is exactly what's waiting in the rendering queue.
 
-This site's [meta tag validator](/en/tools/meta-tag-validator) reads from the
-same side of that comparison: the server's response, not the DOM. A tag that
-only exists after hydration simply doesn't show up in its report, and that's
-not a limitation of the tool; it's the very diagnosis this article describes.
+This site's [meta tag validator](/en/tools/meta-tag-validator) sits on the
+same side of that comparison. It reads the server response, not the DOM,
+so a tag that only exists after hydration simply doesn't appear in its
+report. That's not a limitation of the tool. It's the diagnosis this whole
+article describes.
 
 ### URL Inspection in Search Console: the tested HTML
 
-The definitive check, because it comes from Google itself: Search Console →
-URL Inspection → "View tested page". That's the HTML Google actually received
-when it tested the page. Make sure the critical content is there, and use the
-inspection to validate the route's JSON-LD too, which also has to be in the
-HTML of the first response; if you still put that block together by hand, the
-[JSON-LD generator](/en/tools/json-ld-generator) produces the format this site
-uses.
+Google itself provides the definitive check. Go to Search Console → URL
+Inspection → "View tested page" to see the HTML Google actually got when it
+tested the page. Make sure the critical content is there, and use the same
+inspection to validate the route's JSON-LD, which also has to be in the
+first-response HTML. If you still put that block together by hand, the
+[JSON-LD generator](/en/tools/json-ld-generator) produces the format this
+site uses.
 
 ## The most common mistake: the component that only exists after hydration
 
-The pattern that sinks well-intentioned Next.js pages isn't "I chose SSR
-instead of SSG"; it's a component that fetches its own content in a
-`useEffect`. The route is technically static and the build looks happy, but
-the important paragraph is created in the browser: CSR smuggled into an "SSG"
-page.
+Well-intentioned Next.js pages don't sink because someone picked SSR
+instead of SSG. They sink because of a component that fetches its own
+content in a `useEffect`. Technically the route is static, and the build
+looks happy, but the important paragraph only comes into existence in the
+browser. It's CSR smuggled inside an "SSG" page.
 
-The empirical proof that this site isn't smuggling anything is in the
-2026-07-20 baseline: on all 10 pages, **LCP = FCP**. The largest visible
-element paints at the same time as the first one, because no content appears
-after hydration. When LCP and FCP are far apart on a content site, it's a sign
-that something important is showing up late, and whatever shows up late for
-users shows up late (or never) for the indexer. AI assistants are even
-stricter. In a controlled test, [ChatGPT and Claude didn't run JavaScript a
-single time](/en/blog/which-ai-assistants-run-javascript), and anything
-created in a `useEffect` simply didn't exist for them. As always in the
-[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs): you declare
-the rendering strategy in code, but measurement is what confirms it.
+Here's empirical proof that this site carries none of that contraband. In
+my July 20, 2026, baseline, **LCP = FCP** on all 10 pages. On each one, the
+largest visible element paints at the same time as the first, because no
+content appears after hydration.
+
+On a content site, a large gap between LCP and FCP is a clue that something
+important shows up late. And whatever shows up late for the user shows up
+late, or never, for the indexer.
+
+AI assistants are stricter still. In a controlled test,
+[ChatGPT and Claude didn't run JavaScript a single
+time](/en/blog/does-chatgpt-read-javascript),
+and anything created in a `useEffect` simply didn't exist for them.
+
+As throughout the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs), you
+declare the rendering strategy in code, but it takes a measurement to
+confirm it.
 
 This is the English version of an article first published in Portuguese; the two declare each other.

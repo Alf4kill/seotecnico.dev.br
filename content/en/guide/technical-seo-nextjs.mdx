@@ -1,370 +1,360 @@
 ---
-title: 'Technical SEO for Next.js: the App Router guide'
-description: 'What technical SEO means in Next.js and how to implement it: metadata, JSON-LD, sitemaps, Core Web Vitals, hreflang and rendering, with real code.'
-slug: technical-seo-nextjs
+title: "Technical SEO for Next.js: the App Router guide"
+description: "What technical SEO in Next.js is and how to implement it, with real code: metadata, JSON-LD, sitemaps, Core Web Vitals, hreflang, and rendering."
+slug: "technical-seo-nextjs"
 datePublished: '2026-07-26'
 dateModified: '2026-10-18'
 primaryQuery: 'technical seo next.js'
 keywords: ['english', 'inglês', 'technical seo', 'guide', 'app router', 'metadata', 'json-ld', 'sitemap', 'core web vitals', 'rendering', 'hreflang']
-lang: en
-translationOf: seo-tecnico-nextjs
+lang: "en"
+translationOf: "seo-tecnico-nextjs"
 tldr: >-
-  Technical SEO for Next.js is everything you implement in code (the Metadata
-  API, JSON-LD, sitemap.ts, robots.ts, rendering strategy and Core Web Vitals)
-  so Google can crawl, index and rank the site. Unlike content SEO, it gets
-  solved in the repository.
+  Technical SEO for Next.js is everything you implement in code so Google can
+  crawl, index, and rank the site: the Metadata API, JSON-LD, sitemap.ts,
+  robots.ts, the rendering strategy, and Core Web Vitals. Unlike content SEO,
+  you solve it in the repository.
 faq:
-  - question: 'What is technical SEO in Next.js?'
-    answer: >-
-      It's everything you implement in code (metadata, structured data,
-      sitemaps, rendering strategy and performance) so Google can crawl, index
-      and rank a Next.js site. Unlike content SEO, it gets solved in the
-      repository: the Metadata API, sitemap.ts, robots.ts, JSON-LD in Server
-      Components and Core Web Vitals. In the App Router, almost all of it is
-      built into the framework and needs no external library.
-  - question: 'Is Next.js good for SEO?'
-    answer: >-
-      Yes, as long as each route delivers its content in the HTML of the first
-      response. The App Router generates static pages by default, has a
-      built-in Metadata API, sitemap and robots, and next/image takes care of
-      a good part of Core Web Vitals. The risk lies not in the framework but in
-      how it's used: routes that only assemble their content in the browser,
-      after hydration, depend on Googlebot's second rendering wave, which is
-      queued.
-  - question: 'Do I need SSR for Google to index my Next.js site?'
-    answer: >-
-      No. For indexing, SSG and SSR are equivalent: both deliver the full
-      content in the HTML of the first response, which is the only thing the
-      indexer cares about. SSG is actually the App Router's default and the
-      right choice for content. Use SSR when the data can't wait for the build,
-      not to please Googlebot.
-  - question: 'What changes in technical SEO between the App Router and the Pages Router?'
-    answer: >-
-      The main change is that next/head no longer exists inside app/. Meta tags
-      become data, declared in the metadata object or the generateMetadata
-      function, and the framework builds the head from them. The sitemap and
-      robots file become code (app/sitemap.ts and app/robots.ts), and JSON-LD is
-      rendered in Server Components, arriving ready-made in the initial HTML.
-  - question: 'Which Core Web Vitals matter on a Next.js site?'
-    answer: >-
-      LCP, INP and CLS. LCP is where Next.js helps the most and also misleads
-      the most: next/image takes care of the file, but not a hero declared in
-      CSS or a render delay caused by an animation. CLS is usually handled by
-      the dimensions next/image requires. INP is the hardest, because Lighthouse
-      doesn't measure it; it only exists in field data.
-  - question: 'Can I do technical SEO in Next.js without a plugin?'
-    answer: >-
-      Yes, and in the App Router that's the recommended approach. Metadata, the
-      sitemap, robots, Open Graph images and JSON-LD are all either built into
-      the framework or plain HTML. There's no equivalent of a CMS plugin here,
-      and you don't need one: what takes its place is a single metadata helper
-      in your own code, plus tests that catch regressions.
+  - question: "What is technical SEO in Next.js?"
+    answer: "It's the set of things you implement in code (metadata, structured data, sitemaps, rendering strategy, and performance) so Google can crawl, index, and rank a Next.js site. Unlike content SEO, you solve it in the repository, with the Metadata API, sitemap.ts, robots.ts, JSON-LD in Server Components, and Core Web Vitals. In the App Router, almost all of it is native to the framework, with no external library needed."
+  - question: "Is Next.js good for SEO?"
+    answer: "Yes, as long as each route delivers its content in the first HTML response. The App Router makes pages static by default and ships a native Metadata API, sitemap, and robots, and next/image solves a good part of Core Web Vitals. The risk lies in how you use it, not in the framework. Routes that only assemble their content in the browser, after hydration, depend on Googlebot's second rendering wave, which is queued."
+  - question: "Do I need SSR for Google to index my Next.js site?"
+    answer: "No. For indexing, SSG and SSR are equivalent. Both deliver the full content in the first HTML response, the only criterion that matters to the indexer. SSG is the App Router default and the right choice for content. Use SSR when the data can't wait for the build, not to please Googlebot."
+  - question: "What changes in technical SEO between the App Router and the Pages Router?"
+    answer: "The main change is that next/head no longer exists inside app/. Meta tags become data, declared in the metadata object or the generateMetadata function, and the framework builds the head from them. Sitemap and robots become code files (app/sitemap.ts and app/robots.ts), and JSON-LD is rendered in Server Components, ready in the initial HTML."
+  - question: "Which Core Web Vitals matter on a Next.js site?"
+    answer: "LCP, INP, and CLS. LCP is where Next.js helps the most and misleads the most. Its next/image component solves the file, but not a hero declared in CSS or a render delay created by an animation. The required dimensions on next/image usually solve CLS. INP is the hardest, because Lighthouse doesn't measure it. It exists only in field data."
+  - question: "Can I do technical SEO in Next.js without a plugin?"
+    answer: "Yes, and in the App Router it's the recommended path. Metadata, sitemap, robots, Open Graph images, and JSON-LD are all native to the framework or plain HTML. There's no equivalent of a CMS plugin, and you don't need one. What replaces it is a single metadata helper in your own code, plus tests that prevent regressions."
 ---
 
-**Technical SEO for Next.js** is everything you implement in code (metadata,
-structured data, sitemaps, rendering and performance) so Google can crawl,
-index and rank a site built with the App Router. Unlike content SEO, it gets
-solved in the repository: the `Metadata API`, `sitemap.ts`, `robots.ts`,
-JSON-LD and Core Web Vitals. This guide walks through each piece in the order
-it comes up in a real project, with the code and measurements from this very
-site.
+**Technical SEO for Next.js** is the set of things you implement in code
+(metadata, structured data, sitemaps, rendering, and performance) so Google
+can crawl, index, and rank a site built with the App Router. Unlike content
+SEO, you solve it in the repository, with the `Metadata API`, `sitemap.ts`,
+`robots.ts`, JSON-LD, and Core Web Vitals. This guide takes each piece in the
+order it shows up in a real project, with this site's own code and
+measurements.
 
 ## What the App Router changed
 
-The change everything else follows from: in the App Router, a meta tag is no
-longer JSX; it's **data**. `next/head` isn't supported inside `app/`; the
-framework builds the `<head>` from a `metadata` object exported by the route,
-or from a `generateMetadata()` function when the value depends on `params`.
-The sitemap and robots file went the same way: they're no longer static files
-in `public/` but code in `app/sitemap.ts` and `app/robots.ts`.
+Everything else follows from one change. In the App Router, a meta tag stopped
+being JSX and became **data**. `next/head` isn't supported inside `app/`.
+Instead, the framework builds the `<head>` from a `metadata` object that the
+route exports, or from a `generateMetadata()` function when the value depends
+on `params`. The sitemap and robots file went the same way. They're now code,
+in `app/sitemap.ts` and `app/robots.ts`, not static files in `public/`.
 
-That's good news and a trap at the same time. The good news is that everything
-can be derived from the content: publishing an MDX file can be the only step
-needed for a page to enter the sitemap, get JSON-LD and be covered by tests.
-The trap is that the way those objects are inherited between layout and page
-isn't what you'd intuitively expect, and that's where the most expensive
-problems start.
+That's good news and a trap at once. Since everything can be derived from
+content, publishing one MDX file can be the only step a page needs to enter
+the sitemap, get its JSON-LD, and be covered by tests. The trap is that these
+objects don't pass from layout to page the way you'd expect, and that's where
+the most expensive problems start.
 
 ## Metadata: canonicals, Open Graph and the merge that doesn't happen
 
-Every page needs a unique `<title>`, a meta description and a self-referencing
-canonical. In the App Router, those come from the Metadata API. The detail
-that breaks sites in production is that inheritance between layout and page
-is a **shallow merge**: if the page declares any field inside `openGraph`, the
-parent layout's entire object gets silently thrown away, including `og:image`,
-`og:site_name` and `og:locale`. The same goes for `alternates`, so a canonical
-set only in the layout disappears on any route that customizes its
-alternates.
+Every page needs a unique `<title>`, a meta description, and a
+self-referencing canonical. In the App Router, all three come from the
+Metadata API.
 
-That's exactly how this site's Open Graph broke in July 2026. The fix isn't
-remembering to repeat the fields on every page; it's removing the possibility
-of forgetting: a single metadata helper every route goes through, which builds
-the complete `openGraph` object every time and enforces the length limits at
-build time. A title over 60 characters or a description over 155 breaks the
-build, not your search results.
+What breaks sites in production is how pages inherit metadata from layouts,
+through a **shallow merge**. If a page declares any field inside
+`openGraph`, Next.js silently discards the parent layout's entire
+`openGraph` object, including `og:image`, `og:site_name`, and `og:locale`.
+`alternates` works the same way, so a canonical defined only in the layout
+disappears on any route that customizes its alternates. That's exactly how
+this site's Open Graph broke in July 2026.
 
-It's also worth checking `metadataBase` (it's what turns a relative path into
-an absolute URL, which Open Graph requires) and how `opengraph-image.tsx`
-behaves: in Next.js 16.2.6, it does **not** cascade to nested routes.
+Remembering to repeat fields on every page doesn't fix it. Removing the chance
+to forget does. Route every page through a single metadata helper that builds
+the complete `openGraph` every time and validates length limits at build
+time. A title over 60 characters or a description over 155 then breaks the
+build, not the SERP.
 
-To audit a published route against the checks in this section, this site has
-a [meta tag validator](/en/tools/meta-tag-validator): it reads the HTML the
-server returns and grades the title, description, canonical, robots, H1 and
-Open Graph tags, the same checks this site's CI runs on every deploy.
+Two more things to check: `metadataBase`, which turns a relative path into an
+absolute URL and is required for Open Graph, and `opengraph-image.tsx`, which
+in Next.js 16.2.6 does **not** cascade to nested routes.
 
-→ Full chapter: [Next.js Metadata API: canonical and the merge that isn't](/en/blog/nextjs-metadata-api)
+To audit an already-published route against these checks, use the
+[meta tag validator](/en/tools/meta-tag-validator). It reads the HTML your
+server responds with and grades the title, description, canonical, robots,
+H1, and Open Graph, the same checks this site's CI enforces on every deploy.
+
+→ Full chapter: [Next.js Metadata API: canonical and the merge that
+isn't](/en/blog/nextjs-metadata-api)
 
 ## A sitemap and robots file derived from your content
 
-`app/sitemap.ts` exports a function that returns an array of URLs, and the
-version worth writing is the one that **derives that array from your
-content**, not one that lists routes by hand. A hand-written list goes stale
-the first time you publish an article.
+`app/sitemap.ts` exports a function that returns an array of URLs. Write one
+that **derives that array from the content** instead of listing routes by
+hand. A manual list goes stale with the first article you publish.
 
-Of the four fields Next.js accepts per entry, Google only cares about two:
-`url` and `lastModified`. The official documentation says `priority` and
-`changeFrequency` are ignored. And `lastmod` is only used when it's consistent
-and verifiable. A `new Date()` on every build produces a date that never
-matches a real change, which teaches Google to ignore the field. The rule that
-holds up: only emit `lastmod` when you can derive it from the content.
+Next.js accepts four fields per entry, and only two of them matter to Google:
+`url` and `lastModified`. The official documentation says
+`priority` and `changeFrequency` are ignored.
 
-`app/robots.ts` is the counterpart, and its right default is **not to index**:
-a preview environment inheriting production's robots rules is a common
-accident. One last trap, which this site fell into and measured: `noindex` and
-`Disallow` do **not** add up. A URL blocked in robots.txt is never crawled, so
-its `noindex` is never read; the two cancel each other out.
+Google uses `lastmod` only when it's consistent and verifiable. A
+`new Date()` on every build produces a date that never matches a real change,
+which teaches Google to ignore the field. Emit `lastmod` only when you can
+derive it from the content.
 
-→ Full chapter: [Dynamic sitemap in Next.js with sitemap.ts and robots.ts](/en/blog/nextjs-dynamic-sitemap)
+`app/robots.ts` is its counterpart, and the right default there is **not
+indexing**. A preview environment that inherits production's robots file is a
+common accident.
+
+I fell into one trap here and measured it. `noindex` and `Disallow` do
+**not** add up. A URL blocked in robots.txt is never crawled, so its `noindex`
+is never read, and the two cancel each other out.
+
+→ Full chapter: [Dynamic sitemap in Next.js with sitemap.ts and
+robots.ts](/en/blog/nextjs-dynamic-sitemap)
 
 ## Redirects, canonicals and noindex: choosing the right tool
 
-Before choosing between `redirects()` in `next.config` and middleware, there's
-an earlier question almost nobody asks: does this problem actually call for a
-redirect?
+Before you choose between `redirects()` in `next.config` and middleware,
+settle a question almost nobody asks first. Does the problem really call for
+a redirect?
 
-There are three tools for three different problems. A permanent redirect
-(301/308) when the old URL should stop existing. A canonical when both URLs
-exist but one should consolidate the signals, keeping in mind that it's a
-strong hint, not a directive. `noindex` when the page exists for users but not
-for the index. And when the content is genuinely different, there's no problem
-to solve. Getting this choice wrong doesn't produce a build error; it produces
-a symptom months later, in Search Console's indexing report.
+Three tools solve three different problems:
 
-Once you've made the choice, the implementation is simple: `redirects()` in the
-config is static, evaluated before routing and free per request; middleware
-runs on **every** request and is the only option that can decide based on a
-cookie, a header or the visitor's location. If the rule is already known at
+- A permanent redirect (301/308), when the old URL should stop existing.
+- A canonical, when both URLs exist but one of them should consolidate the
+  signals. A canonical is a strong hint, not an order.
+- `noindex`, when the page exists for the user, not for the index.
+
+If the two URLs have distinct content, there's no problem to solve.
+
+Pick the wrong tool and nothing fails in the build. The symptom shows up
+months later, in Search Console's indexing report.
+
+Once you've made that choice, the implementation is simple. `redirects()` in
+the config is static and evaluated before routing, with no per-request cost.
+Middleware runs on **every** request, and it's the only one of the two that
+can decide based on a cookie, a header, or geography. If you know the rule at
 build time, it doesn't belong in middleware.
 
-→ Full chapter: [Redirects and canonicals in Next.js: config or middleware](/en/blog/nextjs-redirects-canonicals)
+→ Full chapter: [Redirects and canonicals in Next.js: config or
+middleware](/en/blog/nextjs-redirects-canonicals)
 
 ## JSON-LD in the App Router
 
-Structured data in the App Router doesn't need a library: a
-`<script type="application/ld+json">` rendered in a Server Component arrives
-ready-made in the initial HTML, which is exactly where Googlebot wants to find
-it.
+You don't need a library for structured data in the App Router. A
+`<script type="application/ld+json">` rendered in a Server Component is ready
+in the initial HTML, exactly where Googlebot wants it.
 
-The architectural decision is **where** each schema lives, and the practical
-rule is to render it at the level where the data behind it actually exists.
-A schema that changes per route (`Article`, `BreadcrumbList`) goes in
-`page.tsx`. A schema that's stable across the whole site (`WebSite`,
-`Organization`) can live in the layout. Multiple blocks on the same page are
-read without trouble; what you mustn't do is let the same type contradict
-itself across blocks.
+What you have to decide is **where** each schema lives. As a practical rule,
+render it at the level where the data that feeds it really exists. Per-route
+schemas (`Article`, `BreadcrumbList`) go in `page.tsx`. Site-wide, stable
+schemas (`WebSite`, `Organization`) can stay in the layout. A page can carry
+multiple blocks without trouble. What it can't do is let the same type
+contradict itself across blocks.
 
-The real gain comes from deriving the schema from the frontmatter instead of
-writing it by hand: the `Article` for every post on this site comes from the
-same fields that generate the `<title>` and the sitemap, so the two can never
-disagree. As for `FAQPage`: Google stopped showing the rich result on May 7,
-2026 and removed its documentation on June 15, 2026, but the type is still
-valid in schema.org, and keeping it costs almost nothing when it comes from
-the same source as the visible FAQ.
+Where this really pays off is deriving the schema from the frontmatter
+instead of writing it by hand. On this site, each article's `Article` comes
+from the same fields that generate its `<title>` and its sitemap entry, so
+they can never disagree.
 
-To put together a one-off schema quickly, this site has a [JSON-LD
-generator](/en/tools/json-ld-generator) that gives you both the object and a
-ready-to-use Next.js component.
+As for `FAQPage`, Google stopped showing the rich result on May 7, 2026, and
+removed its documentation on June 15, 2026. The type is still valid in
+schema.org, and keeping it costs almost nothing when it comes from the same
+source as the visible FAQ.
 
-→ Full chapter: [How to implement JSON-LD in Next.js (App Router)](/en/blog/nextjs-json-ld)
+For a one-off schema, the [JSON-LD generator](/en/tools/json-ld-generator)
+gets you there quickly. It returns both the object and a ready-to-use Next.js
+component.
+
+→ Full chapter: [How to implement JSON-LD in Next.js (App
+Router)](/en/blog/nextjs-json-ld)
 
 ## Hreflang and the bilingual site
 
-The page you're reading is this chapter's own proof: it's the English version
-of a Portuguese guide, and the two declare each other.
+This page is its own example. It's the English version of a Portuguese guide,
+and the two declare each other as alternates.
 
-Three rules cover almost everything about hreflang. **Reciprocity**: if A
-declares B as its alternate, B has to declare A back, or Google throws out the
-cluster, a silent failure that raises no error anywhere. **Self-reference**:
-each page lists itself among the alternates, which is what lets the same block
-of tags be valid on both sides. **`x-default`**: the version served to anyone
-who doesn't match a declared language; on a Portuguese-first site, it points
-to the Portuguese original, not the translation.
+Three rules carry almost all of hreflang:
+
+- **Reciprocity.** If A declares B as an alternate, B has to declare A back,
+  or Google discards the cluster. It fails silently, with no error anywhere.
+- **Self-reference.** Each page lists itself among its alternates. That's
+  what makes the same block of tags valid on both sides.
+- **`x-default`.** It's the version served to anyone who matches no declared
+  language. On a Portuguese-first site, it points to the Portuguese original,
+  not the translation.
 
 In the App Router, the tags come from `alternates.languages` in the Metadata
-API, and the implementation detail that matters is where that object gets
-built. Declaring the pair by hand on each page is what breaks reciprocity at
-the first refactor: someone renames a route and only one side finds out. On
-this site, the pairs live in a single module, both sides of each pair are
-generated from the same object, and a test checks reciprocity in the served
-HTML rather than in the source code. That's the difference between hreflang
-that works and hreflang that merely exists.
+API. What matters is **where** you build that object. If you declare the pair
+by hand on each page, the first refactor breaks reciprocity. Someone renames
+a route, and only one side finds out. On this site, the pairs live in one
+module, the same object generates both sides of each pair, and a test checks
+reciprocity in the served HTML, not in the source code. That's the
+difference between hreflang that works and hreflang that only exists.
 
-There's one trap I found while writing that test, and it applies to anyone
-auditing hreflang with a script: Next.js serializes the attribute as
-`hrefLang`, in camelCase, in the HTML it serves. That's valid, since HTML
-attribute names are case-insensitive, and both the browser and Google read it
-as `hreflang`. But a script that reads the raw HTTP response with a
-case-sensitive regex finds nothing and concludes the site has no hreflang at
-all. That's exactly what happened here: the DOM-based check passed while the
-same check over HTTP came back empty.
+I found a trap while writing that test, and it applies to anyone who audits
+hreflang with a script. Next.js serializes the attribute as `hrefLang`, in
+camelCase, in the HTML it serves. That's valid, because HTML attribute names
+are case-insensitive. The browser reads `hreflang`, and so does Google. But if
+you read the raw HTTP response with a case-sensitive regex, you find nothing
+and conclude the site has no hreflang. That's exactly what happened here. The
+DOM check passed, and the same check over HTTP came back empty.
 
-Two decisions are worth spelling out because they aren't obvious. An English
-page's URL carries its query in English (this one is
-`/en/guide/technical-seo-nextjs`, not a mirror of the Portuguese path), since
-the URL is part of what the page is about. And `<html lang>` matches each
-page's language: `en` here, `pt-BR` on the Portuguese original. The site has
-one root layout per language, using route groups, so the navigation, footer
-and cookie banner around this guide are in English too. The first version of
-this page lived inside the Portuguese frame, and only the article carried
-`lang="en"`, because only the article was in English. Google ignores the
-attribute for language detection either way (it reads the content), but
-assistive technology doesn't.
+Two decisions here aren't obvious. First, the English page's URL carries the
+English query, `/en/guide/technical-seo-nextjs`, instead of mirroring the
+Portuguese path, because the URL is part of what a page says it is. Second,
+`<html lang>` follows each page's language, so it's `en` on this page and
+`pt-BR` on the Portuguese original. Each language has its own root layout, in
+route groups, so the English version has an English header, footer, and
+cookie consent banner. In the first version, the English page lived inside
+the Portuguese frame, and only the article carried `lang="en"`, since it was
+the only part in English. Google treats both setups the same, because it
+ignores the attribute and detects language from the content. Assistive
+technology doesn't.
 
-The dedicated chapter followed this implementation rather than coming before
-it. Nothing here gets published before it's implemented and measured.
-
-→ Full chapter: [Hreflang in Next.js: a bilingual site in the App Router](/en/blog/nextjs-hreflang)
+→ Full chapter: [Hreflang in Next.js: a bilingual site in the App
+Router](/en/blog/nextjs-hreflang)
 
 ## Rendering: what Googlebot actually receives
 
-For the indexer, the acronym doesn't matter; what matters is what arrives in
-the HTML of the **first response**.
+The indexer doesn't care about the acronym. It cares about what arrives in the
+HTML of the **first response**.
 
-By that measure, SSG and SSR are equivalent: both deliver the complete content
-in that HTML. ISR also delivers complete HTML, though it may be stale between
-revalidations. CSR delivers a skeleton and depends on a second rendering pass
-by Googlebot, which is queued, and it's the only one of the four that creates
-a real indexing risk.
+By that criterion, SSG and SSR are equivalent, since both deliver the complete
+content in that HTML. ISR also delivers complete HTML, possibly stale between
+revalidations. CSR delivers a skeleton and depends on Googlebot's second
+rendering pass, which is queued. It's the only one of the four that creates a
+real indexing risk.
 
-That shifts the question from "which is faster?" to "what does the indexer
-receive?", and it leads to an uncomfortable conclusion for anyone who reaches
-for `useEffect` freely: a component that only exists after hydration is the
-most common SEO mistake in Next.js. Not because Google doesn't run JavaScript
-(it does), but because that rendering happens in a queue, and you don't control
-your place in it.
+That shifts the question from "which is fastest?" to "what does the indexer
+receive?" If you reach for `useEffect` freely, the answer is uncomfortable. A
+component that only exists after hydration is the most common SEO mistake in
+Next.js. That's not because Google doesn't run JavaScript. It does. But
+execution waits in a queue, and you don't control your place in it.
 
-The practical upshot is that you should be able to **prove** which strategy
-each of your routes uses, rather than assuming. The route table from
-`next build` shows it, with one symbol per route.
+So you should be able to **prove** which strategy each of your routes uses,
+instead of assuming it. `next build` shows it in its route table, with one
+symbol per route.
 
-→ Full chapter: [SSR, SSG and ISR in Next.js: what Googlebot sees](/en/blog/nextjs-ssr-ssg-isr)
+→ Full chapter: [SSR, SSG and ISR in Next.js: what Googlebot
+sees](/en/blog/nextjs-ssr-ssg-isr)
 
 ## LCP: diagnose before you optimize
 
-The mistake that costs teams weeks on LCP is optimizing before knowing where
-the time goes. LCP breaks down into four subparts (**TTFB**, **resource load
-delay**, **resource load duration** and **element render delay**), and each
-has different fixes. Optimizing the wrong subpart changes nothing.
+Optimizing before you know where the time goes is the mistake that costs teams
+weeks on LCP. LCP splits into four subparts: **TTFB**, **resource load
+delay**, **resource load duration**, and **element render delay**. Each has
+its own fixes, and optimizing the wrong one changes nothing.
 
-Once you've found the bottleneck, a handful of moves solve most cases: make
-sure the LCP element is in the initial HTML (a Server Component), use
-`preload` on `next/image` for the LCP image only (Next.js 16 deprecated
-`priority` in its favor), and load fonts with `next/font`.
+Once you've found the bottleneck, a few moves solve most cases:
 
-Then there's the opposite case, which is more frustrating: an LCP that does
-**not** improve after you've already switched everything to `next/image`. The
-culprit there is usually a pattern that hides the resource from the preload
-scanner (a CSS `background-image`, a hero behind `"use client"`), a render
-delay you caused yourself with a fade-in animation or an A/B testing
-anti-flicker snippet, or too many preloads competing for bandwidth with the
-very element they were supposed to speed up.
+- Put the LCP element in the initial HTML, with a Server Component.
+- Use `preload` on `next/image` only for the LCP image. Next.js 16 deprecated
+  `priority` in its favor.
+- Load fonts with `next/font`.
 
-Before diagnosing anything, it helps to know where you stand in the **field**:
-the [Core Web Vitals checker](/en/tools/cwv-checker) queries your origin's
-real p75 in CrUX. If your origin isn't in the dataset yet (which is the case
-for most sites), that tells you something too: your only option is your own
-RUM, which is what this site does.
+More frustrating is the opposite case, an LCP that does **not** improve after
+you switch everything to `next/image`. The culprit is usually one of these:
 
-→ Full chapters: [How to improve LCP in Next.js: a guide by the 4 subparts](/en/blog/improve-lcp-nextjs) · [High LCP in Next.js: the mistakes that keep it high](/en/blog/nextjs-high-lcp)
+- A pattern that hides the resource from the preload scanner, such as a CSS
+  `background-image` or a hero behind `"use client"`.
+- A render delay you created, with a fade-in animation or an A/B-test
+  anti-flicker snippet.
+- Too much preload, competing for bandwidth with the very element it should
+  speed up.
+
+Before any diagnosis, know your starting point in the **field**. The
+[Core Web Vitals checker](/en/tools/cwv-checker) queries your origin's real
+p75 in CrUX. If your origin isn't in the dataset yet, which is the case for
+most sites, that's information too. It tells you to collect your own RUM,
+which is what this site does.
+
+→ Full chapters: [How to improve LCP in Next.js: a guide to the 4
+subparts](/en/blog/improve-lcp-nextjs) · [High LCP in Next.js: the mistakes
+that keep it high](/en/blog/nextjs-high-lcp)
 
 ## INP: the metric Lighthouse doesn't measure
 
-INP (Interaction to Next Paint) measures the time between an interaction and
-the next painted frame; good means ≤200 ms at the field p75. It replaced FID in
-March 2024, and the difference is scope: FID only measured the initial delay
-of the first interaction, while INP looks at every interaction and measures the
-full cycle.
+INP (Interaction to Next Paint) is the time between an interaction and the
+next painted frame. A good INP is 200 ms or less at the field p75.
 
-And here's the quirk that changes how you work: **Lighthouse has no INP**.
-That's not a gap in the UI; it's conceptually impossible. INP requires a real
-interaction from a real user, and there's nobody clicking in the lab. What the
-lab audit gives you instead is TBT (Total Blocking Time), a proxy that
-correlates with INP but can't replace it.
+It replaced FID in March 2024, and what changed is scope. FID measured only
+the initial delay of the first interaction, while INP looks at every
+interaction and measures the full cycle.
 
-For a small site, that adds up to a double blind spot: with no interaction in
-the lab, there's no INP in Lighthouse, and below the CrUX traffic threshold
-there's no INP in PageSpeed Insights or Search Console either. The way out is
-to collect your own field data with RUM: the `web-vitals` library's `onINP`
-sending an event to GA4. That's what this site does, with attribution by
-subpart.
+**Lighthouse has no INP**, and that changes how you work. It's not something
+the interface left out. It's conceptually impossible, because INP requires a
+real interaction by a real user, and nobody clicks in the lab. A lab audit
+offers TBT (Total Blocking Time) instead, a proxy that correlates with INP but
+doesn't replace it.
 
-→ Full chapter: [INP in Next.js: how to diagnose and fix it](/en/blog/nextjs-inp)
+A small site is blind twice. With no interaction in the lab, Lighthouse has no
+INP. Below the CrUX traffic threshold, neither PageSpeed Insights nor Search
+Console has it either. The way out is to measure your own field data with
+RUM, using the `web-vitals` library with `onINP` sending an event to GA4.
+This site does, with attribution by subpart.
+
+→ Full chapter: [INP in Next.js: how to diagnose and fix
+it](/en/blog/nextjs-inp)
 
 ## Images: performance solved, indexing not
 
-`next/image` gives you modern formats, a `srcset` per viewport, lazy loading
-and dimensions reserved to prevent CLS. In this site's baseline, that shows up
-as **CLS 0.000 across all 10 pages** measured: with explicit dimensions,
-image-driven layout shift simply doesn't happen.
+`next/image` gives you a modern format, a `srcset` per viewport, lazy loading,
+and reserved dimensions against CLS. This site's baseline shows **CLS 0.000
+across the 10 pages** measured. With explicit dimensions, image-driven layout
+shift doesn't exist.
 
-What it does **not** give you is indexing. Alt text, the surrounding text, the
-file name and the sitemap entry are still your job, and the component is
-completely blind to images declared in CSS. Search results treat "image SEO"
-as a synonym for "image performance", but the other half is what decides
-whether the image exists for the index at all.
+What it does **not** give you is indexing. `alt`, the text around the image,
+the file name, and its presence in the sitemap are still on you. And
+`next/image` is completely blind to images declared in CSS.
 
-Two things usually go unnoticed: the `sizes` attribute decides which file from
-the `srcset` the user actually downloads (getting it wrong wipes out much of
-the gain), and explanatory diagrams pay off more as **inline SVG** than as
-raster images, because their `<text>` labels can be crawled and quoted. The
-catch is that inline SVG doesn't show up in Google Images; if that channel
+Across the whole SERP for this topic, pages treat "image SEO" as a synonym for
+"image performance." Yet it's the other half, indexing, that decides whether
+an image exists for the index.
+
+Two points are easy to miss. First, the `sizes` attribute decides which
+`srcset` file the user actually downloads, and getting it wrong cancels a
+good part of the gain. Second, explanatory diagrams pay off more as **inline
+SVG** than as raster images, because their `<text>` labels are crawlable and
+citable. Inline SVG doesn't show up in Google Images, though. If that channel
 matters to you, export a raster copy and declare it in the image sitemap.
 
-→ Full chapter: [next/image and SEO: what the component doesn't solve](/en/blog/next-image-seo)
+→ Full chapter: [next/image and SEO: what the component doesn't
+solve](/en/blog/next-image-seo)
 
 ## Measurement: GTM and GA4 in an SPA
 
-Optimizing without measuring is guesswork, and measuring an SPA has a
-specific trap: GTM's **All Pages** trigger only fires on the first load.
-Subsequent navigations use `history.pushState` and don't reload the page, so
-GA4 records the landing page and goes blind for the rest of the session.
+Optimizing without measuring is guessing. In an SPA, GTM's **All Pages**
+trigger is a trap, because it fires only on first load. Later navigations
+use `history.pushState` and don't reload the page, so GA4 records the entry
+and then goes blind until the session ends.
 
-The fix is the **History Change** trigger, and the mistake almost everyone
-makes is turning it on in GTM **and** leaving GA4's Enhanced Measurement
-listening for the same events, which counts every pageview twice. The hard
-part was never getting the event to fire; it's getting it to fire exactly
-once.
+A **History Change** trigger fixes that. Then comes the decision almost
+everyone gets wrong, which is enabling it in GTM **and** leaving GA4's
+Enhanced Measurement listening to the same events. Every pageview then counts
+twice. Getting the event to fire was never the problem. Getting it to fire
+only once is.
 
-Add Consent Mode v2 with a denied default, a practical requirement under
-Brazil's data protection law (LGPD), and you end up with an implementation you
-have to validate against real requests, not just in GTM's preview mode.
+Add Consent Mode v2 with a default of denied, a practical requirement under
+LGPD (Brazil's data protection law), and you'll need to validate the setup in
+real requests, not only in GTM's Preview mode.
 
-→ Full chapter: [GTM in Next.js: SPA pageviews without double counting](/en/blog/nextjs-gtm)
+→ Full chapter: [GTM in Next.js: SPA pageviews without double
+counting](/en/blog/nextjs-gtm)
 
 ## What this site measured
 
-This guide isn't theoretical: every technique above is implemented on this
+None of this is theoretical. I've implemented every technique above on this
 domain, and the numbers below come from it.
 
-The most complete case is the home page. Its LCP element is a paragraph of
-text, and diagnosing it by the four subparts pointed to **element render
-delay**, not the image weight everyone assumes. Two changes fixed it: inlining
-the CSS (~22 KB raw, ~5 KB compressed, and the site's only render-blocking
-request) and switching the Inter font from `display: swap` to
-`display: optional` with no preload, which took it off the critical path.
+The home page is the most complete case. Its LCP element is a paragraph of
+text, and the four-subpart diagnosis pointed to **element render delay**, not
+the image weight everyone assumes.
 
-The result in PageSpeed Insights on mobile, in production, measured on July 18,
-2026:
+Two changes solved it. First, I inlined the CSS (~22 KB raw, ~5 KB
+compressed), which was the site's only render-blocking request. Second, I
+moved the Inter font from `display: swap` to `display: optional`, without
+preload, which took it off the critical path.
+
+Here are the PageSpeed Insights results (mobile, in production) from
+July 18, 2026:
 
 | Metric | Before | After |
 |---|---|---|
@@ -373,27 +363,26 @@ The result in PageSpeed Insights on mobile, in production, measured on July 18,
 | Element render delay | 1,280 ms | **530 ms** |
 | CLS | 0 | 0 |
 
-Two days later, the full baseline of all 10 URLs came in at LCP 1.0–1.2 s,
-CLS 0.000, TBT 80–148 ms, zero orphan pages and a maximum depth of 2 clicks.
+Two days later, a full baseline of the 10 URLs showed LCP of 1.0–1.2 s, CLS of
+0.000, TBT of 80–148 ms, zero orphan pages, and a maximum depth of 2 clicks.
 
-What hasn't been measured yet matters just as much. The domain is below
-CrUX's traffic threshold, so there's no public field data. The numbers above
-come from the lab and from the site's own RUM. The field verdict is still
-open, and it will appear here once it exists, not before.
+Some of it is **not** measured yet. This domain is below the CrUX traffic
+threshold, so there's no public field data for it. The numbers above are lab
+data and my own RUM. The field verdict is still open, and it'll appear here
+when it exists, not before.
 
 ## How this guide is maintained
 
-All ten chapters are now implemented on this domain; hreflang was the last,
-and it arrived by being built rather than described. Each chapter is an
-article with real code and its own measurements, and this guide is the map
-that ties them together. The chapter articles were first published in
-Portuguese, this site's primary language; since October 2026, all ten also
-have an English version, linked above.
+All ten chapters are published, each with real code and its own measurement,
+and this guide maps how they connect. Hreflang was the last chapter to
+arrive, and it came in the right order. I built the implementation first
+and wrote the article from it, including the trap it revealed, the camelCase
+`hrefLang`.
 
-What keeps the content from going stale is the same CI that protects the
-code: a Playwright suite checks every route for a single `<h1>`, title and
-description limits, a self-referencing canonical, JSON-LD that parses and,
-since this page has existed, hreflang that's reciprocal in both directions.
-Lighthouse budgets block the merge if LCP, CLS or TBT regress. When a
-technique described here stops being true, the test breaks before any reader
-notices.
+What keeps the content from going wrong as it ages is the same CI that
+protects the code. On every route, a Playwright suite checks for a single
+`<h1>`, title and description limits, a self-referencing canonical, JSON-LD
+that parses, and, now that an English version exists, reciprocal hreflang in
+both directions. Lighthouse budgets block a merge if LCP, CLS, or TBT regress.
+When a technique described here stops being true, the test breaks before any
+reader notices.

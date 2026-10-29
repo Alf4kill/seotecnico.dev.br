@@ -1,6 +1,6 @@
 ---
 title: "Scaled content abuse: how Google reads templated pages"
-description: "What Google's scaled content abuse policy says about city lists, one page per keyword and templated titles, with sources and a Next.js example."
+description: "What Google's scaled content abuse policy says about city lists, one page per keyword, and generated titles, with Google sources and a Next.js example."
 slug: "scaled-content-abuse"
 primaryQuery: "scaled content abuse"
 keywords: ['english', 'inglês', 'scaled content abuse', 'keyword stuffing', 'doorway', 'doorway pages', 'location pages', 'service areas', 'boilerplate', 'canonical', 'template']
@@ -9,60 +9,89 @@ translationOf: "scaled-content-abuse"
 category: indexacao
 tldr: >-
   Scaled content abuse is Google's spam policy against pages mass-produced to
-  manipulate rankings, whether by AI, scripts or people. In a typical agency
-  template, the city list matches a keyword stuffing example, and one page per
-  keyword variation fits the doorway definition.
+  manipulate rankings, whether made by AI, scripts, or people. In a typical
+  agency template, the city block is one of Google's own keyword stuffing
+  examples, and one page per variation falls within the doorway definition.
 datePublished: "2026-10-18"
 dateModified: "2026-10-18"
 faq:
   - question: "Does scaled content abuse apply to text written by people?"
-    answer: "Yes. The policy describes many pages generated to manipulate rankings without helping readers, and Google says how they were produced doesn't matter. Since the March 2024 change, it covers automation, human work or any combination of the two."
-  - question: "Is a page per city always a doorway?"
-    answer: "No. The doorway examples describe regional pages that funnel visitors to a single page, and substantially similar pages that act more like search results than like navigation. A city page with information specific to that place falls outside that description."
-  - question: "Is using AI to write scaled content abuse?"
-    answer: "Not in itself. Google's guidance on generative AI content says it can help with research and with structuring original content, and that the problem is generating many pages without adding value. What counts is scale without value, not the tool."
+    answer: "Yes. The policy describes generating many pages to manipulate rankings without helping readers, and Google says the production method doesn't matter. Since the March 2024 change, it covers automation, human work, or a combination of the two."
+  - question: "Is a page for every city always a doorway?"
+    answer: "No. Google's doorway examples describe regional pages that funnel visitors to a single page, and substantially similar pages that work more like search results than like navigation. A city page with information specific to that place falls outside that description."
+  - question: "Is using AI to write content scaled content abuse?"
+    answer: "Not in itself. Google's guidance on generative AI content says AI can help with research and with structuring original content. The problem is generating many pages without adding value. Scale without value is the criterion, not the tool."
   - question: "Does a title identical to the H1 hurt SEO?"
-    answer: "Nothing in Google's documentation says so. The title link guide actually suggests the opposite: make the page's main title clear, for example by using the title text in the first visible h1."
+    answer: "Nothing in Google's documentation says so. The title link guide points the other way. It suggests making the page's main title clear, for example by putting the title text in the first visible h1."
 ---
 
-Scaled content abuse is Google's spam policy against sites that churn out many pages mainly to manipulate rankings rather than help readers. It applies no matter how the pages are made: AI, a script or a person filling in a template. The typical agency template, with a fixed list of cities served, one page per keyword variation and titles stamped out from a pattern, maps piece by piece onto three passages in Google's documentation: the keyword stuffing example, the doorway definition and the scaled content policy itself.
+Scaled content abuse is a Google spam policy against sites that produce many
+pages mainly to manipulate rankings, without helping the reader. It applies
+however the pages get made, whether by AI, by a script, or by a person filling
+in a template. A classic agency site comes with a fixed block of the cities
+it serves, one page per keyword variation, and titles generated in series.
+Google's documentation describes it piece by piece in three passages: the
+keyword stuffing example, the doorway definition, and the scaled content
+policy itself.
 
-There's no lab measurement in this one. The article takes the HTML a typical template serves, shows which sentence of the documentation describes each piece, and ends with a step-by-step audit you can run on your own site.
+I didn't run a lab measurement for this article. Instead, I take the HTML a
+typical template serves, show which sentence of the documentation describes
+each piece, and end with a step-by-step audit you can run on your own site.
 
 ## What Google calls scaled content abuse
 
-In Google's spam policies, scaled content abuse means generating many pages with the primary purpose of manipulating rankings rather than helping users. It typically takes the form of a large volume of unoriginal, low-value content, and the policy ends on the key point: it doesn't matter how the content was created.
+Google's spam policies define scaled content abuse as generating many pages
+with the primary purpose of manipulating search rankings rather than helping
+users. It typically means a large volume of unoriginal content that adds
+little value. It closes with the point that matters most here, which is that
+how the content was created doesn't matter.
 
-The examples it lists, paraphrased:
+Paraphrased, the examples it lists are:
 
-- using generative AI or similar tools to generate many pages without adding value;
-- scraping feeds, search results or other content, including with synonym swapping or automated translation;
-- stitching together passages from different pages without adding anything;
-- spreading content across several sites to hide the scale;
-- creating many pages that make little sense to a reader but contain the keywords people search for.
+- using generative AI or similar tools to generate many pages without adding
+  value
+- scraping feeds, search results, or other content, including with synonym
+  swapping or automated translation
+- stitching together passages from different pages without adding anything
+- spreading content across several sites to hide the scale
+- creating many pages that make little sense to a reader but contain the
+  keywords people search for
 
-The change that brought agency templates into scope came in March 2024. The old "automatically generated content" policy became a policy about scale, and the announcement made it explicit that it covers content produced by automation, by people or by both. A writer filling in a template city by city is covered just as much as a script.
+A change in March 2024 is what pulls the agency template into scope. Google
+turned its old "automatically generated content" policy into a policy about
+scale, and the announcement spelled out that it covers content produced by
+automation, by people, or by both. A writer filling in the template city by
+city is covered just as a script is.
 
-AI isn't the target. Google's guidance on generative AI content says it can help with research and with structuring original content; the problem is generating many pages without value. What counts is scale without value, not the tool.
+AI itself isn't the target. Google's guidance on AI-generated content says AI
+can help with research and with structuring an original text. Generating many
+pages without adding value is the problem. What counts is scale without value,
+not the tool.
 
 | When | What changed in the documentation |
 |---|---|
-| 2022 | Google launches the helpful content system, with a signal applied site-wide |
-| March 2024 | "Automatically generated content" becomes scaled content abuse; the helpful content system is folded into the core ranking systems |
-| May 2026 | The spam policies are extended to generative AI responses in Search |
-| October 2026 | The generative AI content guidance starts pointing to the rater guidelines' sections on scale and low effort |
+| 2022 | Google launches the helpful content system, with a site-wide signal |
+| March 2024 | "Automatically generated content" becomes scaled content abuse, and the helpful content system becomes part of the core ranking systems |
+| May 2026 | Spam policies now also apply to generative AI responses in Search |
+| October 2026 | The AI content guidance starts pointing to the rater guidelines' sections on scale and low effort |
 
-Google's documentation now names these practices explicitly. No official source gives a date after which the agency model stopped working, and I'm not going to make one up.
+Google's text now names these practices. No official source gives a date
+after which the agency model stopped working, and I won't invent one.
 
 ## What an agency template puts in the HTML
 
-To make this concrete, I'll use a fictional site: Example Drains, a service company with a classic agency-built website. It doesn't exist and has no metrics.
+To keep this concrete, picture Example Drains, a fictional service company
+with a classic agency-built site. It doesn't exist and has no metrics. Its
+template produces three things in the served HTML:
 
-The template puts three things into the served HTML:
-
-1. **A fixed block on every page**: "We serve X, Y, Z..." with a list of neighborhoods and cities, followed by a boilerplate company paragraph that's identical on every URL.
-2. **One page per keyword or per city**: `/drain-cleaning-south-side`, `/drain-cleaning-24h`, `/drain-cleaning-in-springfield`, each with the same body and a different keyword swapped in.
-3. **`<title>`, H1 and `alt` generated from the keyword**: the same pattern with a different word on each page.
+1. **A fixed block on every page.** "We serve X, Y, Z..." followed by the list
+   of neighborhoods and cities, then a company paragraph that's identical on
+   every URL.
+2. **One page per keyword or per city.** `/drain-cleaning-south-side`,
+   `/drain-cleaning-24h`, `/drain-cleaning-in-springfield`, each with the same
+   body and a different keyword.
+3. **`<title>`, H1, and `alt` generated from the keyword.** Every page uses the
+   same pattern, with a different word dropped in.
 
 <figure>
   <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The three pieces of an agency template, what each puts in the served HTML and the passage of Google's documentation that describes it">
@@ -114,56 +143,118 @@ The template puts three things into the served HTML:
   <figcaption>Each template piece, what it puts in the served HTML, and the passage in Google's documentation that describes it.</figcaption>
 </figure>
 
-The same mapping, as a table:
+Here's the same mapping as a table:
 
 | Template piece | In the served HTML | Where Google describes it |
 |---|---|---|
-| Fixed block of cities and neighborhoods | The same block of text on every page | Keyword stuffing example in the spam policies; filler in the rater guidelines |
+| Fixed block of cities and neighborhoods | The same block of text on every page | Keyword stuffing example in the spam policies; filler content in the rater guidelines |
 | One page per variation | Near-identical pages where only the keyword or city changes | Doorway and scaled content abuse in the spam policies; the generative AI optimization guide |
-| Generated title, H1 and alt | Titles that differ by one word | Boilerplate in `<title>` in the title link guide; metadata review in the AI content guidance |
+| Generated title, H1, and alt | Titles that differ by one word | Boilerplate in `<title>` in the title link guide; metadata review in the AI content guidance |
 
 ## The service-area block: a textbook keyword stuffing example
 
-Google defines keyword stuffing as loading a page with keywords or numbers to manipulate rankings, often in a list or group, unnaturally or out of context. One of its examples is "blocks of text that list cities and regions", and the full sentence adds a qualifier: the ones a web page is trying to rank for.
+Google defines keyword stuffing as filling a page with keywords or numbers to
+manipulate rankings, often in lists, unnaturally or out of context. Among its
+examples are "blocks of text that list cities and regions", which the full
+sentence limits to cities and regions the web page is trying to rank for.
 
-That qualifier is what matters. Saying where the company operates isn't the problem; a block whose job is to put city names on the page so it ranks for them is. The SEO Starter Guide makes the same point: repeating the same words over and over, even in variations, is tiresome for users and goes against the spam policies.
+That qualifier is what matters. Saying where a company operates isn't the
+problem. A block whose job is to put city names on the page so the page ranks
+for them is.
 
-The rater guidelines have a category called filler: low-effort material that pads out a page, which is worse when there's a lot of it or when it pushes the helpful content down. That a neighborhood list repeated on every page belongs in this category is my reading, not Google's wording; the guidelines don't mention this case.
+Google's SEO Starter Guide adds that repeating the same words, even in
+variations, is tiresome for users and goes against the spam policies.
 
-What the documentation does **not** say: how Google weighs a block of body text repeated across the whole site, or how many city names a page can carry. Any number you see on that comes from third parties.
+Google's rater guidelines have a category called "filler," which covers
+low-effort material that pads a page. They treat it as worse when there's a
+lot of it or when it pushes the helpful content down. The guidelines don't
+mention neighborhood blocks, so treating one that repeats on every page as
+filler is my reading, not Google's text.
+
+What the documentation does **not** say is how Google weighs a body block
+repeated across a whole site, or how many city names a page can have. Any
+number you see on that comes from third parties.
 
 ## One page per keyword variation: doorway and scale
 
-The doorway policy describes pages created to rank for specific, similar queries that lead users to intermediate pages less useful than the final destination. Two of its examples fit the template:
+Google's doorway policy covers pages created to rank for specific, similar
+searches that lead users to intermediate pages less useful than the final
+destination. Two of its examples fit the template:
 
-- pages targeting specific regions or cities that funnel visitors to a single page;
-- substantially similar pages that are closer to search results than to a browsable hierarchy.
+- pages targeting specific regions or cities that funnel visitors to a single
+  page
+- substantially similar pages that are closer to search results than to a
+  clearly defined, browsable hierarchy
 
-Google's guide to optimizing for generative AI features covers the other side: creating separate content for every variation of how people search, when done mainly to manipulate rankings or AI responses, violates the scaled content abuse policy. The guide adds that having lots of pages doesn't make a site more relevant, and that its systems understand synonyms without needing one page per phrasing.
+Google's guide to optimizing for generative AI features comes at it from the
+other side. It says that creating separate content for every variation of how
+people search violates the scaled content abuse policy when you do it mainly
+to manipulate rankings or AI responses. It also says that more pages don't
+make a site more relevant, and that Google's systems understand synonyms
+without one page per phrasing.
 
-**Not every city page is a doorway.** The examples are about funneling and substantially similar pages. A location page with information specific to that place (the team, the address, response times, local specifics) falls outside that description. A useful test: if you swap out the city name, does the rest of the page still hold true? If it does, the page has nothing of its own to say about the place.
+**Not every city page is a doorway.** Google's examples are about funneling
+and about substantially similar pages. A location page with information
+specific to the place, such as the local team, the address, response times, or
+details about the region, falls outside that description. Here's a useful
+test. Swap the city name and ask whether the rest of the page is still true.
+If it is, the page has nothing specific to that place.
 
-There's a more sophisticated version: rewriting the text for each keyword. Those pages aren't textual duplicates, so a duplicate-content checker won't flag anything. But the policy isn't about identical text; it's about substantially similar pages and about scale. Saying the same thing in different words still fits that description.
+A more sophisticated variant rewrites the text for each keyword. Those pages
+aren't textual duplicates, so a duplicate-text checker won't flag anything.
+But the policy doesn't talk about identical text. It talks about substantially
+similar pages and about scale, and saying the same thing in other words still
+falls within that description.
 
-The rater guidelines give examples like this in their sections on scale and low effort: error-code pages filled in from a template, product names swapped into generic text, hundreds of articles cut from the same pattern, repetitive Q&As. One caveat: those guidelines are instructions for raters who evaluate how well Google's systems work, and Google says their ratings don't directly affect rankings.
+You'll find examples of this kind in the rater guidelines' sections on scale
+and low effort: error-code pages filled in from a template, product names
+swapped into generic text, hundreds of articles cut from the same mold, and
+repetitive Q&A. Keep in mind that those guidelines are for raters who evaluate
+the quality of Google's systems, and Google says their ratings don't directly
+influence rankings.
 
-## Titles, H1s and alt text stamped out from a pattern
+## Titles, H1s, and alt text stamped out from a pattern
 
-The title link guide is blunt: "Avoid repeated or boilerplate text in `<title>` elements". Its bad example is a long title shared by every page, with only one piece of information changing. The suggested fix is to generate the title from what the page actually contains.
+Google's title link guide says it plainly:
+"Avoid repeated or boilerplate text in `<title>` elements". Its bad example is
+a long title shared by every page, with only one piece of information
+changing. Instead, it suggests generating each title from what the page
+actually contains.
 
-When Google detects this, it may build a different title for the search result from headings, page text or anchor text. If that happens to the template's pages, search results stop showing the title the pattern generated.
+When Google detects this problem, it may build a different title for the
+search result from headings, page text, or anchor text. If that happens to
+your template's pages, search results stop showing the title your template
+generated.
 
-The generative AI content guidance extends the review to metadata: `<title>`, meta description, structured data and image `alt` text. If the template generates those fields from the keyword, they inherit the same problem as the body text.
+Google's AI content guidance extends the review to metadata: `<title>`, meta
+description, structured data, and image `alt` text. If your template generates
+those fields from the keyword, they inherit the body's problem.
 
-**A title identical to the H1 isn't a documented problem.** The title link guide actually suggests the opposite: make the main title clear, for example by using the title text in the first visible `<h1>`. On this site, each article's H1 is rendered from the title in its frontmatter. What the guide criticizes is the same title across many pages, not a title that matches the H1 on the same page.
+**A title identical to the H1 isn't a documented problem.** The title link
+guide points the other way. It suggests making the main title clear, for
+example by putting the title text in the first visible `<h1>`. On this site,
+each article's H1 is rendered from its frontmatter title. The guide criticizes
+the same title repeated across many pages, not a title that matches the H1 of
+its own page.
 
 ## How Google reads a set of near-identical pages
 
-The canonicalization documentation describes the mechanism: during indexing, Google identifies each page's primary content; when several pages have very similar primary content, it groups them, picks the most complete one as the canonical and crawls the others less often.
+Google's canonicalization docs describe the mechanism. During indexing, Google
+identifies each page's primary content. When several pages have very similar
+primary content, it groups them, picks the most complete one as canonical, and
+crawls the others less often.
 
-Duplicate content on its own doesn't violate the spam policies. The canonicalization page says so, and the SEO Starter Guide adds that it's inefficient but won't trigger a manual action. How to consolidate those URLs in practice is covered in [redirects and canonicals in Next.js](/en/blog/nextjs-redirects-canonicals).
+Duplicate content alone doesn't violate the spam policies. The
+canonicalization page says so, and the SEO Starter Guide adds that it's
+inefficient but doesn't cause a manual action. I cover how to consolidate
+those URLs in
+[redirects and canonicals in Next.js](/en/blog/nextjs-redirects-canonicals).
 
-What can be said is conditional. **If** the template's pages differ only by keyword or city, the part that varies is small compared with the shared part, and the documented behavior for very similar primary content is to cluster the pages and index one of them. Google has never written this about city pages specifically; it's the general mechanism applied to this case.
+Only a conditional claim holds here. **If** your template pages differ only
+by keyword or city, the part that varies is small next to the part they share.
+When primary content is very similar, the documented behavior is to group the
+pages and index one. Google never wrote this about city pages. It's the
+general mechanism applied to this case.
 
 <figure>
   <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Five near-identical URLs from a template fall into one cluster; one becomes the indexed canonical and the others are crawled less often">
@@ -203,31 +294,43 @@ What can be said is conditional. **If** the template's pages differ only by keyw
   <figcaption>The canonicalization mechanism applied to template pages that change only the keyword or the city.</figcaption>
 </figure>
 
-Put simply: Google identifies the primary content of each template URL. Since it's nearly the same on all of them, they land in the same cluster. One becomes the indexed canonical, and the rest get crawled less often.
+Here are the same steps in text. Google identifies each template URL's
+primary content. Because it's almost the same on all of them, they land in
+the same cluster. One becomes the indexed canonical, and Google crawls the
+others less often.
 
-On the question of site versus page: between 2022 and 2024, the helpful content system applied a site-wide signal, which is now documented as historical. Today, the ranking systems guide says the systems work at the page level but also use site-wide signals, without saying which ones. The sentence about Google presuming individual pages match the quality of the rest of the domain does exist, but it's part of the site reputation abuse policy, which deals with third-party content. It's a hint, not a rule about templates.
+Site-level signals are a separate question. Between 2022 and 2024, the helpful
+content system applied a site-wide signal, which Google now documents as
+historical. Today, Google's ranking systems guide says its systems work at the
+page level but also use site-wide signals, without saying which. Google does
+write that it presumes individual pages match the quality of a domain's other
+pages, but that sentence sits inside the site reputation abuse policy, which
+deals with third-party content. It's a hint, not a rule about templates.
 
 ## What isn't a problem (but gets passed around as if it were)
 
-Plenty of content "rules" that get passed around in SEO have no basis in the documentation:
+Many content "rules" that circulate in Portuguese-language SEO writing in
+Brazil have no basis in Google's documentation.
 
-| The claim | What Google says | Source |
+| Claim | What Google says | Source |
 |---|---|---|
-| A page needs a minimum word count | Length alone doesn't matter; there's no ideal word count | SEO Starter Guide; generative AI guide |
-| Breaking text into small chunks helps AI | Not required | Generative AI guide |
-| Headings need the right order and number | For Search, order doesn't matter and there's no ideal number | SEO Starter Guide |
-| A title identical to the H1 is a mistake | Not documented; the guide suggests using the title text in the first visible h1 | Title link guide |
-| You have to cover every long-tail variation | Unnecessary; the systems understand synonyms | Generative AI guide |
-| Text that "sounds like AI" gets penalized | Using AI isn't the criterion; value is | Generative AI content guidance; rater guidelines |
-| Duplicate content gets penalized | It doesn't violate the spam policies or trigger a manual action | Canonicalization; SEO Starter Guide |
+| A page needs a minimum word count | Length alone does not matter, and there is no ideal word count | SEO Starter Guide, generative AI guide |
+| Breaking text into small chunks helps AI | Not necessary | Generative AI guide |
+| Headings need the right order and number | For Search, order does not matter and there is no ideal number | SEO Starter Guide |
+| A title identical to the H1 is a mistake | Not documented. The guide suggests putting the title in the first visible h1 | Title link guide |
+| You must cover every long-tail variation | Unnecessary. Systems understand synonyms | Generative AI guide |
+| Text that "sounds like AI" is penalized | AI use is not the criterion. Value is | AI content guidance, rater guidelines |
+| Duplicate content gets penalized | It does not violate the spam policies or cause a manual action | Canonicalization, SEO Starter Guide |
 
-The policy is concerned with scale without value, keyword blocks and doorway pages. Formatting doesn't come into it.
+Where the policy does bite is scale without value, keyword blocks, and doorway
+pages. Formatting has nothing to do with it.
 
 ## In Next.js: `generateStaticParams` over a keyword list is a doorway generator
 
-In the [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs), I use the App Router as the reference implementation, and the agency template takes just a few lines of it.
-
-This is illustrative; it doesn't exist in this repository.
+In my [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs), I use
+the App Router as the reference implementation, and the agency template takes
+a few lines of App Router code. This example is illustrative and doesn't exist
+in this repository.
 
 ```tsx
 // app/services/[slug]/page.tsx
@@ -250,9 +353,11 @@ export default async function Page({ params }: Props) {
 }
 ```
 
-The build emits one page per item in the list, each with the same body and a title in the "keyword | Brand" format. Googlebot judges the HTML it receives, not the code that generated it.
+At build time, this emits one page per item in the list, each with the same
+body and a title in the "keyword | Brand" format. Googlebot evaluates the HTML
+that arrives, not the code that generated it.
 
-Here's the actual code for this site's English article route:
+Here's this site's real code for the English article route:
 
 ```tsx
 // src/app/(en)/en/blog/[slug]/page.tsx
@@ -287,31 +392,75 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 ```
 
-The shape is similar; where the list comes from is not. Here, each route exists because someone wrote an MDX file, and any other slug returns a 404 thanks to `dynamicParams = false`. The title comes from each article's frontmatter, not from a "keyword | Brand" pattern.
+It looks similar, but the list comes from somewhere else. Each route here
+exists because an MDX file was written for it, and any other slug returns a
+404 because of `dynamicParams = false`. Each article's title comes from its
+frontmatter (details in
+[how to generate title and description with the Metadata
+API](/en/blog/nextjs-metadata-api)),
+not from a "keyword | Brand" mold.
 
-The difference isn't `generateStaticParams`; it's what the list represents: written content, or keywords. This site has no city pages or keyword-variation pages, so I have no data of my own on how Google would treat a template like that.
+The difference isn't in `generateStaticParams`. It's in whether the list holds
+written content or keywords. This site has no city pages or per-variation
+pages, so I have no data of my own on how Google would treat a template like
+that.
 
 ## How to check whether your template falls into this
 
-Five steps, from most objective to most subjective:
+These five checks run from the most objective to the most subjective:
 
-1. **URL Inspection in Search Console**, on two or three template pages. Compare the "User-declared canonical" with the "Google-selected canonical". If Google picks a different template page, it's treating the two as duplicates. Use the indexed data: according to Search Console Help, the live test doesn't check duplicate status or predict the canonical.
-2. **Page indexing report.** Look for "Duplicate without user-selected canonical" and "Duplicate, Google chose different canonical than user". Lots of template URLs under those reasons means Google clustered the pages and indexed one. That isn't an error in itself; it's canonicalization doing its job on near-identical pages.
-3. **Manual actions report.** Make sure it's empty. No action is named after the policy itself: scaled content abuse shows up under "Major spam problems", doorways under "Thin content with little or no added value", and keyword stuffing under "Hidden text and/or keyword stuffing". An empty report doesn't mean the automated systems agree with you: Google detects violations through automated systems and, when needed, human review, and it's human review that can lead to a manual action.
-4. **Crawl the titles.** Export the titles with Screaming Frog or a similar tool, strip out the variable part (city, neighborhood, keyword) and group what's left. Dozens of URLs with the same title is exactly the boilerplate the guide describes. To check one page at a time, the [meta tag validator](/en/tools/meta-tag-validator) shows the title, description and H1 side by side.
-5. **The rater test.** Open several template pages one after another. The guidelines tell raters to judge scale after looking at several pages, not just one. It's a heuristic, not a measurement, but it usually makes the pattern obvious.
+1. **URL Inspection in Search Console.** Run it on two or three template pages
+   and compare "User-declared canonical" with "Google-selected canonical". If
+   Google picks a different template page, it's treating the two as
+   duplicates. Read the indexed version's data. According to Search Console
+   Help, the live test doesn't evaluate duplicate or canonical status.
+2. **Page indexing report.** Look for
+   "Duplicate without user-selected canonical" and
+   "Duplicate, Google chose different canonical than user". If many template
+   URLs show those statuses, Google grouped the pages and indexed one. That
+   isn't an error in itself. It's canonicalization working on near-identical
+   pages.
+3. **Manual actions report.** Confirm it's empty. No manual action carries the
+   policy's name. Scaled content abuse appears under "Major spam problems",
+   doorways under "Thin content with little or no added value", and keyword
+   stuffing under "Hidden text and/or keyword stuffing". An empty report
+   doesn't mean the automated systems agree. Google detects violations through
+   automated systems and, when necessary, human review. It's human review that
+   can result in a manual action.
+4. **Crawl the titles.** Export titles with Screaming Frog or a similar
+   crawler, strip the variable part (city, neighborhood, keyword), and group
+   what's left. Dozens of URLs with the same title are the boilerplate the
+   guide describes. To check one page at a time, use the
+   [meta tag validator](/en/tools/meta-tag-validator), which shows the title,
+   description, and H1 side by side.
+5. **The rater test.** Open several template pages in a row. The guidelines
+   tell raters to judge scale after looking at several pages, not one. It's a
+   heuristic, not a measurement, but it usually makes the pattern obvious.
 
 ## If your site already looks like this: what Google says about recovery
 
-The core updates page says improvements can take months to be recognized, sometimes not until the next core update. Since December 2025, it also mentions smaller, unannounced core updates as another way changes get picked up. And there's no guarantee of any effect.
+Google's core updates page says improvements can take months to be
+recognized, sometimes not until the next core update. Since December 2025, it
+also names smaller, unannounced core updates as another route. None of this
+comes with a guarantee of impact.
 
-Removing content is treated as a last resort. The same page says that if you're thinking about deleting whole sections, they were probably created for search engines, and removing them may help the rest of the site. Nothing there promises that removing the city block will bring traffic back, and I don't promise that either.
+Google treats removing content as a last resort. That page also says that if
+you're thinking of deleting whole sections, they were probably made for search
+engines, and removing them may help the rest of the site. Nothing there
+guarantees that removing the city block will bring traffic back, and I don't
+guarantee it either.
 
-If I had to prioritize the work, with the caveat that it depends on the site:
+If I had to order the work, it would go like this, though it depends on the
+site:
 
-- **Consolidate** the variation pages into one page per actual service, redirecting the old URLs. In Next.js, `permanent: true` returns a 308, not a 301; details in [redirects and canonicals in Next.js](/en/blog/nextjs-redirects-canonicals).
-- **Replace the city block** with real coverage information where it helps the reader, like response times by region.
-- **Rewrite the titles** from fields that are genuinely different on each page, not from a pattern with the keyword dropped in.
+- **Consolidate** the per-variation pages into one page per real service, and
+  redirect the old URLs. In Next.js, `permanent: true` produces a 308, not a
+  301. I go through the details in
+  [redirects and canonicals in Next.js](/en/blog/nextjs-redirects-canonicals).
+- **Replace the city block** with real coverage information where it helps the
+  reader, such as response times by region.
+- **Rewrite the titles** from distinct fields of each page, not from a mold
+  with the keyword in it.
 
 ## Sources
 
