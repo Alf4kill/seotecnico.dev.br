@@ -1,52 +1,50 @@
 ---
 title: "next/image and SEO: what the component doesn't solve"
-description: "next/image handles performance, not indexing. Alt text, image sitemaps, the background-image blind spot and when to use preload (formerly priority)."
+description: "next/image handles performance, not indexing. Alt text, image sitemaps, the CSS background-image blind spot, and when to spend preload (formerly priority)."
 slug: "next-image-seo"
+datePublished: "2026-10-18"
+dateModified: "2026-10-18"
 primaryQuery: "next/image seo"
-keywords: ['english', 'inglês', 'next/image', 'image', 'alt', 'sizes', 'preload', 'priority', 'srcset', 'avif', 'webp', 'cls', 'image sitemap', 'background-image', 'inline svg', 'google images']
 lang: "en"
 translationOf: "next-image-seo"
 category: cwv
+keywords: ['english', 'inglês', 'next/image', 'image', 'alt', 'sizes', 'preload', 'priority', 'srcset', 'avif', 'webp', 'cls', 'image sitemap', 'background-image', 'inline svg', 'google images']
 tldr: >-
-  next/image takes care of image performance (modern formats, srcset, space
-  reserved to prevent CLS) and none of the indexing: alt text, surrounding
-  text, file names and the image sitemap are still on you, and the component
-  can't see images declared in CSS.
-datePublished: "2026-10-18"
-dateModified: "2026-10-18"
+  next/image solves image performance with a modern format, a responsive
+  srcset, and space reserved against CLS. It solves nothing for indexing. Alt
+  text, surrounding text, file names, and image sitemap entries stay manual,
+  and the component can't see images declared in CSS.
 faq:
   - question: "Does next/image improve SEO?"
-    answer: "It improves image performance (modern formats, srcset, dimensions reserved to prevent CLS), and performance is a page experience factor. But it does nothing for how the image gets indexed: alt text, surrounding text, the file name and the sitemap entry are still your job, and the component writes none of them for you."
+    answer: "It improves image performance with a modern format, srcset, and reserved dimensions against CLS, and performance is a page experience factor. For image indexing, it does nothing at all. Alt text, surrounding text, file names, and sitemap presence are your responsibility, and the component writes none of them for you."
   - question: "Does a decorative image need alt text?"
-    answer: "It needs an empty alt attribute. That tells screen readers and crawlers the image is decorative and should be skipped. Leaving the attribute out is a mistake (the screen reader may read out the file name), and giving a decorative duplicate a descriptive alt just adds noise: the description belongs on the content image, not its background copy."
+    answer: "It needs the alt attribute, left empty. That tells screen readers and crawlers the image is decorative and can be ignored. Leaving the attribute out is an error, since a screen reader may announce the file name instead. A descriptive alt on a decorative duplicate only adds noise. The description belongs on the content image, not on its background copy."
   - question: "When should I use preload (formerly priority) in next/image?"
-    answer: "Only when the image is the page's LCP element, and on no more than one image per page. Next.js 16 deprecated the priority prop in favor of preload, and the documentation recommends loading eager or fetchPriority high for most cases. Marking several images as priority defeats the purpose: prioritization only works by contrast."
+    answer: "Only when the image is the page's LCP element, and on at most one image per page. Starting with Next.js 16, the priority prop is deprecated in favor of preload, and for most cases the documentation recommends loading set to eager or fetchPriority set to high. Marking several images as priority cancels the effect, because prioritization works by contrast."
   - question: "Does next/image work with CSS background-image?"
-    answer: "No. The component renders an img tag, so an image declared in CSS sits outside its pipeline: no format optimization, no srcset, invisible to the browser's preload scanner and invisible to Google Images, which doesn't index images loaded through CSS. If the image is content, it needs to be an img tag."
+    answer: "No. The component renders an img tag, and a CSS image sits outside its pipeline. It gets no format optimization and no srcset, the browser's preload scanner can't see it, and neither can Google Images, which doesn't index images loaded through CSS. If the image is content, it needs to be an img tag."
   - question: "Do I need an image sitemap?"
-    answer: "You do if some of your images are ones Google wouldn't find on its own, or ones you want to explicitly tie to a page; the images field in sitemap entries is the official channel for that. On this site, it's how the raster copies of the diagrams get into Google Images, since the inline SVG versions aren't treated as image resources."
-  - question: "SVG or PNG for diagrams in an article?"
-    answer: "Inline SVG, if the diagram teaches something: labels in text elements can be crawled by Google and cited by LLMs, the SVG follows the light/dark theme through a CSS token, and it costs no extra request. PNG or WebP is for screenshots and photos, where raster loses nothing. One caveat: inline SVG doesn't show up in Google Images, so if that channel matters, export a raster copy and declare it in the sitemap."
+    answer: "You do if you have images Google wouldn't discover on its own, or images you want to associate explicitly with pages. The images field in sitemap entries is the official channel for that. On this site, it's what gives the raster copies of the diagrams a presence in Google Images, since Google doesn't treat the inline SVG version as an image resource."
+  - question: "Should diagrams in an article be SVG or PNG?"
+    answer: "Inline SVG, if the diagram teaches something. Its labels are text elements that Google can crawl and LLMs can cite, it follows the light or dark theme through a CSS token, and it costs no extra request. Use PNG or WebP for screenshots and photos, where raster loses nothing. One caveat: inline SVG doesn't enter Google Images, so if that channel matters to you, export a raster copy and declare it in the sitemap."
 ---
 
-`next/image` takes care of the performance side of images (modern formats,
-`srcset`, dimensions reserved to prevent CLS) but **does nothing for
-indexing**: alt text, the surrounding text, the file name and the sitemap
-entry are still up to you, and the component can't see images declared in
-CSS. Search results treat "image SEO" as a synonym for "image performance";
-this article covers the half the component doesn't touch, which is precisely
-the half that decides whether the image exists as far as the index is
-concerned.
+`next/image` solves the performance side of images (a modern format,
+`srcset`, and dimensions reserved against CLS) and **does nothing for
+indexing**. Alt text, surrounding text, file names, and presence in the
+sitemap are still up to you, and the component can't see images declared in
+CSS. Every search result for this topic treats "image SEO" as another name
+for image performance. This article covers the other half, the part the
+component doesn't touch and the part that decides whether your image exists
+as far as the index is concerned.
 
 ## What next/image gives you for free
 
-The standard summary, in one paragraph: the component serves the lightest
-format the browser accepts, generates a `srcset` for each pixel density and
-viewport, reserves the image's space in the layout (`width` and `height` are
-required) and lazy-loads by default. This site's configuration enables AVIF
-and WebP with breakpoints tuned to its layout (the Portuguese comments say:
-modern formats in order of preference, and breakpoints for the responsive
-srcset):
+Here's the consensus in one paragraph. `next/image` serves the lightest
+format the browser accepts, generates a `srcset` for each density and
+viewport, reserves layout space for the image (`width` and `height` are
+required), and lazy-loads by default. This site's config covers AVIF and
+WebP, with breakpoints tuned to its layout:
 
 ```ts
 // next.config.ts
@@ -61,20 +59,20 @@ srcset):
   },
 ```
 
-You can see the practical result of that setup in this site's baseline from
-2026-07-20: **CLS 0.000 on all 10 pages**. With explicit dimensions on every
-image, image-driven layout shift simply doesn't happen. That's what the
-component buys you. Now for what it doesn't.
+In this site's baseline from July 20, 2026, **CLS was 0.000 on all 10 pages**.
+When every image has explicit dimensions, images cause no layout shift at
+all. That's what the component buys you. Now for what it doesn't.
 
 ## What it doesn't give you (and nobody warns you)
 
-`next/image` doesn't write your alt text, doesn't add the image to the
-sitemap, doesn't give the file a meaningful name, doesn't create any text
-around the image, and doesn't see CSS `background-image`. None of those are
-minor details: they're exactly the signals Google uses to understand and
-index an image. The component optimizes how the file is **delivered**;
-**indexing** what the file shows is a separate job, and it doesn't come in the
-box.
+`next/image` doesn't write your `alt`. It doesn't put the image in the
+sitemap, give the file a meaningful name, or create any text around the
+image. And it can't see a CSS `background-image`.
+
+None of these is a detail. They're exactly the signals Google uses to
+understand and index an image. What the component optimizes is how the file
+gets **delivered**. **Indexing** what the file shows is a different
+discipline, and it isn't in the box.
 
 <figure>
   <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="What next/image covers: the performance half is handled, the indexing half is still the developer's job">
@@ -103,46 +101,47 @@ box.
   <figcaption>The component optimizes how the file is delivered; indexing what it shows is still manual work.</figcaption>
 </figure>
 
-The same diagram, as a table:
+Here's the same split as a table:
 
 | Handled by the component | Your job |
-| --- | --- |
-| modern format (AVIF/WebP) | descriptive `alt`, in the page's language |
-| `srcset` per viewport and density | text around the image |
-| lazy loading by default | meaningful file name |
-| reserved dimensions (CLS) | entry in the image sitemap |
+|---|---|
+| Modern format (AVIF/WebP) | Descriptive `alt`, in the page's language |
+| `srcset` per viewport and density | Text around the image |
+| Lazy loading by default | Meaningful file name |
+| Reserved dimensions (CLS) | Entry in the image sitemap |
 
 ## Alt text: the one part of image indexing that's entirely yours
 
-`alt` is required by the component (TypeScript complains if it's missing),
-but required doesn't mean good. Good alt text describes what the image shows
-to someone who can't see it, without keyword stuffing: "Search Console report
-with the 'Crawled - currently not indexed' status highlighted", not "seo
-nextjs search console indexing".
+The component requires `alt`, and TypeScript complains when it's missing.
+Required isn't the same as good, though. Good alt text describes what the
+image shows to someone who can't see it, without keyword stuffing.
+
+- Good: "Search Console report with the 'Crawled - currently not indexed'
+  status highlighted"
+- Bad: "seo nextjs search console indexing"
 
 ### A decorative image gets an empty alt, not a pretty one
 
-A decorative image (a background, an ornament, a visual duplicate) gets an
-empty `alt`. An attribute that's present but empty tells screen readers and
-crawlers to skip the image. The real-world example at the end of this article
-shows a component on this site where that matters in practice: the blurred
-background copy gets an empty `alt` and `aria-hidden`, and the description
-lives only on the content image.
+Give a decorative image (a background, an ornament, a visual duplicate) an
+empty `alt`. When the attribute is present and empty, screen readers and
+crawlers know to ignore the image. You'll see where this matters in practice
+in the real example at the end of this article. One of this site's
+components gives its blurred background copy an empty `alt` and
+`aria-hidden`, and only the content image carries a description.
 
 ### Alt text in the page's language
 
-This is a rule in this repository, not an opinion: alt text is written in the
-page's language, pt-BR on pt-BR pages and English on English ones. Alt text
-is part of the page's textual relevance; English alt text on a Portuguese
-article sends a mixed signal, and it's useless to the screen reader of the
-page's actual audience.
+This is a rule in this repository, not an opinion. On pt-BR pages, alt text
+is written in pt-BR. Alt text counts toward a page's textual relevance, and
+English alt text on a Portuguese article sends a mixed signal. It also does
+nothing for the people the page is actually written for when they use a screen reader.
 
 ## sizes: the attribute that decides which file the user downloads
 
-`srcset` provides the options; `sizes` tells the browser which one to pick
-**before** the layout exists. Without it, responsive images assume the image
-spans 100vw, so a 400px card downloads the 1080px file. The format is one
-media query per layout rule:
+`srcset` lists the options, and `sizes` tells the browser which one to pick
+**before** layout exists. Without it, the browser assumes a responsive image
+takes up 100vw, so a 400px card downloads the 1080px file. You write `sizes`
+as one media query per layout rule:
 
 ```tsx
 <Image
@@ -154,33 +153,33 @@ media query per layout rule:
 />
 ```
 
-Read it from the end: on large screens the image renders at 720px, so
-download the closest variant; below 768px it takes up the full viewport.
-Getting `sizes` wrong doesn't break anything visible; it just quietly wastes
-bytes, which is why almost nobody fixes it.
+Read it from the end. On large screens the image renders at 720px, so the
+browser downloads the closest variant. Below 768px, it takes the whole
+viewport.
+
+A wrong `sizes` doesn't break anything you can see. It only wastes bytes,
+silently, which is why almost nobody fixes it.
 
 ## preload: one shot, and why this site didn't use it
 
-Most search results on this are out of date, so the version matters:
-**starting with Next.js 16, the `priority` prop is deprecated in favor of
-`preload`**; the component's types mark `priority` as deprecated and point to
-the new prop. For most cases, the documentation recommends `loading="eager"`
-or `fetchPriority="high"` rather than a full preload. `preload` does
-everything at once: it turns off lazy loading, emits a `<link rel="preload">`
-in the head and signals high fetch priority.
+Portuguese-language (pt-BR) search results on this topic are almost all out
+of date, so here's the version that matters. **Starting with Next.js 16, the
+`priority` prop was deprecated in favor of `preload`.** The component's
+types mark `priority` as deprecated and point to the new prop. For most
+cases, the docs recommend `loading="eager"` or `fetchPriority="high"`
+instead of a full preload.
 
-The rule for using it didn't change with the name: **one shot per page**,
-used only on the LCP element, and only when that element is an image.
-Prioritization works by contrast, so marking three images as priority is
-telling the browser that none of them are.
+`preload` is the whole package. It turns off lazy loading, emits a
+`<link rel="preload">` in the head, and signals high fetch priority. The
+rename didn't change how you use it. You get **one shot per page**, and you
+spend it only on the LCP element, when that element is an image.
+Prioritization works by contrast. Mark three images as priority and you've
+told the browser that nothing is.
 
-And here's why this site didn't use it: **the LCP here is text**, on every
-page measured. There's no hero image, and content images sit below the fold
-and should stay lazy. The comment in this repository's MDX components file
-exists so nobody "optimizes" that by mistake (it says `Image` is the
-sanctioned way to embed images in articles, requires explicit width and
-height and serves an optimized format, and that content images sit below the
-fold, so `preload` must never be used there):
+This site doesn't spend that shot at all. **The LCP here is text**, on every
+page measured. There's no hero image, and content images sit below the
+fold, where they need to stay lazy. A comment in this repository's MDX
+override is there so nobody "optimizes" that by mistake:
 
 ```tsx
 // src/components/mdx/mdx-components.tsx
@@ -193,32 +192,33 @@ fold, so `preload` must never be used there):
 // ─────────────────────────────────────────────────────────────────────────────
 ```
 
-I'm not going to fake a before-and-after for a hero image this site doesn't
-have. If your LCP **is** an image, the [guide to improving
-LCP](/en/blog/improve-lcp-nextjs) covers the full mechanism: discovery,
-priority and the cost of every millisecond of delay.
+I won't fake a before/after for a hero image this site doesn't have. If
+your LCP **is** an image, the
+[guide to improving LCP](/en/blog/improve-lcp-nextjs) covers the full
+mechanism: discovery, priority, and what every millisecond of delay costs.
 
 ## The blind spot: CSS background-image
 
-`next/image` renders an `<img>`. An image declared in CSS (`background-image`)
-is outside all of it: outside the optimization pipeline, outside the
-`srcset`, invisible to the browser's preload scanner and invisible to Google
-Images, which doesn't index images loaded through CSS. If the image is content
-(a product, a cover, a diagram), it needs to be an `<img>` tag in the HTML.
+`next/image` renders an `<img>`. An image declared in CSS with
+`background-image` gets none of what that brings. It skips the optimization
+pipeline and `srcset`, and the browser's preload scanner can't see it.
+Neither can Google Images, which doesn't index images loaded through CSS. If
+the image is content (a product, a cover, a diagram), it needs to be an
+`<img>` tag in the HTML.
 
-The specific damage `background-image` does to LCP (late discovery, a scanner
-that can't see it) is covered in the [list of LCP
-anti-patterns](/en/blog/nextjs-high-lcp); here's the indexing verdict: as far
-as Google Images is concerned, a CSS image doesn't exist.
+For the specific LCP damage `background-image` does (late discovery, a
+scanner that doesn't see it), see the
+[catalog of LCP anti-patterns](/en/blog/nextjs-high-lcp). This section only
+gives the indexing verdict. As far as Google Images is concerned, a CSS
+image doesn't exist.
 
 ## Images in the sitemap: the field almost nobody fills in
 
-The sitemap protocol lets you list images for each URL, and the App Router's
-`sitemap.ts` exposes that as the `images` field on each entry. It's the
-official way to help Google discover images it wouldn't find through the
-HTML, and it's what this site uses to get the articles' diagrams into Google
-Images (the comment says these are per-article image assets declared in the
-image sitemap, diagrams exported to `/public`):
+Each URL in a sitemap can list the images associated with it. In the App
+Router, `sitemap.ts` exposes that list as the `images` field on each
+entry. It's the official channel for Google to discover images it wouldn't
+find through the HTML, and it's how this site gives its articles' diagrams a
+presence in Google Images:
 
 ```ts
 // src/app/sitemap.ts
@@ -227,7 +227,7 @@ image sitemap, diagrams exported to `/public`):
 const postImages: Record<string, string[]> = {
   'melhorar-lcp-nextjs': ['/images/blog/melhorar-lcp-nextjs/lcp-subpartes-timeline.webp'],
   'lcp-alto-next-js': ['/images/blog/lcp-alto-next-js/preload-scanner-visivel-invisivel.webp'],
-  // …one asset per article
+  // …um ativo por artigo
 }
 
 const postPages: MetadataRoute.Sitemap = posts.map(({ frontmatter }) => ({
@@ -239,44 +239,44 @@ const postPages: MetadataRoute.Sitemap = posts.map(({ frontmatter }) => ({
 }))
 ```
 
-Why the diagrams need that channel is the subject of the next section.
+Why do the diagrams need that channel? That's the next section.
 
 ## A diagram should be inline SVG, not an image
 
-Here's a content architecture decision on this site that no `next/image`
-guide discusses: **a diagram that teaches something isn't an `<Image>`; it's
-an inline `<svg>` in the MDX.**
+No `next/image` guide discusses this content architecture decision. On this
+site, **a diagram that teaches isn't `<Image>`. It's inline `<svg>` in
+the MDX.**
 
 ### Text inside the SVG can be crawled and cited
 
 Every label in this site's diagrams is a real `<text>` element inside the
 SVG. Google reads that text as part of the page, and an LLM processing the
-HTML reads "preload scanner → doesn't see background-image" straight from the
-markup. A PNG with the same labels is a black box: the diagram's content
-simply doesn't exist as text. On a site competing to be cited in AI-generated
-answers, that difference is everything.
+HTML reads "preload scanner → doesn't see background-image" straight from
+the markup. A PNG with the same labels is a black box, and none of its
+content exists as text. On a site competing to be cited in
+AI-generated answers, that difference is the whole game.
 
-The trade-off, stated up front: Google Images does **not** treat inline SVG as
-an image resource. That's why each article exports its main diagram as a
-raster copy in `public/images/blog/`, whose only job is to feed the sitemap's
-`images` field. The inline version serves people and LLMs; the raster copy
-serves the image search channel.
+This choice has a cost, though. Google Images does **not** treat inline SVG
+as an image resource. That's why each article's main diagram is also
+exported as a raster copy in `public/images/blog/`, and the copy's only job
+is to feed the sitemap's `images` field. Inline SVG serves people and LLMs,
+and the raster copy serves the image channel.
 
 ### The SVG follows the theme; the PNG doesn't
 
-The diagrams get all their colors from CSS tokens (`--foreground`,
-`--color-accent`, `--color-diagram-*`). In the dark theme, the whole diagram
-follows along: text, axes, fills. A PNG exported from the light theme ends up
-with a glaring white background in dark mode, or you need two exports and a
-`<picture>` with a media query. Inline SVG handles that for free.
+Diagrams get their color only from CSS tokens (`--foreground`,
+`--color-accent`, `--color-diagram-*`). Switch to the dark theme and the
+whole diagram follows, including text, axes, and fills. A PNG exported from
+the light theme keeps a glaring white background in dark mode, unless you
+export it twice and serve it through a `<picture>` with a media query.
+Inline SVG handles this for free.
 
 ## A real example: two Image tags, one download
 
-This site's `BlurFillImage` component renders the same image twice: a blurred
-copy in the background with `object-cover` (filling the container) and the
-full image in front with `object-contain`. Here's the actual code (the
-Portuguese comments read "blurred background, fills the frame" and "real
-image, whole, uncropped"):
+This site's `BlurFillImage` component renders the same image twice. A
+blurred copy sits in the back with `object-cover`, filling the container,
+and the whole image sits in front with `object-contain`. Here's the actual
+code:
 
 ```tsx
 // src/components/ui/BlurFillImage.tsx
@@ -315,13 +315,16 @@ export function BlurFillImage({
 }
 ```
 
-That component makes two SEO points. First, network cost: the two `<Image>`
-tags share the same `src` and the same layout dimensions, so the pipeline
-resolves the identical variant and **the browser downloads it once and reuses
-it**. Two tags, one request. Second, accessibility that doubles as indexing:
-the background copy gets an empty `alt` and `aria-hidden` because it's
-decoration, and the description lives on the image in front. That's the
-empty-alt rule in practice, not theory.
+It illustrates two SEO points.
+
+1. **Network cost.** Both `<Image>` tags share the same `src` and the same
+   layout dimensions, so the pipeline resolves an identical variant for
+   each, and **the browser downloads it once and reuses it**. Two tags, one
+   request.
+2. **Accessibility that's also indexing.** Because the background copy is
+   decoration, it gets an empty `alt` and `aria-hidden`. The description
+   lives on the front image. This is the empty-alt rule in practice, not in
+   theory.
 
 <figure>
   <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The same src rendered in two Image tags resolves the same variant and produces a single network request">
@@ -354,27 +357,29 @@ empty-alt rule in practice, not theory.
   <figcaption>The same src and the same sizes resolve to the same variant, so the browser downloads it once.</figcaption>
 </figure>
 
-Put simply: the same `src` resolving to the same variant produces a single
-network request, which the browser reuses for both renders. Doubling the
-visual effect doesn't double the cost.
+Both renders use the same `src` and resolve to the same variant, so the
+browser makes a single network request and reuses it for both. Duplicating
+the visual effect doesn't duplicate the cost.
 
 ## How to check
 
-To close the loop, as the [technical SEO guide for
-Next.js](/en/guide/technical-seo-nextjs) recommends:
+Close the loop, as the
+[technical SEO guide for Next.js](/en/guide/technical-seo-nextjs)
+prescribes:
 
-1. **DevTools → Network, Img filter.** Check which format is served (AVIF or
-   WebP, not the original), and for duplicates like `BlurFillImage`, that the
-   same `src` produced just one request.
-2. **View source.** Is the `alt` in the first response's HTML, descriptive and
-   in the page's language? Do the decorative images have the empty attribute?
-3. **Sitemap.** Open the production `/sitemap.xml` and confirm the entries
-   include the images field with absolute URLs to the raster files.
+1. **DevTools → Network, Img filter.** Check the format served (AVIF/WebP,
+   not the original). For duplicates like `BlurFillImage`, confirm that the
+   same `src` produced only one request.
+2. **View source.** Is the `alt` in the initial HTML response, descriptive,
+   and in the page's language? Do decorative images have the
+   empty attribute?
+3. **Sitemap.** Open `/sitemap.xml` in production and confirm that its
+   entries carry the `images` field with absolute URLs for the raster files.
 4. **Lighthouse.** Do the image audits (format, sizing, lazy loading) pass?
-   And does CLS stay at 0 with explicit dimensions?
-5. **The articles' JSON-LD.** If your pages declare `image` in the `Article`
-   schema, validate the block; the [JSON-LD
-   generator](/en/tools/json-ld-generator) produces the format this site
-   uses.
+   Does CLS stay at 0 with explicit dimensions?
+5. **The articles' JSON-LD.** If the pages declare `image` in the `Article`
+   schema, validate that block. The
+   [JSON-LD generator](/en/tools/json-ld-generator) produces the format this
+   site uses.
 
 This is the English version of an article first published in Portuguese; the two declare each other.
