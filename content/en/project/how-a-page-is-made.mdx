@@ -3,7 +3,7 @@ title: "How a content page is made on this site"
 description: "The steps behind every page here, from research note to merge, what checking drafts against sources and code corrected, and which checks are automated."
 slug: "how-a-page-is-made"
 datePublished: "2026-10-27"
-dateModified: "2026-10-27"
+dateModified: "2026-11-01"
 primaryQuery: "how a content page is made"
 lang: "en"
 translationOf: "como-uma-pagina-nasce"
@@ -181,11 +181,17 @@ translate in a single pass.
 It also comes with a style guide (American English, US dates in prose and
 ISO in tables, contractions in explanatory text, and a glossary of the
 site's terms) and a script, `check-english.mjs`, that looks for the calques
-the revision cataloged. Run on the commit before the revision, it found 263
+the revision cataloged. Run on the commit before the revision (`e39de3b`), it found 263
 occurrences, with errors in 28 of 28 pages. Afterward, it reported 0 errors
 and 1 warning. You'll find the research, with the count, in the
 [research note on English
 quality](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-10-27-english-translation-quality.md).
+You can reproduce the count from before the revision like this:
+
+```bash
+git archive e39de3b content/en | tar -x -C /tmp/before
+node .claude/skills/english-version/scripts/check-english.mjs $(find /tmp/before/content/en -name '*.mdx') --summary
+```
 
 That same pass found two problems that had nothing to do with language. In
 the JSON-LD article, the sentence explaining the escape showed `<` where the

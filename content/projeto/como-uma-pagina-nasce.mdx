@@ -11,7 +11,7 @@ tldr: >-
   scripts de checagem e PR. Todo rascunho publicado até hoje precisou de
   correção na verificação.
 datePublished: "2026-10-27"
-dateModified: "2026-10-27"
+dateModified: "2026-11-01"
 ---
 
 Uma página de conteúdo aqui não é uma tarefa de redação: é o fim de uma
@@ -161,10 +161,16 @@ segunda skill, a [english-version](https://github.com/Alf4kill/seotecnico.dev.br
 Junto vieram um guia de estilo (inglês americano, datas no formato dos Estados
 Unidos no texto e ISO nas tabelas, contrações no texto explicativo, um
 glossário com os termos do site) e um script, `check-english.mjs`, que procura
-os decalques que a revisão catalogou. No commit anterior à revisão, ele achou
+os decalques que a revisão catalogou. No commit anterior à revisão (`e39de3b`), ele achou
 263 ocorrências e erro em 28 das 28 páginas; depois dela, 0 erros e 1 aviso. A
 pesquisa e a contagem estão na [nota de pesquisa sobre a qualidade do
 inglês](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-10-27-english-translation-quality.md).
+A contagem de antes da revisão se reproduz assim:
+
+```bash
+git archive e39de3b content/en | tar -x -C /tmp/before
+node .claude/skills/english-version/scripts/check-english.mjs $(find /tmp/before/content/en -name '*.mdx') --summary
+```
 
 A mesma passada achou dois defeitos que não eram de idioma: no artigo de
 JSON-LD, a frase que explica o escape mostrava `<` onde o código tem
