@@ -3,7 +3,7 @@ title: "GTM in Next.js: SPA pageviews without double counting"
 description: "GTM in the Next.js App Router: why All Pages isn't enough, the History Change trigger, double counting with GA4 Enhanced Measurement, Consent Mode v2."
 slug: "nextjs-gtm"
 datePublished: "2026-10-18"
-dateModified: "2026-10-18"
+dateModified: "2026-11-01"
 primaryQuery: "gtm next.js"
 lang: "en"
 translationOf: "gtm-nextjs"
@@ -50,8 +50,10 @@ Pages fires again.
 
 A Next.js app loads the container **once**. After that, its router swaps
 content through the History API, with no page load. GA4 records the landing
-page and goes blind to everything after it. Your "bounce" rate drops
-artificially, and inner pages disappear from your reports.
+page and goes blind to everything after it. Your bounce rate goes up
+artificially, because GA4 counts a session as engaged by page count only
+when it has two or more page views, and inner pages disappear from your
+reports.
 
 ## Installing GTM in the App Router
 
