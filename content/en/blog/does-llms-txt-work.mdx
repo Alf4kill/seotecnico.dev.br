@@ -16,12 +16,12 @@ tldr: >-
   existing code can generate it, keeping it costs little. Don't expect an
   effect.
 datePublished: "2026-10-06"
-dateModified: "2026-10-18"
+dateModified: "2026-11-01"
 faq:
   - question: "What is llms.txt?"
     answer: "It's a proposed Markdown file, served at the site root as /llms.txt, that summarizes a site and lists its most important links for language models. Jeremy Howard published it on September 3, 2024, at llmstxt.org. It isn't a ratified standard."
   - question: "Does any AI actually fetch llms.txt?"
-    answer: "On this site, it was fetched 9 times in 57 days, between July and September 2026, and no client followed the link that existed only inside it. In a 28-day slice, from August 16 to September 12, none of the 5 fetches came from a client that identified itself as an AI agent. The pre-registered prediction about that closes on October 23, 2026. For Google Search, the official documentation says the file is ignored."
+    answer: "On this site, the file was fetched 22 times from July 25 to October 23, 2026. Of the 20 fetches where the client could be classified, none came from a declared or verified AI agent; the other 2 have no class. During the 57-day pilot, no client followed the link that existed only inside it. For Google Search, the official documentation says the file is ignored."
   - question: "Is it worth creating an llms.txt?"
     answer: "It depends on the cost. If code can generate it from content your site already has, keeping it is cheap. This site's data shows no effect, though, and the file doesn't replace content in the served HTML, which is where the assistants tested on this site got their answers."
   - question: "Does llms.txt replace robots.txt?"
@@ -128,16 +128,31 @@ test found is how little exposure the file got, not the zero.
 ### Who fetched it
 
 The pilot's write-up doesn't identify who fetched the file, and I won't
-name anyone here either. An interim 28-day pull from August 16 to September
-12, 2026, with my own network's traffic excluded, gives a partial picture.
-In that slice, the file was fetched 5 times, all by clients that did
-**not** identify themselves as AI agents. No declared AI agent fetched it.
+name anyone here either. A separate prediction, pre-registered the day the
+file went live, asked a simpler question: **no fetch of `/llms.txt` by a
+major vendor's AI agent within 90 days**, from July 25 to October 23, 2026.
 
-That ties to a separate prediction I pre-registered the day the file went
-live: **no fetch of `/llms.txt` by a major vendor's AI agent within 90
-days**. Its window closes October 23, 2026, and I'll add the verdict to this
-article when it does. Until then, those 5 fetches are an interim
-observation, not a result.
+That window has closed, and the prediction held for agents that identify
+themselves. With my own network's traffic excluded, the file was fetched 22
+times in those 90 days: 9 during the pilot and 13 after it. For 20 of those
+fetches I know the client's class, and none came from a known AI crawler's
+user agent or from a bot with a verified identity. The other 2, from July 25
+to August 15, have no class. GA4 keeps two months of event data, and the
+pilot's record has only the count.
+
+| Measure (2026-07-25 to 2026-10-23) | Count |
+|---|---|
+| Fetches of `/llms.txt` | 22 |
+| Fetches where the client's class is known | 20 |
+| Of those, by a declared or verified AI agent | 0 |
+| Fetches with no class (2026-07-25 to 2026-08-15) | 2 |
+
+In the same pilot, PerplexityBot, with a verified identity, fetched
+`robots.txt` twice and never fetched `llms.txt`. The caveat that applies to
+the whole pilot applies here too: an agent that doesn't identify itself
+lands in the "unknown" bucket, which is where all 20 fetches are. So the
+result tells you that no agent presenting itself as an AI agent fetched the
+file. It doesn't tell you that no AI did.
 
 ## Why the test isn't conclusive
 
@@ -370,8 +385,8 @@ a little over a year. A small site probably can't get a strong answer to
 "does anyone follow my llms.txt?" within a few months. It's better to know
 that before you start than to find out at closing, as I did.
 
-> Measurement for this article is still running. I'll update the numbers
-> when the 90-day prediction closes on October 23, 2026, and when H14
-> closes on December 24, 2026.
+> Measurement for this article is still running. The 90-day prediction
+> closed on October 23, 2026, with the verdict above. I'll update the
+> numbers again when H14 closes on December 24, 2026.
 
 This is the English version of an article first published in Portuguese; the two declare each other.

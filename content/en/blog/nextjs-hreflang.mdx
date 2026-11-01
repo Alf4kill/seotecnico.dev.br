@@ -3,7 +3,7 @@ title: "Hreflang in Next.js: a bilingual site in the App Router"
 description: "Implement hreflang in Next.js with the Metadata API: reciprocity, x-default, a camelCase attribute that fools audits, and a CI test that locks it in."
 slug: "nextjs-hreflang"
 datePublished: "2026-10-18"
-dateModified: "2026-10-18"
+dateModified: "2026-11-01"
 primaryQuery: "hreflang next.js"
 lang: "en"
 translationOf: "hreflang-nextjs"
@@ -356,13 +356,25 @@ Search Console's page indexing report has a section on alternate languages
 that helps, but URL-by-URL inspection is what answers the question.
 
 I should be upfront about where this site stands. The English version of
-the guide went live on July 26, 2026, along with this implementation, and
-there's **no verdict yet**. A 28-day window has to close before any number
-here means anything. I logged the hypothesis that the English version gains
-its own impressions **without** dragging down the Portuguese version's. If
-it does drag them down, the pair is being read as duplication, and the
-implementation failed. I'll post the result here when there is one, not
-before.
+the guide went live on July 26, 2026, along with this implementation. I
+logged the hypothesis that it would earn its own impressions **without**
+taking them from the Portuguese version, which would mean the pair was being
+read as duplication. The deciding check is whether Google picks one
+canonical for both languages, and the Search Console reading of September
+11, 2026 (data from July 11 to September 9) says it didn't. Both URLs show
+up separately in the Pages report, each with its own impressions (305 for
+the Portuguese version, 876 for the English one), and no page falls under a
+duplicate or Google-selected canonical reason. Google accepted the pair as a
+cluster.
+
+Two caveats come with that result. The English version's impressions came
+mostly from searches like `next seo` and `next-seo npm`, which look for the
+`next-seo` npm package, an unrelated library. And the per-URL confirmation
+is still URL Inspection, which that export doesn't include. Then, in the
+October 13, 2026 report, the English version had dropped out of the index as
+"Crawled – currently not indexed," which isn't a duplication reason. The
+pair is still declared, but a page outside the index doesn't show up in any
+search.
 
 For the full context (metadata, JSON-LD, sitemaps, rendering, and Core Web
 Vitals), see the

@@ -3,7 +3,7 @@ title: "Screaming Frog free version: what it audits, what it locks"
 description: "Screaming Frog's free version crawls 500 URLs and locks JavaScript, extraction, and Search Console. What it found on a 68-page site, and what it missed."
 slug: "screaming-frog-free-version"
 datePublished: "2026-10-23"
-dateModified: "2026-10-23"
+dateModified: "2026-11-01"
 primaryQuery: "screaming frog free version"
 lang: "en"
 translationOf: "screaming-frog-gratuito"
@@ -103,7 +103,8 @@ adv.crawl(
         'ROBOTSTXT_OBEY': True,
         'DOWNLOAD_DELAY': delay,
         'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
-        # 3xx/4xx/5xx are findings, not noise
+        'LOG_FILE': str(out / 'scrapy.log'),
+        # Keep 3xx/4xx/5xx rows: they are findings, not noise.
         'HTTPERROR_ALLOW_ALL': True,
     },
 )
@@ -247,7 +248,7 @@ becomes "did it get at least one impression?"
 | Pages shown in search with no internal link | 0 |
 | Linked pages with no impression | 21 |
 
-Of those 21 pages, 19 went live on October 18, 2026, four days before the
+Of those 21 pages, 19 went live on October 18, 2026, three days before the
 window closed. Only two tell you anything. One is the lab index (the
 Portuguese `/laboratorio`, live since October 4, 2026). The other is the
 Portuguese version of my
@@ -257,7 +258,7 @@ live since October 8, 2026. I'll look at the data again on November 15,
 2026, once the new pages have had 28 days of exposure.
 
 Broken down by depth, level-3 pages got fewer impressions. But almost every
-level-3 page went live four days before the window closed, so in this data
+level-3 page went live three days before the window closed, so in this data
 age and depth are one variable. I can't separate them, so I make no claim
 about depth.
 

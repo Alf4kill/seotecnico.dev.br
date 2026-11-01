@@ -12,7 +12,7 @@ tldr: >-
   History Change — mas ative ele ou o Enhanced Measurement do GA4, nunca os
   dois, ou cada pageview é contado duas vezes.
 datePublished: "2026-07-22"
-dateModified: "2026-10-18"
+dateModified: "2026-11-01"
 faq:
   - question: "Por que o pageview não dispara nas navegações do Next.js?"
     answer: "Porque as navegações de um app Next.js são history.pushState — a página não recarrega, então o evento de page load que alimenta o gatilho All Pages do GTM só acontece uma vez, no primeiro acesso. As navegações seguintes precisam de um gatilho próprio: o History Change, que escuta as mudanças na History API."
@@ -45,8 +45,10 @@ dispara quando o container carrega junto com a página. Num site tradicional,
 toda navegação é um page load novo, o container recarrega, o gatilho
 dispara. Num app Next.js, o container carrega **uma vez**; dali em diante o
 router troca o conteúdo via History API, sem load. Resultado: o GA4 registra
-a entrada na primeira página e fica cego para o resto da sessão — a taxa de
-"rejeição" despenca de mentira e as páginas internas somem do relatório.
+a entrada na primeira página e fica cego para o resto da sessão. A taxa de
+rejeição sobe de mentira, porque o GA4 só conta uma sessão como engajada pelo
+número de páginas quando ela tem duas ou mais visualizações, e as páginas
+internas somem do relatório.
 
 ## Instalar o GTM no App Router
 

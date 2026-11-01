@@ -12,7 +12,7 @@ tldr: >-
   crawl, renderização de JavaScript, extração customizada e a integração com o
   Search Console. O que ela trava dá para cobrir com ferramentas abertas.
 datePublished: "2026-10-23"
-dateModified: "2026-10-23"
+dateModified: "2026-11-01"
 faq:
   - question: "Qual o limite da versão gratuita do Screaming Frog?"
     answer: "500 URLs por crawl. A conta inclui tudo o que o crawler encontra, não só páginas HTML: scripts, imagens, feeds e links externos entram no total. Num site de 68 páginas, o crawl encontrou 198 URLs, das quais 86 internas."
@@ -98,7 +98,8 @@ adv.crawl(
         'ROBOTSTXT_OBEY': True,
         'DOWNLOAD_DELAY': delay,
         'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
-        # 3xx/4xx/5xx são achados, não ruído
+        'LOG_FILE': str(out / 'scrapy.log'),
+        # Keep 3xx/4xx/5xx rows: they are findings, not noise.
         'HTTPERROR_ALLOW_ALL': True,
     },
 )
@@ -233,14 +234,15 @@ impressão".
 | Páginas exibidas na busca sem nenhum link interno | 0 |
 | Páginas linkadas sem nenhuma impressão | 21 |
 
-Das 21 sem impressão, 19 foram publicadas em 18/10, quatro dias antes de a
+Das 21 sem impressão, 19 foram publicadas em 18/10, três dias antes de a
 janela fechar. Só duas dizem alguma coisa: o índice do laboratório (no ar
 desde 04/10) e o artigo sobre
 [teste de SEO com pré-registro](/blog/pre-registro-seo) (desde 08/10). A
 próxima leitura é em 15/11, depois de 28 dias de exposição das páginas novas.
 
 Por profundidade, as páginas no nível 3 tiveram menos impressões. Mas quase
-todas as páginas de nível 3 são justamente as publicadas há quatro dias, então
+todas as páginas de nível 3 são justamente as publicadas três dias antes do
+fim da janela, então
 idade e profundidade são a mesma variável nesses dados. Não dá para separar, e
 eu não afirmo nada sobre profundidade a partir disso.
 

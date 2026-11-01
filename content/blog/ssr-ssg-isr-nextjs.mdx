@@ -12,7 +12,7 @@ tldr: >-
   completo, possivelmente defasado entre revalidações; CSR entrega HTML vazio e
   é a única estratégia com risco real de indexação.
 datePublished: "2026-07-22"
-dateModified: "2026-10-18"
+dateModified: "2026-11-01"
 faq:
   - question: "O Google indexa site em React ou CSR?"
     answer: "Indexa, mas com uma ressalva importante: conteúdo que só existe depois da execução do JavaScript entra numa fila de renderização separada, que o Google processa quando há recursos disponíveis — pode levar segundos ou bem mais, sem prazo garantido. O HTML inicial vazio também é o que a maioria dos outros crawlers (incluindo os de buscadores com IA) enxerga, porque eles não executam JavaScript."
@@ -277,9 +277,10 @@ O espelho do diagrama:
 ## Como este site é renderizado (e por que TTFB deu 0ms)
 
 Este site é o laboratório dos próprios artigos, então: todas as rotas de
-página são estáticas, geradas em build a partir do conteúdo em disco — a
-única exceção do site inteiro é a rota que gera a imagem Open Graph de cada
-post, renderizada sob demanda, e que nenhum crawler precisa indexar. Uma
+página são estáticas, geradas em build a partir do conteúdo em disco. A
+única exceção do site inteiro era a rota que gera a imagem Open Graph de cada
+post, renderizada sob demanda, e que nenhum crawler precisa indexar (a
+atualização mais abaixo conta como isso mudou). Uma
 decisão de performance que só faz sentido nesse cenário está no config:
 
 ```ts

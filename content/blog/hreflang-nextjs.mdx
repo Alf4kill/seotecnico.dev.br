@@ -12,7 +12,7 @@ tldr: >-
   sem B declarar A, o Google descarta o cluster inteiro — sem erro, sem aviso,
   sem sintoma. Por isso o par precisa nascer de uma fonte única.
 datePublished: "2026-07-26"
-dateModified: "2026-09-13"
+dateModified: "2026-11-01"
 faq:
   - question: "Como implementar hreflang no Next.js App Router?"
     answer: "Pelo campo alternates.languages da Metadata API, que o framework converte em tags link rel=alternate no head. O objeto mapeia código de idioma para URL absoluta e precisa incluir a própria página entre as alternativas, além de um x-default. O que não se deve fazer é declarar esse objeto à mão em cada página: o par tem que nascer de uma fonte única, ou a reciprocidade quebra no primeiro rename de rota."
@@ -131,8 +131,9 @@ lado que estava editando, e o outro lado continua apontando para uma URL que
 não existe mais. Não há erro. Há um cluster que deixou de existir.
 
 A correção é estrutural: os pares vivem num módulo, e os dois lados são
-gerados do **mesmo objeto**. Este é o mapa de produção deste site, em
-`src/lib/hreflang.ts`:
+gerados do **mesmo objeto**. Este é o começo do mapa de produção deste site,
+em `src/lib/hreflang.ts`, com o primeiro par; os outros seguem o mesmo
+formato:
 
 ```ts
 export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
@@ -335,12 +336,24 @@ O relatório de páginas do Search Console tem uma seção de idiomas alternativ
 que ajuda, mas a inspeção URL a URL é o que responde a pergunta de verdade.
 
 E a transparência que este site deve: a versão em inglês do guia entrou no ar
-em 26/07/2026, junto com esta implementação. **O veredito ainda não existe** —
-uma janela de 28 dias precisa fechar antes que qualquer número aqui signifique
-alguma coisa, e a hipótese registrada é a de que a versão em inglês ganhe
-impressões próprias **sem** derrubar as da versão em português. Se derrubar, o
-par está sendo lido como duplicação e a implementação falhou. O resultado
-aparece aqui quando existir, não antes.
+em 26/07/2026, junto com esta implementação, com a hipótese registrada de que
+ela ganharia impressões próprias **sem** tirar as da versão em português. Se
+tirasse, o par estaria sendo lido como duplicação. O teste decisivo é se o
+Google escolhe uma canônica só para os dois idiomas, e a leitura do Search
+Console de 11/09/2026 (dados de 11/07 a 09/09) respondeu que não: as duas URLs
+aparecem separadas no relatório de páginas, cada uma com as próprias
+impressões (305 a portuguesa, 876 a inglesa), e nenhuma página caiu em motivo
+de duplicata ou de canônica escolhida pelo Google. O par foi aceito como
+cluster.
+
+Duas ressalvas acompanham esse resultado. As impressões da versão em inglês
+vieram sobretudo de buscas como `next seo` e `next-seo npm`, que procuram o
+pacote npm `next-seo`, uma biblioteca sem relação com este guia, e a
+confirmação URL a URL ainda é a inspeção, que essa exportação não traz. E, no
+relatório de 13/10/2026, a versão em inglês tinha saído do índice como
+"Rastreada, mas não indexada no momento", que não é um motivo de duplicação. O
+par continua declarado, mas uma página fora do índice não aparece em busca
+nenhuma.
 
 O contexto completo — metadados, JSON-LD, sitemaps, renderização e Core Web
 Vitals — está no [guia de SEO técnico para
