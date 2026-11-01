@@ -3,7 +3,7 @@ title: "Accessibility tree: how AI agents read a web page"
 description: "Agents such as Playwright MCP read a page through its accessibility tree, not the screen. Here's this site's tree before and after fixing 266 findings."
 slug: "accessibility-tree"
 datePublished: "2026-10-23"
-dateModified: "2026-10-23"
+dateModified: "2026-11-01"
 primaryQuery: "accessibility tree"
 lang: "en"
 translationOf: "arvore-de-acessibilidade"
@@ -209,13 +209,14 @@ report caught what the other one missed.
 
 My [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) uses the
 App Router as the reference implementation. Both fixes here are plain JSX. For
-the brand link, the name comes from the content plus a visually hidden hint:
+the brand link, the name comes from the content plus a visually hidden hint.
+The code comment, in Portuguese, says the same and cites WCAG 2.5.3:
 
 ```tsx
 // src/components/layout/Header.tsx
 <Link href={copy.home} className="flex shrink-0 items-baseline gap-2.5" title={copy.homeLabel}>
-  {/* No aria-label: the accessible name comes from the visible text plus
-      this hint (WCAG 2.5.3). */}
+  {/* Sem aria-label: o nome acessível sai do texto visível mais este
+      complemento (WCAG 2.5.3). */}
   <span className="font-display ... uppercase ...">SEO Técnico</span>
   <span className="font-mono ...">.DEV.BR</span>
   <span className="sr-only"> — {copy.homeHint}</span>
@@ -242,10 +243,11 @@ tree before and after:
 // audits/scripts/aria-snapshot.mjs (excerpt)
 const brand = page.locator('header a').first()
 console.log(await brand.ariaSnapshot())
+const label = path === '/' ? 'SEO Técnico — página inicial' : 'SEO Técnico — home'
 await brand.evaluate((a, l) => {
   a.setAttribute('aria-label', l)
   a.querySelector('.sr-only')?.remove()
-}, 'SEO Técnico — home')
+}, label)
 console.log(await brand.ariaSnapshot())
 ```
 

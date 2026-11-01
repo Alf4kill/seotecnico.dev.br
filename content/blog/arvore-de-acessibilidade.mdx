@@ -12,7 +12,7 @@ tldr: >-
   a lê em vez da tela. Aqui, um nome sem o texto visível fazia o link da marca
   sumir de uma busca pelo que está escrito nele.
 datePublished: "2026-10-23"
-dateModified: "2026-10-23"
+dateModified: "2026-11-01"
 faq:
   - question: "O que é a árvore de acessibilidade?"
     answer: "É uma árvore que o navegador monta a partir do DOM para leitores de tela e outras tecnologias assistivas. Cada nó tem um papel (link, botão, região, título), um nome acessível e, quando houver, um estado (marcado, expandido, desativado). Elementos só de layout, como a maioria das div, não viram nó."
@@ -224,10 +224,11 @@ outro site:
 // audits/scripts/aria-snapshot.mjs (trecho)
 const brand = page.locator('header a').first()
 console.log(await brand.ariaSnapshot())
+const label = path === '/' ? 'SEO Técnico — página inicial' : 'SEO Técnico — home'
 await brand.evaluate((a, l) => {
   a.setAttribute('aria-label', l)
   a.querySelector('.sr-only')?.remove()
-}, 'SEO Técnico — página inicial')
+}, label)
 console.log(await brand.ariaSnapshot())
 ```
 
