@@ -14,12 +14,12 @@ tldr: >-
   Google Search, a documentação diz que o arquivo é ignorado. Se ele sai do
   código que você já tem, mantê-lo custa pouco; não espere efeito.
 datePublished: "2026-10-06"
-dateModified: "2026-10-06"
+dateModified: "2026-11-01"
 faq:
   - question: "O que é llms.txt?"
     answer: "É uma proposta de arquivo em Markdown, servido na raiz do site em /llms.txt, que resume o site e lista os links mais importantes para modelos de linguagem. Foi publicada por Jeremy Howard em 3 de setembro de 2024, em llmstxt.org, e não é um padrão ratificado."
   - question: "Alguma IA lê o llms.txt?"
-    answer: "Neste site, o arquivo foi lido 9 vezes em 57 dias, entre julho e setembro de 2026, e nenhum cliente seguiu o link que só existia dentro dele. Num recorte de 28 dias, de 16 de agosto a 12 de setembro, nenhuma das 5 leituras vinha de um cliente que se declarasse agente de IA; a previsão registrada para isso fecha em 23 de outubro de 2026. Para o Google Search, a documentação oficial diz que o arquivo é ignorado."
+    answer: "Neste site, de 25 de julho a 23 de outubro de 2026, o arquivo foi lido 22 vezes, e nenhuma das 20 leituras com o cliente classificado veio de um agente de IA declarado ou verificado; as outras 2 ficaram sem classe. No piloto de 57 dias, nenhum cliente seguiu o link que só existia dentro dele. Para o Google Search, a documentação oficial diz que o arquivo é ignorado."
   - question: "Vale a pena criar um llms.txt?"
     answer: "Depende do custo. Se o arquivo pode ser gerado por código a partir do conteúdo que o site já tem, mantê-lo é barato. Mas o dado deste site não mostra efeito, e o arquivo não substitui o conteúdo no HTML servido, que é de onde vieram as respostas dos assistentes testados aqui."
   - question: "llms.txt substitui o robots.txt?"
@@ -115,16 +115,31 @@ nada o lê". O achado é a exposição, não o zero.
 ### Quem leu
 
 O relato do piloto não identifica os leitores, e eu também não nomeio ninguém
-aqui. Existe uma leitura parcial: num levantamento intermediário de 28 dias, de 16
-de agosto a 12 de setembro de 2026, sem o tráfego da minha própria rede, o
-arquivo foi lido 5 vezes, todas por clientes que **não** se declaravam agentes
-de IA, e nenhuma por um agente de IA declarado.
+aqui. Uma previsão separada, registrada no dia em que o arquivo entrou no ar,
+respondia a uma pergunta mais simples: **nenhuma leitura do `/llms.txt` por um
+agente de IA de um fornecedor grande em 90 dias**, de 25 de julho a 23 de
+outubro de 2026.
 
-Isso conversa com uma previsão separada, registrada no dia em que o arquivo
-entrou no ar: **nenhuma leitura do `/llms.txt` por um agente de IA de um
-fornecedor grande em 90 dias**. A janela fecha em 23 de outubro de 2026, e o
-veredito entra neste artigo quando ela fechar. Até lá, as 5 leituras daquele
-recorte são uma observação intermediária, não um resultado.
+A janela fechou, e a previsão se sustentou para os agentes que se declaram.
+Sem o tráfego da minha própria rede, o arquivo foi lido 22 vezes nesses 90
+dias: 9 no piloto e 13 depois dele. Em 20 leituras dá para saber a classe do
+cliente, e nenhuma veio de um user agent de crawler de IA conhecido nem de um
+robô com identidade verificada. As outras 2, de 25 de julho a 15 de agosto,
+ficaram sem classe: o GA4 guarda dois meses de eventos, e o registro do piloto
+tem só a contagem.
+
+| Medida (25/07 a 23/10/2026) | Contagem |
+|---|---|
+| Leituras do `/llms.txt` | 22 |
+| Leituras com a classe do cliente conhecida | 20 |
+| Dessas, por agente de IA declarado ou verificado | 0 |
+| Leituras sem classe (25/07 a 15/08) | 2 |
+
+No mesmo piloto, o PerplexityBot, com identidade verificada, leu o
+`robots.txt` duas vezes e nunca leu o `llms.txt`. A ressalva é a mesma do
+piloto inteiro: um agente que não se declara cai no balde "desconhecido",
+onde estão as 20 leituras. O resultado diz que nenhum agente que se apresenta
+como agente de IA leu o arquivo, não que nenhuma IA o leu.
 
 ## Por que o teste não decide
 
@@ -354,6 +369,6 @@ mais de um ano. Num site pequeno, a pergunta "alguém segue o meu llms.txt?"
 provavelmente não tem resposta forte em poucos meses. Melhor saber disso antes
 de começar do que descobrir no fechamento, como eu.
 
-> Este artigo está em medição. Atualizo os números quando a previsão de 90
-> dias fechar, em 23 de outubro de 2026, e quando a H14 fechar, em 24 de
-> dezembro de 2026.
+> Este artigo está em medição. A previsão de 90 dias fechou em 23 de outubro
+> de 2026, com o veredito acima. Atualizo os números de novo quando a H14
+> fechar, em 24 de dezembro de 2026.
