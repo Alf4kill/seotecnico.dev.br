@@ -1,0 +1,334 @@
+{
+  "measuredAt": "2026-11-09T03:09:23.632Z",
+  "next": "16.2.12",
+  "command": "node scripts/next-notfound-status.mjs",
+  "userAgents": {
+    "Chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Googlebot": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "Google-InspectionTool": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 (compatible; Google-InspectionTool/1.0)",
+    "Bingbot": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+    "curl": "curl/8.0.0"
+  },
+  "results": [
+    {
+      "route": "plain",
+      "agent": "Chrome",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Chrome",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Googlebot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Googlebot",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Google-InspectionTool",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Google-InspectionTool",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Bingbot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "Bingbot",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "curl",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "plain",
+      "agent": "curl",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Chrome",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Chrome",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Googlebot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Googlebot",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Google-InspectionTool",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Google-InspectionTool",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Bingbot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "Bingbot",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "curl",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "stream",
+      "agent": "curl",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Chrome",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Chrome",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Googlebot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Googlebot",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Google-InspectionTool",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Google-InspectionTool",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Bingbot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "Bingbot",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "curl",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "meta",
+      "agent": "curl",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Chrome",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Chrome",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Googlebot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Googlebot",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Google-InspectionTool",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Google-InspectionTool",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Bingbot",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "Bingbot",
+      "slug": "does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "curl",
+      "slug": "real",
+      "status": 200,
+      "noindex": false,
+      "notFoundUi": true
+    },
+    {
+      "route": "metaonly",
+      "agent": "curl",
+      "slug": "does-not-exist",
+      "status": 200,
+      "noindex": true,
+      "notFoundUi": true
+    }
+  ]
+}

@@ -323,6 +323,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/accessibility-tree',
     },
   },
+  {
+    id: 'soft-404',
+    paths: {
+      'pt-BR': '/blog/soft-404',
+      en: '/en/blog/soft-404',
+    },
+  },
   // Entradas do projeto, /projeto/<slug> ↔ /en/project/<slug-en>: mesma regra
   // dos artigos (id = slug português = `translationOf` do MDX inglês).
   {

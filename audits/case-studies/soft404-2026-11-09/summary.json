@@ -1,0 +1,566 @@
+{
+  "date": "2026-11-09",
+  "collectedAt": "2026-11-09T01:37:00.225Z",
+  "userAgent": "seotecnico-soft404-probe/1.0 (+https://seotecnico.dev.br)",
+  "inventedSlug": "pagina-inexistente-sonda-20261109",
+  "pauseMs": 1000,
+  "requests": 54,
+  "method": "docs/research/2026-11-08-soft-404.md; script scripts/soft404-probe.mjs",
+  "targets": [
+    {
+      "code": "SITE",
+      "label": "this site, blog slug",
+      "origin": "https://seotecnico.dev.br",
+      "path": "/blog/pagina-inexistente-sonda-20261109",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        }
+      ]
+    },
+    {
+      "code": "SITE",
+      "label": "this site, root path",
+      "origin": "https://seotecnico.dev.br",
+      "path": "/pagina-inexistente-sonda-20261109",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        }
+      ]
+    },
+    {
+      "code": "SITE",
+      "label": "this site, English blog slug",
+      "origin": "https://seotecnico.dev.br",
+      "path": "/en/blog/pagina-inexistente-sonda-20261109",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        }
+      ]
+    },
+    {
+      "code": "SITE",
+      "label": "this site, project entry slug",
+      "origin": "https://seotecnico.dev.br",
+      "path": "/projeto/pagina-inexistente-sonda-20261109",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 145,
+          "title": "Página não encontrada | SEO Técnico",
+          "metaRobots": [
+            "noindex"
+          ],
+          "canonicalUrl": null
+        }
+      ]
+    },
+    {
+      "code": "S1",
+      "label": "main site, landing path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            302,
+            404
+          ],
+          "redirectedTo": "same origin",
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 93
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            302,
+            404
+          ],
+          "redirectedTo": "same origin",
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 93
+        }
+      ]
+    },
+    {
+      "code": "S1",
+      "label": "sibling brand site (SPA)",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            200
+          ],
+          "redirectedTo": null,
+          "status": 200,
+          "verdict": "200 indexable (soft 404 candidate)",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 3
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            200
+          ],
+          "redirectedTo": null,
+          "status": 200,
+          "verdict": "200 indexable (soft 404 candidate)",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 3
+        }
+      ]
+    },
+    {
+      "code": "S2",
+      "label": "main site, page path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 202
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 202
+        }
+      ]
+    },
+    {
+      "code": "S2",
+      "label": "main site, listing path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 202
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 202
+        }
+      ]
+    },
+    {
+      "code": "S3",
+      "label": "main site, post path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 0
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 0
+        }
+      ]
+    },
+    {
+      "code": "S3",
+      "label": "main site, partner landing path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 0
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": false,
+          "kb": 0
+        }
+      ]
+    },
+    {
+      "code": "S3",
+      "label": "subdomain run by a third party",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            403
+          ],
+          "redirectedTo": null,
+          "status": 403,
+          "verdict": "other 403",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": true,
+          "kb": 0
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            403
+          ],
+          "redirectedTo": null,
+          "status": 403,
+          "verdict": "other 403",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": true,
+          "kb": 0
+        }
+      ]
+    },
+    {
+      "code": "S3",
+      "label": "app subdomain (SPA)",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            200
+          ],
+          "redirectedTo": null,
+          "status": 200,
+          "verdict": "200 indexable (soft 404 candidate)",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": true,
+          "kb": 3
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            200
+          ],
+          "redirectedTo": null,
+          "status": 200,
+          "verdict": "200 indexable (soft 404 candidate)",
+          "noindex": false,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "none",
+          "sameBodyAsHome": true,
+          "kb": 3
+        }
+      ]
+    },
+    {
+      "code": "S4",
+      "label": "main site, blog post path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "other",
+          "sameBodyAsHome": false,
+          "kb": 252
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "other",
+          "sameBodyAsHome": false,
+          "kb": 252
+        }
+      ]
+    },
+    {
+      "code": "S4",
+      "label": "main site, product feature path",
+      "results": [
+        {
+          "accept": "text/html",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "other",
+          "sameBodyAsHome": false,
+          "kb": 251
+        },
+        {
+          "accept": "*/*",
+          "chain": [
+            404
+          ],
+          "redirectedTo": null,
+          "status": 404,
+          "verdict": "real 404",
+          "noindex": true,
+          "titlePresent": true,
+          "titleContainsInventedSlug": false,
+          "canonical": "other",
+          "sameBodyAsHome": false,
+          "kb": 251
+        }
+      ]
+    }
+  ],
+  "omitted": "S5 removed from this summary after the run (owner decision 2026-11-09: left out of the article). Its requests remain in the requests count; raw.json, local only, keeps them."
+}

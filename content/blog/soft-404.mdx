@@ -1,0 +1,347 @@
+---
+title: "Soft 404: quando o site responde 200 ao que não existe"
+description: "Soft 404 é a página que diz \"não encontrada\" com status 200. Três jeitos de cair nele, o teste com uma URL inventada e a correção no Next.js."
+slug: "soft-404"
+primaryQuery: "soft 404"
+keywords: ['soft 404', 'erro soft 404', '404 falso', 'página não encontrada', 'status http', 'código de status', 'status 200', 'spa 404', 'not-found', 'notfound', 'generatemetadata', 'inspeção de url', 'search console']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  Soft 404 é uma URL que responde 200 mas cujo conteúdo diz que a página não
+  existe, ou parece vazio. O Google não indexa esse conteúdo e o Search Console
+  mostra a URL como "Erro soft 404". A correção é o servidor responder 404 ou
+  410 para o que não existe.
+datePublished: "2026-11-09"
+dateModified: "2026-11-09"
+faq:
+  - question: "Soft 404 derruba o ranqueamento do site?"
+    answer: "Os documentos do Google tratam o soft 404 como uma questão de rastreamento e indexação daquela URL: o conteúdo não é indexado e a URL continua sendo rastreada. Nenhum dos documentos lidos em 08/11/2026 fala em efeito sobre as outras páginas do site. O custo prático é outro: uma página real classificada como soft 404 fica fora do índice."
+  - question: "Existe um tamanho mínimo de página para não dar soft 404?"
+    answer: "Não há número documentado. O Google descreve o soft 404 pelo conteúdo, não pelo tamanho: uma página que mostra mensagem de erro ou parece vazia. A recomendação do Search Console para uma página real é acrescentar informação que deixe claro que ela não é um erro."
+  - question: "Devo usar 404 ou 410 para uma página que não existe?"
+    answer: "Para o Google, tanto faz. A documentação de códigos de status trata todos os 4xx, exceto o 429, do mesmo jeito: o conteúdo é ignorado, a URL não é indexada (ou sai do índice) e o rastreamento dela diminui aos poucos. O 410 diz a outros clientes que a remoção é definitiva, o que pode valer por si."
+---
+
+Soft 404 é uma URL que responde com status 200, de sucesso, mas cujo conteúdo
+diz que a página não existe, ou parece vazio. O Google não indexa esse
+conteúdo e o Search Console mostra a URL no relatório de indexação como "Erro
+soft 404". A recomendação do próprio Google é simples: para uma página que não
+existe, o servidor responde 404 (ou 410). O soft 404 quase nunca é uma
+decisão. Ele é efeito colateral da arquitetura, e dá para testar de fora com
+uma única URL inventada.
+
+Abaixo, três jeitos de cair nele, com casos medidos em 09/11/2026, o teste e
+a correção. No fim, um laboratório com o mesmo Next.js deste site mostra uma
+combinação em que a Inspeção de URL do Search Console recebe um 404 que o
+Googlebot não recebe.
+
+## O que o Google chama de soft 404
+
+O status HTTP é a primeira coisa que o rastreador lê. A documentação de
+códigos de status do Google, atualizada em 04/02/2026, descreve o 2xx como
+"considerar o conteúdo para processamento": a página vai para a indexação, sem
+garantia de ser indexada. Se o conteúdo sugere um erro, como uma mensagem de
+"não encontrada" ou uma página vazia, o Search Console registra um soft 404.
+
+Com um 4xx, o caminho é outro: o Google não usa o conteúdo da resposta. Uma
+URL nova que responde 404 não é processada, uma URL já indexada sai do índice,
+e o rastreamento dela diminui aos poucos. 404 e 410 são tratados do mesmo
+jeito.
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="O que o Google faz com cada status: 2xx vai para indexação, e conteúdo com cara de erro vira soft 404; 404 e 410 não são indexados; 5xx desacelera o rastreamento">
+    <title>Do status ao relatório de indexação</title>
+    <desc>Resposta com status 2xx: o conteúdo é considerado para indexação. Se ele parece erro ou está vazio, o Search Console registra soft 404; se não, a página pode ser indexada, sem garantia. Resposta 404 ou 410: o conteúdo é ignorado, a URL não é indexada e é rastreada cada vez menos. Resposta 5xx: o rastreamento desacelera e URLs que continuam com erro saem do índice.</desc>
+
+    <rect x="20" y="120" width="150" height="60" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="95" y="146" textAnchor="middle" fontSize="13" fill="var(--foreground)">Resposta do</text>
+    <text x="95" y="164" textAnchor="middle" fontSize="13" fill="var(--foreground)">servidor</text>
+
+    <line x1="170" y1="150" x2="230" y2="56" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <line x1="170" y1="150" x2="230" y2="176" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <line x1="170" y1="150" x2="230" y2="256" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+
+    <rect x="230" y="30" width="190" height="52" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="325" y="52" textAnchor="middle" fontSize="12" fill="var(--foreground)">2xx: conteúdo parece</text>
+    <text x="325" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">erro ou está vazio?</text>
+
+    <line x1="420" y1="46" x2="480" y2="26" stroke="var(--color-accent)" strokeWidth="1.5" />
+    <rect x="480" y="6" width="220" height="40" fill="var(--color-accent)" />
+    <text x="590" y="31" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">sim: "Erro soft 404"</text>
+    <line x1="420" y1="66" x2="480" y2="86" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="480" y="66" width="220" height="40" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="590" y="91" textAnchor="middle" fontSize="12" fill="var(--foreground)">não: pode ser indexada</text>
+
+    <rect x="230" y="150" width="470" height="52" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="465" y="172" textAnchor="middle" fontSize="12" fill="var(--foreground)">404 ou 410: conteúdo ignorado, URL fora do índice,</text>
+    <text x="465" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">rastreada cada vez menos</text>
+
+    <rect x="230" y="230" width="470" height="52" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="465" y="252" textAnchor="middle" fontSize="12" fill="var(--foreground)">5xx: rastreamento desacelera; URL que continua</text>
+    <text x="465" y="270" textAnchor="middle" fontSize="12" fill="var(--foreground)">com erro sai do índice</text>
+  </svg>
+  <figcaption>O soft 404 é o único caso em que o status diz "existe" e o conteúdo diz "não existe".</figcaption>
+</figure>
+
+| Status | O que o Google faz |
+|---|---|
+| 2xx, conteúdo normal | considera para indexação, sem garantia |
+| 2xx, conteúdo com cara de erro ou vazio | registra "Erro soft 404" no Search Console |
+| 404 ou 410 | ignora o conteúdo; não indexa; rastreia cada vez menos |
+| 5xx | desacelera o rastreamento; remove URLs que continuam com erro |
+
+A definição do Search Console é a mesma vista do outro lado: a URL devolve uma
+mensagem amigável de "não encontrada", mas não o código 404. Para conferir o
+que o Google viu, o caminho indicado é o teste ao vivo da Inspeção de URL, que
+mostra uma captura da página renderizada.
+
+## Por que isso importa
+
+São três custos diferentes, e só dois valem para um site pequeno.
+
+1. **A página de erro pode entrar no índice.** Se o Google não reconhece a
+   mensagem como erro, uma URL que não existe vira um resultado com título de
+   página real.
+2. **A página real pode sair do índice.** É o caso contrário, e o mais
+   reclamado: uma página que existe, mas parece vazia para o Google, é
+   classificada como soft 404 e não é indexada.
+3. **Rastreamento gasto à toa.** O guia de orçamento de rastreamento diz que
+   URLs com soft 404 continuam sendo rastreadas, enquanto um 404 é um sinal
+   forte para não voltar. O próprio guia, porém, é escrito para sites grandes
+   (mais de um milhão de páginas, ou mais de dez mil com conteúdo que muda
+   todo dia).
+   Num site pequeno, esse custo só aparece quando o número de URLs que
+   respondem 200 não tem fim, que é o terceiro padrão abaixo.
+
+## Três jeitos de responder 200 ao que não existe
+
+Em 09/11/2026 pedi uma URL inventada em cada modelo de página de quatro sites
+analisados de fora para estudo, mais este. Os sites e o método estão no fim do
+artigo. Nos sites principais, todas terminaram em 404. Os dois casos de 200
+estavam fora deles: num site de marca separado e num subdomínio. Um terceiro
+caso, observado em 07/11/2026, está logo depois.
+
+### Uma SPA num host estático
+
+Um site renderizado no cliente costuma ser publicado com uma regra de
+fallback: qualquer caminho devolve o mesmo `index.html`, e o roteador
+JavaScript decide no navegador o que mostrar. Para o servidor, toda URL
+existe.
+
+Dois casos responderam assim em 09/11/2026: o site de marca de uma empresa,
+separado do site principal, e a área de aplicativo de uma plataforma de
+serviços ao consumidor, num subdomínio. Os dois deram 200, sem `noindex` e sem
+canonical. No segundo, o HTML da URL inventada era byte a byte o mesmo da
+home.
+
+O Google trata desse caso na documentação de JavaScript: numa SPA com
+roteamento no cliente, um status real pode ser "impossível ou impraticável".
+Ele indica duas saídas:
+
+1. redirecionar, por JavaScript, para uma URL em que **o servidor responde
+   404**;
+2. acrescentar `<meta name="robots" content="noindex">` à tela de erro, por
+   JavaScript.
+
+### Um redirect para uma página de erro que responde 200
+
+A primeira saída do Google tem uma condição que é fácil perder: o destino do
+redirect precisa responder 404. Se ele responde 200, o redirect só acrescenta
+um salto antes do mesmo soft 404.
+
+Um subdomínio operado por terceiro, na mesma plataforma de serviços ao
+consumidor, fazia exatamente isso quando foi lido no navegador, em 07/11/2026:
+qualquer rota inexistente redirecionava para um caminho de erro que respondia
+200. Sem `Accept: text/html` no pedido, até a home ia para esse caminho. Em
+09/11/2026 o mesmo subdomínio respondeu 403 ao cliente identificado como robô,
+inclusive na home, então o caso não pôde ser medido de novo.
+
+O contraste está no site principal de outro caso: a URL inventada recebe um
+302 para uma página de erro que responde 404. É o mesmo desenho, com o status
+certo no destino.
+
+### Um modelo que monta uma página para qualquer endereço
+
+Este padrão não tem caso medido aqui, mas o mecanismo é direto. Um modelo
+que monta a página a partir do último trecho da URL, como uma busca interna
+com o termo no título, responde 200 para qualquer texto que alguém digitar ou
+linkar, e o número de URLs que "existem" fica sem fim. É o único dos três
+padrões em que o argumento de orçamento de rastreamento vale para um site
+pequeno.
+
+## Quando é a página real que vira soft 404
+
+As perguntas mais comuns sobre soft 404 não são sobre páginas inexistentes.
+São sobre páginas reais que o Search Console marcou.
+
+- **Busca interna sem resultado e categoria vazia.** A página existe, mas o
+  conteúdo é "nenhum resultado encontrado". Um conteúdo assim pode parecer
+  uma página de erro ou vazia, que é a definição de soft 404. Se a página não tem valor sozinha, um 404 ou um
+  `noindex` dizem isso direito. Se tem, ela precisa de conteúdo próprio.
+- **A página funciona para o visitante, mas não para o rastreador.** Se o
+  conteúdo depende de um pedido que falha na renderização do Google, a captura
+  da Inspeção de URL mostra uma tela vazia. A documentação de JavaScript
+  lembra que páginas com 200 vão para a fila de renderização, e a captura
+  mostra o resultado dessa renderização.
+- **Muitas URLs redirecionadas para a home.** O guia de mudança de site diz
+  que redirecionar muitas URLs antigas para um destino irrelevante, como a
+  home, pode ser tratado como soft 404. Uma página removida sem substituta
+  equivalente responde 404.
+- **Redirect para a tela de login.** A recomendação do Google é responder 401
+  para páginas que pedem login, e não 200 com um formulário de entrada.
+
+## Como testar com uma URL inventada
+
+O teste é um pedido por modelo de página, não um por site: o blog, as
+categorias, as fichas de produto e cada subdomínio podem responder diferente.
+Invente um slug que não existe e peça com e sem `Accept: text/html`:
+
+```bash
+URL="https://seusite.com.br/blog/slug-que-nao-existe-teste"
+curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" -H "Accept: text/html" "$URL"
+curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" -H "Accept: */*" "$URL"
+curl -sL "$URL" | grep -i -E '<title>|name="robots"|rel="canonical"'
+```
+
+O que procurar:
+
+- **Status final.** 404 ou 410 é o certo. Um 200 com título de "página não
+  encontrada" é o soft 404 clássico.
+- **Redirects.** Se há um salto, o status que conta é o do destino.
+- **`Accept`.** Se as duas respostas diferem, o site decide pelo cabeçalho, e
+  um cliente que não pede `text/html` recebe outra coisa.
+- **Robots e canonical.** Numa página de erro com 200, o `noindex` é o que
+  segura a URL fora do índice. Numa página com 404, nada disso importa: o
+  Google ignora o conteúdo de uma resposta 4xx.
+
+Para um teste sem terminal, o [validador de meta tags](/ferramentas/validador-meta-tags)
+mostra o status HTTP da resposta final e avisa quando a página responde 200
+com um título de erro. Para vários modelos de uma vez, o
+[script desta medição](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/soft404-probe.mjs)
+lê o `robots.txt` de cada origem, pede uma URL inventada por modelo e
+registra status, redirects, título, robots e canonical.
+
+## Como corrigir em cada caso
+
+- **SPA num host estático:** o servidor conhece as rotas válidas e responde
+  404 para as outras; se não der, uma das duas saídas do Google acima.
+- **Redirect para a página de erro:** o destino responde 404.
+- **Modelo que monta página de qualquer endereço:** a página confere se o
+  recurso existe antes de responder.
+- **Página real marcada como soft 404:** se a captura da Inspeção de URL está
+  vazia, o problema é renderização; se está cheia, falta conteúdo que a
+  diferencie de uma tela de erro.
+
+Os exemplos de outras stacks acima são ilustrativos: o que este site mediu é
+o status que cada servidor devolveu, não o código por trás dele.
+
+## No Next.js
+
+Neste site, uma URL que não existe responde 404 com `noindex` e sem canonical.
+Medi isso em 09/11/2026 em quatro modelos (`/blog/`, a raiz, `/en/blog/` e
+`/projeto/`), com e sem `Accept: text/html`, e o teste de regressão da suíte
+de SEO agora confere cinco modelos a cada pull request. Duas decisões do
+código garantem isso.
+
+A primeira está nas rotas dinâmicas: só os slugs gerados no build existem.
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx, linhas 17 a 22
+// Somente slugs existentes em /content/blog são gerados; o resto é 404.
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return getAllPosts().map(({ frontmatter }) => ({ slug: frontmatter.slug }))
+}
+```
+
+A segunda é onde mora a conferência de existência. O `generateMetadata` deste
+site não chama `notFound()`: se o artigo não existe, ele devolve um objeto
+vazio, e quem decide é a página.
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx, linhas 26 e 27, 46 a 49
+  const post = getPostBySlug(slug)
+  if (!post) return {}
+// …
+export default async function BlogPostPage({ params }: PageProps) {
+  const { slug } = await params
+  const post = getPostBySlug(slug)
+  if (!post) notFound()
+```
+
+Essa escolha importa. A documentação do Next.js avisa que, depois que a
+resposta começa a ser enviada em streaming, o status já saiu como 200: o
+`notFound()` mostra a tela de "não encontrada" e o framework acrescenta
+`noindex`, mas não muda o status. E, desde a versão 15.2, o próprio metadata
+pode ir em streaming, exceto para uma lista de robôs "com HTML limitado",
+reconhecidos pelo User-Agent. O Googlebot não está nessa lista; o
+`Google-InspectionTool`, que é o agente da Inspeção de URL e do teste de
+pesquisa aprimorada, está.
+
+Para ver o efeito, montei um app mínimo com o Next.js 16.2.12, o mesmo deste
+site, e pedi um slug inexistente com cinco User-Agents:
+
+| Slug inexistente | Chrome | Googlebot | Google-InspectionTool | Bingbot | curl |
+|---|---|---|---|---|---|
+| `notFound()` na página, sem `loading` | 404 | 404 | 404 | 404 | 404 |
+| igual, com `loading` no segmento | 200 | 200 | 200 | 200 | 200 |
+| `notFound()` no `generateMetadata` e na página | 404 | 404 | 404 | 404 | 404 |
+| `notFound()` só no `generateMetadata` | 200 | 200 | 404 | 404 | 200 |
+
+Todas as respostas trouxeram `noindex`. A fixture e o script estão no
+repositório e reproduzem a tabela com um comando:
+
+```bash
+node scripts/next-notfound-status.mjs
+```
+
+A última linha é a que engana. O Googlebot recebe 200 com `noindex`; o teste
+ao vivo da Inspeção de URL recebe 404. Quem confere a URL pela ferramenta do
+Google vê um 404 correto e não tem motivo para desconfiar. O `noindex` segura
+a página fora do índice nos dois casos, mas o status que o rastreador lê é
+outro. A correção é a deste site: conferir a existência na página, antes de
+qualquer `loading` ou `Suspense` no caminho, e não só no `generateMetadata`.
+Quem precisa de streaming na página pode fazer a conferência no Proxy e
+responder 404 antes de a renderização começar, que é o caminho indicado na
+documentação do Next.js.
+
+O [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) reúne
+metadata, canonicals e redirects; quando a página mudou de endereço, em vez de
+deixar de existir, o caso é o de [redirects e canonicals no Next.js](/blog/redirects-canonicals-nextjs).
+O que cada rastreador renderiza está em [JavaScript SEO: o que Google e IAs leem](/blog/javascript-seo-google-vs-ia).
+
+## Método e limites
+
+- **Coleta.** Este site e quatro sites públicos, em 09/11/2026, com o
+  [script de sonda](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/soft404-probe.mjs):
+  User-Agent próprio e identificado, `robots.txt` respeitado, uma requisição
+  por segundo, uma URL inventada por modelo de página. O
+  [resumo](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/soft404-2026-11-09/summary.json)
+  identifica os sites só por código; os endereços não são publicados.
+- **O caso de 07/11/2026** foi lido no navegador, durante a análise do site,
+  e não pôde ser reproduzido em 09/11/2026 porque o subdomínio recusou o
+  robô identificado. A sonda não se passa por navegador para contornar isso.
+- **O que não foi medido.** O que o Google indexou de cada site, porque a
+  análise é de fora, sem Search Console; e o que o Googlebot recebe nos
+  subdomínios que respondem 403 a outros robôs.
+- **O laboratório do Next.js** mede uma build local do Next.js 16.2.12 com
+  `next start`. Outra versão, ou uma plataforma de hospedagem com outro
+  comportamento de streaming, pode responder diferente: rode o script.
+
+Análise feita de fora, sobre sites públicos, só para estudo do método. Os
+sites não são identificados, não têm relação com o autor e não participaram.
+Não é auditoria, recomendação aos donos nem veredito sobre eles. Não há
+patrocínio nem serviço vendido a partir dela.
+
+## Fontes
+
+- [Google: How HTTP status codes affect Google's crawlers](https://developers.google.com/crawling/docs/troubleshooting/http-status-codes), atualizada em 04/02/2026, consultada em 08/11/2026
+- [Google Search Console: relatório de indexação de páginas](https://support.google.com/webmasters/answer/7440203?hl=pt-BR), linha "Erro soft 404", consultada em 08/11/2026
+- [Google: noções básicas de SEO para JavaScript](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics?hl=pt-BR), atualizada em 06/03/2026, consultada em 08/11/2026
+- [Google: Optimize your crawl budget](https://developers.google.com/crawling/docs/crawl-budget), atualizada em 22/07/2026, consultada em 08/11/2026
+- [Google: mudanças de site com alteração de URL](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes?hl=pt-BR), atualizada em 12/09/2026, consultada em 09/11/2026
+- [Google: rastreadores comuns, Google-InspectionTool](https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers), atualizada em 30/10/2026, consultada em 09/11/2026
+- [Next.js: `notFound`](https://nextjs.org/docs/app/api-reference/functions/not-found) e [`loading.js`, códigos de status](https://nextjs.org/docs/app/api-reference/file-conventions/loading#status-codes), consultadas em 08/11/2026
+- [Next.js: `generateMetadata`, streaming de metadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#streaming-metadata), consultada em 09/11/2026
+- Nota de pesquisa: [`docs/research/2026-11-08-soft-404.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-08-soft-404.md)

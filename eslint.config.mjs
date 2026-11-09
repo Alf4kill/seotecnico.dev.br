@@ -21,6 +21,8 @@ const eslintConfig = defineConfig([
     // Relatório HTML do vitest --coverage: gerado, gitignored, e com um
     // eslint-disable inútil que vira warning a cada rodada.
     "coverage/**",
+    // Build da fixture de scripts/next-notfound-status.mjs (gerado, gitignored).
+    "audits/**/.next/**",
   ]),
 ]);
 

@@ -1,0 +1,363 @@
+---
+title: "Soft 404: why missing pages answer 200 and how to fix it"
+description: "A soft 404 is a not-found page served with a 200 status. Three ways sites fall into it, a one-request test, and the fix in Next.js."
+slug: "soft-404"
+datePublished: "2026-11-09"
+dateModified: "2026-11-09"
+primaryQuery: "soft 404"
+lang: "en"
+translationOf: "soft-404"
+category: "indexacao"
+keywords: ['english', 'inglês', 'soft 404', 'soft 404 error', 'fake 404', 'page not found', 'http status code', 'status 200', 'spa 404', 'not-found', 'notfound', 'generatemetadata', 'url inspection', 'search console']
+tldr: >-
+  A soft 404 is a URL that answers 200 while its content says the page
+  doesn't exist, or looks empty. Google doesn't index that content, and
+  Search Console lists the URL as "Soft 404". To fix it, have the server
+  return a 404 or 410 for anything that doesn't exist.
+faq:
+  - question: "Does a soft 404 hurt my site's rankings?"
+    answer: "Google's documents treat a soft 404 as a crawling and indexing matter for that URL. Google doesn't index its content and keeps crawling the URL. None of the documents I read on November 8, 2026, mentions an effect on the site's other pages. What it costs you in practice is something else. A real page that Google classifies as a soft 404 stays out of the index."
+  - question: "Is there a minimum page size that avoids a soft 404?"
+    answer: "There's no documented number. Google describes a soft 404 by its content, not its size. It's a page that shows an error message or looks empty. For a real page, Search Console advises adding information that makes it clear the page isn't an error."
+  - question: "Should a page that doesn't exist return 404 or 410?"
+    answer: "For Google, either one. Its status code documentation treats every 4xx code except 429 the same way. Google ignores the content, doesn't index the URL (or drops it from the index), and gradually crawls it less often. A 410 tells other clients that the removal is permanent, which can be worth it on its own."
+---
+
+A soft 404 is a URL that answers with a 200 (success) status even though its
+content says the page doesn't exist, or looks empty. Google doesn't index that
+content, and Search Console's Page indexing report lists the URL as "Soft
+404". Google advises having the server answer 404 (or 410) when a page doesn't
+exist.
+
+A soft 404 is almost never a decision. It's a side effect of how a site is
+built, and you can test for it from outside with one invented URL.
+
+This article covers three ways sites fall into it, with cases I measured on
+November 9, 2026, and then how to test for it and fix it. At the end, a lab
+built on this site's Next.js version shows a combination where Search
+Console's URL Inspection gets a 404 and Googlebot doesn't.
+
+## What Google calls a soft 404
+
+A crawler reads the status code first. Google's documentation on how HTTP
+status codes affect its crawlers, last updated February 4, 2026, says that for
+a 2xx response Google will "consider the content for processing". That content
+moves on to indexing, with no guarantee that it gets indexed. If it suggests
+an error, such as a "not found" message or an empty page, Search Console
+records a soft 404.
+
+A 4xx code works differently. Google doesn't use what the response contains.
+It doesn't process a new URL that answers 404, it removes a URL that's already
+indexed, and it gradually crawls either one less often. It treats 404 and 410
+the same way.
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="What Google does with each status: 2xx goes on to indexing, and error-like content becomes a soft 404; 404 and 410 are not indexed; 5xx slows crawling down">
+    <title>From status code to the indexing report</title>
+    <desc>A 2xx response: the content is considered for indexing. If it looks like an error or is empty, Search Console records a soft 404; otherwise the page can be indexed, with no guarantee. A 404 or 410 response: the content is ignored, the URL is not indexed, and it is crawled less and less. A 5xx response: crawling slows down, and URLs that keep failing drop out of the index.</desc>
+
+    <rect x="20" y="120" width="150" height="60" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="95" y="146" textAnchor="middle" fontSize="13" fill="var(--foreground)">Server</text>
+    <text x="95" y="164" textAnchor="middle" fontSize="13" fill="var(--foreground)">response</text>
+
+    <line x1="170" y1="150" x2="230" y2="56" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <line x1="170" y1="150" x2="230" y2="176" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <line x1="170" y1="150" x2="230" y2="256" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+
+    <rect x="230" y="30" width="190" height="52" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="325" y="52" textAnchor="middle" fontSize="12" fill="var(--foreground)">2xx: does the content</text>
+    <text x="325" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">look like an error?</text>
+
+    <line x1="420" y1="46" x2="480" y2="26" stroke="var(--color-accent)" strokeWidth="1.5" />
+    <rect x="480" y="6" width="220" height="40" fill="var(--color-accent)" />
+    <text x="590" y="31" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">yes: "Soft 404"</text>
+    <line x1="420" y1="66" x2="480" y2="86" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="480" y="66" width="220" height="40" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="590" y="91" textAnchor="middle" fontSize="12" fill="var(--foreground)">no: can be indexed</text>
+
+    <rect x="230" y="150" width="470" height="52" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="465" y="172" textAnchor="middle" fontSize="12" fill="var(--foreground)">404 or 410: content ignored, URL not indexed,</text>
+    <text x="465" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">crawled less and less</text>
+
+    <rect x="230" y="230" width="470" height="52" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="465" y="252" textAnchor="middle" fontSize="12" fill="var(--foreground)">5xx: crawling slows down; a URL that keeps</text>
+    <text x="465" y="270" textAnchor="middle" fontSize="12" fill="var(--foreground)">failing drops out of the index</text>
+  </svg>
+  <figcaption>A soft 404 is the one case where the status says "this exists" and the content says "it doesn't."</figcaption>
+</figure>
+
+Here are the same rules in text.
+
+| Status | What Google does |
+|---|---|
+| 2xx, normal content | Considers it for indexing, with no guarantee |
+| 2xx, error-like or empty content | Records "Soft 404" in Search Console |
+| 404 or 410 | Ignores the content, does not index the URL, and crawls it less and less |
+| 5xx | Slows down crawling and drops URLs that keep failing |
+
+Search Console describes it from the other side. Its definition says the URL
+returns a friendly "not found" message but not a 404 code. If you want to
+check what Google saw, the documented way is URL Inspection's live test. It
+shows a screenshot of the rendered page.
+
+## Why a soft 404 matters
+
+A soft 404 has three different costs, and only two of them apply to a small
+site.
+
+1. **An error page can get into the index.** If Google doesn't recognize the
+   message as an error, a URL that doesn't exist becomes a search result with
+   a real page's title.
+2. **A real page can drop out of the index.** This is the opposite case, and
+   the one people complain about most. If a page exists but looks empty to
+   Google, Google classifies it as a soft 404 and doesn't index it.
+3. **Crawling is wasted.** Google's crawl budget guide says Google keeps
+   crawling soft 404 URLs, while a 404 is a strong signal not to come back.
+   But that guide is written for large sites, with more than a million pages,
+   or more than ten thousand whose content changes daily. On a small site,
+   this cost only shows up when there's no limit to how many URLs answer 200,
+   which is the third pattern below.
+
+## Three ways a site answers 200 for a missing page
+
+On November 9, 2026, I requested one invented URL per page template on this
+site and on four sites I analyzed from outside for a study. I describe the
+sites and the method at the end. On the main sites, every request ended in a
+404. Both cases that answered 200 were outside them, on a separate brand site
+and on a subdomain. A third case, which I observed on November 7, 2026, comes
+right after those two.
+404. The two 200 cases were outside them, on a separate brand site and on a
+subdomain. A third case, which I observed on November 7, 2026, comes right
+after them.
+
+### An SPA on a static host
+
+Client-rendered sites are often deployed with a fallback rule. Any path
+returns the same `index.html`, and a JavaScript router decides in the browser
+what to show. As far as the server knows, every URL exists.
+
+Two cases answered like that on November 9, 2026. One was a company's brand
+site, separate from its main site. The other was a consumer services
+platform's app area, on a subdomain. Both answered 200, with no `noindex` and
+no canonical. In the second case, the invented URL's HTML was byte for byte
+the same as the home page's.
+
+Google covers this in its JavaScript SEO documentation. In an SPA with
+client-side routing, it says, returning a real status code can be
+"impossible or impractical". It gives two ways out:
+
+1. Use JavaScript to redirect to a URL where **the server answers 404**.
+2. Use JavaScript to add `<meta name="robots" content="noindex">` to the
+   error view.
+
+### A redirect to an error page that answers 200
+
+Google's first way out has a condition that's easy to miss. Your redirect
+target must answer 404 itself. If it answers 200, all the redirect does is add
+a hop in front of the same soft 404.
+
+A third-party subdomain on the same consumer services platform did exactly
+that when I read it in a browser on November 7, 2026. Any route that didn't
+exist redirected to an error path that answered 200. If a request didn't send
+`Accept: text/html`, even the home page went there. On November 9, 2026, the
+same subdomain answered 403 to my client, which identifies itself as a bot,
+even on the home page, so I couldn't measure the case again.
+
+For contrast, take the main site from another case. There, an invented URL
+gets a 302 to an error page that answers 404. It uses the same redirect, but
+this target returns the right status.
+
+### A template that builds a page for any address
+
+I have no measured case here, but the mechanism is direct. Say a template
+builds its page from the URL's last segment, like an internal search that puts
+the query in its title. It answers 200 for any text someone types or links to,
+so there's no end to the URLs that "exist". Of the three patterns, this is the
+only one where the crawl budget argument applies to a small site.
+
+## When a real page becomes a soft 404
+
+What people ask most about soft 404s isn't pages that don't exist. It's real
+pages that Search Console flagged.
+
+- **An internal search with no results, or an empty category.** The page
+  exists, but all it says is "no results found". That can look like an error
+  page or an empty one, which matches the definition of a soft 404. If the
+  page has no value on its own, a 404 or a `noindex` says so properly. If it
+  does, give it content of its own.
+- **A page works for visitors but not for the crawler.** If its content
+  depends on a request that fails while Google renders the page, URL
+  Inspection's screenshot shows an empty screen. Google's JavaScript
+  documentation notes that pages with a 200 status go to the rendering queue,
+  and that screenshot shows what rendering produced.
+- **Many URLs redirected to the home page.** Google's site move guide says
+  that redirecting many old URLs to an irrelevant destination, like the home
+  page, can be treated as a soft 404. If you remove a page and have no
+  equivalent replacement, let it answer 404.
+- **A redirect to the login screen.** For pages that require login, Google
+  recommends a 401, not a 200 with a sign-in form.
+
+## How to test with an invented URL
+
+Send one request per page template, not one per site. Your blog, categories,
+product pages, and each subdomain can answer differently. Invent a slug that
+doesn't exist, and request it with and without `Accept: text/html`.
+
+```bash
+URL="https://seusite.com.br/blog/slug-que-nao-existe-teste"
+curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" -H "Accept: text/html" "$URL"
+curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" -H "Accept: */*" "$URL"
+curl -sL "$URL" | grep -i -E '<title>|name="robots"|rel="canonical"'
+```
+
+Then look at four things:
+
+- **Final status.** A 404 or 410 is right. A 200 with a "page not found"
+  title is the classic soft 404.
+- **Redirects.** If there's a hop, what counts is the target's status.
+- **`Accept`.** If the two responses differ, the site is deciding by that
+  header, so a client that doesn't ask for `text/html` gets something else.
+- **Robots and canonical.** On an error page that answers 200, `noindex` is
+  what keeps the URL out of the index. On a page that answers 404, neither
+  matters, because Google ignores what a 4xx response contains.
+
+If you don't have a terminal, use the [meta tag
+validator](/en/tools/meta-tag-validator). It shows the final response's HTTP
+status and warns you when a page answers 200 with an error title. To cover
+several templates at once, use the [script from this
+measurement](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/soft404-probe.mjs).
+It reads each origin's `robots.txt`, requests one invented URL per template,
+and records each response's status, redirects, title, robots, and canonical.
+
+## How to fix each case
+
+How you fix it depends on which pattern you have.
+
+- **An SPA on a static host.** Make the server answer 404 for any path outside
+  the valid routes. If it can't, use one of Google's two ways out described
+  above.
+- **A redirect to an error page.** Make the target answer 404.
+- **A template that builds a page for any address.** Have the page check
+  that the resource exists before it answers.
+- **A real page flagged as a soft 404.** If URL Inspection's screenshot is
+  empty, you have a rendering problem. If it's full, the page needs content
+  that sets it apart from an error screen.
+
+Read the examples from other stacks above as illustrative. I measured the
+status each server returned, not the code behind it.
+
+## Returning a real 404 in Next.js
+
+On this site, a URL that doesn't exist answers 404, with `noindex` and no
+canonical. I measured that on November 9, 2026, on four templates (`/blog/`,
+the root, `/en/blog/`, and `/projeto/`), with and without `Accept: text/html`.
+A regression test in the SEO suite now checks five templates on every pull
+request. Two decisions in the code keep it that way.
+
+First, dynamic routes accept only the slugs generated at build time.
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx, linhas 17 a 22
+// Somente slugs existentes em /content/blog são gerados; o resto é 404.
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return getAllPosts().map(({ frontmatter }) => ({ slug: frontmatter.slug }))
+}
+```
+
+Second, the page itself checks that the article exists. This site's
+`generateMetadata` doesn't call `notFound()`. If the article doesn't exist, it
+returns an empty object and leaves the decision to the page.
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx, linhas 26 e 27, 46 a 49
+  const post = getPostBySlug(slug)
+  if (!post) return {}
+// …
+export default async function BlogPostPage({ params }: PageProps) {
+  const { slug } = await params
+  const post = getPostBySlug(slug)
+  if (!post) notFound()
+```
+
+Here's why that matters. Next.js warns in its docs that once a response starts
+streaming, its status has already gone out as 200. `notFound()` shows the
+not-found view and the framework adds `noindex`, but the status doesn't
+change. Since version 15.2, metadata itself can stream too, except for a list
+of "HTML-limited bots" that Next.js recognizes by User-Agent. Googlebot isn't
+on that list. `Google-InspectionTool`, the agent behind URL Inspection and the
+Rich Results Test, is.
+
+To see the effect, I built a minimal app with Next.js 16.2.12, the same
+version as this site, and requested a missing slug with five User-Agents.
+
+| Missing slug | Chrome | Googlebot | Google-InspectionTool | Bingbot | curl |
+|---|---|---|---|---|---|
+| `notFound()` in the page, no `loading` | 404 | 404 | 404 | 404 | 404 |
+| Same, with `loading` in the segment | 200 | 200 | 200 | 200 | 200 |
+| `notFound()` in `generateMetadata` and in the page | 404 | 404 | 404 | 404 | 404 |
+| `notFound()` only in `generateMetadata` | 200 | 200 | 404 | 404 | 200 |
+
+Every response carried `noindex`. You'll find the fixture and script in the
+repository, and one command reproduces the table.
+
+```bash
+node scripts/next-notfound-status.mjs
+```
+
+Of the four rows, the last one misleads. Googlebot gets a 200 with `noindex`,
+and URL Inspection's live test gets a 404. If you check the URL with Google's
+tool, you see a correct 404 and have no reason to doubt it. The `noindex`
+keeps the page out of the index either way, but the crawler reads a different
+status. To fix it, do what this site does. Check in the page that the slug
+exists, before any `loading` or `Suspense` on the path, not only in
+`generateMetadata`. If you need streaming in the page, do the check in Proxy
+and answer 404 before rendering starts, which is the path the Next.js docs
+point to.
+
+My [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) covers
+metadata, canonicals, and redirects. If a page moved instead of going away,
+read [redirects and canonicals in
+Next.js](/en/blog/nextjs-redirects-canonicals). For what each crawler renders,
+see [JavaScript SEO: what Google and AI
+read](/en/blog/javascript-seo-google-vs-ai).
+
+## Method and limits
+
+- **Collection.** I probed this site and four public sites on November 9,
+  2026, with the [probe
+  script](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/soft404-probe.mjs).
+  It uses a User-Agent that identifies it, respects `robots.txt`, sends one
+  request per second, and requests one invented URL per page template. In the
+  [summary](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/soft404-2026-11-09/summary.json),
+  sites appear by code only, and their addresses aren't published.
+- **The browser case.** I observed the November 7, 2026, case in a browser
+  while analyzing the site. I couldn't reproduce it on November 9, 2026,
+  because the subdomain refused my probe, which identifies itself as a bot.
+  The probe doesn't pose as a browser to get around that.
+- **Not measured.** What Google indexed from each site (I analyzed them from
+  outside, without Search Console), and what Googlebot gets on subdomains that
+  answer 403 to other bots.
+- **The Next.js lab.** It measures a local build of Next.js 16.2.12 running
+  `next start`. Another version, or a hosting platform with different
+  streaming behavior, may answer differently, so run the script.
+
+I analyzed these public sites from outside, only to study the method. I don't
+identify them, I have no relationship with them, and they didn't take part.
+This isn't an audit, a recommendation to their owners, or a verdict on them.
+Nobody sponsored it, and I don't sell any service from it.
+
+## Sources
+
+- [Google: How HTTP status codes affect Google's crawlers](https://developers.google.com/crawling/docs/troubleshooting/http-status-codes), last updated 2026-02-04, read on 2026-11-08
+- [Google Search Console Help: Page indexing report](https://support.google.com/webmasters/answer/7440203), "Soft 404" row, read on 2026-11-08
+- [Google: Understand the JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), last updated 2026-03-04, read on 2026-11-08
+- [Google: Optimize your crawl budget](https://developers.google.com/crawling/docs/crawl-budget), last updated 2026-07-22, read on 2026-11-08
+- [Google: Site moves with URL changes](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes), last updated 2026-08-20, read on 2026-11-09
+- [Google: Google's common crawlers, Google-InspectionTool](https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers), last updated 2026-10-30, read on 2026-11-09
+- [Next.js: `notFound`](https://nextjs.org/docs/app/api-reference/functions/not-found) and [`loading.js` status codes](https://nextjs.org/docs/app/api-reference/file-conventions/loading#status-codes), read on 2026-11-08
+- [Next.js: `generateMetadata`, streaming metadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#streaming-metadata), read on 2026-11-09
+- Research note: [`docs/research/2026-11-08-soft-404.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-08-soft-404.md)
+
+This is the English version of an article first published in Portuguese; the two declare each other.
