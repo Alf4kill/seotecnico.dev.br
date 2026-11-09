@@ -1,0 +1,5 @@
+{
+  "name": "next-notfound-status-fixture",
+  "private": true,
+  "description": "Minimal App Router app used by scripts/next-notfound-status.mjs. Resolves next from the repository's node_modules."
+}
