@@ -330,6 +330,14 @@ function sameUrl(a: string, b: string): boolean {
  */
 const CHECK_COPY = {
   'pt-BR': {
+    statusLabel: 'Status HTTP',
+    status2xx: (code: number) => `${code}: o conteúdo pode ser considerado para indexação (não é garantia).`,
+    status2xxNotFound: (code: number) =>
+      `${code}, mas o título diz que a página não existe. O Google pode classificar como soft 404; se ela não existe mesmo, o servidor deve responder 404 ou 410.`,
+    status4xx: (code: number) =>
+      `${code}: o Google não indexa a página e ignora o conteúdo dela. Correto só se a página não existe.`,
+    status5xx: (code: number) =>
+      `${code}: erro do servidor. O Google desacelera o rastreamento e remove do índice URLs que continuam com erro.`,
     langLabel: 'Atributo lang',
     titleMissing: 'Ausente. É o elemento de SEO on-page mais importante da página.',
     titleLong: (n: number) => `${n} caracteres — acima de ${TITLE_MAX}, o Google tende a truncar na SERP.`,
@@ -357,6 +365,14 @@ const CHECK_COPY = {
     twitterMissing: 'Ausente — o X/Twitter cai no fallback do Open Graph, sem card grande.',
   },
   en: {
+    statusLabel: 'HTTP status',
+    status2xx: (code: number) => `${code}: the content can be considered for indexing (not guaranteed).`,
+    status2xxNotFound: (code: number) =>
+      `${code}, but the title says the page doesn't exist. Google may report it as a soft 404; if the page really doesn't exist, the server should answer 404 or 410.`,
+    status4xx: (code: number) =>
+      `${code}: Google doesn't index the page and ignores its content. Correct only if the page doesn't exist.`,
+    status5xx: (code: number) =>
+      `${code}: server error. Google slows down crawling and drops URLs that keep failing.`,
     langLabel: 'lang attribute',
     titleMissing: 'Missing. It is the most important on-page SEO element of the page.',
     titleLong: (n: number) => `${n} characters — over ${TITLE_MAX}, Google tends to truncate it in the SERP.`,
@@ -385,11 +401,50 @@ const CHECK_COPY = {
   },
 } as const
 
-export function runChecks(finalUrl: string, meta: ExtractedMeta, lang: Lang = 'pt-BR'): MetaCheck[] {
+/**
+ * Título com cara de página de erro, nos dois idiomas do site e nos textos
+ * padrão mais comuns ("404", "Page Not Found", "Página não encontrada").
+ * Heurística: serve para avisar, não para decidir — quem decide é o status.
+ */
+export const NOT_FOUND_TITLE = /\b404\b|not\s+found|n[ãa]o\s+(foi\s+)?encontrad[ao]|n[ãa]o\s+existe|doesn['’]t\s+exist|does\s+not\s+exist/i
+
+/**
+ * Checagem do status HTTP da resposta final (depois dos redirects).
+ * Vereditos com base em "How HTTP status codes affect Google's crawlers"
+ * (docs/research/2026-11-08-soft-404.md, G1): 2xx é "considerar para
+ * indexação"; 4xx não é indexado e o conteúdo é ignorado; 5xx reduz o
+ * rastreamento. 200 com título de erro é o soft 404 do Search Console (G3).
+ */
+function statusCheck(httpStatus: number, meta: ExtractedMeta, lang: Lang): MetaCheck {
+  const copy = CHECK_COPY[lang]
+  const check = (status: CheckStatus, detail: string): MetaCheck => ({
+    id: 'http-status',
+    label: copy.statusLabel,
+    status,
+    detail,
+  })
+  if (httpStatus >= 500) return check('error', copy.status5xx(httpStatus))
+  if (httpStatus >= 400) return check('warning', copy.status4xx(httpStatus))
+  if (meta.title && NOT_FOUND_TITLE.test(meta.title)) return check('warning', copy.status2xxNotFound(httpStatus))
+  return check('ok', copy.status2xx(httpStatus))
+}
+
+/**
+ * `httpStatus` é opcional para manter a função pura testável sem rede; a rota
+ * sempre passa o status da resposta final, e então a primeira checagem é ele.
+ */
+export function runChecks(
+  finalUrl: string,
+  meta: ExtractedMeta,
+  lang: Lang = 'pt-BR',
+  httpStatus?: number
+): MetaCheck[] {
   const copy = CHECK_COPY[lang]
   const checks: MetaCheck[] = []
   const add = (id: string, label: string, status: CheckStatus, detail: string) =>
     checks.push({ id, label, status, detail })
+
+  if (httpStatus !== undefined) checks.push(statusCheck(httpStatus, meta, lang))
 
   // Title
   if (!meta.title) {

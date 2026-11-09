@@ -71,8 +71,8 @@ export default function MetaTagValidatorPage() {
             </h1>
             <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
               Paste the URL of any page and see what Google and social networks
-              actually read: title, meta description, canonical, robots, H1 and
-              Open Graph, with a SERP preview and warnings about what to fix.
+              actually read: HTTP status, title, meta description, canonical,
+              robots, H1 and Open Graph, with a SERP preview and warnings about what to fix.
               Free, no login, and the URL is not stored.
             </p>
           </div>
@@ -84,7 +84,9 @@ export default function MetaTagValidatorPage() {
         <div className="rich-text mt-16 max-w-[68ch] border-t border-gray pt-4">
           <h2>What the validator checks (and against which standard)</h2>
           <p>
-            The checks are the ones this site enforces on itself in CI: a title
+            The checks are the ones this site enforces on itself in CI: the
+            HTTP status of the final response (with a soft 404 warning when it
+            answers 200 but the title says the page does not exist), a title
             present and up to 60 characters, a meta description up to 155, an
             absolute self-referencing canonical, exactly one H1, the{' '}
             <code>lang</code> attribute, charset, viewport and the Open Graph

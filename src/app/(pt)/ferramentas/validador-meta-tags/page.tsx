@@ -72,8 +72,8 @@ export default function ValidadorMetaTagsPage() {
             </h1>
             <p className="mt-5 max-w-[46rem] text-lg leading-relaxed text-muted">
               Cole a URL de qualquer página e veja o que o Google e as redes
-              sociais realmente leem: title, meta description, canonical, robots,
-              H1 e Open Graph — com um preview da SERP e alertas do que corrigir.
+              sociais realmente leem: status HTTP, title, meta description,
+              canonical, robots, H1 e Open Graph — com um preview da SERP e alertas do que corrigir.
               Grátis, sem login e sem armazenar a URL.
             </p>
           </div>
@@ -86,7 +86,8 @@ export default function ValidadorMetaTagsPage() {
           <h2>O que o validador checa (e com que régua)</h2>
           <p>
             As checagens são as mesmas que este site impõe a si próprio em CI:
-            title presente e até 60 caracteres, meta description até 155,
+            o status HTTP da resposta final (com aviso de soft 404 quando ela
+            responde 200 mas o título diz que a página não existe), title presente e até 60 caracteres, meta description até 155,
             canonical absoluto e autorreferente, exatamente um H1, atributo{' '}
             <code>lang</code>, charset, viewport e as tags Open Graph que
             alimentam o preview de link no WhatsApp, LinkedIn e afins. Cada
