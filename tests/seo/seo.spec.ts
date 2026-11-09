@@ -350,6 +350,27 @@ test('an unmatched URL is a real 404 with exactly one robots directive', async (
   expect(await robots.getAttribute('content')).toContain('noindex')
 })
 
+// Soft 404 guard (docs/research/2026-11-08-soft-404.md): a slug that does not
+// exist under each dynamic template must answer 404, with or without
+// `Accept: text/html`, carry `noindex` and no canonical. `dynamicParams =
+// false` is what makes this hold today; a `loading.tsx` in one of these
+// segments, or an existence check moved into `generateMetadata`, would turn
+// it into 200 (audits/next-notfound-status, scripts/next-notfound-status.mjs).
+for (const template of ['/blog/', '/en/blog/', '/projeto/', '/en/project/', '/lab/']) {
+  test(`a missing slug under ${template} is a real 404, not a soft 404`, async ({ request }) => {
+    for (const accept of ['text/html', '*/*']) {
+      const response = await request.get(`${template}slug-que-nao-existe-soft404`, {
+        headers: { Accept: accept },
+        maxRedirects: 0,
+      })
+      expect(response.status(), `${template} with Accept ${accept}`).toBe(404)
+      const html = await response.text()
+      expect(html, 'noindex on the 404').toMatch(/<meta name="robots" content="[^"]*noindex/)
+      expect(html, 'no canonical on the 404').not.toMatch(/rel="canonical"/)
+    }
+  })
+}
+
 test('an unmatched English URL offers a way back to the English home', async ({ page }) => {
   const response = await page.goto('/en/este-caminho-nao-existe')
   expect(response?.status()).toBe(404)
