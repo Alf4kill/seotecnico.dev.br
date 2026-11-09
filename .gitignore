@@ -38,3 +38,16 @@ coverage/
 audits/.venv/
 audits/crawl-*/**
 !audits/crawl-*/summary*.json
+
+# Outside-in case studies (docs/proposals/case-studies-content.md §3): the
+# targets file names real sites and the raw output carries hosts and paths, so
+# both stay local. Only the codes-only summary.json of each run is versioned.
+audits/case-studies/*.local.json
+audits/case-studies/soft404-*/**
+!audits/case-studies/soft404-*/summary*.json
+
+# Fixture of scripts/next-notfound-status.mjs: the build output and the files
+# next build generates next to it stay local; app/, configs and result.json are
+# versioned.
+audits/next-notfound-status/.next/
+audits/next-notfound-status/next-env.d.ts
