@@ -203,7 +203,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const meta = extractMeta(html)
-  const checks = runChecks(finalUrl.href, meta, lang)
+  const checks = runChecks(finalUrl.href, meta, lang, response.status)
 
   return NextResponse.json({
     finalUrl: finalUrl.href,

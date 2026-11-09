@@ -305,3 +305,43 @@ describe('English version (/en/tools/meta-tag-validator)', () => {
     expect(parseTargetUrl('', 'en')).toEqual({ ok: false, error: 'Enter a URL.' })
   })
 })
+
+describe('runChecks with the HTTP status', () => {
+  const status = (code: number, html = PERFECT, lang: 'pt-BR' | 'en' = 'pt-BR') =>
+    runChecks(URL_OK, extractMeta(html), lang, code).find((c) => c.id === 'http-status')
+  const titled = (title: string) => PERFECT.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+
+  it('is the first check when the route passes a status, and absent otherwise', () => {
+    expect(runChecks(URL_OK, extractMeta(PERFECT), 'pt-BR', 200)[0].id).toBe('http-status')
+    expect(runChecks(URL_OK, extractMeta(PERFECT)).some((c) => c.id === 'http-status')).toBe(false)
+  })
+
+  it('a 200 with a normal title is ok, so a perfect page still has zero issues', () => {
+    expect(status(200)?.status).toBe('ok')
+    expect(countIssues(runChecks(URL_OK, extractMeta(PERFECT), 'pt-BR', 200))).toBe(0)
+  })
+
+  it('a 200 whose title says "not found" is a soft 404 warning, in both languages', () => {
+    for (const t of ['Página não encontrada | Site', 'Erro 404', 'Page Not Found - Shop', 'This page does not exist']) {
+      expect(status(200, titled(t))?.status).toBe('warning')
+    }
+    expect(status(200, titled('Page Not Found'), 'en')?.detail).toContain('soft 404')
+  })
+
+  it('does not flag titles that only contain the digits inside a longer number', () => {
+    expect(status(200, titled('Modelo 14040 em estoque'))?.status).toBe('ok')
+  })
+
+  it('4xx is a warning (correct only for pages that do not exist), 5xx an error', () => {
+    expect(status(404)?.status).toBe('warning')
+    expect(status(410)?.status).toBe('warning')
+    expect(status(403)?.status).toBe('warning')
+    expect(status(500)?.status).toBe('error')
+    expect(status(503)?.status).toBe('error')
+  })
+
+  it('a 404 page titled "not found" is judged by the status, not the title', () => {
+    expect(status(404, titled('Página não encontrada'))?.detail).toContain('404')
+    expect(status(404, titled('Página não encontrada'))?.detail).not.toContain('soft 404')
+  })
+})
