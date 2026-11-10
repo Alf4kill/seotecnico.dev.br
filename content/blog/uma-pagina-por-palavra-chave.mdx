@@ -1,0 +1,459 @@
+---
+title: "Uma página por palavra-chave: anatomia de um site real"
+description: "Análise anônima de um site com uma URL por variação e uma lista nacional de cidades: o que o servidor entrega e o que a documentação do Google prevê."
+slug: "uma-pagina-por-palavra-chave"
+primaryQuery: "uma página por palavra-chave"
+keywords: ['uma página por palavra-chave', 'landing page por palavra-chave', 'página para cada palavra-chave', 'seo programático', 'páginas por cidade', 'lista de cidades', 'regiões atendidas', 'keyword stuffing', 'doorway', 'scaled content abuse', 'conteúdo em escala', 'texto reescrito', 'canibalização']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  Um site com cerca de 180 páginas, uma por variação de palavra-chave, entrega
+  em cada uma a mesma lista com milhares de cidades: 55% do HTML. O texto é
+  reescrito, e nenhum verificador de duplicidade acusa nada, mas três trechos
+  das políticas de spam do Google descrevem o modelo. Eu não recomendaria.
+datePublished: "2026-11-10"
+dateModified: "2026-11-10"
+faq:
+  - question: "Preciso de uma página para cada variação de palavra-chave?"
+    answer: "Não. O guia do Google sobre otimização para IA generativa diz que os sistemas entendem sinônimos e que não é preciso cobrir cada variação de como alguém busca. O mesmo guia diz que criar conteúdo separado para cada variação, principalmente para manipular o ranqueamento, viola a política de abuso de conteúdo em escala."
+  - question: "Lista de cidades atendidas ajuda a aparecer nas buscas locais?"
+    answer: "A documentação não diz que ajuda, e cita o padrão como exemplo de keyword stuffing: blocos de texto com as cidades e regiões pelas quais a página tenta ranquear. A ajuda do Perfil da Empresa descreve os resultados locais como baseados principalmente em relevância do perfil, distância e proeminência. Neste artigo, o efeito da lista sobre buscas com nome de cidade não foi medido."
+  - question: "Conteúdo dentro de abas conta como texto oculto?"
+    answer: "Não. As políticas de spam listam abas e acordeões entre os elementos que não violam a política de texto oculto. Num bloco de cidades dentro de abas, o que a política descreve é o conteúdo do bloco, não o mecanismo que o esconde."
+  - question: "Verificador de texto duplicado detecta texto reescrito?"
+    answer: "Não. Ele mede cópia literal. No site medido aqui, nenhum par de páginas chega a 0,30 de similaridade literal, e mesmo assim nove em cada dez textos trazem pelo menos uma das dez frases-molde que se repetem no conjunto. A política de conteúdo em escala não fala em texto idêntico."
+---
+
+Criar uma página por palavra-chave, com uma URL para cada jeito de buscar o
+mesmo produto, é um modelo que eu não recomendaria a uma empresa hoje. Três
+trechos das políticas de spam do Google descrevem as peças dele, e o guia de
+otimização para IA generativa diz que os sistemas entendem sinônimos sem uma
+página por formulação. O modelo não precisa dar errado para ser uma aposta
+ruim: pelo que o próprio Google documenta, a parte que pode trazer busca não
+depende da parte que a política nomeia.
+
+O artigo [Scaled content abuse](/blog/scaled-content-abuse) mostra o que a
+política diz, com um site fictício. Este mede um site real desse modelo. Li o
+HTML que o servidor dele entregou em 10/11/2026, peça por peça, e pus cada peça
+ao lado do texto do Google. O site não é identificado. Não tenho o Search
+Console dele e não uso resultado de busca: o que está aqui é o que o servidor
+envia, o que a documentação diz e o resultado provável. O que o Google fez de
+fato com esse site, eu não sei.
+
+## O site e como foi medido
+
+É o site de um fabricante de equipamentos industriais. A página de mapa do
+site lista cerca de 190 URLs. Dessas, cerca de 180 saem do mesmo molde, uma
+por variação de palavra-chave, e uma dezena são institucionais ou de índice.
+Todas responderam 200.
+
+A medição é de um [script deste repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/template-anatomy.mjs):
+uma requisição por segundo, `robots.txt` lido antes, User-Agent identificado.
+Ele lê só o HTML bruto, sem executar JavaScript, e não faz nenhuma busca no
+Google.
+
+Como controle, o mesmo script rodou na mesma rodada sobre os 25 artigos em
+português deste site. O controle não é um concorrente. Ele mostra o que o
+método devolve num conjunto de páginas sem molde, para que um número do caso
+não pareça grande ou pequeno sem referência.
+
+## Uma URL para cada jeito de pedir a mesma coisa
+
+Os endereços do molde ficam na raiz do domínio e seguem uma gramática: um prefixo
+comercial opcional, o produto, um modificador e uma aplicação. Num setor
+inventado, ficaria assim:
+
+```text
+/esteira-transportadora
+/esteira-transportadora-industrial
+/esteira-transportadora-mineracao
+/fabricante-esteira-transportadora
+/empresa-esteira-transportadora-industrial
+```
+
+Ilustrativo: o setor e os endereços são inventados. A gramática e os números
+abaixo são do site medido.
+
+| Medida | Site medido | Controle |
+|---|---|---|
+| Pares de URLs com dois terços ou mais dos termos em comum | cerca de 80 pares, 46% das páginas | 0 |
+| Endereços que começam com palavra de intenção comercial (fabricante, fornecedor, empresa, melhor) | 17% | 0 |
+
+Na minha leitura, o prefixo comercial não cria um pedido novo: a página do
+produto já responde a quem procura quem o fabrica.
+
+As políticas de spam descrevem isso em doorway: páginas criadas para ranquear
+em buscas específicas e parecidas, e, entre os exemplos, páginas
+substancialmente parecidas que ficam mais perto de resultados de busca do que
+de uma hierarquia navegável. O guia de IA generativa fecha a outra ponta:
+criar conteúdo separado para cada variação de como as pessoas buscam,
+principalmente para manipular o ranqueamento, viola a política de abuso de
+conteúdo em escala, e um número alto de páginas não torna o site mais
+relevante.
+
+## Texto reescrito: fora da duplicidade, dentro da política
+
+O artigo anterior descreve o molde em que só a palavra-chave muda. Para esse
+caso existe um mecanismo documentado: o Google identifica o conteúdo principal
+de cada página, agrupa as que têm conteúdo muito parecido e indexa uma como
+canônica.
+
+Este site é a outra versão do modelo: cada página tem um texto reescrito. A
+similaridade literal entre uma página e a mais parecida com ela é de 0,068 na
+mediana, e nenhum par chega a 0,30. Um verificador de texto duplicado diria
+que está tudo certo, e o agrupamento documentado para páginas quase iguais não
+é o que se espera aqui.
+
+O molde aparece em outras medidas:
+
+| Medida | Site medido | Controle (25 artigos) |
+|---|---|---|
+| Palavras no texto próprio da página (mediana) | cerca de 750 | 2.722 |
+| Similaridade literal com a página mais parecida (mediana) | 0,068 | 0,011 |
+| Pares com similaridade literal de 0,30 ou mais | 0 | 0 |
+| Frases que se repetem em 10% dos textos ou mais | 10 | 3 |
+| Textos com pelo menos uma dessas frases | 89% | 100% |
+| Páginas que abrem com as mesmas seis palavras | 42% | nenhuma abertura repetida |
+| Textos sem nenhum número com unidade de medida | 100% | 56% |
+
+Para contar as frases, o script troca a palavra-chave de cada página por uma
+lacuna. Assim, a mesma frase com o nome de outro produto conta como uma só. A
+mais repetida aparece em mais da metade das páginas: ela recomenda outro produto da empresa
+pelo nome e não tem link. No controle, a única frase presente nos 25 textos é
+a linha de autoria que fecha cada artigo.
+
+A última linha da tabela pede cuidado. Numa página de equipamento, capacidade,
+potência ou temperatura é o conteúdo esperado, e nenhum dos textos traz um
+número desses. Menos de um décimo das páginas traz um percentual; nenhuma traz uma grandeza
+com unidade. No controle a mesma conta dá 14 de 25, porque um artigo
+sobre hreflang não tem unidade para citar. A medida só diz algo quando
+comparada com o que a página deveria descrever.
+
+<figure>
+  <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dois caminhos para um conjunto de páginas parecidas: texto copiado é agrupado e uma página vira canônica; texto reescrito não é agrupado e fica descrito pela política de conteúdo em escala">
+    <title>Texto copiado e texto reescrito seguem caminhos diferentes</title>
+    <desc>À esquerda, um conjunto de páginas do mesmo molde. No caminho de cima, o texto é quase igual entre as páginas: o Google agrupa as páginas e indexa uma como canônica, comportamento documentado. No caminho de baixo, em destaque, o texto é reescrito e a similaridade literal é baixa: as páginas não são agrupadas como cópias, e o que se aplica é a descrição da política de conteúdo em escala. O site medido está no caminho de baixo.</desc>
+    <rect x="20" y="95" width="170" height="60" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="105" y="121" textAnchor="middle" fontSize="12" fill="var(--foreground)">Páginas do</text>
+    <text x="105" y="139" textAnchor="middle" fontSize="12" fill="var(--foreground)">mesmo molde</text>
+    <line x1="190" y1="125" x2="242" y2="56" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <line x1="190" y1="125" x2="242" y2="194" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="242" y="26" width="200" height="60" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="342" y="52" textAnchor="middle" fontSize="12" fill="var(--foreground)">Texto quase igual,</text>
+    <text x="342" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">muda a palavra-chave</text>
+    <rect x="242" y="164" width="200" height="60" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="342" y="190" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">Texto reescrito,</text>
+    <text x="342" y="208" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">literal 0,068 (este site)</text>
+    <line x1="442" y1="56" x2="482" y2="56" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="490,56 482,52 482,60" fill="var(--color-diagram-axis)" />
+    <line x1="442" y1="194" x2="482" y2="194" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="490,194 482,190 482,198" fill="var(--color-diagram-axis)" />
+    <rect x="490" y="26" width="210" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="595" y="52" textAnchor="middle" fontSize="12" fill="var(--foreground)">Agrupadas: uma canônica</text>
+    <text x="595" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">no índice (documentado)</text>
+    <rect x="490" y="164" width="210" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="595" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">Não agrupadas: vale a</text>
+    <text x="595" y="208" textAnchor="middle" fontSize="12" fill="var(--foreground)">descrição da política</text>
+  </svg>
+  <figcaption>Reescrever o texto tira as páginas do caminho de cima. Não tira do alcance da política.</figcaption>
+</figure>
+
+| Conjunto de páginas | O que se espera |
+|---|---|
+| Texto quase igual, muda a palavra-chave | Agrupamento: uma página vira canônica e as outras são rastreadas com menos frequência (documentado) |
+| Texto reescrito, como neste site | Sem agrupamento por cópia; o conjunto é o que a política de conteúdo em escala descreve (leitura minha) |
+
+A política de abuso de conteúdo em escala fala de muitas páginas geradas com
+o objetivo principal de manipular o ranqueamento, com pouco valor para quem
+lê, qualquer que seja o modo de produção. Um dos exemplos é a transformação
+por troca de sinônimos. Esse exemplo trata de conteúdo raspado de outros
+lugares; aplicá-lo ao molde do próprio site é leitura minha, não frase do
+Google.
+
+Uma ressalva de método: a similaridade de vocabulário, muito usada para
+"provar" reescrita, é evidência fraca. Ela dá 0,667 neste site com frequência
+simples de termos e 0,340 quando termos comuns ao conjunto pesam menos. O
+controle, um blog de um nicho só e sem molde, dá 0,500 e 0,235. O número
+acompanha o assunto tanto quanto acompanha o molde.
+
+## A lista de cidades em todas as páginas
+
+Todas as páginas do molde trazem a mesma seção de regionalização: uma lista
+de cidades de todo o Brasil em 26 abas, uma por estado. A lista é idêntica em
+todas as páginas e tem mais de cinco mil nomes.
+
+<figure>
+  <svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Composição de uma página do molde: no texto, a lista de cidades é 78%, o texto próprio da página 5,8% e o resto cerca de 16%; nos bytes do HTML, a lista é 55%">
+    <title>Quanto de cada página é a lista de cidades</title>
+    <desc>Duas barras horizontais. A primeira mostra o texto de uma página do molde, pelas medianas: 5,8% é o texto próprio da página, 78% é a lista de cidades e cerca de 16% é navegação, malha de links e rodapé. A segunda mostra os bytes do HTML: 55% são a lista de cidades e 45% são todo o resto.</desc>
+    <text x="20" y="28" fontSize="13" fill="var(--foreground)">Texto da página</text>
+    <rect x="20" y="64" width="39" height="46" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="59" y="64" width="531" height="46" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="590" y="64" width="110" height="46" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="20" y="54" fontSize="12" fill="var(--foreground)">5,8% texto próprio</text>
+    <text x="324" y="92" textAnchor="middle" fontSize="13" fill="var(--foreground)">78% lista de cidades</text>
+    <text x="645" y="92" textAnchor="middle" fontSize="12" fill="var(--foreground)">16% resto</text>
+    <text x="20" y="150" fontSize="13" fill="var(--foreground)">Bytes do HTML</text>
+    <rect x="20" y="164" width="374" height="46" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="394" y="164" width="306" height="46" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="207" y="192" textAnchor="middle" fontSize="13" fill="var(--foreground)">55% lista de cidades</text>
+    <text x="547" y="192" textAnchor="middle" fontSize="13" fill="var(--foreground)">45% todo o resto</text>
+  </svg>
+  <figcaption>Medianas das páginas do molde. O texto que só aquela página tem é a menor das três partes.</figcaption>
+</figure>
+
+| Medida (mediana das páginas do molde) | Valor |
+|---|---|
+| Lista de cidades no HTML | cerca de 260 KB de 470 KB, 55% |
+| Lista de cidades no texto da página | 78% |
+| Texto próprio da página | 5,8% do texto |
+| Resto do texto (navegação, malha de links, rodapé) | cerca de 16% |
+| Texto da lista que está na aba aberta ao carregar | 5% |
+
+As políticas de spam dão esse padrão como exemplo de keyword stuffing: blocos
+de texto que listam as cidades e regiões pelas quais a página tenta ranquear.
+É o exemplo literal.
+
+As abas não são o problema. A mesma página de políticas lista conteúdo em abas
+e acordeões entre os elementos que não violam a política de texto oculto. O
+tamanho também não é: o Googlebot lê os primeiros 2 MB de um arquivo HTML, e os
+artigos deste site têm 288 KB na mediana. O que a medida mostra é proporção:
+mais da metade de cada página é a mesma lista, e o texto que só aquela página
+tem é 5,8% do que ela diz.
+
+Sobre o objetivo provável do bloco, aparecer em buscas com nome de cidade, a
+documentação aponta para outro lugar. A ajuda do Perfil da Empresa descreve os
+resultados locais como baseados principalmente em relevância do perfil,
+distância e proeminência, e limita as áreas de atendimento a 20. Uma lista de
+nomes numa página não muda a distância até quem busca. Se a lista traz alguma
+impressão em busca de produto com cidade, eu não medi.
+
+## Title, H1, alt e description saídos da palavra-chave
+
+O molde preenche quatro campos com a palavra-chave. Só um deles tem trecho da
+documentação contra.
+
+| Campo | No site medido | O que a documentação diz |
+|---|---|---|
+| `<title>` igual ao H1, mais a marca | todas as páginas, todos distintos | Não é problema. O guia de title links sugere deixar claro o título principal, por exemplo no primeiro `<h1>` visível. O controle faz o mesmo em 25 de 25 |
+| `alt` de todas as imagens igual ao H1 | todas as páginas | O guia de imagens pede `alt` que descreva a imagem e cita o preenchimento com palavras-chave como keyword stuffing |
+| Description igual ao começo do texto, cortada com reticências | todas as páginas, todas distintas | Gerar a description por regra é adequado quando ela é própria da página |
+| Meta keywords, o mesmo valor no site inteiro | todas as páginas | Não é usada pela Busca |
+
+Para ver title, description e H1 lado a lado em qualquer página, o
+[validador de meta tags](/ferramentas/validador-meta-tags) faz essa leitura.
+
+## Todas as páginas ligam para todas
+
+Cada página do molde linka 100% das outras, num bloco fixo. São
+cerca de 190 links internos por página na mediana. No controle, cada artigo linka 21%
+dos outros.
+
+A descoberta está garantida: qualquer página fica a um link de qualquer
+outra. O mesmo fato tira dos links a função de dizer o que importa. Todas as
+páginas recebem os mesmos links, do mesmo bloco, e o site não tem a hierarquia
+navegável que o exemplo de doorway usa como contraste. Essa é uma leitura
+minha: nenhum documento diz que uma malha plana é um problema em si.
+
+Dois detalhes mostram onde a escolha de links ficou com o molde. Nenhum dos
+textos tem um link, dentro do próprio texto, para outra página do site. No
+controle são 24 de 25 artigos. E o único bloco que escolhe por página, o de páginas
+relacionadas, traz 4 links e deixa 22% das páginas sem nenhuma indicação, enquanto
+8% são indicadas mais de dez vezes.
+
+## Sitemap vazio, sem canônica, três variações de URL em 200
+
+| Sinal | Site medido | Controle |
+|---|---|---|
+| `sitemap.xml` | responde 200, com 0 URLs | 80 URLs |
+| Páginas com `rel="canonical"` | nenhuma | 25 de 25, autorreferentes |
+| Uma página do molde com barra no fim e com `?x=1`, e a home em `/index.php` | 200 nas três, sem redirect | não testado |
+| JSON-LD nas páginas do molde | só `BreadcrumbList` | `Article`, `BreadcrumbList`, `FAQPage` |
+| Institucionais que dividem o `<title>` com outra página | 8 em cada 10 | não se aplica |
+| URL inventada | 302 para uma página que responde 404 | 404 |
+
+Nada disso é erro pela documentação. O Google diz que um site pequeno, de até
+cerca de 500 páginas, pode não precisar de sitemap, e o mesmo vale para um
+site todo ligado por links internos. Diz também que nenhum método de
+canonicalização é obrigatório: sem indicação, ele escolhe a versão que
+considera melhor. A URL inventada termina num 404 de verdade, como mostra
+a medição do artigo sobre [soft 404](/blog/soft-404).
+
+O que os sinais têm em comum é que o site não declara nada. A página testada
+responde em três endereços, nenhum aponta a versão preferida, e o
+sitemap, que seria um sinal fraco a favor de uma delas, está vazio. A escolha
+fica inteira com o Google. O mesmo vale para a identidade: não há dado
+estruturado dizendo qual é a organização. Para os títulos repetidos, o
+guia de title links avisa que o Google pode montar outro título a partir da
+página.
+
+## O que o site faz e não é problema
+
+Uma análise dessas vira lista de defeitos com facilidade. Estes fatos
+apareceram na medição e a documentação não tem nada contra eles:
+
+| Fato | Por que não é achado |
+|---|---|
+| Title igual ao H1 | O guia de title links sugere; o controle faz igual |
+| Conteúdo dentro de abas | Abas e acordeões são permitidos |
+| Description gerada por regra | Adequado quando é própria da página |
+| Ausência de `rel="canonical"` | Não é obrigatório |
+| Sitemap sem uso num site pequeno e todo ligado | Pode não ser necessário |
+| Cerca de 470 KB de HTML | Abaixo do limite de 2 MB |
+| Conteúdo presente sem JavaScript | O que o servidor envia é o que existe |
+| Ter muitas landing pages | A política fala de propósito e de valor, não de contagem |
+
+## O resultado provável, peça por peça
+
+| Peça | Medido | Onde o Google descreve | Resultado provável |
+|---|---|---|---|
+| Uma URL por variação | cerca de 80 pares de endereços quase iguais | Doorway; guia de IA generativa | Várias páginas para um pedido. Sistemas que entendem sinônimos não precisam delas |
+| Texto reescrito por molde | 10 frases-molde em 89% dos textos | Abuso de conteúdo em escala | Fora do agrupamento de cópias, dentro da descrição da política |
+| Lista nacional de cidades | 55% do HTML, igual em todas as páginas | Keyword stuffing, exemplo literal | A peça com a correspondência mais direta |
+| `alt` igual à palavra-chave | todas as páginas | Guia de imagens | O `alt` não descreve nenhuma imagem |
+| Malha plana de links | 100% das outras páginas | Sem trecho contrário | Tudo é descoberto; nada é destacado |
+| Sem canônica, variações em 200 | nenhuma página com canônica | Canonicalização | O Google escolhe o endereço de cada página |
+
+Para as três primeiras peças, a consequência documentada é a geral das
+políticas de spam: sites que violam as políticas podem ranquear pior ou não
+aparecer nos resultados, e a detecção é feita por sistemas automáticos e,
+quando necessário, por revisão humana, que pode resultar em ação manual. A
+tabela diz que o site corresponde a descrições. Ela não diz que alguma dessas
+consequências aconteceu.
+
+O que não dá para saber de fora: quantas dessas páginas estão no índice, se
+alguma traz cliques, se há ação manual e se a lista de cidades gera alguma
+impressão. Tudo isso está no Search Console do site, que eu não tenho.
+
+Por isso a recomendação não é "isso não funciona". É uma conta de risco. O
+ganho possível do modelo é aparecer para variações de um mesmo produto, e o
+próprio Google diz que não é preciso uma página por variação para isso. A
+exposição vem das peças acrescentadas para multiplicar páginas: as variações
+sem diferença real, o texto de molde e a lista de cidades. Tirar essas peças
+não tira nada do que poderia trazer busca.
+
+## O que eu faria no lugar
+
+São recomendações condicionais, sem promessa de tráfego. A página do Google
+sobre atualizações principais diz que melhorias podem levar meses para ser
+reconhecidas e que não há garantia.
+
+- **Uma página por coisa que existe.** Se a empresa tem cinco linhas de
+  produto, são cinco páginas, cada uma com o que só ela pode dizer:
+  capacidade, consumo, material, foto de instalação. As variações de escrita
+  viram redirects para a página principal de cada linha.
+- **Cobertura dita onde é verdade.** Se o atendimento regional importa, uma
+  página de onde a empresa atende, com os lugares reais. A lista de milhares de
+  itens sai das outras.
+- **Links que escolhem.** Da linha para o modelo, do modelo para a aplicação,
+  e links dentro do texto quando o texto cita outra página.
+- **Sinais declarados.** Canônica autorreferente, um endereço por página com
+  redirect das variações, sitemap gerado pelo sistema e dados de organização
+  na home.
+
+## No Next.js
+
+O [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) usa este site
+como implementação de referência, e o controle acima é ele. Rodei o mesmo
+script nos 25 artigos em português e o resultado tem três origens no código.
+
+A primeira: a lista de rotas vem de arquivos escritos, não de uma lista de
+palavras-chave. É por isso que o controle tem zero pares de endereços quase
+iguais.
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx, linhas 17 a 22
+// Somente slugs existentes em /content/blog são gerados; o resto é 404.
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return getAllPosts().map(({ frontmatter }) => ({ slug: frontmatter.slug }))
+}
+```
+
+A segunda: toda página declara a própria canônica, porque o helper de metadata
+a deriva do caminho. São 25 de 25 no controle.
+
+```ts
+// src/lib/metadata.ts, linhas 151 a 155
+  return {
+    title: absoluteTitle ? { absolute: title } : title,
+    description,
+    alternates: {
+      canonical: path,
+```
+
+A terceira: o sitemap sai do mesmo conteúdo, então não existe etapa manual
+para esquecer.
+
+```ts
+// src/app/sitemap.ts, linhas 94 a 100
+  const postPages: MetadataRoute.Sitemap = posts.map(({ frontmatter }) => ({
+    url: `${base}/blog/${frontmatter.slug}`,
+    lastModified: toDate(frontmatter.dateModified),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+    images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
+  }))
+```
+
+O framework não protege ninguém do modelo. Um `generateStaticParams`
+alimentado por uma lista de variações gera as mesmas páginas, com canônica
+e sitemap em ordem. A diferença está no que a lista representa. Os detalhes de
+cada peça estão em [redirects e canonicals no Next.js](/blog/redirects-canonicals-nextjs)
+e em [sitemap dinâmico no Next.js](/blog/sitemap-dinamico-nextjs).
+
+Para medir o seu site, o script aceita um arquivo de alvos e roda em duas
+fases:
+
+```bash
+node scripts/template-anatomy.mjs fetch --targets audits/case-studies/template-anatomy.example.json --only SITE
+node scripts/template-anatomy.mjs analyze --targets audits/case-studies/template-anatomy.example.json --only SITE
+```
+
+## Método e limites
+
+- **Coleta.** Rodada de 10/11/2026 (data em UTC; noite de 09/11 no horário de
+  Brasília), com User-Agent próprio e identificado, `robots.txt` respeitado e
+  uma requisição por segundo. O
+  [resumo versionado](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/template-anatomy-2026-11-10/summary.json)
+  traz só código e números. O endereço do site, o HTML baixado e as frases não
+  são publicados.
+- **Totais arredondados.** Para não identificar o site, os totais do caso
+  aparecem arredondados e as contagens de páginas, como proporção. O resumo
+  versionado segue a mesma regra. Os números do controle são exatos.
+- **Definições.** Similaridade literal é o Jaccard de sequências de cinco
+  palavras entre o texto de uma página e o da mais parecida. Texto próprio é o
+  trecho entre o início do artigo e a chamada de contato, sem a lista de
+  cidades. A lista de unidades de medida está no script.
+- **Heurísticas.** As medidas de texto descrevem o conjunto; nenhuma é
+  veredito sobre uma página. A de unidade de medida depende do tipo de página,
+  como o controle mostra.
+- **O que não foi medido.** Índice, cliques, posições e ações manuais, porque
+  a análise é de fora. Nenhuma busca no Google foi feita para este artigo. O
+  efeito da lista de cidades em buscas com nome de cidade pede testes manuais
+  que não foram rodados.
+- **Renderização.** O script não executa JavaScript. Texto, lista, links e
+  metadados medidos estavam todos no HTML enviado pelo servidor.
+
+Análise feita de fora, sobre um site público, só para estudo do método. O site
+não é identificado, não tem relação com o autor e não participou. Não é
+auditoria, recomendação ao dono nem veredito sobre ele. Não há patrocínio nem
+serviço vendido a partir dela.
+
+## Fontes
+
+- [Google: Spam policies for Google web search](https://developers.google.com/search/docs/essentials/spam-policies), atualizada em 28/08/2026, consultada em 09/11/2026
+- [Google: Optimizing for generative AI features](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide), atualizada em 10/07/2026, consultada em 09/11/2026
+- [Google: What is canonicalization](https://developers.google.com/search/docs/crawling-indexing/canonicalization), atualizada em 20/08/2026, consultada em 09/11/2026
+- [Google: How to specify a canonical URL](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls), atualizada em 10/07/2026, consultada em 09/11/2026
+- [Google: Influencing your title links](https://developers.google.com/search/docs/appearance/title-link), atualizada em 10/12/2025, consultada em 09/11/2026
+- [Google: Control your snippets in search results](https://developers.google.com/search/docs/appearance/snippet), atualizada em 20/04/2026, consultada em 09/11/2026
+- [Google: Image SEO best practices](https://developers.google.com/search/docs/appearance/google-images), atualizada em 02/03/2026, consultada em 09/11/2026
+- [Google: Meta tags and attributes that Google supports](https://developers.google.com/search/docs/crawling-indexing/special-tags), atualizada em 10/12/2025, consultada em 09/11/2026
+- [Google: Learn about sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview), atualizada em 10/12/2025, consultada em 09/11/2026
+- [Google: Googlebot](https://developers.google.com/search/docs/crawling-indexing/googlebot), atualizada em 03/02/2026, consultada em 09/11/2026
+- [Google: Organization structured data](https://developers.google.com/search/docs/appearance/structured-data/organization), atualizada em 08/09/2026, consultada em 09/11/2026
+- [Google: Core updates and your website](https://developers.google.com/search/docs/appearance/core-updates), atualizada em 10/12/2025, consultada em 09/11/2026
+- [Perfil da Empresa no Google: Tips to improve your local ranking](https://support.google.com/business/answer/7091?hl=en) e [Manage your service areas](https://support.google.com/business/answer/9157481?hl=en), sem data impressa, consultadas em 09/11/2026
+- Nota de pesquisa: [`docs/research/2026-11-09-template-anatomy.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-09-template-anatomy.md)

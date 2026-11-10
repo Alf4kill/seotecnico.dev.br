@@ -1,0 +1,482 @@
+---
+title: "One page per keyword: anatomy of a real site"
+description: "An anonymous site with one URL per keyword variation and a nationwide city list: what its server sends and what Google's documentation predicts."
+slug: "one-page-per-keyword"
+datePublished: "2026-11-10"
+dateModified: "2026-11-10"
+primaryQuery: "one page per keyword"
+lang: "en"
+translationOf: "uma-pagina-por-palavra-chave"
+category: "indexacao"
+keywords: ['english', 'inglês', 'one page per keyword', 'landing page per keyword', 'a page for every keyword', 'programmatic seo', 'city landing pages', 'city list', 'service areas', 'keyword stuffing', 'doorway pages', 'scaled content abuse', 'rewritten text', 'keyword cannibalization']
+tldr: >-
+  A site with about 180 pages, one per keyword variation, serves the same
+  list of thousands of cities on every one (55% of the HTML). The text is
+  rewritten, so no duplicate checker flags anything, but three passages in
+  Google's spam policies describe the model. I wouldn't recommend it.
+faq:
+  - question: "Do I need a page for every keyword variation?"
+    answer: "No. Google's guide on optimizing for generative AI features says its systems understand synonyms and that you don't have to cover every variation of how someone searches. The same guide says that creating separate content for each variation, primarily to manipulate rankings, violates the scaled content abuse policy."
+  - question: "Does a list of the cities you serve help you show up in local searches?"
+    answer: "Google's documentation doesn't say it helps, and it cites the pattern as a keyword stuffing example, in the form of blocks of text listing the cities and regions a page is trying to rank for. Business Profile help describes local results as based mainly on relevance of the profile, distance, and prominence. For this article, I didn't measure the list's effect on searches that include a city name."
+  - question: "Does content inside tabs count as hidden text?"
+    answer: "No. Google's spam policies list tabs and accordions among elements that don't violate the hidden text policy. For a city block inside tabs, what the policy describes is the block's content, not the mechanism that hides it."
+  - question: "Does a duplicate text checker detect rewritten text?"
+    answer: "No. A duplicate text checker measures literal copying. On the site measured here, no pair of pages reaches 0.30 literal similarity, and still nine in ten texts carry at least one of the ten template sentences that repeat across the set. The scaled content abuse policy doesn't mention identical text."
+---
+
+Building one page per keyword, with a URL for each way of searching for the
+same product, is a model I wouldn't recommend to a company today. Three
+passages in Google's spam policies describe its pieces. Google's guide on
+optimizing for generative AI features also says its systems understand
+synonyms without a page for each phrasing.
+
+This model doesn't have to fail to be a bad bet. Going by what Google itself
+documents, the part that can bring search traffic doesn't depend on the part
+the policy names.
+
+My earlier article, [Scaled content abuse](/en/blog/scaled-content-abuse),
+shows what the policy says, using a fictional site. This one measures a real
+site built on that model. I read the HTML its server sent on November 10,
+2026, piece by piece, and set each piece beside Google's text.
+
+I don't identify the site. I don't have its Search Console, and I don't use
+search results. What you'll find here is what the server sends, what the
+documentation says, and the probable outcome. I don't know what Google
+actually did with this site.
+
+## The site and how I measured it
+
+The site belongs to an industrial equipment maker. It's Brazilian and written
+in Portuguese. Its HTML sitemap page lists about 190 URLs. About 180 of them
+come from the same template, one per keyword variation, and about ten are
+institutional or index pages. All of them answered 200.
+
+I measured it with [a script in this
+repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/template-anatomy.mjs).
+It sends one request per second, reads `robots.txt` first, and uses a
+User-Agent that identifies it. It reads raw HTML only and doesn't run
+JavaScript or search Google.
+
+As a control, I ran the same script in the same round on the 25 Portuguese
+articles on seotecnico.dev.br, the site you're reading. That control isn't a
+competitor. It shows what the method returns on a set of pages with no
+template, so you have a reference point for judging whether a number from the
+case is big or small.
+
+## Each way of asking for the same thing gets its own URL
+
+The template's URLs sit at the domain root and follow a grammar: an
+optional commercial prefix, then a product, a modifier, and an application. In
+an invented sector, they'd look like this.
+
+```text
+/esteira-transportadora
+/esteira-transportadora-industrial
+/esteira-transportadora-mineracao
+/fabricante-esteira-transportadora
+/empresa-esteira-transportadora-industrial
+```
+
+That block is illustrative. I invented its sector and URLs, and I wrote its
+slugs in Portuguese, where "fabricante" means maker, "empresa" means company,
+and "esteira transportadora" means conveyor belt. The grammar and numbers
+below come from the measured site.
+
+| Measure | Measured site | Control |
+|---|---|---|
+| Pairs of URLs sharing two thirds or more of their terms | about 80 pairs, 46% of the pages | 0 |
+| URLs that start with a commercial-intent word (maker, supplier, company, best) | 17% | 0 |
+
+In my reading, a commercial prefix doesn't change what's being asked for. The
+product page already answers anyone looking for who makes it.
+
+Google's spam policies describe doorways as pages created to rank for
+specific, similar searches. Their examples include substantially similar pages
+that are closer to search results than to a browseable hierarchy.
+
+Google's generative AI guide says that creating separate content for every
+variation of how people search, primarily to manipulate rankings, violates the
+scaled content abuse policy. It also says a high number of pages doesn't make
+a site more relevant.
+
+## Rewritten text avoids deduplication but still fits the policy's description
+
+My earlier article describes a template where only the keyword changes. A
+documented mechanism covers that case. Google identifies each page's primary
+content, clusters pages whose content is very similar, and indexes one of them
+as the canonical.
+
+The measured site is the other version of the model, where every page has
+rewritten text. I measured literal similarity between each page and the page
+most like it, and the median is 0.068. No pair reaches 0.30. A duplicate text
+checker would tell you everything is fine, and the documented clustering of
+near-identical pages isn't what you'd expect here.
+
+You can still see the template in other measures.
+
+| Measure | Measured site | Control (25 articles) |
+|---|---|---|
+| Words in the page's own text (median) | about 750 | 2,722 |
+| Literal similarity with the most similar page (median) | 0.068 | 0.011 |
+| Pairs with literal similarity of 0.30 or more | 0 | 0 |
+| Sentences that repeat in 10% of the texts or more | 10 | 3 |
+| Texts with at least one of those sentences | 89% | 100% |
+| Pages that open with the same six words | 42% | no repeated opening |
+| Texts with no number followed by a unit of measure | 100% | 56% |
+
+To count sentences, the script replaces each page's keyword with a
+placeholder, so the same sentence with another product's name counts as one.
+The most repeated sentence appears on more than half of the pages. It
+recommends another of the company's products by name and has no link. In the
+control, the only sentence present in all 25 texts is the author line that
+closes each article.
+
+Read the last row carefully. On an equipment page, capacity, power, or
+temperature is the content you'd expect, and none of the texts has such a
+number. Fewer than one in ten pages carries a percentage, and none carries a
+quantity with a unit. In the control, the same count is 14 of 25, because an
+article about hreflang has no unit to quote. This measure only means something
+when you compare it with what the page is supposed to describe.
+
+<figure>
+  <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two paths for a set of similar pages. Copied text is clustered and one page becomes canonical. Rewritten text is not clustered, and the scaled content policy describes it">
+    <title>Copied text and rewritten text take different paths</title>
+    <desc>On the left, a set of pages from the same template. On the top path, the text is nearly identical across pages, so Google clusters them and indexes one as canonical, which is documented behavior. On the bottom path, highlighted, the text is rewritten and literal similarity is low. The pages are not clustered as copies, and what applies is how the scaled content policy describes them. The measured site is on the bottom path.</desc>
+    <rect x="20" y="95" width="170" height="60" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="105" y="121" textAnchor="middle" fontSize="12" fill="var(--foreground)">Pages from the</text>
+    <text x="105" y="139" textAnchor="middle" fontSize="12" fill="var(--foreground)">same template</text>
+    <line x1="190" y1="125" x2="242" y2="56" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <line x1="190" y1="125" x2="242" y2="194" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <rect x="242" y="26" width="200" height="60" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="342" y="52" textAnchor="middle" fontSize="12" fill="var(--foreground)">Nearly identical text,</text>
+    <text x="342" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">only the keyword changes</text>
+    <rect x="242" y="164" width="200" height="60" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="342" y="190" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">Rewritten text,</text>
+    <text x="342" y="208" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">literal 0.068 (this case)</text>
+    <line x1="442" y1="56" x2="482" y2="56" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="490,56 482,52 482,60" fill="var(--color-diagram-axis)" />
+    <line x1="442" y1="194" x2="482" y2="194" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <polygon points="490,194 482,190 482,198" fill="var(--color-diagram-axis)" />
+    <rect x="490" y="26" width="210" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="595" y="52" textAnchor="middle" fontSize="12" fill="var(--foreground)">Clustered: one canonical</text>
+    <text x="595" y="70" textAnchor="middle" fontSize="12" fill="var(--foreground)">in the index (documented)</text>
+    <rect x="490" y="164" width="210" height="60" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="595" y="190" textAnchor="middle" fontSize="12" fill="var(--foreground)">Not clustered: the policy</text>
+    <text x="595" y="208" textAnchor="middle" fontSize="12" fill="var(--foreground)">description applies</text>
+  </svg>
+  <figcaption>Rewriting the text takes the pages off the top path. It doesn't take them out of the policy's reach.</figcaption>
+</figure>
+
+Here are the same two paths as a table.
+
+| Set of pages | What to expect |
+|---|---|
+| Nearly identical text, only the keyword changes | Clustering: one page becomes canonical and the others are crawled less often (documented) |
+| Rewritten text, as on the measured site | No clustering as copies, and the set is what the scaled content policy describes (my reading) |
+
+Google's scaled content abuse policy describes many pages generated for the
+primary purpose of manipulating rankings, with little value for the reader, no
+matter how they're produced. One of its examples is transformation by swapping
+in synonyms. That example is about content scraped from elsewhere. Applying it
+to a site's own template is my reading, not Google's sentence.
+
+One caveat about method. Vocabulary similarity is often used to "prove"
+rewriting, and it's weak evidence. On the measured site, it's 0.667 with plain
+term frequency and 0.340 when terms common to the whole set weigh less. My
+control, a single-niche blog with no template, gives 0.500 and 0.235. That
+number tracks the subject as much as it tracks the template.
+
+## Every page carries the same city list
+
+Every template page carries the same "regionalization section," a list of
+cities from all over Brazil in 26 tabs, one per state. This city list is
+identical on every page, and it has more than five thousand names.
+
+<figure>
+  <svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="What a template page is made of. In its text, the city list is 78%, the page's own text is 5.8%, and the rest is about 16%. In the HTML bytes, the list is 55%">
+    <title>How much of each page is the city list</title>
+    <desc>Two horizontal bars. The first shows the text of a template page, by the medians: 5.8% is the page's own text, 78% is the city list, and about 16% is navigation, link mesh, and footer. The second shows the HTML bytes: 55% is the city list and 45% is everything else.</desc>
+    <text x="20" y="28" fontSize="13" fill="var(--foreground)">Page text</text>
+    <rect x="20" y="64" width="39" height="46" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="59" y="64" width="531" height="46" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="590" y="64" width="110" height="46" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="20" y="54" fontSize="12" fill="var(--foreground)">5.8% own text</text>
+    <text x="324" y="92" textAnchor="middle" fontSize="13" fill="var(--foreground)">78% city list</text>
+    <text x="645" y="92" textAnchor="middle" fontSize="12" fill="var(--foreground)">16% rest</text>
+    <text x="20" y="150" fontSize="13" fill="var(--foreground)">HTML bytes</text>
+    <rect x="20" y="164" width="374" height="46" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="394" y="164" width="306" height="46" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="207" y="192" textAnchor="middle" fontSize="13" fill="var(--foreground)">55% city list</text>
+    <text x="547" y="192" textAnchor="middle" fontSize="13" fill="var(--foreground)">45% everything else</text>
+  </svg>
+  <figcaption>Medians of the template pages. The text that only one page has is its smallest part.</figcaption>
+</figure>
+
+Here are the same proportions as a table.
+
+| Measure (median of the template pages) | Value |
+|---|---|
+| City list in the HTML | about 260 KB of 470 KB, 55% |
+| City list in the page's text | 78% |
+| The page's own text | 5.8% of the text |
+| Rest of the text (navigation, link mesh, footer) | about 16% |
+| Share of the list's text in the tab that is open on load | 5% |
+
+Google's spam policies give this pattern as a keyword stuffing example. They
+mention blocks of text that list the cities and regions a page is trying to
+rank for. It's the literal example.
+
+Tabs aren't the problem. That same policies page lists tabbed and accordion
+content among elements that don't violate the hidden text policy.
+
+Size isn't the problem either. Googlebot reads the first 2 MB of an HTML file,
+and my control's articles have a median size of 288 KB. This measurement is
+about proportion. More than half of every page is that same list, and a page's
+own text is 5.8% of what it says.
+
+This block's probable purpose is to get these pages into searches that include
+a city name, and for those searches the documentation points elsewhere. Business
+Profile help describes local results as based mainly on relevance of the
+profile, distance, and prominence, and it caps service areas at 20. A list of
+names on your page doesn't change your distance to the searcher. I didn't
+measure whether the list brings any impressions for a product-plus-city
+search.
+
+## Title, H1, alt, and description all come from the keyword
+
+This template fills four fields with the keyword. The documentation has a
+passage against only one of them.
+
+| Field | On the measured site | What the documentation says |
+|---|---|---|
+| `<title>` equal to the H1, plus the brand | all of them, all distinct | Not a problem. The title links guide suggests making the main title clear, for example in the first visible `<h1>`. The control does the same on 25 of 25 |
+| Every image's `alt` equal to the H1 | all of them | The image guide asks for `alt` text that describes the image and refers to filling it with keywords as keyword stuffing |
+| Description equal to the text's opening, cut off with an ellipsis | all of them, all distinct | Generating the description by rule is appropriate when it is specific to the page |
+| Meta keywords, the same value across the whole site | all pages | Not used by Search |
+
+You can see any page's title, description, and H1 side by side in the [meta
+tag validator](/en/tools/meta-tag-validator).
+
+## Every page links to every other page
+
+Each template page links to 100% of the others, in a fixed block. That comes
+to a median of about 190 internal links per page. In the control, each article
+links to 21% of the others.
+
+Linking this way guarantees discovery, because any page is one link from any
+other. It also means the links can no longer say what matters. Every template
+page gets the same links from the same block, and the site lacks the
+browseable hierarchy that the doorway example uses as its contrast. That's my
+reading. No document says a flat mesh is a problem in itself.
+
+Two details show where link choice was left to the template. None of the texts
+contains an in-text link to another page on the site. In the control, 24 of 25
+articles do. The only block that chooses per page, "related pages," carries 4
+links. It never recommends 22% of the pages, and it recommends 8% of them more
+than ten times.
+
+## An empty sitemap, no canonical, and three URL variants answering 200
+
+Here are the signals I checked, next to the control's.
+
+| Signal | Measured site | Control |
+|---|---|---|
+| `sitemap.xml` | answers 200, with 0 URLs | 80 URLs |
+| Pages with `rel="canonical"` | none | 25 of 25, self-referencing |
+| One template page with a trailing slash and with `?x=1`, and the home page at `/index.php` | 200 for all three, no redirect | not tested |
+| JSON-LD on the template pages | `BreadcrumbList` only | `Article`, `BreadcrumbList`, `FAQPage` |
+| Institutional pages sharing their `<title>` with another page | 8 in 10 | not applicable |
+| Invented URL | 302 to a page that answers 404 | 404 |
+
+According to the documentation, none of this is an error. Google says you may
+not need a sitemap when your site is small, up to about 500 pages, or when
+it's fully linked internally. It also says no canonicalization method is
+required. If you don't indicate a preference, Google picks the version it
+considers best. The invented URL ends in a real 404, as the measurement in my
+[soft 404 article](/en/blog/soft-404) shows.
+
+What these signals share is that the site declares nothing. The page I tested
+answers at three URLs, and none of them points to a preferred version. A
+sitemap would be a weak signal in favor of one of them, and this one is empty.
+That leaves the choice entirely to Google. Identity works the same way,
+because no structured data says which organization this is. For the repeated
+titles, the title links guide warns that Google may build another title from
+the page.
+
+## What the site does that is not a problem
+
+An analysis like this one easily turns into a list of faults. These facts
+showed up in the measurement, and the documentation has nothing against them.
+
+| Fact | Why it is not a finding |
+|---|---|
+| Title equal to the H1 | The title links guide suggests it, and the control does the same |
+| Content inside tabs | Tabs and accordions are allowed |
+| Description generated by rule | Appropriate when it is specific to the page |
+| No `rel="canonical"` | Not required |
+| An unused sitemap on a small, fully linked site | May not be needed |
+| About 470 KB of HTML | Below the 2 MB limit |
+| Content present without JavaScript | What the server sends is what there is |
+| Having many landing pages | The policy is about purpose and value, not a count |
+
+## Estimating the probable outcome, piece by piece
+
+This table sets each piece beside the passage that describes it.
+
+| Piece | Measured | Where Google describes it | Probable outcome |
+|---|---|---|---|
+| One URL per variation | about 80 pairs of nearly identical URLs | Doorway and the generative AI guide | Several pages for one search. Systems that understand synonyms do not need them |
+| Text rewritten from a template | 10 template sentences in 89% of the texts | Scaled content abuse | Outside the clustering of copies, inside the policy's description |
+| Nationwide city list | 55% of the HTML, identical on every page | Keyword stuffing, the literal example | The piece with the most direct match |
+| `alt` equal to the keyword | every page | Image guide | The `alt` describes no image |
+| Flat link mesh | 100% of the other pages | No passage against it | Everything is discovered, and nothing is singled out |
+| No canonical, variants answering 200 | no page with a canonical | Canonicalization | Google picks each page's URL |
+
+For the first three pieces, the documented consequence is the general one in
+the spam policies. Sites that violate the policies may rank lower or not
+appear in results. Google detects violations with automated systems and, as
+needed, human review that can result in a manual action. My table says the
+site matches descriptions. It doesn't say any of those consequences happened.
+
+Some things you can't know from the outside: how many of these pages are in
+the index, whether any of them brings clicks, whether there's a manual action,
+and whether the city list generates any impressions. All of that is in the
+site's Search Console, which I don't have.
+
+So my recommendation isn't "this doesn't work." It's a risk calculation. What
+the model can gain is showing up for variations of the same product, and
+Google itself says you don't need a page per variation for that. Its exposure
+comes from the pieces added to multiply pages: variations with no real
+difference, template text, and the city list. Remove those pieces and you lose
+nothing that could bring search traffic.
+
+## What I would do instead
+
+These recommendations are conditional, and none of them promises traffic.
+Google's page on core updates says improvements can take months to be
+recognized and that there's no guarantee.
+
+- **One page per thing that exists.** If your company has five product lines,
+  that's five pages. Each one carries what only that page can say, like
+  capacity, consumption, material, and an installation photo. Redirect
+  spelling variations to each line's main page.
+- **Coverage stated where it's true.** If regional service matters to you,
+  write a page about where you serve, with the real places. Then take the list
+  of thousands of cities off the other pages.
+- **Links that choose.** Link from line to model and from model to
+  application, and link inside the text when it mentions another page.
+- **Declared signals.** Use a self-referencing canonical, one URL per page
+  with redirects from its variants, a sitemap your system generates, and
+  organization data on your home page.
+
+## Where the control's numbers come from in Next.js
+
+My [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) uses this
+site as its reference implementation, and the control above is this site. I
+ran the same script on its 25 Portuguese articles, and three pieces of its
+code explain the result.
+
+First, the route list comes from written files, not from a keyword list.
+That's why the control has zero pairs of nearly identical URLs.
+
+```tsx
+// src/app/(pt)/blog/[slug]/page.tsx, linhas 17 a 22
+// Somente slugs existentes em /content/blog são gerados; o resto é 404.
+export const dynamicParams = false
+
+export function generateStaticParams() {
+  return getAllPosts().map(({ frontmatter }) => ({ slug: frontmatter.slug }))
+}
+```
+
+Second, every page declares its own canonical, because the metadata helper
+derives it from the path. That's 25 of 25 in the control.
+
+```ts
+// src/lib/metadata.ts, linhas 151 a 155
+  return {
+    title: absoluteTitle ? { absolute: title } : title,
+    description,
+    alternates: {
+      canonical: path,
+```
+
+Third, the sitemap is built from the same content, so there's no manual step
+to forget.
+
+```ts
+// src/app/sitemap.ts, linhas 94 a 100
+  const postPages: MetadataRoute.Sitemap = posts.map(({ frontmatter }) => ({
+    url: `${base}/blog/${frontmatter.slug}`,
+    lastModified: toDate(frontmatter.dateModified),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+    images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
+  }))
+```
+
+Next.js doesn't protect you from the model. Feed `generateStaticParams` a list
+of variations and you get the same pages, with canonical and sitemap in order.
+What differs is what the list represents. For details on each piece,
+read [redirects and canonicals in
+Next.js](/en/blog/nextjs-redirects-canonicals) and [dynamic sitemap in
+Next.js](/en/blog/nextjs-dynamic-sitemap).
+
+To measure your own site, give the script a targets file and run it in two
+phases.
+
+```bash
+node scripts/template-anatomy.mjs fetch --targets audits/case-studies/template-anatomy.example.json --only SITE
+node scripts/template-anatomy.mjs analyze --targets audits/case-studies/template-anatomy.example.json --only SITE
+```
+
+## Method and limits
+
+- **Collection.** I ran the round on November 10, 2026 (the UTC date, which
+  was the evening of November 9 in Brasília time). The script used a
+  User-Agent that identifies it, respected `robots.txt`, and sent one request
+  per second. In the [versioned
+  summary](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/template-anatomy-2026-11-10/summary.json),
+  you'll find only a code and numbers. I don't publish the site's address, the
+  downloaded HTML, or the sentences.
+- **Rounded totals.** I rounded the case's totals and give its page counts as
+  proportions so the site can't be identified. The versioned summary follows
+  the same rule. The control's numbers are exact.
+- **Definitions.** Literal similarity is the Jaccard similarity of five-word
+  sequences between a page's text and its most similar page's text. A page's
+  own text runs from where its article starts to the contact call to action,
+  without the city list. You can read the unit-of-measure list in the script.
+- **Heuristics.** My text measures describe the set, and none of them is a
+  verdict on a page. As the control shows, the unit-of-measure one depends on
+  the kind of page.
+- **Not measured.** Indexing, clicks, positions, and manual actions, because I
+  analyzed the site from the outside. I ran no Google searches for this
+  article. Measuring the city list's effect on searches with a city name needs
+  manual tests that I didn't run.
+- **Rendering.** The script doesn't run JavaScript. Everything I measured
+  (text, list, links, and metadata) was in the HTML the server sent.
+
+I analyzed this public site from the outside, only to study the method. I
+don't identify it, I have no relationship with it, and it didn't take part.
+This isn't an audit, a recommendation to its owner, or a verdict on it. Nobody
+sponsored this analysis, and I don't sell any service based on it.
+
+## Sources
+
+- [Google: Spam policies for Google web search](https://developers.google.com/search/docs/essentials/spam-policies), updated 2026-08-28, read on 2026-11-09
+- [Google: Optimizing for generative AI features](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide), updated 2026-07-10, read on 2026-11-09
+- [Google: What is canonicalization](https://developers.google.com/search/docs/crawling-indexing/canonicalization), updated 2026-08-20, read on 2026-11-09
+- [Google: How to specify a canonical URL](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls), updated 2026-07-10, read on 2026-11-09
+- [Google: Influencing your title links](https://developers.google.com/search/docs/appearance/title-link), updated 2025-12-10, read on 2026-11-09
+- [Google: Control your snippets in search results](https://developers.google.com/search/docs/appearance/snippet), updated 2026-04-20, read on 2026-11-09
+- [Google: Image SEO best practices](https://developers.google.com/search/docs/appearance/google-images), updated 2026-03-02, read on 2026-11-09
+- [Google: Meta tags and attributes that Google supports](https://developers.google.com/search/docs/crawling-indexing/special-tags), updated 2025-12-10, read on 2026-11-09
+- [Google: Learn about sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview), updated 2025-12-10, read on 2026-11-09
+- [Google: Googlebot](https://developers.google.com/search/docs/crawling-indexing/googlebot), updated 2026-02-03, read on 2026-11-09
+- [Google: Organization structured data](https://developers.google.com/search/docs/appearance/structured-data/organization), updated 2026-09-08, read on 2026-11-09
+- [Google: Core updates and your website](https://developers.google.com/search/docs/appearance/core-updates), updated 2025-12-10, read on 2026-11-09
+- Google Business Profile: [Tips to improve your local ranking](https://support.google.com/business/answer/7091?hl=en) and [Manage your service areas](https://support.google.com/business/answer/9157481?hl=en), no printed date, read on 2026-11-09
+- Research note: [`docs/research/2026-11-09-template-anatomy.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-09-template-anatomy.md)
+
+This is the English version of an article first published in Portuguese; the two declare each other.

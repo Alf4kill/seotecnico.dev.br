@@ -290,7 +290,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 O formato é parecido; a origem da lista não. Aqui, cada rota existe porque um arquivo MDX foi escrito, e qualquer outro slug retorna 404 por causa do `dynamicParams = false`. O title vem do frontmatter de cada artigo, não de um molde "keyword | Marca" (detalhes em [como gerar title e description com a Metadata API](/blog/metadata-api-nextjs)).
 
-A diferença não está no `generateStaticParams`, e sim no que a lista representa: conteúdo escrito ou keywords. Este site não tem páginas por cidade nem por variação, então não tenho dado próprio sobre como o Google trataria um template desses.
+A diferença não está no `generateStaticParams`, e sim no que a lista representa: conteúdo escrito ou keywords. Este site não tem páginas por cidade nem por variação, então não tenho dado próprio sobre como o Google trataria um template desses. O que um site real desse modelo entrega no HTML está medido em [uma página por palavra-chave: anatomia de um site real](/blog/uma-pagina-por-palavra-chave).
 
 ## Como verificar se o seu template cai nisso
 

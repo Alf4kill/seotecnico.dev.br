@@ -330,6 +330,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/soft-404',
     },
   },
+  {
+    id: 'uma-pagina-por-palavra-chave',
+    paths: {
+      'pt-BR': '/blog/uma-pagina-por-palavra-chave',
+      en: '/en/blog/one-page-per-keyword',
+    },
+  },
   // Entradas do projeto, /projeto/<slug> ↔ /en/project/<slug-en>: mesma regra
   // dos artigos (id = slug português = `translationOf` do MDX inglês).
   {

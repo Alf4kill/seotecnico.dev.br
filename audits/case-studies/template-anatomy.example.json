@@ -1,0 +1,23 @@
+[
+  {
+    "code": "SITE",
+    "label": "this site, Portuguese blog articles (control)",
+    "public": true,
+    "origin": "https://seotecnico.dev.br",
+    "inventory": { "type": "sitemap", "include": "^/blog/[^/]+$" },
+    "brandSuffix": "",
+    "body": { "start": "<div class=\"rich-text", "end": "<footer id=\"article-end\"" },
+    "variants": false
+  },
+  {
+    "code": "S0",
+    "label": "shape of a third-party target; the real ones live in template-anatomy.local.json (gitignored)",
+    "origin": "https://example.com",
+    "inventory": { "type": "html", "path": "/page-that-lists-every-url", "exclude": "^/(admin|cart)" },
+    "landing": { "exclude": "^/(|about|contact)$" },
+    "brandSuffix": " - Brand",
+    "body": { "start": "<article>", "end": "<h2[^>]*>Marker of the first block after the body" },
+    "block": { "start": "<h2[^>]*class-of-the-repeated-block", "end": "<footer", "item": "li" },
+    "related": { "start": "<h2[^>]*>Related pages", "end": "<h2[^>]*class-of-the-repeated-block" }
+  }
+]
