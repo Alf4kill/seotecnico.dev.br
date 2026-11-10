@@ -51,3 +51,9 @@ audits/case-studies/soft404-*/**
 # versioned.
 audits/next-notfound-status/.next/
 audits/next-notfound-status/next-env.d.ts
+
+# scripts/template-anatomy.mjs: the downloaded HTML, the per-target manifest and
+# the detail file carry hosts, paths and sentences. Only summary.json (codes and
+# numbers) is versioned.
+audits/case-studies/template-anatomy-*/**
+!audits/case-studies/template-anatomy-*/summary*.json

@@ -1,0 +1,386 @@
+{
+  "method": "scripts/template-anatomy.mjs; raw HTML only, no search results",
+  "userAgent": "seotecnico-template-anatomy/1.0 (+https://seotecnico.dev.br)",
+  "pauseMs": 1000,
+  "definitions": {
+    "literalNearest": "Jaccard of word 5-grams between a page body and its most similar other body",
+    "vocabularyNearest": "cosine of term frequencies (stopwords and the page own H1 words removed) with the most similar other body",
+    "vocabularyNearestTfIdf": "same, with terms weighted by inverse document frequency within the set",
+    "pagesWithoutNumberAndUnit": "bodies with no number followed by a unit of measure (list in the script)",
+    "slugPairsJaccardAtOrAbove066": "pairs of URLs whose slug tokens overlap by two thirds or more",
+    "sentencesInAtLeastTenthOfPages": "sentences of 6+ words, with the page H1 phrase replaced by a slot, found in 10% of the bodies or more",
+    "shares": "every count of pages is a share (0 to 1) of the set it belongs to: template pages, bodies, all pages, or other pages"
+  },
+  "targets": [
+    {
+      "code": "S1",
+      "label": "industrial equipment maker, one landing per keyword variation",
+      "collectedAt": "2026-11-10T02:16:08.680Z",
+      "counts": "page counts are shares of the set, to two decimals; absolute totals are rounded (pages, pairs and links to the nearest 10, list items down to the thousand, bytes to the nearest 10,000)",
+      "inventory": {
+        "source": "HTML page that lists the site URLs",
+        "urls": 190,
+        "landings": 180,
+        "otherPages": 10
+      },
+      "markersFound": {
+        "body": 1,
+        "block": 1,
+        "related": 1
+      },
+      "identity": {
+        "oneH1": 1,
+        "titleEqualsH1": 1,
+        "titleContainsH1": 1,
+        "pagesWithBodyImages": 1,
+        "allBodyImageAltsEqualH1": 1,
+        "descriptionIsBodyOpening": 1,
+        "descriptionTruncatedWithEllipsis": 1,
+        "distinctTitles": 1,
+        "distinctDescriptions": 1
+      },
+      "block": {
+        "pagesWithBlock": 1,
+        "distinctLists": 1,
+        "itemsAtLeast": 5000,
+        "distinctNamesAtLeast": 5000,
+        "panes": 26,
+        "activePanes": 1,
+        "textInActivePanesShare": 0.05,
+        "blockBytes": {
+          "median": 260000,
+          "p10": 260000,
+          "p90": 260000,
+          "min": 260000,
+          "max": 260000
+        },
+        "shareOfHtmlBytes": {
+          "median": 0.55,
+          "p10": 0.546,
+          "p90": 0.552,
+          "min": 0.506,
+          "max": 0.552
+        },
+        "shareOfPageText": {
+          "median": 0.781,
+          "p10": 0.77,
+          "p90": 0.791,
+          "min": 0.756,
+          "max": 0.8
+        },
+        "bodyShareOfPageText": {
+          "median": 0.058,
+          "p10": 0.047,
+          "p90": 0.071,
+          "min": 0.035,
+          "max": 0.087
+        }
+      },
+      "text": {
+        "pagesWithBody": 1,
+        "bodyWords": {
+          "median": 750,
+          "p10": 580,
+          "p90": 940,
+          "min": 450,
+          "max": 1170
+        },
+        "literalNearest": {
+          "median": 0.068,
+          "p10": 0.027,
+          "p90": 0.152,
+          "min": 0.012,
+          "max": 0.215
+        },
+        "literalPairsAtOrAbove030": 0,
+        "vocabularyNearest": {
+          "median": 0.667,
+          "p10": 0.589,
+          "p90": 0.748,
+          "min": 0.501,
+          "max": 0.804
+        },
+        "vocabularyNearestTfIdf": {
+          "median": 0.34,
+          "p10": 0.212,
+          "p90": 0.459,
+          "min": 0.166,
+          "max": 0.546
+        },
+        "vocabularyPairsAtOrAbove070": 50,
+        "pagesWithoutNumberAndUnit": 1,
+        "pagesWithoutNumberUnitOrPercent": 0.92,
+        "h1PhraseDensity": {
+          "median": 0.038,
+          "p10": 0.023,
+          "p90": 0.066,
+          "min": 0.007,
+          "max": 0.107
+        },
+        "sentencesInAtLeastTenthOfPages": 10,
+        "pagesWithAtLeastOneSuchSentence": 0.89,
+        "topRepeatedSentencePages": [
+          0.54,
+          0.49,
+          0.17,
+          0.17,
+          0.16
+        ],
+        "topOpeningPages": [
+          0.42,
+          0.06,
+          0.04
+        ]
+      },
+      "urls": {
+        "depthOne": 1,
+        "slugTokens": {
+          "median": 3,
+          "p10": 2,
+          "p90": 4,
+          "min": 1,
+          "max": 5
+        },
+        "slugPairsJaccardAtOrAbove066": 80,
+        "pagesInSuchPairs": 0.46,
+        "commercialPrefix": 0.17
+      },
+      "links": {
+        "shareOfOtherLandingsLinkedFromEachLanding": {
+          "median": 1,
+          "p10": 1,
+          "p90": 1,
+          "min": 1,
+          "max": 1
+        },
+        "landingsLinkedFromEveryOtherLanding": 1,
+        "internalLinksPerLanding": {
+          "median": 190,
+          "p10": 190,
+          "p90": 200,
+          "min": 190,
+          "max": 300
+        },
+        "landingsWithABodyLinkToAnotherInventoryPage": 0,
+        "relatedBlock": {
+          "pagesWithBlock": 1,
+          "linksPerPage": {
+            "median": 4,
+            "p10": 4,
+            "p90": 4,
+            "min": 3,
+            "max": 4
+          },
+          "landingsNeverPicked": 0.22,
+          "landingsPickedMoreThan10Times": 0.08
+        }
+      },
+      "hygiene": {
+        "robotsTxtStatus": 200,
+        "sitemapXmlStatus": 200,
+        "sitemapXmlUrls": 0,
+        "statusOfInventory": {
+          "200": 1
+        },
+        "redirectedInventoryUrls": 0,
+        "canonicalPresent": 0,
+        "canonicalSelf": 0,
+        "noindex": 0,
+        "jsonLdTypesOnLandings": {
+          "BreadcrumbList": 1
+        },
+        "landingsWithoutJsonLd": 0,
+        "distinctMetaKeywordsAcrossSite": 1,
+        "pagesWithMetaKeywords": 1,
+        "otherPagesSharingATitle": 0.8,
+        "htmlBytesLandings": {
+          "median": 470000,
+          "p10": 470000,
+          "p90": 470000,
+          "min": 470000,
+          "max": 510000
+        },
+        "htmlBytesOtherPages": {
+          "median": 160000,
+          "p10": 110000,
+          "p90": 220000,
+          "min": 100000,
+          "max": 270000
+        },
+        "urlVariants": [
+          {
+            "label": "trailing slash",
+            "chain": [
+              200
+            ],
+            "status": 200,
+            "canonicalPresent": false
+          },
+          {
+            "label": "query string",
+            "chain": [
+              200
+            ],
+            "status": 200,
+            "canonicalPresent": false
+          },
+          {
+            "label": "index.php",
+            "chain": [
+              200
+            ],
+            "status": 200,
+            "canonicalPresent": false
+          }
+        ]
+      }
+    },
+    {
+      "code": "SITE",
+      "label": "this site, Portuguese blog articles (control)",
+      "collectedAt": "2026-11-10T02:17:45.890Z",
+      "counts": "exact; page counts are shares of the set",
+      "inventory": {
+        "source": "sitemap.xml",
+        "urls": 25,
+        "landings": 25,
+        "otherPages": 0
+      },
+      "markersFound": {
+        "body": 1,
+        "block": 0,
+        "related": 0
+      },
+      "identity": {
+        "oneH1": 1,
+        "titleEqualsH1": 1,
+        "titleContainsH1": 1,
+        "pagesWithBodyImages": 0.08,
+        "allBodyImageAltsEqualH1": 0,
+        "descriptionIsBodyOpening": 0,
+        "descriptionTruncatedWithEllipsis": 0,
+        "distinctTitles": 1,
+        "distinctDescriptions": 1
+      },
+      "block": null,
+      "text": {
+        "pagesWithBody": 1,
+        "bodyWords": {
+          "median": 2722,
+          "p10": 2241,
+          "p90": 3606,
+          "min": 1662,
+          "max": 4548
+        },
+        "literalNearest": {
+          "median": 0.011,
+          "p10": 0.008,
+          "p90": 0.024,
+          "min": 0.006,
+          "max": 0.05
+        },
+        "literalPairsAtOrAbove030": 0,
+        "vocabularyNearest": {
+          "median": 0.5,
+          "p10": 0.366,
+          "p90": 0.606,
+          "min": 0.257,
+          "max": 0.695
+        },
+        "vocabularyNearestTfIdf": {
+          "median": 0.235,
+          "p10": 0.083,
+          "p90": 0.403,
+          "min": 0.069,
+          "max": 0.433
+        },
+        "vocabularyPairsAtOrAbove070": 0,
+        "pagesWithoutNumberAndUnit": 0.56,
+        "pagesWithoutNumberUnitOrPercent": 0.36,
+        "h1PhraseDensity": {
+          "median": 0,
+          "p10": 0,
+          "p90": 0,
+          "min": 0,
+          "max": 0
+        },
+        "sentencesInAtLeastTenthOfPages": 3,
+        "pagesWithAtLeastOneSuchSentence": 1,
+        "topRepeatedSentencePages": [
+          1,
+          0.12,
+          0.12,
+          0.08,
+          0.08
+        ],
+        "topOpeningPages": [
+          0.04,
+          0.04,
+          0.04
+        ]
+      },
+      "urls": {
+        "depthOne": 0,
+        "slugTokens": {
+          "median": 3,
+          "p10": 2,
+          "p90": 4,
+          "min": 2,
+          "max": 5
+        },
+        "slugPairsJaccardAtOrAbove066": 0,
+        "pagesInSuchPairs": 0,
+        "commercialPrefix": 0
+      },
+      "links": {
+        "shareOfOtherLandingsLinkedFromEachLanding": {
+          "median": 0.208,
+          "p10": 0.125,
+          "p90": 0.292,
+          "min": 0.125,
+          "max": 0.333
+        },
+        "landingsLinkedFromEveryOtherLanding": 0,
+        "internalLinksPerLanding": {
+          "median": 18,
+          "p10": 15,
+          "p90": 19,
+          "min": 15,
+          "max": 21
+        },
+        "landingsWithABodyLinkToAnotherInventoryPage": 0.96
+      },
+      "hygiene": {
+        "robotsTxtStatus": 200,
+        "sitemapXmlStatus": 200,
+        "sitemapXmlUrls": 80,
+        "statusOfInventory": {
+          "200": 1
+        },
+        "redirectedInventoryUrls": 0,
+        "canonicalPresent": 1,
+        "canonicalSelf": 1,
+        "noindex": 0,
+        "jsonLdTypesOnLandings": {
+          "Article": 1,
+          "BreadcrumbList": 1,
+          "FAQPage": 1
+        },
+        "landingsWithoutJsonLd": 0,
+        "distinctMetaKeywordsAcrossSite": 1,
+        "pagesWithMetaKeywords": 0,
+        "otherPagesSharingATitle": null,
+        "htmlBytesLandings": {
+          "median": 287634,
+          "p10": 260090,
+          "p90": 322409,
+          "min": 249834,
+          "max": 421926
+        },
+        "htmlBytesOtherPages": null,
+        "urlVariants": []
+      },
+      "origin": "https://seotecnico.dev.br"
+    }
+  ]
+}
