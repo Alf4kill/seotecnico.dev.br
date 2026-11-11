@@ -1,0 +1,425 @@
+---
+title: "Auditoria de sitemap: o que quatro sites reais listam errado"
+description: "Checklist para auditar um sitemap contra o próprio site, com um caso real medido por item: noindex, redirect, 404, canonical, lastmod e páginas de fora."
+slug: "auditoria-de-sitemap"
+primaryQuery: "auditoria de sitemap"
+keywords: ['auditoria de sitemap', 'auditar sitemap', 'erros no sitemap', 'sitemap.xml', 'sitemap xml', 'lastmod', 'noindex no sitemap', 'redirect no sitemap', 'canonical', 'robots.txt', 'relatório de sitemaps', 'search console', 'indexação']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  Auditar um sitemap é comparar o que ele lista com o que cada URL responde e
+  com o que o site linka. Em quatro sites reais, medidos no mesmo dia, havia
+  noindex listado, redirects, canonical para outra URL, lastmod com a hora do
+  arquivo e páginas linkadas em toda parte fora da lista.
+datePublished: "2026-11-11"
+dateModified: "2026-11-11"
+faq:
+  - question: "Posso colocar páginas com noindex no sitemap?"
+    answer: "Pode, no sentido de que o Google continua lendo o resto do arquivo, mas é um sinal contraditório. A página de criação de sitemaps pede as URLs que você quer ver nos resultados da busca, e o relatório de indexação de páginas cita sitemaps com URLs noindex como uma causa de picos de erro."
+  - question: "O Google penaliza lastmod errado?"
+    answer: "A documentação não fala em penalidade. Ela diz que o Google usa o lastmod quando ele é consistente e verificável, e que um lastmod que não bate com a realidade deixa de ser levado em conta. O que se perde é o próprio sinal: o Google para de usar a data para decidir quando voltar à página."
+  - question: "Preciso colocar todas as páginas do site no sitemap?"
+    answer: "Precisa colocar as que você quer nos resultados, na versão canônica. Páginas com noindex, redirects e variações de URL ficam de fora. Para um site pequeno, de cerca de 500 páginas ou menos e todo linkado a partir da home, o Google diz que o sitemap pode nem ser necessário."
+  - question: "Redirect no sitemap é problema?"
+    answer: "É um defeito pequeno. O Google tenta rastrear as URLs exatamente como estão listadas, então cada redirect acrescenta um salto até a URL que deveria estar no arquivo. O argumento de orçamento de rastreamento só vale para sites muito grandes; para a maioria, o motivo para corrigir é que o sitemap deve listar a URL final, a canônica."
+---
+
+Auditar um sitemap é comparar três listas: o que o sitemap promete, o que
+cada URL listada responde e o que o próprio site linka. O Google pede que o
+sitemap traga as URLs canônicas que você quer ver nos resultados da busca.
+Então tudo o que responde redirect, 404 ou `noindex`, ou aponta o canonical
+para outra URL, contradiz o arquivo. Uma página que o site linka em toda parte
+e o sitemap esquece também contradiz.
+
+Em 11/11/2026 medi quatro sites públicos e este, com o mesmo script, e
+encontrei um caso real para cada item do checklist abaixo. Nenhum deles é
+penalidade. Todos são sinais que se contradizem, e todos dão para achar de
+fora, sem acesso ao Search Console do site.
+
+## O que um sitemap deve listar
+
+A página do Google sobre criação de sitemaps, atualizada em 08/07/2026, é
+curta no que importa:
+
+- **As URLs que você quer nos resultados**, na versão canônica. Se o mesmo
+  conteúdo responde em vários endereços, escolha um e liste só esse.
+- **URLs absolutas.** O Google tenta rastrear cada uma exatamente como está
+  escrita.
+- **Um sitemap é uma dica.** Enviar o arquivo não garante que o Google o
+  baixe, nem que rastreie ou indexe o que está nele.
+
+A página sobre URLs canônicas, atualizada em 10/07/2026, completa: estar no
+sitemap é um sinal **fraco** de canonicalização, mais fraco que um redirect ou
+um `rel="canonical"`. E ela pede para não apontar uma URL no sitemap e outra
+no canonical da mesma página.
+
+Não existe, na documentação, uma lista de "o que nunca colocar no sitemap".
+Cada item do checklist está errado porque contradiz uma dessas frases, e é
+assim que este artigo trata cada um.
+
+## Como a auditoria foi feita
+
+Um script pediu, uma vez, cada URL listada nos sitemaps de quatro sites e
+deste, sem seguir redirects, e registrou o status, o `robots`, o canonical e
+as datas da página. Depois comparou os links internos das páginas lidas com o
+que os sitemaps listam. Os sites são identificados por código, como no
+[resumo da medição](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/sitemap-audit-2026-11-11/summary.json).
+Totais estão arredondados, e contagens pequenas aparecem em faixas.
+
+"Ok", aqui, quer dizer: status 200, sem `noindex` e com canonical ausente ou
+apontando para a própria URL.
+
+| | Este site | S1 | S2 | S3 | S4 |
+|---|---|---|---|---|---|
+| URLs listadas | 82 | 0 | cerca de 500 | cerca de 710 | cerca de 2.800 |
+| Sitemap declarado no robots.txt | sim | sim | sim | sim | sim |
+| URLs listadas que respondem ok | 100% | — | mais de 99% | 88% | 96% |
+| `noindex` listado | 0 | — | 0 | 11% | 1% |
+| Redirect listado | 0 | — | 1 a 4 | 5 a 9 | cerca de 40 |
+| Canonical para outra URL | 0 | — | 0 | 0 | cerca de 30 |
+| 404 listado | 0 | — | 0 | 1 a 4 | 1 a 4 |
+| Mesma URL listada duas vezes | 0 | — | 1 a 4 | 1 a 4 | cerca de 20 |
+| `lastmod` igual à data mais recente da página | 100% | — | 98% | 100% | 100% dos posts |
+| Página indexável linkada por quase todas, fora do sitemap | não | — | sim | não | sim |
+
+O desenho abaixo mostra onde cada problema mora.
+
+<figure>
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Três regiões de uma auditoria de sitemap: URLs listadas sem link, URLs listadas e linkadas, e URLs linkadas que não estão no sitemap; embaixo, as listadas que não respondem ok">
+    <title>Onde cada problema de sitemap mora</title>
+    <desc>Duas listas se sobrepõem: as URLs do sitemap e as URLs que o site linka. Na sobreposição fica o normal, uma página listada e linkada. Do lado do sitemap ficam as URLs listadas que ninguém linka. Do lado dos links ficam as páginas linkadas que o sitemap não lista, o item 7 do checklist. Embaixo, valendo para tudo o que está listado: URLs que respondem redirect, 404, noindex ou canonical para outra URL, os itens 1 a 5.</desc>
+
+    <text x="245" y="24" textAnchor="middle" fontSize="13" fill="var(--foreground)">no sitemap</text>
+    <line x1="20" y1="34" x2="470" y2="34" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+    <text x="475" y="24" textAnchor="middle" fontSize="13" fill="var(--foreground)">linkadas pelo site</text>
+    <line x1="250" y1="44" x2="700" y2="44" stroke="var(--color-diagram-axis)" strokeWidth="1.5" />
+
+    <rect x="20" y="60" width="230" height="110" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="135" y="108" textAnchor="middle" fontSize="12" fill="var(--foreground)">Listadas, mas</text>
+    <text x="135" y="126" textAnchor="middle" fontSize="12" fill="var(--foreground)">ninguém linka</text>
+
+    <rect x="250" y="60" width="220" height="110" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="360" y="108" textAnchor="middle" fontSize="12" fill="var(--foreground)">Listadas e linkadas:</text>
+    <text x="360" y="126" textAnchor="middle" fontSize="12" fill="var(--foreground)">o normal</text>
+
+    <rect x="470" y="60" width="230" height="110" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="585" y="100" textAnchor="middle" fontSize="12" fill="var(--foreground)">Linkadas, fora</text>
+    <text x="585" y="118" textAnchor="middle" fontSize="12" fill="var(--foreground)">do sitemap</text>
+    <text x="585" y="136" textAnchor="middle" fontSize="12" fill="var(--foreground)">(item 7)</text>
+
+    <rect x="20" y="190" width="450" height="90" fill="var(--color-accent)" />
+    <text x="245" y="226" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">Listadas que não respondem ok: redirect, 404,</text>
+    <text x="245" y="246" textAnchor="middle" fontSize="12" fill="var(--color-diagram-on-accent)">noindex, canonical para outra URL (itens 1 a 5)</text>
+  </svg>
+  <figcaption>Os itens 1 a 5 aparecem pedindo cada URL listada. O item 7 só aparece comparando a lista com os links do site.</figcaption>
+</figure>
+
+| Região | O que é | Itens |
+|---|---|---|
+| Listadas e linkadas, respondendo ok | o normal | — |
+| Listadas que não respondem ok | redirect, 404, `noindex`, canonical para outra URL, entradas repetidas ou malformadas | 1 a 5 |
+| Linkadas, fora do sitemap | página que o site considera importante e o sitemap esquece | 7 |
+
+## O checklist, um caso por item
+
+### 1. Página com `noindex` listada
+
+**Caso.** No S3, um dos sitemaps filhos do índice lista cerca de 80 URLs, e
+todas trazem `noindex`: o arquivo existe só para páginas que o próprio site
+pede para não indexar. São 11% de tudo o que os sitemaps do S3 listam. No S4,
+um arquivo de landing pages e formulários tem 17% de URLs com `noindex`.
+
+**O que contradiz.** "Liste as URLs que você quer ver nos resultados." O
+relatório de indexação de páginas do Search Console cita, entre as causas de
+um pico de erros, um sitemap com URLs bloqueadas pelo robots.txt, com
+`noindex` ou atrás de login.
+
+**Correção.** O gerador do sitemap filtra pelo mesmo campo que gera o
+`noindex`. Se nenhum item de um tipo de conteúdo deve ser indexado, o tipo
+inteiro sai do sitemap, e não item por item. Não vale o contrário, bloquear
+essas URLs no robots.txt: a página do Google sobre
+`noindex` lembra que o rastreador precisa abrir a página para ver a regra.
+
+### 2. URL que redireciona
+
+**Caso.** No S3, de 5 a 9 páginas de autor listadas redirecionam para a home.
+No S4 são cerca de 40 redirects, espalhados pelos três arquivos de URL. No S2,
+um anúncio listado redireciona para uma página de categoria.
+
+**O que contradiz.** O Google rastreia cada URL "exatamente como listada". Se
+ela redireciona, o sitemap aponta para uma URL que o próprio site já trocou
+por outra.
+
+**Correção.** Listar o destino, ou nada, quando o destino é a home. O guia do
+Google sobre mudança de site diz que redirecionar muitas URLs para um destino
+irrelevante, como a home, pode ser tratado como [soft 404](/blog/soft-404).
+
+O argumento de "orçamento de rastreamento" não serve aqui. O guia do Google
+sobre o tema, atualizado em 22/07/2026, é para sites de cerca de um milhão de
+páginas, ou dez mil que mudam todo dia. Para os outros, manter o sitemap
+atualizado já basta.
+
+### 3. Canonical apontando para outra URL
+
+**Caso.** No S4, cerca de 30 URLs listadas declaram como canônica uma URL
+diferente. A maior parte fica no mesmo arquivo de landing pages e formulários.
+
+**O que contradiz.** A frase mais direta da documentação: não indique uma URL
+no sitemap e outra no `rel="canonical"` da mesma página. O sitemap é o sinal
+fraco, então o canonical deve prevalecer. Mesmo assim, o site está mandando
+dois sinais opostos.
+
+**Correção.** O sitemap lista a URL que a página declara como canônica, nunca
+a variação.
+
+### 4. URL que responde 404
+
+**Caso.** No S3, dois sitemaps de perguntas frequentes listam, cada um, uma
+URL que responde 404. No S4, de 1 a 4 URLs do arquivo de landing pages.
+
+**O que contradiz.** O relatório de indexação diz para corrigir só os 404 que
+você linka ou que estão no seu sitemap. Um 404 listado é, por definição, um
+que você mesmo apontou.
+
+**Correção.** Tirar do sitemap, ou devolver a página.
+
+### 5. Entrada repetida e URL malformada
+
+**Caso.** No S4, cerca de 20 URLs aparecem em dois arquivos diferentes. No S2
+e no S3, de 1 a 4. No S3, uma URL tem um espaço codificado no caminho
+(`%20`), e o canonical da página repete esse endereço.
+
+**O que contradiz.** A repetição não é erro do protocolo: o relatório de
+sitemaps conta cada URL repetida uma vez só. Ela mostra outra coisa, dois
+geradores que não sabem um do outro. Já o espaço é defeito do endereço: o
+protocolo exige URLs escapadas para o servidor, e um espaço não é um
+caractere válido num caminho de URL.
+
+**Correção.** Cada tipo de página num arquivo só, e slugs gerados sem espaços.
+
+### 6. `lastmod` com a hora em que o arquivo foi servido
+
+**Caso.** Este é o item mais didático, porque os dois lados estão no mesmo
+site. No S4, o arquivo de posts tem um `lastmod` por post, e ele bate com a
+data de modificação que a própria página declara em 100% dos posts com data.
+O arquivo de páginas do mesmo site tem o **mesmo** `lastmod` em todas as
+cerca de 70 URLs, com diferença de milissegundos entre elas, igual ao segundo
+em que o arquivo foi servido. Ele diz
+quando o arquivo foi montado, não quando a página mudou.
+
+**O que contradiz.** A página de criação de sitemaps diz que o Google usa o
+`lastmod` quando ele é "consistente e verificavelmente" correto, por exemplo
+comparando com a última modificação da página. O post do Search Central de
+26/06/2023 vai além: um `lastmod` que diz "mudou ontem" para uma página
+parada há anos faz o Google, com o tempo, deixar de acreditar nele. O
+protocolo, em sitemaps.org, tem a frase explícita: a data é a da modificação
+da página, não a da geração do sitemap. O Bing contou, num post de
+01/02/2023, que esse é o erro de `lastmod` mais comum que ele encontra.
+
+**Correção.** `lastmod` só onde existe uma data real, e omitido onde não
+existe. O post de 2023 diz que tudo bem deixar sem `lastmod` uma home ou uma
+categoria, cuja data o software não sabe dizer.
+
+O defeito não é do site, é do gerador de cada arquivo. Por isso a auditoria
+olha arquivo por arquivo.
+
+### 7. Página importante fora do sitemap
+
+**Caso.** No S2, algumas páginas de categoria por cidade estão no menu de
+**todas** as páginas do site. Elas respondem 200, são indexáveis e não
+aparecem em nenhum sitemap, enquanto outras categorias de cidade estão
+listadas. No S4, páginas linkadas por 94% das páginas lidas são indexáveis e
+não estão em sitemap nenhum. Uma ferramenta linkada por cerca de uma página em
+cada cinco também não está.
+
+**O que contradiz.** "Inclua as URLs que você quer nos resultados." Uma
+página no menu de todas as outras é, pela estrutura do próprio site, uma das
+que ele mais quer mostrar.
+
+**Por que pode não importar.** A página do Google que explica sitemaps diz
+que, num site bem linkado, o Google costuma descobrir a maior parte das
+páginas mesmo sem sitemap. Essas páginas provavelmente são
+encontradas. O que se perde é o sitemap como lista confiável do que importa e,
+para o dono do site, o filtro do relatório de indexação por "páginas
+enviadas", que deixa essas páginas de fora.
+
+Este é o item que nenhum validador de sitemap encontra, porque o validador lê
+o arquivo. Para achar, é preciso comparar o arquivo com os links do site.
+
+### 8. Sitemap vazio anunciado no robots.txt
+
+**Caso.** No S1, o robots.txt aponta para um `sitemap.xml` que responde 200
+com zero URLs. A análise inteira desse site está em
+[uma página por palavra-chave](/blog/uma-pagina-por-palavra-chave).
+
+**O que contradiz.** Pouca coisa. Para um site pequeno e todo linkado, o
+Google diz que o sitemap pode nem ser necessário. Um arquivo vazio não
+atrapalha a descoberta, só deixa de ajudar. É o item de menor peso da lista,
+e está aqui porque é o mais fácil de ver.
+
+## O que não é problema
+
+Achados que parecem defeito e, pela documentação, não são:
+
+| Achado | Por que não é problema |
+|---|---|
+| A ordem das URLs no arquivo | O Google diz que a ordem não importa |
+| `priority` e `changefreq` iguais em tudo | O Google ignora os dois; o Bing, em boa parte, também |
+| O mesmo índice respondendo em três endereços (S3) | É um índice só, com três entradas; nenhuma URL muda |
+| Páginas sem `lastmod` | Melhor sem data do que com uma data inventada |
+| Nenhum sitemap num site pequeno e todo linkado | O Google diz que pode não ser necessário |
+| Erros 500 passageiros (S4) | As 22 URLs que deram 500 responderam 200 quando foram pedidas de novo, menos de uma hora depois |
+
+O último item é um aviso para quem audita: um 5xx num rastreamento pode ser
+do momento, não do sitemap. Peça de novo antes de anotar.
+
+## Como auditar o seu
+
+A ordem que o script segue serve para fazer à mão, com um crawler como o
+[Screaming Frog gratuito](/blog/screaming-frog-gratuito) ou com o
+[script desta medição](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/sitemap-audit.mjs):
+
+1. **Ache todos os sitemaps.** As linhas `Sitemap:` do robots.txt, os
+   caminhos padrão (`/sitemap.xml`, `/sitemap_index.xml`) e os filhos de cada
+   índice.
+2. **Peça cada URL listada sem seguir redirects.** Anote o status, o
+   `robots` (meta e cabeçalho `X-Robots-Tag`) e o canonical.
+3. **Separe por arquivo.** No S4, um arquivo era quase perfeito e outro tinha
+   metade de URLs com problema.
+4. **Compare o `lastmod` com as datas da própria página** (`dateModified` no
+   JSON-LD ou `article:modified_time`). Compare o instante, não o dia: o S4
+   escreve o `lastmod` em UTC e a página em horário de Brasília, e um post da
+   noite cai em dias diferentes sem que as datas sejam diferentes. Esse erro
+   me deu 6% de divergência falsa na primeira contagem.
+5. **Compare os links internos com a lista.** As páginas linkadas pela maior
+   parte do site e ausentes do sitemap são o item 7.
+
+Para conferir uma URL só, o [validador de meta tags](/ferramentas/validador-meta-tags)
+mostra o status HTTP, o `robots` e o canonical da resposta. Para o site
+inteiro, o script roda com um comando:
+
+```bash
+node scripts/sitemap-audit.mjs --targets alvos.json --out audits/case-studies/sitemap-audit-AAAA-MM-DD
+node scripts/sitemap-audit.mjs --recheck-5xx S4 --out audits/case-studies/sitemap-audit-AAAA-MM-DD
+```
+
+O formato do arquivo de alvos está em
+[`sitemap-audit.example.json`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/sitemap-audit.example.json).
+O script lê o robots.txt antes, respeita o que ele bloqueia, faz uma
+requisição por segundo e nunca pede URLs de outro host listadas no sitemap.
+
+## O que o Search Console mostraria
+
+Quem tem acesso ao Search Console do site vê o que uma auditoria de fora não
+vê:
+
+- **O relatório de sitemaps** mostra se o Google conseguiu ler cada arquivo e
+  quantas URLs descobriu nele. Ele só lista os sitemaps enviados pelo próprio
+  relatório ou pela API; os declarados no robots.txt não aparecem ali.
+- **O relatório de indexação de páginas**, filtrado por "todas as páginas
+  enviadas", conta as URLs dos sitemaps enviados **ou** declarados no
+  robots.txt, e mostra quais delas estão fora do índice e por quê. É ali que
+  as URLs com `noindex` e os redirects do checklist aparecem como exclusões.
+
+Nenhum dos quatro sites foi lido assim: a análise é de fora, e o que o Google
+indexou de cada um não foi medido.
+
+## No Next.js
+
+Este site é o controle da medição: 82 de 82 URLs ok, e nenhuma página
+indexável linkada por quase todas fora do sitemap (a única linkada em toda
+parte e ausente é o feed RSS, que não é HTML). Duas decisões do código
+explicam isso.
+
+A primeira é o `lastmod`. O `src/app/sitemap.ts` só emite a data quando ela
+vem do conteúdo:
+
+```ts
+// src/app/sitemap.ts, linhas 13 e 14
+// lastmod só é emitido quando derivável do frontmatter: um lastmod que muda a
+// cada build sem mudança real de conteúdo ensina o Google a ignorá-lo.
+```
+
+```ts
+// src/app/sitemap.ts, linhas 64 a 68
+    // Home e "sobre" em inglês. Sem lastmod: nenhuma das duas tem frontmatter
+    // de onde derivá-lo, e um lastmod inventado é o que ensina o Google a
+    // ignorar a tag (mesma regra de /sobre e /ferramentas).
+    { url: `${base}/en`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/en/about`, changeFrequency: 'monthly', priority: 0.5 },
+```
+
+Na medição, 11 das 82 entradas saíram sem `lastmod`, e nas outras a data bateu
+com o `dateModified` da página em todos os casos. O arquivo ainda declara
+`changeFrequency` e `priority`, que o Google ignora. Não atrapalham, mas
+também não fazem nada.
+
+A segunda é estrutural. A suíte de SEO, que roda a cada pull request, não tem
+lista de rotas própria: as rotas **são** o sitemap.
+
+```ts
+// tests/seo/seo.spec.ts, linhas 28 a 32
+// Sitemap entries carry production-absolute URLs; tests run against localhost,
+// so only the pathname is kept.
+const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname)
+const noindexPaths = ['/busca', '/en/search']
+const routes = [...sitemapPaths, ...noindexPaths]
+```
+
+Para cada rota, o teste exige status 200, um canonical igual à própria URL e
+nenhum `noindex`. Se este sitemap listar uma página com `noindex`, uma URL que
+redireciona (o canonical do destino não bate com a URL listada) ou uma que
+responde 404, o CI falha antes do deploy. Os itens 1 a 4 do checklist viram
+testes, sem nenhum teste escrito para eles.
+
+Como o `sitemap.ts` é derivado do conteúdo, e o que cada campo faz no Next.js,
+está em [sitemap dinâmico no Next.js](/blog/sitemap-dinamico-nextjs). O
+[guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) reúne o resto:
+metadata, canonicals e redirects.
+
+## Método e limites
+
+- **Coleta.** Este site e quatro sites públicos, em 11/11/2026, entre 13h15 e
+  14h39 UTC, com o
+  [script de auditoria](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/sitemap-audit.mjs):
+  User-Agent próprio e identificado, robots.txt respeitado, pelo menos um
+  segundo entre requisições, cerca de 4.200 requisições no total. Nenhum
+  buscador foi consultado.
+- **Números.** Os dos sites de terceiros estão arredondados: totais à dezena
+  (à centena acima de mil), contagens menores que dez em faixas, proporções
+  com duas casas. Os deste site são exatos. O
+  [resumo](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/sitemap-audit-2026-11-11/summary.json)
+  é o mesmo que sustenta o artigo.
+- **Duas correções durante a medição.** A comparação de datas por dia, que
+  gerava divergência falsa entre fusos, e a contagem de páginas sem
+  `dateModified` como "data diferente". As duas estão no histórico do script
+  e na [nota de pesquisa](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-11-sitemap-audit.md).
+- **Uma fotografia.** Sitemaps são gerados de novo o tempo todo. Num estudo
+  anterior desses mesmos sites, quatro dias antes, o S2 tinha dois redirects
+  listados, e hoje tem um.
+- **O que não foi medido.** O que o Google rastreou e indexou de cada site,
+  porque a análise é de fora; e se uma data de modificação correta
+  corresponde a uma mudança significativa do conteúdo, que não dá para ver de
+  fora.
+
+Análise feita de fora, sobre sites públicos, só para estudo do método. Os
+sites não são identificados, não têm relação com o autor e não participaram.
+Não é auditoria, recomendação aos donos nem veredito sobre eles. Não há
+patrocínio nem serviço vendido a partir dela.
+
+## Fontes
+
+- [Google: Build and submit a sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), atualizada em 08/07/2026, consultada em 11/11/2026
+- [Google: Learn about sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview), atualizada em 10/12/2025, consultada em 11/11/2026
+- [Google: Manage your sitemaps with a sitemap index file](https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps), atualizada em 10/12/2025, consultada em 11/11/2026
+- [Google Search Central Blog: Sitemaps ping endpoint is going away](https://developers.google.com/search/blog/2023/06/sitemaps-lastmod-ping), publicado em 26/06/2023, consultado em 11/11/2026
+- [Google: How to specify a canonical URL](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls), atualizada em 10/07/2026, consultada em 11/11/2026
+- [Google: Block Search indexing with noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing), atualizada em 10/12/2025, consultada em 11/11/2026
+- [Google: Site moves with URL changes](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes), seção "Avoid irrelevant redirects", atualizada em 20/08/2026, consultada em 11/11/2026
+- [Google: How Google interprets the robots.txt specification](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec), atualizada em 23/10/2026, consultada em 11/11/2026
+- [Google: Optimize your crawl budget](https://developers.google.com/crawling/docs/crawl-budget), atualizada em 22/07/2026, consultada em 11/11/2026
+- [Google Search Console: relatório de sitemaps](https://support.google.com/webmasters/answer/7451001?hl=pt-BR), consultada em 11/11/2026
+- [Google Search Console: relatório de indexação de páginas](https://support.google.com/webmasters/answer/7440203?hl=pt-BR), consultada em 11/11/2026
+- [sitemaps.org: protocolo](https://www.sitemaps.org/protocol.html), consultada em 11/11/2026
+- [Bing Webmaster Blog: The importance of setting the "lastmod" tag in your sitemap](https://blogs.bing.com/webmaster/2023/2/The-Importance-of-Setting-the-lastmod-Tag-in-Your-Sitemap/), publicado em 01/02/2023, consultado em 11/11/2026
+- Nota de pesquisa: [`docs/research/2026-11-11-sitemap-audit.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-11-sitemap-audit.md)

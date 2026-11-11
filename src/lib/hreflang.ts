@@ -337,6 +337,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/one-page-per-keyword',
     },
   },
+  {
+    id: 'auditoria-de-sitemap',
+    paths: {
+      'pt-BR': '/blog/auditoria-de-sitemap',
+      en: '/en/blog/sitemap-audit',
+    },
+  },
   // Entradas do projeto, /projeto/<slug> ↔ /en/project/<slug-en>: mesma regra
   // dos artigos (id = slug português = `translationOf` do MDX inglês).
   {
