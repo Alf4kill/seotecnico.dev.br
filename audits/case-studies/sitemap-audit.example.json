@@ -1,0 +1,19 @@
+[
+  {
+    "code": "SITE",
+    "label": "this site (control)",
+    "public": true,
+    "origin": "https://seotecnico.dev.br"
+  },
+  {
+    "code": "S0",
+    "label": "shape of a third-party target; the real ones live in sitemap-audit.local.json (gitignored)",
+    "origin": "https://example.com",
+    "sitemapPaths": ["/sitemap.xml", "/sitemap_index.xml"],
+    "sitemapLabels": [
+      { "match": "sitemap_index|/sitemap\.xml$", "label": "index" },
+      { "match": "post-sitemap|sitemap-blog", "label": "posts" },
+      { "match": "tag", "label": "tag archives" }
+    ]
+  }
+]

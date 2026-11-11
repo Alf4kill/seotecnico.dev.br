@@ -1,0 +1,1353 @@
+{
+  "date": "2026-11-11",
+  "startedAt": "2026-11-11T13:48:44.785Z",
+  "userAgent": "seotecnico-sitemap-audit/1.0 (+https://seotecnico.dev.br)",
+  "pauseMs": 1000,
+  "method": "docs/research/2026-11-11-sitemap-audit.md; script scripts/sitemap-audit.mjs",
+  "rounding": "third-party targets: totals to the nearest 10 (\"under 10\" below that) and to the nearest 100 from 1,000, defect counts in bands (1-4, 5-9) and to the nearest 10 from 10, shares to two decimals, sitemap files by type only; this site (public) is exact",
+  "targets": [
+    {
+      "collectedAt": "2026-11-11T13:17:23.721Z",
+      "requests": 87,
+      "code": "SITE",
+      "label": "this site (control)",
+      "origin": "https://seotecnico.dev.br",
+      "robots": {
+        "status": 200,
+        "declaresSitemaps": [
+          "/sitemap.xml"
+        ],
+        "crawlDelay": null
+      },
+      "sitemapFiles": [
+        {
+          "sitemap": "/sitemap.xml",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "urlset",
+          "entries": 82,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 0.866,
+            "distinctValues": 15,
+            "mostCommonShare": 0.338,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "/sitemap_index.xml",
+          "foundVia": "default path",
+          "declaredInRobots": false,
+          "chain": [
+            404
+          ],
+          "status": 404,
+          "contentType": "text/html",
+          "root": null,
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        }
+      ],
+      "entries": 82,
+      "distinctUrls": 82,
+      "repeatedUrls": {
+        "count": 0,
+        "share": 0
+      },
+      "urlsByResponse": {
+        "ok": {
+          "count": 82,
+          "share": 1
+        }
+      },
+      "urlsByResponseByFile": [
+        {
+          "sitemap": "/sitemap.xml",
+          "urls": 82,
+          "kinds": {
+            "ok": {
+              "count": 82,
+              "share": 1
+            }
+          }
+        }
+      ],
+      "malformedUrls": {
+        "count": 0,
+        "reasons": []
+      },
+      "redirects": {
+        "sameOrigin": 0,
+        "otherOrigin": 0,
+        "toHome": 0
+      },
+      "lastmodVsPageDates": {
+        "pagesCompared": 66,
+        "lastmodEqualsNewestPageDateShare": 1,
+        "lastmodEqualsNeitherShare": 0,
+        "pagesDeclaringDateModifiedShare": 1,
+        "modifiedAfterPublicationShare": 0.606,
+        "lastmodKeepsPublicationAfterModificationShare": 0
+      },
+      "linkedButNotInSitemap": {
+        "pagesRead": 82,
+        "threshold": "linked from at least 5% of the pages read (top 15 checked)",
+        "checked": 1,
+        "byKind": {
+          "not HTML": 1
+        },
+        "mostLinkedIndexableShare": null,
+        "urls": [
+          {
+            "path": "/feed.xml",
+            "linkedFrom": 40,
+            "kind": "not HTML"
+          }
+        ]
+      },
+      "problemUrls": []
+    },
+    {
+      "collectedAt": "2026-11-11T13:17:34.591Z",
+      "requests": 0,
+      "code": "S1",
+      "label": "main site",
+      "robots": {
+        "status": 200,
+        "declaresSitemaps": 1,
+        "crawlDelay": null
+      },
+      "sitemapFiles": [
+        {
+          "sitemap": "index",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "urlset",
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        },
+        {
+          "sitemap": "index",
+          "foundVia": "default path",
+          "declaredInRobots": false,
+          "chain": [
+            302,
+            404
+          ],
+          "status": 404,
+          "contentType": "text/html",
+          "root": null,
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        }
+      ],
+      "entries": 0,
+      "distinctUrls": 0,
+      "repeatedUrls": {
+        "count": 0,
+        "share": null
+      },
+      "urlsByResponse": {},
+      "urlsByResponseByFile": [],
+      "malformedUrls": {
+        "count": 0,
+        "reasons": []
+      },
+      "redirects": {
+        "sameOrigin": 0,
+        "otherOrigin": 0,
+        "toHome": 0
+      },
+      "lastmodVsPageDates": {
+        "pagesCompared": 0,
+        "lastmodEqualsNewestPageDateShare": null,
+        "lastmodEqualsNeitherShare": null,
+        "pagesDeclaringDateModifiedShare": null,
+        "modifiedAfterPublicationShare": null,
+        "lastmodKeepsPublicationAfterModificationShare": null
+      },
+      "linkedButNotInSitemap": {
+        "pagesRead": 0,
+        "threshold": "linked from at least 5% of the pages read (top 15 checked)",
+        "checked": 0,
+        "byKind": {},
+        "mostLinkedIndexableShare": null
+      }
+    },
+    {
+      "collectedAt": "2026-11-11T13:26:35.577Z",
+      "requests": 500,
+      "code": "S2",
+      "label": "main site",
+      "robots": {
+        "status": 200,
+        "declaresSitemaps": 1,
+        "crawlDelay": null
+      },
+      "sitemapFiles": [
+        {
+          "sitemap": "index",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "sitemapindex",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 5,
+            "mostCommonShare": 0.33,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "index",
+          "foundVia": "default path",
+          "redirectsToFileAlreadyRead": "index",
+          "declaredInRobots": false,
+          "chain": [
+            301,
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "sitemapindex",
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        },
+        {
+          "sitemap": "posts",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 60,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 60,
+            "mostCommonShare": 0.03,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "pages",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 30,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 30,
+            "mostCommonShare": 0.04,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "products",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 200,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 200,
+            "mostCommonShare": 0.01,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "products",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 190,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 190,
+            "mostCommonShare": 0.01,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": "under 10",
+            "mostCommonShare": 0.17,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "category archives",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 20,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 20,
+            "mostCommonShare": 0.23,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        }
+      ],
+      "entries": 500,
+      "distinctUrls": 500,
+      "repeatedUrls": {
+        "count": "1-4",
+        "share": 0
+      },
+      "urlsByResponse": {
+        "ok": {
+          "count": 500,
+          "share": 1
+        },
+        "redirect": {
+          "count": "1-4",
+          "share": 0
+        }
+      },
+      "urlsByResponseByFile": [
+        {
+          "sitemap": "posts",
+          "urls": 60,
+          "kinds": {
+            "ok": {
+              "count": 60,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "pages",
+          "urls": 30,
+          "kinds": {
+            "ok": {
+              "count": 30,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "products",
+          "urls": 200,
+          "kinds": {
+            "ok": {
+              "count": 200,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "products",
+          "urls": 190,
+          "kinds": {
+            "ok": {
+              "count": 190,
+              "share": 0.99
+            },
+            "redirect": {
+              "count": "1-4",
+              "share": 0.01
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "5-9",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "category archives",
+          "urls": 20,
+          "kinds": {
+            "ok": {
+              "count": 20,
+              "share": 1
+            }
+          }
+        }
+      ],
+      "malformedUrls": {
+        "count": 0,
+        "reasons": []
+      },
+      "redirects": {
+        "sameOrigin": "1-4",
+        "otherOrigin": 0,
+        "toHome": 0
+      },
+      "lastmodVsPageDates": {
+        "pagesCompared": 450,
+        "lastmodEqualsNewestPageDateShare": 0.98,
+        "lastmodEqualsNeitherShare": 0.02,
+        "pagesDeclaringDateModifiedShare": 1,
+        "modifiedAfterPublicationShare": 0.14,
+        "lastmodKeepsPublicationAfterModificationShare": 0
+      },
+      "linkedButNotInSitemap": {
+        "pagesRead": 500,
+        "threshold": "linked from at least 5% of the pages read (top 15 checked)",
+        "checked": 10,
+        "byKind": {
+          "noindex": "5-9",
+          "indexable": "1-4"
+        },
+        "mostLinkedIndexableShare": 1
+      }
+    },
+    {
+      "collectedAt": "2026-11-11T13:48:44.614Z",
+      "requests": 700,
+      "code": "S3",
+      "label": "main site",
+      "robots": {
+        "status": 200,
+        "declaresSitemaps": 1,
+        "crawlDelay": null
+      },
+      "sitemapFiles": [
+        {
+          "sitemap": "index",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "sitemapindex",
+          "entries": 20,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 10,
+            "mostCommonShare": 0.19,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "index",
+          "foundVia": "default path",
+          "redirectsToFileAlreadyRead": "index",
+          "declaredInRobots": false,
+          "chain": [
+            301,
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "sitemapindex",
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        },
+        {
+          "sitemap": "index",
+          "foundVia": "default path",
+          "sameContentAsFileAlreadyRead": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "sitemapindex",
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        },
+        {
+          "sitemap": "posts",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 330,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 330,
+            "mostCommonShare": 0,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "pages",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 30,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 30,
+            "mostCommonShare": 0.04,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 80,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 80,
+            "mostCommonShare": 0.03,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 1,
+            "mostCommonShare": 1,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 2,
+            "mostCommonShare": 0.67,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": "under 10",
+            "mostCommonShare": 0.29,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 5,
+            "mostCommonShare": 0.33,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 10,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": "under 10",
+            "mostCommonShare": 0.2,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 20,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 20,
+            "mostCommonShare": 0.13,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 20,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 20,
+            "mostCommonShare": 0.13,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": "under 10",
+            "mostCommonShare": 0.29,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 20,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 20,
+            "mostCommonShare": 0.09,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "category archives",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": "under 10",
+            "mostCommonShare": 0.13,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "tag archives",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": 180,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 150,
+            "mostCommonShare": 0.02,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "author archives",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 1,
+            "mostCommonShare": 1,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "author archives",
+          "foundVia": "index",
+          "declaredInRobots": false,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "text/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": "under 10",
+            "mostCommonShare": 0.17,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        }
+      ],
+      "entries": 720,
+      "distinctUrls": 710,
+      "repeatedUrls": {
+        "count": "1-4",
+        "share": 0
+      },
+      "urlsByResponse": {
+        "ok": {
+          "count": 630,
+          "share": 0.88
+        },
+        "noindex": {
+          "count": 80,
+          "share": 0.11
+        },
+        "redirect": {
+          "count": "5-9",
+          "share": 0.01
+        },
+        "404/410": {
+          "count": "1-4",
+          "share": 0
+        }
+      },
+      "urlsByResponseByFile": [
+        {
+          "sitemap": "posts",
+          "urls": 330,
+          "kinds": {
+            "ok": {
+              "count": 330,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "pages",
+          "urls": 30,
+          "kinds": {
+            "ok": {
+              "count": 30,
+              "share": 0.96
+            },
+            "noindex": {
+              "count": "1-4",
+              "share": 0.04
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": 80,
+          "kinds": {
+            "noindex": {
+              "count": 80,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "1-4",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "1-4",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "5-9",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "5-9",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": 10,
+          "kinds": {
+            "ok": {
+              "count": 10,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": 20,
+          "kinds": {
+            "ok": {
+              "count": 20,
+              "share": 0.94
+            },
+            "404/410": {
+              "count": "1-4",
+              "share": 0.06
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": 20,
+          "kinds": {
+            "ok": {
+              "count": 20,
+              "share": 0.94
+            },
+            "404/410": {
+              "count": "1-4",
+              "share": 0.06
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "5-9",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "other content types",
+          "urls": 20,
+          "kinds": {
+            "ok": {
+              "count": 20,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "category archives",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "5-9",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "tag archives",
+          "urls": 180,
+          "kinds": {
+            "ok": {
+              "count": 180,
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "author archives",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "1-4",
+              "share": 1
+            }
+          }
+        },
+        {
+          "sitemap": "author archives",
+          "urls": "under 10",
+          "kinds": {
+            "redirect": {
+              "count": "5-9",
+              "share": 1
+            }
+          }
+        }
+      ],
+      "malformedUrls": {
+        "count": "1-4",
+        "reasons": [
+          "encoded space in the path"
+        ]
+      },
+      "redirects": {
+        "sameOrigin": "5-9",
+        "otherOrigin": 0,
+        "toHome": "5-9"
+      },
+      "lastmodVsPageDates": {
+        "pagesCompared": 510,
+        "lastmodEqualsNewestPageDateShare": 1,
+        "lastmodEqualsNeitherShare": 0,
+        "pagesDeclaringDateModifiedShare": 0.65,
+        "modifiedAfterPublicationShare": 0.95,
+        "lastmodKeepsPublicationAfterModificationShare": 0
+      },
+      "linkedButNotInSitemap": {
+        "pagesRead": 710,
+        "threshold": "linked from at least 5% of the pages read (top 15 checked)",
+        "checked": 10,
+        "byKind": {
+          "redirect": "5-9",
+          "canonical to another URL": "1-4"
+        },
+        "mostLinkedIndexableShare": null
+      }
+    },
+    {
+      "collectedAt": "2026-11-11T14:37:53.480Z",
+      "requests": 2900,
+      "code": "S4",
+      "label": "main site",
+      "robots": {
+        "status": 200,
+        "declaresSitemaps": 5,
+        "crawlDelay": null
+      },
+      "sitemapFiles": [
+        {
+          "sitemap": "index",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "sitemapindex",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 0,
+            "distinctValues": 0,
+            "mostCommonShare": null,
+            "atServeTimeShare": null,
+            "inFutureShare": null
+          }
+        },
+        {
+          "sitemap": "pages",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "urlset",
+          "entries": 70,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 2,
+            "mostCommonShare": 0.99,
+            "atServeTimeShare": 1,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "posts",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "urlset",
+          "entries": 2600,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 1,
+            "distinctValues": 2200,
+            "mostCommonShare": 0.02,
+            "atServeTimeShare": 0,
+            "inFutureShare": 0
+          }
+        },
+        {
+          "sitemap": "landing and form pages",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "urlset",
+          "entries": 190,
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 0,
+            "distinctValues": 0,
+            "mostCommonShare": null,
+            "atServeTimeShare": null,
+            "inFutureShare": null
+          }
+        },
+        {
+          "sitemap": "news sitemap",
+          "foundVia": "robots.txt",
+          "declaredInRobots": true,
+          "chain": [
+            200
+          ],
+          "status": 200,
+          "contentType": "application/xml",
+          "root": "urlset",
+          "entries": "under 10",
+          "unescapedAmpersands": 0,
+          "lastmod": {
+            "share": 0,
+            "distinctValues": 0,
+            "mostCommonShare": null,
+            "atServeTimeShare": null,
+            "inFutureShare": null
+          }
+        },
+        {
+          "sitemap": "index",
+          "foundVia": "default path",
+          "declaredInRobots": false,
+          "chain": [
+            404
+          ],
+          "status": 404,
+          "contentType": "text/html",
+          "root": null,
+          "entries": 0,
+          "unescapedAmpersands": 0,
+          "lastmod": null
+        }
+      ],
+      "entries": 2900,
+      "distinctUrls": 2800,
+      "repeatedUrls": {
+        "count": 20,
+        "share": 0.01
+      },
+      "urlsByResponse": {
+        "ok": {
+          "count": 2700,
+          "share": 0.96
+        },
+        "redirect": {
+          "count": 40,
+          "share": 0.01
+        },
+        "canonical to another URL": {
+          "count": 30,
+          "share": 0.01
+        },
+        "noindex": {
+          "count": 30,
+          "share": 0.01
+        },
+        "5xx": {
+          "count": 20,
+          "share": 0.01
+        },
+        "404/410": {
+          "count": "1-4",
+          "share": 0
+        }
+      },
+      "urlsByResponseByFile": [
+        {
+          "sitemap": "pages",
+          "urls": 70,
+          "kinds": {
+            "ok": {
+              "count": 70,
+              "share": 0.92
+            },
+            "redirect": {
+              "count": "1-4",
+              "share": 0.05
+            },
+            "canonical to another URL": {
+              "count": "1-4",
+              "share": 0.03
+            }
+          }
+        },
+        {
+          "sitemap": "posts",
+          "urls": 2600,
+          "kinds": {
+            "ok": {
+              "count": 2600,
+              "share": 0.99
+            },
+            "5xx": {
+              "count": 20,
+              "share": 0.01
+            },
+            "redirect": {
+              "count": "5-9",
+              "share": 0
+            },
+            "canonical to another URL": {
+              "count": "5-9",
+              "share": 0
+            }
+          }
+        },
+        {
+          "sitemap": "landing and form pages",
+          "urls": 170,
+          "kinds": {
+            "ok": {
+              "count": 90,
+              "share": 0.52
+            },
+            "noindex": {
+              "count": 30,
+              "share": 0.17
+            },
+            "canonical to another URL": {
+              "count": 30,
+              "share": 0.16
+            },
+            "redirect": {
+              "count": 20,
+              "share": 0.14
+            },
+            "404/410": {
+              "count": "1-4",
+              "share": 0.02
+            }
+          }
+        },
+        {
+          "sitemap": "news sitemap",
+          "urls": "under 10",
+          "kinds": {
+            "ok": {
+              "count": "1-4",
+              "share": 1
+            }
+          }
+        }
+      ],
+      "serverErrorsRechecked": {
+        "at": "2026-11-11T14:38:55.649Z",
+        "still5xx": 0,
+        "nowOk": 20,
+        "other": 0
+      },
+      "malformedUrls": {
+        "count": 0,
+        "reasons": []
+      },
+      "redirects": {
+        "sameOrigin": 30,
+        "otherOrigin": "1-4",
+        "toHome": "5-9"
+      },
+      "lastmodVsPageDates": {
+        "pagesCompared": 2500,
+        "lastmodEqualsNewestPageDateShare": 1,
+        "lastmodEqualsNeitherShare": 0,
+        "pagesDeclaringDateModifiedShare": 1,
+        "modifiedAfterPublicationShare": 0.61,
+        "lastmodKeepsPublicationAfterModificationShare": 0
+      },
+      "linkedButNotInSitemap": {
+        "pagesRead": 2800,
+        "threshold": "linked from at least 5% of the pages read (top 15 checked)",
+        "checked": 10,
+        "byKind": {
+          "not HTML": "1-4",
+          "indexable": "5-9",
+          "noindex": "1-4",
+          "redirect": "1-4"
+        },
+        "mostLinkedIndexableShare": 0.94
+      }
+    }
+  ]
+}

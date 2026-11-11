@@ -421,7 +421,7 @@ principle applied to another format.
 ## How to check that it's working
 
 None of this is worth anything until you confirm it against real behavior,
-rather than what the code should do. Here are four ways to check it:
+rather than what the code should do. Here are five ways to check it:
 
 1. **Check the Sitemaps report in Search Console.** Submit the sitemap URL,
    or confirm Google already discovered it through `robots.txt`, then watch
@@ -437,6 +437,10 @@ rather than what the code should do. Here are four ways to check it:
    guarantees that Google knows it exists, not that Google will index it.
    Indexing depends on content, the canonical, and the other signals that the
    rest of this guide's articles cover.
+5. **Audit the sitemap against the site.** Check what each listed URL
+   answers, whether `lastmod` matches the page, and what the site links but
+   doesn't list. The [sitemap audit](/en/blog/sitemap-audit) checklist has a
+   measured case from four real sites for each item.
 
 This article showed `sitemap.ts` and `robots.ts` as they run in production on
 this domain today, including the `/busca` mistake, which I made myself. If

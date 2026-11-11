@@ -57,3 +57,8 @@ audits/next-notfound-status/next-env.d.ts
 # numbers) is versioned.
 audits/case-studies/template-anatomy-*/**
 !audits/case-studies/template-anatomy-*/summary*.json
+
+# scripts/sitemap-audit.mjs: raw.json carries hosts, sitemap URLs and paths.
+# Only summary.json (codes, rounded counts, shares) is versioned.
+audits/case-studies/sitemap-audit-*/**
+!audits/case-studies/sitemap-audit-*/summary*.json
