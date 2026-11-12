@@ -2,8 +2,10 @@
 
 > **Status:** in progress · 2026-11-11 · decisions 1–4 taken (history file).
 > Step 1 done: the style guide was written from the site's measured practice,
-> with the owner's old guide as reference (it was never in the repository);
-> steps 2–7 not started. Revised the same day after a review against the
+> with the owner's old guide as reference (it was never in the repository).
+> Step 2 done: 22 native pages, band in `register-thresholds-pt.json`
+> (`docs/research/2026-11-11-portuguese-register-profile.md`). Steps 3–7 not
+> started. Revised the same day after a review against the
 > repository (history file, entry "review of the plan").
 > **Origin:** owner request, 2026-11-11: improve how the articles are written
 > and reviewed, so the Portuguese reads as written by a person, without
