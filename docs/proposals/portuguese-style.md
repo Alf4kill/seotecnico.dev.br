@@ -1,8 +1,10 @@
 # Proposal: a Portuguese style layer for the content pipeline
 
-> **Status:** proposal · 2026-11-11 · not started. Nothing below is built yet.
-> Revised the same day after a review against the repository (history file,
-> entry "review of the plan").
+> **Status:** in progress · 2026-11-11 · decisions 1–4 taken (history file).
+> Step 1 done: the style guide was written from the site's measured practice,
+> with the owner's old guide as reference (it was never in the repository);
+> steps 2–7 not started. Revised the same day after a review against the
+> repository (history file, entry "review of the plan").
 > **Origin:** owner request, 2026-11-11: improve how the articles are written
 > and reviewed, so the Portuguese reads as written by a person, without
 > changing what it says; reusable in the owner's other projects later.
@@ -225,7 +227,7 @@ normal for native technical Portuguese.
 
 | Step | Output | Done when |
 |---|---|---|
-| 1 | `.claude/skills/portuguese-style/` started with `references/estilo-ptbr.md` migrated from the Project, its `.gitignore` allowlist line; content-page phase 3 and handoff kit point to it | content-page references it; the Project copy points to the repo |
+| 1 | `.claude/skills/portuguese-style/` started with `references/estilo-ptbr.md` and `references/site.md`, written from the site's measured practice with the owner's old guide as reference, its `.gitignore` allowlist line; content-page phase 3 and handoff kit point to them | content-page references them; the owner's old copy points to the repo |
 | 2 | corpus chosen and measured; research note `docs/research/YYYY-MM-DD-portuguese-register-profile.md` | band per measure, with the command and commit |
 | 3 | `check-portuguese.mjs` + thresholds | `--published` runs on the 30 Portuguese pages (27 blog, the pillar, 2 project entries); every ERROR on a correct page is a script bug; **the baseline is measured with it at `5a0209b` and recorded in the history file**, replacing the heuristic numbers as the "before" |
 | 4 | `site.md`, `marcas-ptbr.md`, `voz.md`, `SKILL.md` + evals | the five evals pass |
