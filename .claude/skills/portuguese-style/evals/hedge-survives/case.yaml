@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: hedge-survives
+expected_outcome: |
+  The run executes check-portuguese.mjs on content/blog/melhorar-lcp-nextjs.mdx, writes a hedge list before editing that includes "na maioria dos diagnósticos que eu faço", "frequentemente a mais curta" and "a maioria dos guias", and edits only the section "As 4 subpartes: onde o tempo do LCP está indo". The setup colon in "O insight que muda a estratégia:" may be rewritten, but every hedge of the list is still in the page with the same strength after the edit (the claim does not become "o gargalo está nos delays" without "na maioria dos diagnósticos que eu faço"). The table, numbers, links, headings, title, description and dateModified are unchanged; placeholders.mjs compare reports nothing missing; check-portuguese.mjs reruns with 0 errors; the English pair is untouched.

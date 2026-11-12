@@ -1,0 +1,7 @@
+---
+type: llm
+focus: trace
+weight: 1
+---
+
+The result matches this description: The run executes check-portuguese.mjs on content/blog/auditoria-seo-com-ia.mdx and reports that its colon rate (about 12.8 per 100 sentences) is inside the native band (p90 16.67), so the colons are not a reason to edit and are left as they are. It may address the features that are outside the band (semicolons) or individual pattern hits with minimal edits, or conclude that nothing needs to change; either is acceptable, and "nothing to change" is stated with the numbers. It does not rewrite paragraphs to remove colons that introduce a list or one explanation, changes no fact, number, hedge, heading, title, description or dateModified, and does not touch the English pair.
