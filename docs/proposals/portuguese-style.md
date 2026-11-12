@@ -4,9 +4,11 @@
 > Step 1 done: the style guide was written from the site's measured practice,
 > with the owner's old guide as reference (it was never in the repository).
 > Step 2 done: 22 native pages, band in `register-thresholds-pt.json`
-> (`docs/research/2026-11-11-portuguese-register-profile.md`). Steps 3–7 not
-> started. Revised the same day after a review against the
-> repository (history file, entry "review of the plan").
+> (`docs/research/2026-11-11-portuguese-register-profile.md`). Step 3 done:
+> `check-portuguese.mjs` runs on the 30 published pages with 0 ERRORs, and
+> its register values equal the step 2 baseline. Steps 4–7 not started.
+> Revised the same day after a review against the repository (history file,
+> entry "review of the plan").
 > **Origin:** owner request, 2026-11-11: improve how the articles are written
 > and reviewed, so the Portuguese reads as written by a person, without
 > changing what it says; reusable in the owner's other projects later.

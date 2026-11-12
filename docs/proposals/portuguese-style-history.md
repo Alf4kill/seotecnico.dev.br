@@ -343,6 +343,73 @@ Three things in it the earlier analysis did not have:
 The per-page values of this run replace the heuristic counts of §5 as the
 "before" of every future revision.
 
+Merged as PR #138 (merge `d106017`).
+
+### 2026-11-11 — step 3: the checker, run on the published pages **[repo]**
+
+`.claude/skills/portuguese-style/scripts/check-portuguese.mjs`, modeled on
+`check-english.mjs`. It has three levels:
+
+- **ERROR, exit code 1.** Chatbot residue, curly quotes, and a `lang` other
+  than `pt-BR`. These have no correct use on a page of this site.
+- **WARN, a pattern.** The §5.1 lists of `estilo-ptbr.md`:
+  - filler connectives, inflated adjectives, support verbs, vague
+    attribution, calques and generalizations about people;
+  - "não é X, é Y", added hedges, impersonal frames and the corporate "we";
+  - three or more colons in one paragraph;
+  - a date in a sentence written as DD/MM/AAAA or ISO;
+  - number mechanics: decimal point, "80ms", "25 %", a hyphen in a range.
+- **WARN, register.** Any feature outside the native band of step 2, in
+  the direction its `dir` gives. The band never produces an ERROR, because
+  a register that differs from the band can be correct.
+
+The checker also reads the frontmatter (`title`, `description`, `tldr`,
+`faq`). It skips text inside quotation marks, code, SVG, JSX comments,
+URLs and attributes.
+
+**First run on the 30 published pages: 0 ERRORs, 14 false positives among
+the WARNs.** Every one was a script defect, fixed in the script and never
+in a page:
+
+| Rule | False positives | Cause | Fix |
+|---|---|---|---|
+| we | 6 | "nós" in the accessibility-tree article means *nodes* | "nós" left out of the rule; possessives and verbs stay |
+| empty-contrast | 4 | "Não é obrigatório, mas ajuda" is a concession, not the pattern | `, mas` removed from the rule; only "não é X, é Y" remains |
+| decimal-point | 3 | "1.280 ms" is a thousands separator | groups of exactly three digits excluded |
+| support-verb | 1 | "promovam um elemento" is a verb plus an object | nouns ending in *-mento* excluded |
+
+**Second run: 30 files, 0 with errors.** WARN totals by rule:
+
+| Rule | Hits | Rule | Hits |
+|---|---|---|---|
+| date-form | 32 | filler | 7 |
+| register-colons | 27 | colon-chain | 6 |
+| register-voce | 26 | generalization | 5 |
+| register-semicolons | 23 | unit-space | 4 |
+| register-dashes | 14 | register-bold-labels | 3 |
+| hedge-filler | 13 | register-list-items | 2 |
+| empty-contrast | 7 | inflated | 2 |
+| | | impersonal | 1 |
+
+The register values the checker prints are the values of the step 2
+calibration, page by page (for example, `gtm-nextjs` colons 42.9 and
+`next-image-seo` 51.6). The checker and `calibrate-register-pt.mjs` share
+`register-pt.mjs`, so the step 2 table is also the checker's baseline, and
+no second "before" is needed.
+
+`date-form` is the largest rule, and that is a finding, not noise. The guide
+puts DD/MM/AAAA inside parentheses and source lists ("consultada em
+23/10/2026" in a source list is correct). In practice the pages also use it
+in running sentences, and the script reports those. Each hit is a decision
+for the revision of that page, not an automatic change.
+
+**Mutation test.** A scratch page seeded with one example of each pattern
+gave 4 ERRORs (residue in `description` and in the body, curly quotes in
+`tldr`, `lang: en`) and exit code 1. It gave one WARN for every seeded
+pattern. Its last paragraph repeats the four false positives above, and
+none of them fired. The `%` hit printed "5 %" for "25 %"; the excerpt now
+shows the whole number (display only, same totals).
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 
@@ -476,3 +543,7 @@ for f in sorted(glob.glob('content/blog/*.mdx')):
 Invariants check (Finding 4): copy an article, change one number in its
 body, then
 `node .claude/skills/english-version/scripts/placeholders.mjs compare <original> <copy>`.
+
+Checker baseline (step 3), from the repository root at `d106017` plus the
+step 3 branch:
+`node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --published --summary`.
