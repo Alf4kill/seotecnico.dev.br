@@ -97,7 +97,9 @@ const MECHANICS = [
   // Three digits after the point is a thousands separator ("1.280 ms").
   { id: 'decimal-point', re: /(?<![\d.])\d+\.(?:\d{1,2}|\d{4,})\s?(ms|s|%|KB|kB|MB|GB|px)(?![\p{L}])/gu,
     hint: 'decimal comma in Portuguese prose: "4,9 s"' },
-  { id: 'unit-space', re: /(?<![\p{L}\d])\d+(?:,\d+)?(ms|KB|kB|MB|GB)(?![\p{L}])/gu,
+  // The whole number, thousands groups included ("1.280ms"); seconds only
+  // with a decimal comma ("4,9s"), so a decade like "anos 90s" never fires.
+  { id: 'unit-space', re: /(?<![\p{L}\d.,])(?:(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?(?:ms|KB|kB|MB|GB)|\d+,\d+s)(?![\p{L}])/gu,
     hint: 'a space between number and unit: "80 ms"' },
   { id: 'percent-space', re: /(?<![\d,])\d+(?:,\d+)?\s%/g,
     hint: 'no space before %: "25%"' },
@@ -196,10 +198,21 @@ function checkFile(file) {
   const blocks = []
   paraLines.forEach((l, i) => {
     if (!l.trim()) { start = i + 1; return }
-    if (i === start) blocks.push({ line: bodyStart + i + 1, text: l })
-    else blocks[blocks.length - 1].text += `\n${l}`
+    if (i === start) blocks.push({ line: bodyStart + i + 1, text: l, lines: [l] })
+    else { blocks[blocks.length - 1].text += `\n${l}`; blocks[blocks.length - 1].lines.push(l) }
   })
-  for (const { line, text } of blocks) {
+  // The line of a hit inside a paragraph: the first line holding it, or the
+  // first of two lines it spans; the paragraph's start if neither does.
+  const lineOf = ({ line, lines }, needle) => {
+    const n = needle.replace(/\s+/g, ' ').trim()
+    for (let j = 0; j < lines.length; j++) {
+      if (lines[j].replace(/\s+/g, ' ').includes(n)) return line + j
+      if (j + 1 < lines.length && `${lines[j]} ${lines[j + 1]}`.replace(/\s+/g, ' ').includes(n)) return line + j
+    }
+    return line
+  }
+  for (const block of blocks) {
+    const { line, text } = block
     const t = text.trim()
     if (/^([|#<>*→{-]|\d+\.\s|import |export )/.test(t)) continue
     const flat = unquoted(t.replace(/`[^`]*`/g, ' ').replace(/\]\([^)]*\)/g, ']').replace(/https?:\/\/\S+/g, ' ')).replace(/\s+/g, ' ')
@@ -213,13 +226,13 @@ function checkFile(file) {
     const outsideParens = flat.replace(/\([^)]*\)/g, ' ')
     for (const m of outsideParens.matchAll(/(?<![\d/-])(\d{1,2}\/\d{1,2}\/\d{4}|20\d\d-\d\d-\d\d)(?![\d/-])/g)) {
       hit('date-form')
-      warns.push(`line ${line}: [date-form] "${m[1]}" in a sentence — "25 de setembro de 2026"; DD/MM/AAAA inside parentheses (§4)`)
+      warns.push(`line ${lineOf(block, m[1])}: [date-form] "${m[1]}" in a sentence — "25 de setembro de 2026"; DD/MM/AAAA inside parentheses (§4)`)
     }
     for (const rule of MECHANICS) {
       rule.re.lastIndex = 0
       for (const m of flat.matchAll(rule.re)) {
         hit(rule.id)
-        warns.push(`line ${line}: [${rule.id}] "${m[0]}" — ${rule.hint}`)
+        warns.push(`line ${lineOf(block, m[0])}: [${rule.id}] "${m[0]}" — ${rule.hint}`)
       }
     }
   }
