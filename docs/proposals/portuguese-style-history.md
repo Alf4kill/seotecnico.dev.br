@@ -297,6 +297,52 @@ pointing to them, the `.gitignore` allowlist line (also in `docs/skills.md`
 (step 4). After merge, the owner replaces his old guide in the writing
 Project with a pointer to `estilo-ptbr.md` and `site.md`.
 
+Merged as PR #137 (merge `cf086ec`).
+
+### 2026-11-11 — step 2: the native corpus and the band **[repo]**
+
+Full record: `docs/research/2026-11-11-portuguese-register-profile.md`.
+
+**How the corpus was found.** The plan was to read pre-cutoff copies from the
+Internet Archive; `web.archive.org` timed out from this network, so the date
+evidence had to come from each live page. Candidates came from sitemaps of
+Brazilian developer and SEO sites, filtered to `lastmod` before 2022-11-30,
+then screened page by page: Portuguese by function words, 300+ words of
+prose, a named author, no date on or after the cutoff. 22 pages passed (9
+sites, 11 authors, 21,534 words of prose).
+
+**What the screening caught.** A Pythonclub post that read as native was a
+translation of an English O'Reilly article, which only its own note revealed;
+the script now rejects pages with a translation note. The first run threw out
+six good pages because `<time>` elements of a "recent posts" sidebar carried
+2024 and 2026 dates; the date check now reads `<time>` inside the article
+only. Akita's "Akitando" posts passed every check and were dropped by hand:
+they are video transcripts, spoken register.
+
+**What the band shows** (site at `cf086ec`, content identical to `5a0209b`):
+
+| Feature | native p50 / p90 | site p50 | site pages past the band |
+|---|---|---|---|
+| colons per 100 sentences | 4.5 / 16.7 | 26.0 | 27 of 30 |
+| semicolons per 100 sentences | 0 / 1.9 | 5.1 | 23 of 30 |
+| "você" per 100 words | 0.8 (p10 0.3) | 0.1 | 26 of 30, below |
+| dash asides per 100 sentences | 0 / 4.8 | 0 | 14 of 30 (the 12 July pages, plus 2) |
+| median words per sentence | 17 (13–26) | 19 | 0 of 30 |
+
+Three things in it the earlier analysis did not have:
+
+- **The owner's drafts are above the colon band too** (`pre-registro-seo`
+  18.4, `sec-fetch-mode` 29.7). That answers half of open question §3.5: the
+  colon density is high against native writers; whether it is the owner's,
+  the drafting model's or the verification pass's stays open.
+- **The em dash needs nothing.** Zero, the practice since 2026-09-25, is the
+  native median. Only the July pages are past the band.
+- **"Você" is a gap nobody had named.** The pages rarely address the reader;
+  part of it may be the lab-report genre, which the corpus lacks.
+
+The per-page values of this run replace the heuristic counts of §5 as the
+"before" of every future revision.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 

@@ -1,0 +1,62 @@
+{
+  "measured": "2026-11-11",
+  "commit": "cf086ec",
+  "corpus": {
+    "pages": 22,
+    "sites": 9,
+    "authors": 11,
+    "words": 21534,
+    "cutoff": "2022-11-30"
+  },
+  "note": "A band, not a limit: check-portuguese.mjs warns outside it and never fails on it.",
+  "features": {
+    "colons": {
+      "dir": "high",
+      "p10": 2.22,
+      "p50": 4.55,
+      "p90": 16.67
+    },
+    "dashes": {
+      "dir": "high",
+      "p10": 0,
+      "p50": 0,
+      "p90": 4.76
+    },
+    "semicolons": {
+      "dir": "high",
+      "p10": 0,
+      "p50": 0,
+      "p90": 1.94
+    },
+    "sentence-median": {
+      "dir": "both",
+      "p10": 13,
+      "p50": 17,
+      "p90": 26
+    },
+    "voce": {
+      "dir": "low",
+      "p10": 0.3,
+      "p50": 0.8,
+      "p90": 1.85
+    },
+    "first-person": {
+      "dir": "info",
+      "p10": 0,
+      "p50": 0.18,
+      "p90": 0.97
+    },
+    "list-items": {
+      "dir": "high",
+      "p10": 0,
+      "p50": 2,
+      "p90": 23.94
+    },
+    "bold-labels": {
+      "dir": "high",
+      "p10": 0,
+      "p50": 0,
+      "p90": 22.22
+    }
+  }
+}
