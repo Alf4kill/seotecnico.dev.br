@@ -4,7 +4,8 @@
 > file adds what seotecnico.dev.br decides on top of them. `CLAUDE.md` is the
 > source of truth: where this file points to a section, read the section, and
 > where they disagree, `CLAUDE.md` wins and this file is the one to fix.
-> **Status:** first version, 2026-11-11 (proposal step 1).
+> **Status:** first version, 2026-11-11 (proposal step 1); §7 and §8 added
+> 2026-11-12 (step 4).
 
 ## 1. Reader and author
 
@@ -98,3 +99,25 @@ sessão de redação 10.
 revision does not bump it (content-page, "Updating an existing pair"). A
 dated note inside the page ("Atualização de 25 de setembro de 2026:") is a
 change in substance and does.
+
+## 7. What a style revision may change
+
+| Field or part | New draft | Published page | Why |
+|---|---|---|---|
+| body prose | yes | yes | the purpose of the pass |
+| `tldr` | yes | yes | prose; it renders on the page and as `Article.abstract` |
+| `faq` answers | yes | yes | prose; the questions stay (FAQ count is checked against the English pair) |
+| `title`, `description` | yes | **no** | they are what Google shows; changing them is an SEO change with its own log row (proposal §3.4) |
+| `dateModified` | — | **no** | a language-only revision is not a change in substance (§6) |
+| `slug`, `primaryQuery`, `lang`, `translationOf`, `category`, `status`, `keywords`, `basedOn` | no | no | identity and routing, not prose |
+| H2 wording | yes | only with the owner, links updated | headings are anchors other pages link to |
+| code, inline code, link targets, components, figures, numbers, dates, hedges | no | no | facts and markup (`SKILL.md`, rule 1) |
+| the English pair | — | untouched | it is written from a fact sheet, not from the Portuguese prose (english-version step 1) |
+
+## 8. Where the review runs
+
+After content-page phase 4 (verification) and before phase 5 (English): the
+prose is reviewed once the facts are final, and the English is written from
+the fact sheet, so the order does not leak Portuguese style into it. On a
+published page it runs on its own, one PR per batch, with a log row when the
+batch is a deliberate change (proposal §6, steps 6 and 7).

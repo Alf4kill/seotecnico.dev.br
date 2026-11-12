@@ -410,6 +410,81 @@ pattern. Its last paragraph repeats the four false positives above, and
 none of them fired. The `%` hit printed "5 %" for "25 %"; the excerpt now
 shows the whole number (display only, same totals).
 
+Merged as PR #139 (merge `631e4a3`).
+
+### 2026-11-12 — step 4: the skill, and its five evals **[repo]**
+
+New in `.claude/skills/portuguese-style/`:
+
+- `SKILL.md`: the rules first, then the seven steps of the plan's §4.3.
+- `references/marcas-ptbr.md`: real lines from the published pages, by
+  pattern, each with a proposed rewrite. None is applied yet; the rows become
+  the applied lines in steps 6 and 7. A "What not to fix" list comes from
+  the false positives.
+- `references/voz.md`: the traits of the owner's two drafts that a pass must
+  keep, each with a line, and their register values.
+- `site.md` §7–8: what a revision may change, field by field, and where the
+  review runs.
+
+**Two script defects found while writing the catalog.** Both were found
+by checking the script's line numbers against the files.
+
+- `unit-space` printed "280ms" for "1.280ms" and never matched "4,9s".
+  Fixed: 4 hits became 12.
+- Paragraph-level hits gave the paragraph's first line. They now give the
+  line of the hit.
+
+**The evals.** Each of the five cases ran in a fresh agent, in its own git
+worktree, with the owner's request as he would type it and the instruction
+to follow `SKILL.md`. I graded each report against the expected outcome in
+its `case.yaml`. A setup defect: the worktrees were cut from `main`
+(`631e4a3`), not from the step 4 branch, so the skill was not in them. Each
+agent found that and read the skill from the main checkout or from the
+branch, read-only. One copied it into its worktree. What they read is the
+committed step 4, except the fix below, which changes measurement only.
+
+| Case | Result | What the run did |
+|---|---|---|
+| `review-new-draft` | pass | removed the filler opening, both colon chains and the empty contrast in 6 minimal edits; 17 hedges listed and kept; `compare` "nothing missing"; colons 46.7 → 5.6 per 100 sentences. It also sent back to verification a factual error in the fixture ("como o Googlebot lê, sem executar JavaScript") and an unsourced "na maioria dos sites" |
+| `revise-july-page` | pass | `redirects-canonicals-nextjs`: colons 36.2 → 6.1, dashes 36.2 → 0, semicolons 21.3 → 0 per 100 sentences, in 70 edits (28 dash asides, 13 semicolons, 12 colons joining two claims, 10 setup phrases, 3 dates in a sentence, 4 others); 74 hedges listed, all kept; `title`, `description`, `dateModified`, headings and the English pair unchanged (checked in its worktree); `compare` lists only the "07" of two ISO dates rewritten in words; it drafted the experiment-log row and left the URL Inspection to the owner |
+| `voice-inside-band` | pass | reported colons at 12.8, inside the band, and cut no colon that introduces an explanation or a list; removed two "setup + colon" frames and three semicolons (3.8 → 1.3, now inside the band); hedges kept |
+| `hedge-survives` | pass | "na maioria dos diagnósticos que eu faço" was on the hedge list and stayed with its claim, inside the same bold span; the setup colon and the dash aside went |
+| `detector-request` | pass | declined the detector goal with the rule's reasons, offered the review with the page's register values, changed no file |
+
+**What the evals found, and what changed because of it:**
+
+- **A measurement asymmetry.** `fromMdx` left out every paragraph opening
+  with `**bold**`; `fromHtml` keeps them. The native band was measured with
+  one rule, the site with another. Found by `hedge-survives`: its edited
+  paragraph began with bold and vanished from the "after". Fixed in
+  `register-pt.mjs`, and in the paragraph rules of `check-portuguese.mjs`.
+  - The band does not change.
+  - 17 site pages do. The headline counts hold: colons above the band on 27
+    of 30, semicolons on 23, dashes on 14. "Você" below the band went from
+    26 to 24.
+  - The research note carries a dated correction, and `voz.md` and
+    `marcas-ptbr.md` use the corrected values.
+  - Rule totals with the fix: `date-form` 35, `colon-chain` 7.
+- **The profile floor.** A short draft (298 words after the edit) gets no
+  register values. The agent computed them from `counts()` and did not pad
+  the text. `SKILL.md` step 6 now says to report pattern counts only, and
+  never pad.
+- **The fresh reader.** Two of the four editing runs started a reviewer
+  subagent; the other two did the pass themselves and cited the agent rules,
+  which discourage starting agents unasked. `SKILL.md` already allows that path.
+  The ones that read alone still rejected proposals against `voz.md`
+  (kept "É por isso que comprimir a imagem pela terceira vez…", kept "A
+  ressalva importa:").
+
+- **"Você" and the imperative.** The July page stayed below the "você"
+  band (0.2 against p10 0.3) because it addresses the reader in the
+  imperative ("Escolha", "Teste", "rode"), which the measure does not count.
+  The run did not add "você" to reach the number. That is now a row of
+  `marcas-ptbr.md`, "What not to fix".
+
+The edits the evals made stayed in their worktrees and were not merged:
+the published pages change in steps 6 and 7.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 

@@ -1,0 +1,7 @@
+---
+type: llm
+focus: trace
+weight: 1
+---
+
+The result matches this description: The run executes check-portuguese.mjs on the draft before editing, writes a hedge list to a file outside the repository, reviews the prose (with a fresh subagent when available), and applies minimal edits: the filler opening "Vale ressaltar que" is removed, both colon chains (the "O ciclo tem três momentos" and "Para conferir no seu site" paragraphs) become separate sentences, and the empty contrast "não é um detalhe de performance, é uma decisão de indexação" is rewritten to state the claim. It adds no number, source or experience (a gap becomes a NOTA-REDACAO), keeps the hedges ("Neste teste", "São duas rotas num único site", "pode se comportar diferente", "no máximo uma vez por hora", "Na maioria dos sites de conteúdo"), the code block, inline code and both links, runs placeholders.mjs compare between the original and the revised file with nothing missing, reruns check-portuguese.mjs with 0 errors and register values reported before and after, and touches no file under content/.

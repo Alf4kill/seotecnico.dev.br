@@ -220,7 +220,9 @@ export function fromMdx(body) {
   })
   const text = lines.join('\n').replace(/<svg\b[\s\S]*?<\/svg>/gi, ' ').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
   const blocks = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
-  const paraBlocks = blocks.filter((p) => !/^([|#<>*→{-]|\d+\.\s|import |export )/.test(p))
+  // A list marker is "-" or "*" followed by a space; a paragraph that opens
+  // with **bold** is prose, as a <p><strong> is in fromHtml.
+  const paraBlocks = blocks.filter((p) => !/^([|#<>→{]|[-*+]\s|[-*_]{3,}\s*$|\d+\.\s|import |export )/.test(p))
   const clean = (p) => p
     .replace(/`[^`]*`/g, ' X ')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
@@ -233,7 +235,7 @@ export function fromMdx(body) {
     paragraphs: paraBlocks.map(clean).filter((p) => isProse(p)),
     structure: {
       listItems: lines.filter((l) => /^\s*([-*]|\d+\.)\s+\S/.test(l)).length,
-      allParagraphs: paraBlocks.length + blocks.filter((p) => /^\*\*/.test(p)).length,
+      allParagraphs: paraBlocks.length,
       boldLabels: blocks.filter((p) => /^\*\*[^*\n]{1,60}([:.]\*\*|\*\*\s*:)/.test(p)).length,
     },
   }

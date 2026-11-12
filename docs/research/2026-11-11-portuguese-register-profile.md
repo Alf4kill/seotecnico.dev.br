@@ -103,6 +103,17 @@ the page-level metadata of those six pages is before the cutoff.
 | list items per 1,000 words of prose | 2.0 | 0.0 | 0.0 | 0.0 | 2.0 | 23.9 | 6.8 | 2 of 30 above |
 | bold-label paragraphs per 100 paragraphs | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 22.2 | 0.0 | 3 of 30 above |
 
+**Correction, 2026-11-12 (proposal step 4).** On the site side, `fromMdx`
+left out every paragraph that opens with `**bold**`, which `fromHtml` keeps
+on the native side. The two sides did not measure the same prose. Found by
+an eval of the skill; fixed in `register-pt.mjs`. The native columns do not
+change. With the fix, the site column reads: colons 25.9 (27 of 30 above),
+dashes 0.0 (14 above), semicolons 5.1 (23 above), median words 18 (0
+outside), "você" 0.1 (24 below), list items 6.3 (1 above), bold labels 0.0
+(3 above). 17 pages changed; the largest moves are `auditoria-de-sitemap`
+(list items 44.8 → 18.1) and `melhorar-lcp-nextjs` (colons 33.9 → 28.4).
+The findings below stand; their counts are the uncorrected ones.
+
 Definitions (`register-pt.mjs`): prose is a paragraph of 25+ words that ends
 like a sentence; tables, lists, headings, quotes, code and SVG are out of it.
 A colon counts when a space follows it inside a prose paragraph. A dash aside

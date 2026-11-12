@@ -1,0 +1,58 @@
+---
+title: "revalidate no Next.js: qual HTML o Googlebot recebe"
+description: "Como o revalidate do App Router decide qual HTML o Googlebot recebe, com um teste de duas rotas e o comando para conferir no seu site."
+slug: "revalidate-nextjs"
+primaryQuery: "revalidate next.js seo"
+keywords: ['revalidate', 'isr', 'cache', 'stale-while-revalidate']
+lang: "pt-BR"
+category: indexacao
+datePublished: "AAAA-MM-DD"
+dateModified: "AAAA-MM-DD"
+---
+
+{/* Fixture do eval review-new-draft: rascunho semeado com padrões, nunca publicar. */}
+
+Vale ressaltar que, no App Router, o Googlebot recebe o HTML que está em
+cache no momento da requisição, e não o que a página teria se fosse
+renderizada agora. Com `export const revalidate = 3600`, uma rota estática é
+regenerada no máximo uma vez por hora. A primeira requisição depois da janela
+recebe a versão antiga e dispara a nova.
+
+## Como o ciclo funciona
+
+O ciclo tem três momentos: a rota é gerada no build; depois da janela, a
+próxima requisição recebe o HTML antigo e dispara a regeneração: só a
+requisição seguinte vê a versão nova: é o comportamento que a documentação
+chama de stale-while-revalidate.
+
+O `revalidate` não é um detalhe de performance, é uma decisão de indexação.
+Se uma página muda de preço ou de status, o Googlebot pode ler a versão
+anterior até a janela fechar e a regeneração terminar. Para uma página que
+muda pouco, isso não importa. Para uma página de estoque, importa.
+
+## O que o teste mostrou
+
+Neste teste, com duas rotas e 12 requisições de um script com o user agent
+do Googlebot, a resposta veio do cache em 11 das 12, e o cabeçalho
+`x-nextjs-cache` dizia `STALE` na primeira requisição depois da janela. São
+duas rotas num único site: outra configuração de CDN pode se comportar
+diferente.
+
+## Como verificar
+
+Para conferir no seu site, o caminho é curto: rode `curl -I` duas vezes na
+mesma URL: compare o `x-nextjs-cache` das duas respostas: `HIT`, `STALE` ou
+`MISS` dizem de onde o HTML veio.
+
+```bash
+curl -sI https://example.com/produto | grep -i x-nextjs-cache
+```
+
+Quando a página precisa estar sempre atual para o Googlebot, um `revalidate`
+menor não resolve sozinho. A rota dinâmica (`export const dynamic =
+'force-dynamic'`) renderiza em cada requisição, com o custo de servidor que
+isso tem. O [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs)
+mostra onde cada modo de renderização entra, e o
+[validador de meta tags](/ferramentas/validador-meta-tags) lê a resposta do
+servidor como o Googlebot lê, sem executar JavaScript. Na maioria dos sites
+de conteúdo, uma janela de uma hora basta.
