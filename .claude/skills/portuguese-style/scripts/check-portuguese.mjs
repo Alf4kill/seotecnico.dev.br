@@ -214,7 +214,7 @@ function checkFile(file) {
   for (const block of blocks) {
     const { line, text } = block
     const t = text.trim()
-    if (/^([|#<>*→{-]|\d+\.\s|import |export )/.test(t)) continue
+    if (/^([|#<>→{]|[-*+]\s|[-*_]{3,}\s*$|\d+\.\s|import |export )/.test(t)) continue
     const flat = unquoted(t.replace(/`[^`]*`/g, ' ').replace(/\]\([^)]*\)/g, ']').replace(/https?:\/\/\S+/g, ' ')).replace(/\s+/g, ' ')
     const colons = (flat.match(/:\s/g) || []).length
     if (colons >= 3) {
