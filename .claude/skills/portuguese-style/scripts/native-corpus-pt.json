@@ -1,0 +1,28 @@
+{
+  "purpose": "Native Brazilian-Portuguese technical prose, the yardstick for register-thresholds-pt.json. Written originally in Portuguese by Brazilian authors and dated before 2022-11-30 (no later modification date found), so it predates widespread AI-assisted writing. Three kinds: first-person write-ups by developers, tutorials, and SEO articles by a Brazilian SEO agency. Only aggregate counts are computed from these pages; no text is stored. Chosen and checked on 2026-11-11; the selection criteria and the pages rejected are in docs/research/2026-11-11-portuguese-register-profile.md.",
+  "cutoff": "2022-11-30",
+  "pages": [
+    { "kind": "first-person", "author": "Fabio Akita", "date": "2018-01-09", "dateSource": "URL and article:published_time", "url": "https://www.akitaonrails.com/2018/01/09/minhas-notas-deploy-producao-ruby-on-rails-google-cloud-kubernetes/" },
+    { "kind": "first-person", "author": "Fabio Akita", "date": "2017-06-16", "dateSource": "URL and article:published_time", "url": "https://www.akitaonrails.com/2017/06/16/ex-manga-downloadr-parte-7-lidando-com-grandes-colecoes/" },
+    { "kind": "first-person", "author": "Fabio Akita", "date": "2017-01-06", "dateSource": "URL and article:published_time", "url": "https://www.akitaonrails.com/2017/01/06/customizando-o-fedora-25-para-desenvolvedores/" },
+    { "kind": "first-person", "author": "Fabio Akita", "date": "2015-05-15", "dateSource": "URL and article:published_time", "url": "https://www.akitaonrails.com/2015/05/15/small-bites-brincando-de-crawlers-e-algumas-dicas-uteis/" },
+    { "kind": "first-person", "author": "Elton Minetto", "date": "2020-06-29", "dateSource": "URL and article:published_time", "url": "https://eltonminetto.dev/post/2020-06-29-clean-architecture-2anos-depois/" },
+    { "kind": "first-person", "author": "Diego Eis", "date": "2017-02-01", "dateSource": "article:published_time; modified 2022-08-04, the date most of the site's posts carry", "url": "https://diegoeis.com/introducao-bem-rapida-sobre-vim-html/" },
+    { "kind": "tutorial", "author": "Sérgio Lopes", "date": "2012-12-05", "dateSource": "page text (\"em 05 Dez 2012\")", "url": "https://sergiolopes.org/resolucoes-dpi-pixel-ratio-retina/" },
+    { "kind": "tutorial", "author": "Sérgio Lopes", "date": "2012-04-15", "dateSource": "page text (\"em 15 Abr 2012\")", "url": "https://sergiolopes.org/responsive-web-design/" },
+    { "kind": "tutorial", "author": "Sérgio Lopes", "date": "2013-01-27", "dateSource": "page text (\"em 27 Jan 2013\")", "url": "https://sergiolopes.org/media-queries-retina/" },
+    { "kind": "tutorial", "author": "Sérgio Lopes", "date": "2013-08-22", "dateSource": "page text (\"em 22 Ago 2013\")", "url": "https://sergiolopes.org/css-box-sizing-border-box/" },
+    { "kind": "tutorial", "author": "Bruno Cezar Rocha", "date": "2014-05-31", "dateSource": "sitemap lastmod", "url": "https://pythonclub.com.br/what-the-flask-pt-1-introducao-ao-desenvolvimento-web-com-python.html" },
+    { "kind": "tutorial", "author": "Michell Stuttgart", "date": "2016-05-06", "dateSource": "sitemap lastmod", "url": "https://pythonclub.com.br/python-com-unittest-travis-ci-coveralls-e-landscape-parte-1-de-4.html" },
+    { "kind": "tutorial", "author": "Eduardo Klosowski", "date": "2022-10-17", "dateSource": "sitemap lastmod (latest change, before the cutoff)", "url": "https://pythonclub.com.br/questoes-para-estudo-de-algoritmos.html" },
+    { "kind": "tutorial", "author": "Loiane Groner", "date": "2014-01-20", "dateSource": "URL and article:published_time", "url": "https://loiane.com/2014/01/entendendo-o-ext-ajax-request-success-x-failure/" },
+    { "kind": "tutorial", "author": "Loiane Groner", "date": "2014-01-13", "dateSource": "URL and article:published_time", "url": "https://loiane.com/2014/01/extjs-4-sencha-touch-2-reuso-de-codigo-em-projetos-desktop-e-mobile/" },
+    { "kind": "tutorial", "author": "Juliana Sampaio", "date": "2021-06-22", "dateSource": "article:published_time; modified 2021-08-16", "url": "https://zup.com.br/blog/spring-actuator/" },
+    { "kind": "seo", "author": "Fabio Ricotta", "date": "2012-11-05", "dateSource": "article:published_time", "url": "https://www.agenciamestre.com/seo/seo-para-front-end/" },
+    { "kind": "seo", "author": "Fabio Ricotta", "date": "2020-11-05", "dateSource": "article:published_time; modified 2021-10-01", "url": "https://www.agenciamestre.com/seo/otimizacao-de-url/" },
+    { "kind": "seo", "author": "Fabio Ricotta", "date": "2012-11-21", "dateSource": "article:published_time", "url": "https://www.agenciamestre.com/seo/pedido-de-reconsideracao-no-google/" },
+    { "kind": "seo", "author": "Fabio Ricotta", "date": "2009-03-26", "dateSource": "article:published_time; modified 2018-12-03", "url": "https://www.agenciamestre.com/seo/cloaking-aplicacao-scripts-blackhat-e-questoes-eticas/" },
+    { "kind": "seo", "author": "Fabio Ricotta", "date": "2010-10-29", "dateSource": "article:published_time; modified 2022-03-24", "url": "https://www.agenciamestre.com/seo/duvidas-de-seo-indexacao-subdominios-ferramentas-wordpress-e-outros/" },
+    { "kind": "seo", "author": "Diego Ivo", "date": "2016-06-20", "dateSource": "article:published_time", "url": "https://www.conversion.com.br/blog/a-formula-do-seo-como-ter-resultados-consistentes" }
+  ]
+}

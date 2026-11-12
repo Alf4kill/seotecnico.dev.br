@@ -18,10 +18,13 @@ from their own work, have written it this way?** And the older test, kept: could
 this paragraph appear on any generic blog about the topic? If yes, rewrite it
 with what only this author knows, or delete it.
 
-No numeric limit appears below yet. The limits come from a corpus of native
-technical Portuguese (proposal §5, step 2) and enter the script as warnings,
-never as errors. Until then, the rules are directions, with the counts that
-motivated them.
+No numeric limit appears below. The native band, measured on 22 pages of
+technical Portuguese written by Brazilian authors before 2022-11-30, is in
+`../scripts/register-thresholds-pt.json`
+(`docs/research/2026-11-11-portuguese-register-profile.md`). It enters the
+script as warnings, never as errors. For scale, native medians per 100
+sentences: 4.5 colons, 0 semicolons, 0 dash asides; 0.8 "você" per 100 words.
+The rules below are directions, with the counts that motivated them.
 
 ## 1. Person and voice
 
