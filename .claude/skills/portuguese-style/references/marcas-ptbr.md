@@ -10,7 +10,8 @@ row here is replaced by the applied version when that happens, as
 The `id` is the rule name in `check-portuguese.mjs`. Rows without an id need
 a reader: no pattern separates them from correct Portuguese. Counts are
 `check-portuguese.mjs --published --summary` over the 30 Portuguese pages
-(27 blog, the pillar, 2 project entries) at `631e4a3`.
+(27 blog, the pillar, 2 project entries), content at `631e4a3`, with the
+scripts as of proposal step 4.
 
 ## Found by the script
 
@@ -23,8 +24,8 @@ a reader: no pattern separates them from correct Portuguese. Counts are
 | `hedge-filler` | "o deslocamento de layout causado por imagem simplesmente não existe" (`next-image-seo` 62) | "o deslocamento de layout causado por imagem não existe" | (same) |
 | `generalization` | "a decisão que quase todo mundo erra é ativá-lo no GTM **e** deixar o Enhanced Measurement do GA4 escutando os mesmos eventos" (`gtm-nextjs` 34) | "a configuração que conta cada pageview duas vezes é ativá-lo no GTM **e** deixar o Enhanced Measurement do GA4 escutando os mesmos eventos" | 5 |
 | `empty-contrast` | "Não é omissão de interface, é impossibilidade conceitual — INP exige interação real de usuário real" (`guia/seo-tecnico-nextjs` 290) | "INP exige interação real de usuário real, e o lab não tem ninguém clicando." (Y, with its reason; X was never claimed) | 7 |
-| `colon-chain` | "fazem a mesma coisa por caminhos diferentes: o `redirects()` do config é estático…; o middleware roda em **cada** request… A regra prática: **se a regra é conhecida no build…** … e é a que quase ninguém faz: esse problema pede mesmo um redirect…" (`redirects-canonicals-nextjs` 31) | "fazem a mesma coisa por caminhos diferentes. O `redirects()` do config é estático… O middleware roda em **cada** request… Por isso, **se a regra é conhecida no build, ela não tem o que fazer no middleware.**" | 6 |
-| `date-form` | "O FAQ do Screaming Frog, consultado em 23/10/2026, descreve" (`screaming-frog-gratuito` 47) | "O FAQ do Screaming Frog, consultado em 23 de outubro de 2026, descreve" | 32 |
+| `colon-chain` | "fazem a mesma coisa por caminhos diferentes: o `redirects()` do config é estático…; o middleware roda em **cada** request… A regra prática: **se a regra é conhecida no build…** … e é a que quase ninguém faz: esse problema pede mesmo um redirect…" (`redirects-canonicals-nextjs` 31) | "fazem a mesma coisa por caminhos diferentes. O `redirects()` do config é estático… O middleware roda em **cada** request… Por isso, **se a regra é conhecida no build, ela não tem o que fazer no middleware.**" | 7 |
+| `date-form` | "O FAQ do Screaming Frog, consultado em 23/10/2026, descreve" (`screaming-frog-gratuito` 47) | "O FAQ do Screaming Frog, consultado em 23 de outubro de 2026, descreve" | 35 |
 | `date-form` | "aparece no baseline de 2026-07-20 deste site" (`next-image-seo` 62) | "aparece no baseline de 20 de julho de 2026 deste site" | (same) |
 | `unit-space` | "LCP de 4,9s — um render delay de 1.280ms" (`lcp-alto-next-js` 291), "cerca de 48KB" (356) | "LCP de 4,9 s, com render delay de 1.280 ms", "cerca de 48 KB" | 12 |
 | `impersonal` | "Uma quinta causa, bloqueio no seu servidor ou na CDN, é possível, mas não foi observada aqui." (`ia-nao-consegue-acessar-site`, FAQ) | keep: "é possível" here states a possibility, not an impersonal instruction (see "What not to fix") | 1 |
@@ -41,8 +42,8 @@ doing two jobs.
 | `register-colons` | 27 of 30 | "O mecanismo dos dois fixes é o mesmo: tirar bloqueios do caminho até o primeiro paint do texto." (`lcp-alto-next-js` 312) | "Os dois fixes tiram bloqueios do caminho até o primeiro paint do texto." |
 | `register-semicolons` | 23 of 30 | "A correção é o gatilho **History Change**; e a decisão que…" (`gtm-nextjs` 34) | two sentences: "A correção é o gatilho **History Change**. A configuração que…" |
 | `register-dashes` | 14 of 30 | "CSS externo é render-blocking — o navegador não pinta até baixar e interpretar a folha de estilo —, então embutir o CSS crítico…" (`lcp-alto-next-js` 312) | "CSS externo é render-blocking (o navegador não pinta até baixar e interpretar a folha de estilo), então embutir o CSS crítico…" |
-| `register-voce` | 26 of 30, below | impersonal frames and "o leitor" where the page gives an instruction | "você" where the reader acts ("Para saber se o seu já tem, o checador…" in `pre-registro-seo` is the model) |
-| `register-list-items`, `register-bold-labels` | 2 and 3 of 30 | `auditoria-de-sitemap`: "**Caso.** … **O que contradiz.** … **Correção.** …" repeated for each finding (127–167) | judgment: a repeated case structure in a case study is a format the reader uses to compare cases. Keep it unless the labels open ordinary paragraphs too |
+| `register-voce` | 24 of 30, below | impersonal frames and "o leitor" where the page gives an instruction | "você" where the reader acts ("Para saber se o seu já tem, o checador…" in `pre-registro-seo` is the model) |
+| `register-list-items`, `register-bold-labels` | 1 and 3 of 30 | `auditoria-de-sitemap`: "**Caso.** … **O que contradiz.** … **Correção.** …" repeated for each finding (127–167) | judgment: a repeated case structure in a case study is a format the reader uses to compare cases. Keep it unless the labels open ordinary paragraphs too |
 
 ## Found only by reading
 
@@ -90,3 +91,8 @@ finds one.
   is the guide's form (`estilo-ptbr.md` §4). The `date-form` rule flags
   running sentences only; a hit inside a source line that the script took
   for prose is a script bug.
+- **"Você" below the band on a page in the imperative.** The measure counts
+  "você", not "Escolha", "Teste", "rode". A page that already addresses the
+  reader with imperatives can stay below p10: adding "você" to reach the
+  number is writing for the metric (found by the `revise-july-page` eval on
+  `redirects-canonicals-nextjs`, 0.2 after the pass).

@@ -21,7 +21,7 @@ description: >-
 The 2026-11-11 analysis measured the Portuguese pages against 22 pages of
 native Brazilian technical writing published before ChatGPT. On 27 of the 30
 pages, colons run at 4 to 11 times the native median; 23
-have semicolons the native writers almost never use; 26 almost never address
+have semicolons the native writers almost never use; 24 almost never address
 the reader as "você" (`docs/research/2026-11-11-portuguese-register-profile.md`).
 None of it is an error of grammar. It is a register, repeated page after
 page, and readers notice it the way they notice a translation.
@@ -152,6 +152,12 @@ node .claude/skills/portuguese-style/scripts/check-portuguese.mjs <file.mdx>
 median. A page still far past the band needs another pass, not an
 explanation, unless what is left is the owner's voice (`voz.md`). Then
 `npm test`.
+
+A page under 300 words or 15 sentences of running prose gets no register
+values ("too little running prose to profile"). Report the pattern counts
+only. Never pad the text to cross the floor. On a new draft,
+`check-draft.mjs` fails on the `AAAA-MM-DD` date placeholders until
+publication: that error is not the review's to fix.
 
 ## Step 7 — Report
 

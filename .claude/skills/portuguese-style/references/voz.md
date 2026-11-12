@@ -10,14 +10,14 @@ pages are measured against it like any other page.
 
 ## What his pages measure
 
-`check-portuguese.mjs --summary` at `631e4a3`:
+`check-portuguese.mjs --summary`, content at `631e4a3`, scripts as of proposal step 4:
 
 | Feature | `pre-registro-seo` | `sec-fetch-mode` | native p50 / p90 |
 |---|---|---|---|
-| colons per 100 sentences | 18.4 | 29.7 | 4.5 / 16.7 |
-| semicolons per 100 sentences | 1.0 | 1.4 | 0 / 1.9 |
+| colons per 100 sentences | 18.4 | 26.8 | 4.5 / 16.7 |
+| semicolons per 100 sentences | 1.0 | 0.9 | 0 / 1.9 |
 | dash asides per 100 sentences | 0 | 0 | 0 / 4.8 |
-| median words per sentence | 17 | 19 | 17 (p10 13, p90 26) |
+| median words per sentence | 17 | 17 | 17 (p10 13, p90 26) |
 | "você" per 100 words | 0.1 | 0.1 | 0.8 (p10 0.3) |
 | bold-label paragraphs per 100 paragraphs | 0 | 24.4 | 0 / 22.2 |
 
