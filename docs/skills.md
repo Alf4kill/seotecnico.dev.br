@@ -42,6 +42,7 @@ installed into the same folder never lands in a commit by accident:
 .claude/skills/*
 !.claude/skills/content-page/
 !.claude/skills/english-version/
+!.claude/skills/portuguese-style/
 ```
 
 A new project skill adds its own `!.claude/skills/<name>/` line in the PR that
