@@ -98,6 +98,10 @@ must avoid — they become `check-draft.mjs --ban`.
   there are no `[CODE-n]` placeholders.
 
 Rules for every route:
+- Portuguese style: `.claude/skills/portuguese-style/references/estilo-ptbr.md`
+  (voice, punctuation, mechanics, patterns to remove) and `site.md` next to it
+  (page shape, titles, glossary). Read both before drafting here (route C);
+  route A gets their summary in the handoff kit.
 - First paragraph answers `primaryQuery` for a human; `tldr` says the same in
   ≤300 characters.
 - No H1 in the body; no `{{` outside code; plain Markdown, GFM tables, inline

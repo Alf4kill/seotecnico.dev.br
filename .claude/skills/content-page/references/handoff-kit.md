@@ -41,6 +41,26 @@ The repository session will verify and finish it. Rules:
 8. Decisions that need the owner: [NOTA-REDACAO n: question] in the text,
    and listed again in the delivery notes.
 9. Dates you cannot know: datePublished: "AAAA-MM-DD".
+10. Style (summary of the repository's estilo-ptbr.md and site.md):
+    - First person singular for what the author did or measured ("eu medi",
+      "neste site"); "você" for the reader; never "nós", "recomendamos",
+      "é possível", "deve-se".
+    - Claim first in each paragraph; one idea per sentence. A colon only
+      after a complete sentence, to introduce a list, table, code or one
+      explanation; never to chain clauses. Em dashes rarely; no semicolon
+      between two sentences. Bold only for UI names the reader must find.
+    - Remove: filler connectives ("além disso", "vale ressaltar", "em
+      suma"), inflated adjectives ("crucial", "robusto"), support verbs
+      ("realizar a implementação"), vague attributions ("estudos mostram"),
+      generalizations about people ("quase todo mundo erra"), an empty "não
+      é X, é Y", a closing that repeats the opening.
+    - Keep every hedge exactly ("neste teste", "na maioria"). Never add one
+      to sound natural, never drop one to sound confident.
+    - Mechanics: "25 de setembro de 2026" in a sentence, "(lido em
+      23/10/2026)" in parentheses and source lists; decimal comma; "80 ms",
+      "25%", ranges "80–148 ms"; straight double quotes.
+    - Title: "<query as typed>: <this page's angle>", ≤60 characters; a
+      question only when the query is one.
 ```
 
 ## What comes back (the return package)

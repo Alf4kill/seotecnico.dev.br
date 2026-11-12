@@ -225,6 +225,78 @@ recommendation per decision; the decisions are still the owner's. The
 structural script in §5 now prints file names with `os.path.basename`
 (output values unchanged).
 
+### 2026-11-11 — owner decisions (plan §10)
+
+Plan and this file merged on 2026-11-11 (PR #136, merge `ad00e39`). The
+owner answered decisions 1–4, each as recommended:
+
+| # | Decision | Answer |
+|---|---|---|
+| 1 | skill name | `portuguese-style` |
+| 2 | migrate `content-style-guide.md` from the Project | yes: the repository becomes the source, the Project copy points to it |
+| 3 | corpus criteria (plan §5) | approved; the sources are chosen within them and listed in a dated research note |
+| 4 | version the external report | no; the summary in §2 stands |
+
+Decision 5 (where the future page goes) is not needed before the page
+itself; it stays open.
+
+### 2026-11-11 — step 1: the style guide, written from practice **[repo]**
+
+**The file the plan expected was not where the plan said.** The plan
+described `content-style-guide.md` as living in the Claude Project. It is not
+in the repository or its history; an October 5 session had already noted a
+proposal citing it without it existing here. The owner found his copy outside
+the repository, with two other drafting notes (a keyword validation list and
+an image-method note), and gave the instruction for step 1: build the guide
+from what the repository already does (files, commands, skills), using the
+old notes only as reference, since **most of the newer articles were not
+written with them**. Step 1 changed from "migrate" to "write from measured
+practice".
+
+**What the old guide said, and what happened to it:**
+
+| Old guide | Decision | Why |
+|---|---|---|
+| developer-to-developer voice, litmus test ("could this appear on any generic SEO blog?"), honest uncertainty | kept (`estilo-ptbr.md` intro, §6) | matches the claims policy and the published pages |
+| first person singular, never "nós" | kept, measured | "eu" in 18 of 30 pages, "nós" forms 6 times |
+| keep English terms Brazilian developers use | kept, with a one-word-per-concept rule | pages mix "requisição" (142) and "request" (43), "renderiz-" (139) and "render" (70) |
+| title `{query}: {angle}`, no clickbait questions | kept, with an exception for queries that are questions | 22 of 27 blog titles follow it; 3 are question queries |
+| first paragraph answers the query; "how to verify" section | kept (`site.md` §2) | CLAUDE.md §10; "Como verificar" and "Como conferir" 3 pages each |
+| experience as evidence, 0–2 blocks, no "about me", no credentials | kept | — |
+| "H1 contains the primary query" in the body | dropped | the title renders the H1; an H1 in the body is a defect (`0b95d3c`) |
+| FAQ of 3–5 questions for FAQPage | dropped | FAQ rich results ended on 2026-05-07; `faq` only with real questions |
+| anonymized agency stories as experience | dropped | client work is out of scope (CLAUDE.md §13) |
+| reader is a Next.js developer | widened | niche widened on 2026-10-04 |
+| English only for the pillar and top spokes | superseded | every page ships in both languages since 2026-10-23 |
+| "TL;DR" code block | superseded | `tldr` frontmatter field |
+
+**What the old guide did not say.** It has no rule on punctuation: no colon,
+em dash or semicolon rule. So it does not explain the em dash falling to 0%
+from 2026-09-25 (Finding 3), and that open question (§3.5) stays open.
+
+**The two other notes were not migrated.** The keyword list is not style; it
+is query planning, it cites data from a portfolio that is not this project's,
+and its "every keyword is GO" rule conflicts with gates 0.1 and 0.3 of
+content-page. The image note recommends Mermaid, Excalidraw and `<img>`; the
+site uses hand-written inline SVG in token colours and `<Image>`
+(CLAUDE.md §9), and no published page uses Mermaid or Excalidraw. Its one
+rule still in force, the text mirror next to every diagram, is already in
+CLAUDE.md §9.
+
+**New practice counts** (30 pages at `5a0209b`, prose outside tables and
+code; content unchanged at `ad00e39`): dates "23/10/2026" 119, "25 de
+setembro" 78, ISO 16; thousands with a point 16, never a comma or a space;
+"neste site" 39 in 23 pages; "Ilustrativo" 11 in 8 pages; lines opening with
+a bold label 89; sentences with a semicolon 2–20% per page.
+
+**Delivered** on branch `skill/portuguese-style-guide`:
+`.claude/skills/portuguese-style/references/estilo-ptbr.md` (portable),
+`references/site.md` (this site), content-page phase 3 and handoff kit rule 10
+pointing to them, the `.gitignore` allowlist line (also in `docs/skills.md`
+§2). `check-draft.mjs --published`: 54 files, 0 errors. No `SKILL.md` yet
+(step 4). After merge, the owner replaces his old guide in the writing
+Project with a pointer to `estilo-ptbr.md` and `site.md`.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 
