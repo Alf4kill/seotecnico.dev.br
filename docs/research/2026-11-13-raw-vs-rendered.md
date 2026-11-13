@@ -136,7 +136,7 @@ through a tag manager, for example) would not show.
 sitemap (S2–S4) or its HTML site map (S1, whose XML sitemap is empty), two
 pages per template where there were two: 8, 8, 8 and 7 pages. The two
 client-rendered satellites: 4 routes of S1's sibling site, the home of S3's
-app subdomain. Control: 6 pages of this site. 49 pages in all.
+app subdomain. Control: 6 pages of this site. 42 pages in all, and 49 requests on the raw side (the 42 pages plus one robots.txt per target).
 
 **A correction during the run.** The first run (same day, started 22:26 UTC)
 counted images and links inside `<noscript>` on the raw side: with
