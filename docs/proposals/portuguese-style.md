@@ -7,8 +7,9 @@
 > (`docs/research/2026-11-11-portuguese-register-profile.md`). Step 3 done:
 > `check-portuguese.mjs` runs on the 30 published pages with 0 ERRORs, and
 > its register values equal the step 2 baseline. Step 4 done (2026-11-12):
-> `SKILL.md`, `marcas-ptbr.md`, `voz.md`, and the five evals pass. Steps 5–7
-> not started; step 6 waits for the core update.
+> `SKILL.md`, `marcas-ptbr.md`, `voz.md`, and the five evals pass. Step 5
+> done: `content-page` phase 4b and the `docs/skills.md` entry. Steps 6–7 not
+> started; step 6 waits for the core update.
 > Revised the same day after a review against the repository (history file,
 > entry "review of the plan").
 > **Origin:** owner request, 2026-11-11: improve how the articles are written

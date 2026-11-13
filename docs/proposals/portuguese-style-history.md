@@ -483,7 +483,38 @@ committed step 4, except the fix below, which changes measurement only.
   `marcas-ptbr.md`, "What not to fix".
 
 The edits the evals made stayed in their worktrees and were not merged:
-the published pages change in steps 6 and 7.
+the published pages change in steps 6 and 7. The worktrees were deleted
+afterwards, on the owner's go-ahead.
+
+Merged as PR #140 (merge `715d604`).
+
+### 2026-11-12 — step 5: the review joins the pipeline **[repo]**
+
+`content-page` has a phase 4b, "Portuguese style review", between
+verification (4) and the English version (5). It is called 4b, not 5, so
+the phase numbers that other files cite stay true: `english-version` calls
+itself content-page's phase 5, and `portuguese-style` reports for phase 8.
+
+What changed in `content-page`:
+
+- the phase table and the description name the new phase;
+- phase 4b runs the skill, with its gate: `check-portuguese.mjs` with 0
+  errors, `compare` with nothing missing, every hedge kept;
+- phase 7 runs `check-portuguese.mjs` next to the other checks;
+- the publish commit body counts the style edits by pattern, and the PR
+  description carries the register values and the declined suggestions;
+- "Updating an existing pair" now says a language-only revision of the
+  Portuguese does not bump `dateModified`, and sends a revision of published
+  Portuguese pages to `portuguese-style`.
+
+`docs/skills.md` has a worked example for the skill (§7: why, how it was
+built, what it contains, the first runs and the evals) and its row in the
+catalog, now §8.
+
+The order of the two phases follows from how each is written. The review
+needs final facts, so it comes after verification. The English is drafted
+from a fact sheet, so the Portuguese style cannot reach it, and the review
+can come before the English without changing it.
 
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->

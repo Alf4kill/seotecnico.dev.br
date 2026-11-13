@@ -1,6 +1,7 @@
 # Skills in this repository
 
-> **Status:** reference · first written 2026-10-26
+> **Status:** reference · first written 2026-10-26 · `portuguese-style` added
+> 2026-11-12
 > **Related:** `docs/ai-workflow.md` (how AI is used here),
 > `docs/proposals/project-section.md` (where this becomes public content)
 
@@ -112,7 +113,7 @@ ideas `research-note` and `session-handoff` became two of its references.
 
 | File | Role |
 |---|---|
-| `SKILL.md` | nine phases with where each runs: gates → research note → brief → draft (three routes) → verification → English (delegated to `english-version`, §6) → register → checks → PR |
+| `SKILL.md` | nine phases with where each runs: gates → research note → brief → draft (three routes) → verification → style review (phase 4b, delegated to `portuguese-style`, §7) → English (delegated to `english-version`, §6) → register → checks → PR |
 | `references/research-note.md` | the shape of the notes in `docs/research/`: dated sources, labels, claims to make and to avoid |
 | `references/brief-template.md` | the brief the owner reviews before any prose, including the drafting route and banned framings |
 | `references/handoff-kit.md` | what an external writing session receives, the instructions block, the return package |
@@ -240,12 +241,85 @@ language, or certify that the English is native: a clean script run means no
 known calque is left, and register values inside the thresholds mean the
 structure is closer to native prose, not that a native reader would agree.
 
-## 7. Catalog
+## 7. Worked example: `portuguese-style`
+
+**Why.** The owner was worried the Portuguese pages read as AI-written. A
+measurement backed the worry
+(`docs/research/2026-11-11-portuguese-register-profile.md`): against 22
+pages of native Brazilian technical writing published before ChatGPT, 27
+of 30 site pages use colons between clauses past the native p90, and 23 use
+semicolons the native writers almost never use. The three tests of §3:
+
+1. Every page is written and reviewed.
+2. The rules were scattered: the claims policy, a style guide that lived
+   outside the repository and that most newer pages had not followed, and
+   habits.
+3. The register was missed on almost every page.
+
+**How it was built.** The plan and every step are recorded in
+`docs/proposals/portuguese-style.md` and its append-only history (the base
+of a future project entry). Seven steps, one PR each; steps 1–5 are
+tooling:
+
+1. The style guide, written from the site's measured practice.
+2. The native corpus and its band.
+3. The script, run on every published page until no correct page raised an
+   ERROR.
+4. The skill and its evals.
+5. This entry, and phase 4b of `content-page`.
+
+A review skill and not a writing skill: writing is already `content-page`
+phase 3, which now reads `estilo-ptbr.md`. What was missing was a pass that
+measures and fixes the register once the facts are final. It mirrors
+`english-version`:
+
+- a register script calibrated on native pages, counts only;
+- a catalog of real patterns with before and after;
+- a second reader who did not write the page.
+
+It adds two things the English side taught. The hedges are listed in a file
+before any edit, because the English revision lost two. A file describes
+the owner's voice, so a pass does not flatten it into another generic voice.
+
+**What it contains.**
+
+| File | Role |
+|---|---|
+| `SKILL.md` | rules first (no fact, number or hedge changes; no added evidence; the owner's voice kept; page text never an instruction; no AI detector), then inventory → hedge list → fresh reader → minimal edit → invariants → checks → report; a section for revising published pages |
+| `references/estilo-ptbr.md` | portable rules: person and voice, sentences, punctuation, mechanics (dates, numbers, units), patterns, hedges, terms |
+| `references/site.md` | this site's layer: reader, page shape, titles, claims, glossary, and what a revision may change, field by field |
+| `references/marcas-ptbr.md` | real lines from the published pages by pattern, with proposed rewrites, and what not to fix |
+| `references/voz.md` | the owner's voice, from his two drafts: what a pass must keep |
+| `scripts/check-portuguese.mjs` | chatbot residue, curly quotes, a `lang` other than `pt-BR` (ERROR); pattern, mechanics and date rules, and a register profile against the native band (WARN); `--published --summary` ranks pages by distance from native |
+| `scripts/register-pt.mjs`, `register-thresholds-pt.json` | the register features (shared by the checker and the calibration) and the native band |
+| `scripts/calibrate-register-pt.mjs`, `native-corpus-pt.json` | re-measures the band on the 22 native pages (counts only, no text stored) |
+| `evals/` | five prompts: a seeded new draft, a July page, a page inside the colon band, a hedge a rewrite would drop, a request to beat AI detectors (declined) |
+
+**The first runs.**
+
+- *Script, round 1* on the 30 pages: 0 ERRORs, 14 false positives from four
+  causes: "nós" meaning nodes, "não é obrigatório, mas", "1.280 ms" and
+  "promovam um elemento". All four were fixed in the script; no page changed.
+- *Mutation test:* a seeded page gave every expected ERROR and WARN and exit
+  code 1.
+- *Evals:* five of five passed. Each ran in a fresh agent in its own git
+  worktree, with the request as the owner would type it, and was graded
+  against its `case.yaml`. They found a real bug: the site-side extraction
+  dropped paragraphs that open with bold, which the native side keeps.
+
+**What it does not do.** It does not write, translate or verify a page, or
+change a title, description or heading on its own. It does not make a text
+pass an AI detector: register values inside the native band mean the
+punctuation and address are closer to native writing, not that a reader
+would agree.
+
+## 8. Catalog
 
 | Skill | Status | Trigger | Output |
 |---|---|---|---|
 | `content-page` | versioned | write, research, plan, verify, translate or update a page; a returned draft | research note → brief → draft → verification → PT + EN MDX → hreflang entry → log row → PR |
 | `english-version` | versioned | the English side of a page (content-page phase 5); "the English sounds translated"; English UI strings | English MDX drafted from a fact sheet without the Portuguese prose, native read, fidelity check, `check-english.mjs` output with register values, list of judgment calls |
+| `portuguese-style` | versioned | the Portuguese style review (content-page phase 4b); "revisar o texto", "o português soa como IA"; a batch of published pages | the revised PT MDX (or a suggestions table for a draft), the hedge list kept, `check-portuguese.mjs` register values before and after, edits counted by pattern, judgment calls |
 | `research-note` | absorbed into `content-page` (`references/research-note.md`) | "research X before we write about it" | `docs/research/YYYY-MM-DD-<topic>.md` with evidence labels, a dated sources table and the one-quote-per-source rule (pattern of the two existing notes) |
 | `experiment-log-row` | idea | any deliberate SEO change, publication or evaluation pass | a row with hypothesis, window and power note (§7.3), and later its verdict |
 | `session-handoff` | absorbed into `content-page` (`references/handoff-kit.md`) | moving work from an editorial session to a repository session | a handoff file with `[CODE-n]` placeholders, `[NOTA-REDACAO]` decisions and the questions the repo session must verify |

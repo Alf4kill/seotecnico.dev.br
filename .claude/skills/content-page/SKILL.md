@@ -7,6 +7,7 @@ description: >-
   Covers the whole pipeline the site uses: research note with dated sources,
   brief, draft (written here, by the owner, or in an external writing session
   through a handoff kit), the verification pass against sources and code, the
+  Portuguese style review (through the portuguese-style skill), the
   English version (through the english-version skill), hreflang registration, experiment-log row, scripted checks
   and the PR. Use it whenever the owner asks to write, publish, plan,
   research, translate, review or update an article, post or page, hands back a
@@ -15,7 +16,7 @@ description: >-
   ships in Portuguese and English in the same PR (CLAUDE.md §10).
 ---
 
-# Content page (research → brief → draft → verification → PT + EN → PR)
+# Content page (research → brief → draft → verification → style review → PT + EN → PR)
 
 This skill turns a topic into a published Portuguese/English pair in one PR,
 in the order this site has used since July 2026. It exists because the rules
@@ -37,6 +38,7 @@ to fix.
 | 2 Brief | here or the editorial session | `brief-<slug>.md` | no — owner rule: briefs stay untracked and are deleted after use |
 | 3 Draft | here, the owner, or an external writing session | PT MDX (+ delivery notes) | no, until phase 4 ends |
 | 4 Verification | **here, always** | corrected PT MDX | yes |
+| 4b Style review | here, with the `portuguese-style` skill | PT MDX revised for register, suggestions table | yes |
 | 5 English | here, with the `english-version` skill | EN MDX | yes |
 | 6 Register | here | `hreflang.ts`, log row, sitemap images | yes |
 | 7 Checks | here | script and test output | in the PR |
@@ -129,11 +131,43 @@ Follow `references/draft-verification.md`. In order:
    tested here (4de2df3 found a false claim this way, and a repo bug with it).
 5. Resolve each `NOTA-REDACAO`: decide it if it is editorial and reversible;
    otherwise keep it for the PR description as an owner decision.
-6. Rerun `check-draft.mjs` without `--arrival`: 0 errors before phase 5.
+6. Rerun `check-draft.mjs` without `--arrival`: 0 errors before phase 4b.
 
 The commit body lists what the pass corrected ("External draft, corrected
 against the sources: …"). That list is the evidence the process works; do not
 summarise it away.
+
+## Phase 4b — Portuguese style review
+
+Run the **`portuguese-style`** skill (`.claude/skills/portuguese-style/`) on
+the verified Portuguese file. It comes after phase 4 because the review
+needs final facts: reviewing a draft whose numbers are still moving reviews
+it twice. It comes before phase 5 because the English is drafted from a fact
+sheet, so nothing of the Portuguese style reaches it, whatever the order.
+
+The skill lists every hedge before editing, has the page read by a reader
+who did not draft or verify it, edits the smallest span that fixes each
+pattern, and keeps the owner's voice (`references/voz.md`). It changes no
+fact, number, hedge, code or link (its rule 1). On a new page, `title` and
+`description` are still free; on a published page they are not (its
+`references/site.md` §7).
+
+Gate:
+
+- `check-portuguese.mjs` with 0 errors;
+- `placeholders.mjs compare` between the verified file and the reviewed one,
+  with nothing missing;
+- every hedge of the list still in the page.
+
+The register values before and after, and the suggestions the owner
+declined, go into the PR description.
+
+Why: the 2026-11-11 analysis measured the Portuguese pages against native
+Brazilian technical writing published before ChatGPT. 27 of 30 had colons
+between clauses past the native p90, and 23 had semicolons the native
+writers almost never use (`docs/research/2026-11-11-portuguese-register-profile.md`).
+Phase 3's style guide sets the target before drafting; this phase measures
+it after the facts are final.
 
 ## Phase 5 — English version
 
@@ -179,6 +213,7 @@ there is no second file to edit.
 node .claude/skills/content-page/scripts/check-draft.mjs content/blog/<pt>.mdx
 node .claude/skills/content-page/scripts/check-draft.mjs content/en/blog/<en>.mdx
 node .claude/skills/content-page/scripts/check-pair.mjs <pt-slug>          # project entry: --type project
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs content/blog/<pt>.mdx
 node .claude/skills/english-version/scripts/check-english.mjs content/en/blog/<en>.mdx
 npm test
 NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run build
@@ -199,13 +234,15 @@ One branch; English commits (§10):
 
 - `docs: research note on <topic>` (phase 1, if it is not merged already)
 - `content: publish <topic>, PT and EN` — both MDX files, `hreflang.ts`,
-  sitemap images; body = what the verification pass corrected
+  sitemap images; body = what the verification pass corrected, then the
+  style review's edits counted by pattern
 - `docs(log): register <topic>`
 - test updates in their own commit, with the reason
 
 The PR description carries: the brief (or its summary — the file is not
-committed), each level-3 claim with its source, the scripts' output, the English
-judgment calls from `english-version`, open
+committed), each level-3 claim with its source, the scripts' output, the Portuguese
+register values before and after the style review and the suggestions
+declined, the English judgment calls from `english-version`, open
 `NOTA-REDACAO` decisions, and the after-merge steps: request indexing for
 **both** URLs, distribute once (LinkedIn PT + EN, one developer community),
 write that date into the log row.
@@ -216,6 +253,9 @@ Never merge. The owner reviews and merges every PR (§14).
 
 Change both sides in the same PR. Bump `dateModified` on a side only when its
 text changed in substance (a link target is not, commit `8aba089`; nor is a
-language-only revision of the English, 2026-10-27). Run the
+language-only revision of the English, 2026-10-27, or of the Portuguese).
+A language-only revision of published Portuguese pages is not this section:
+it is `portuguese-style`, "Revising published pages", and leaves the English
+pair alone. Run the
 scripts; a WARN that PT `dateModified` is newer than EN means the change was
 not carried over.
