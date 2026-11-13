@@ -114,7 +114,13 @@ shape.
 
 Then judge each proposal against `voz.md` and `marcas-ptbr.md`, "What not
 to fix". Reject the ones that lose a trait of the voice, a hedge or a
-literal meaning.
+literal meaning. A proposal that cuts or weakens a claim (a generalization
+about people or about other content, an unmeasured frequency like "a
+maioria dos guias") changes what the page says, even when the claim has no
+evidence: rule 1 holds it back. Report it as NOTA-REDACAO with the proposed
+cut, for the owner to accept. Readers also find factual problems (a wrong
+default, a count that does not match its list); those go to the report as
+NOTA-REDACAO too, never into an edit.
 
 ## Step 4 — Edit
 

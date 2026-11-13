@@ -516,6 +516,44 @@ needs final facts, so it comes after verification. The English is drafted
 from a fact sheet, so the Portuguese style cannot reach it, and the review
 can come before the English without changing it.
 
+Merged as PR #141 (merge `99217a2`).
+
+### 2026-11-13 — first practical use: the three oldest articles **[repo]**
+
+Before the project entry, the owner asked to see both skills in practical
+use. This entry covers the review skill on the three oldest Portuguese
+articles: `melhorar-lcp-nextjs`, `lcp-alto-next-js` and `json-ld-nextjs`,
+published 2026-07-17 to 07-19. It ran in analysis mode. The edited copies
+stayed in the session's scratchpad, and no published page changed, because
+the core update wait of step 6 still holds. Details:
+`docs/research/2026-11-13-early-pages-style-review.md`.
+
+| Page | Proposals | Accepted | Colons | Dashes | Semicolons | Hedge markers |
+|---|---|---|---|---|---|---|
+| `melhorar-lcp-nextjs` | 72 | 67 | 28.4 → 15.8 | 43.2 → 3.2 | 9.5 → 2.1 | 62 → 62 |
+| `lcp-alto-next-js` | 56 | 56 | 26.0 → 12.5 | 26.0 → 0 | 6.7 → 0 | 43 → 43 |
+| `json-ld-nextjs` | 77 | 70 | 31.2 → 18.3 | 21.4 → 0 | 7.8 → 1.1 | 65 → 65 |
+
+What it showed:
+
+- **The July register was the strongest.** The July cluster's median
+  sentence is 21.5 words, with 30 dash asides per 100 sentences. Pages from
+  late September on have no dashes and 16–17 words, the native median.
+  Colons fell less: still about five times native.
+- **The reader finds what the script cannot.** Setup phrases (7, 10 and 19
+  per page), calques and a closing that repeats the opening. That last
+  pattern had no published instance until this run.
+- **Two parts of the skill disagreed.** The catalog told the reviewer to
+  cut an unmeasured generalization. Rule 1 forbids changing a claim. The
+  readers followed the catalog, and I held back their 12 cuts. Fixed in the
+  same PR: such a cut is reported as NOTA-REDACAO and waits for the owner.
+- **A style pass finds content errors.** Besides the held-back cuts, the
+  readers reported 24 content problems on the three pages, none edited. Two
+  were verified here: the hub says `next/image` serves AVIF automatically,
+  but the Next.js default is WebP only; and the LCP spoke says "cinco
+  recursos" and lists four.
+  They are owner decisions, listed in the research note.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 
