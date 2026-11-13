@@ -50,16 +50,17 @@ doing two jobs.
 | Pattern | Before | Proposed |
 |---|---|---|
 | Empty contrast with a dash instead of a comma (the script needs ", é") | "Não é omissão da interface — é impossibilidade conceitual" (`inp-nextjs` 47) | as the `empty-contrast` row above |
-| Generalization the script's verb list misses | "e é a que quase ninguém faz" (`redirects-canonicals-nextjs` 36, `guia` 142); "que quase ninguém explicita" (`melhorar-lcp-nextjs` 105); "é por isso que quase ninguém corrige" (`next-image-seo` 153) | cut it, or state what the evidence shows |
+| Generalization the script's verb list misses | "e é a que quase ninguém faz" (`redirects-canonicals-nextjs` 36, `guia` 142); "que quase ninguém explicita" (`melhorar-lcp-nextjs` 105); "é por isso que quase ninguém corrige" (`next-image-seo` 153) | on a draft: state what the evidence shows. On a published page, cutting it removes a claim, which is content (rule 1): report it as NOTA-REDACAO with the proposed cut, and apply it only when the owner accepts. The 2026-11-13 review of three July pages held back 12 such cuts (`docs/research/2026-11-13-early-pages-style-review.md`) |
+| A closing that repeats the opening | "O que dados estruturados de fato entregam é mais modesto e mais real: eles tornam a página elegível aos rich results que ainda existem, descrevem a estrutura do conteúdo…" (`json-ld-nextjs` 623, restating the opening at 58–76); "É o caso que confirma a regra: o que importa…" (`json-ld-nextjs` 152, closing a paragraph that opened with the rule) | keep the one thing the closing adds ("Travados por teste, os dados estruturados permanecem corretos…"), or cut the closing |
 | A colon that opens a sentence whose claim follows | "Agora o ponto que muda a forma de trabalhar: **não existe métrica de INP no Lighthouse.**" (`inp-nextjs` 47) | "**Não existe métrica de INP no Lighthouse**, e isso muda a forma de trabalhar." |
 | A setup noun before the claim ("O detalhe…", "O mecanismo…", "A regra prática…") | "A regra prática: **se a regra é conhecida no build…**" (`redirects-canonicals-nextjs` 34) | the claim itself, with "por isso" if it follows from the sentence before |
 | A label before a sentence that already says it | "Em texto, o que a figura mostra:" | keep: it marks the text mirror of a diagram (`CLAUDE.md` §9) |
 
-No published instance was confirmed yet for three patterns of
-`estilo-ptbr.md` §5.2: a triad by habit, a closing that repeats the opening,
-and a list where the steps cause each other. They stay in the guide because
-they are frequent in AI-assisted Portuguese. Add a row here when a revision
-finds one.
+No published instance was confirmed yet for two patterns of
+`estilo-ptbr.md` §5.2: a triad by habit and a list where the steps cause
+each other. They stay in the guide because they are frequent in
+AI-assisted Portuguese. Add a row here when a revision finds one. (The
+closing that repeats the opening was confirmed on 2026-11-13, row above.)
 
 ## What not to fix
 
