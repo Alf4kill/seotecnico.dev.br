@@ -116,7 +116,7 @@ change in substance and does.
 
 ## 8. Where the review runs
 
-After content-page phase 4 (verification) and before phase 5 (English): the
+Content-page phase 4b: after phase 4 (verification) and before phase 5 (English); the
 prose is reviewed once the facts are final, and the English is written from
 the fact sheet, so the order does not leak Portuguese style into it. On a
 published page it runs on its own, one PR per batch, with a log row when the

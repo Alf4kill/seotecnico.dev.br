@@ -3,7 +3,7 @@ name: portuguese-style
 description: >-
   Review the Portuguese prose of a page on seotecnico.dev.br so it reads as
   written by a person, a Brazilian developer, without changing what it says.
-  Use it for the style review step of the content-page skill (after the
+  Use it for phase 4b of the content-page skill (after the
   verification pass, before the English version), and whenever the owner asks
   to review, revise or standardize the Portuguese of a draft or of published
   pages ("revisar o texto", "revisão de texto", "o português soa como IA",
@@ -118,7 +118,7 @@ literal meaning.
 
 ## Step 4 — Edit
 
-- **A single draft** (content-page, before phase 5): return a table of
+- **A single draft** (content-page phase 4b): return a table of
   suggestions (line, pattern, before, after) and apply the ones the owner
   accepts. When the owner asked for the review to be applied, apply and
   report the table.
