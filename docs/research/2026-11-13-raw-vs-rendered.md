@@ -36,6 +36,7 @@ All accessed **2026-11-13**.
 | G3 | [Generate structured data with JavaScript](https://developers.google.com/search/docs/appearance/structured-data/generate-structured-data-with-javascript) | 2025-12-10 |
 | G4 | [Fix lazy-loaded content](https://developers.google.com/search/docs/crawling-indexing/javascript/lazy-loading) | 2025-12-10 |
 | G5 | [URL Inspection tool](https://support.google.com/webmasters/answer/9012289) (Search Console Help) | not printed |
+| G6 | [Fix Search-related JavaScript problems](https://developers.google.com/search/docs/crawling-indexing/javascript/fix-search-javascript) | 2025-12-18 |
 | L1 | `content/blog/quais-ias-executam-javascript.mdx` and `chatgpt-le-javascript.mdx`: this site's controlled rounds with five AI assistants | 2026-09/10 |
 | L2 | `docs/research/2026-11-08-soft-404.md` §3: Next.js `notFound()` answers differently to Google-InspectionTool | 2026-11-09 |
 
@@ -80,13 +81,18 @@ HTML the server sent; Grok and DeepSeek ran the page's JavaScript (58
 rounds, `quais-ias-executam-javascript`). Those are fetches made when a
 person asks the assistant to read a URL, not a crawl.
 
-### 1.5 What Google's own tool shows **[documented, ambiguous]** — G5, L2
+### 1.5 What Google's own tool shows **[documented]** — G5, G6, L2
 
 G5 lists, under "View crawled page" and "View tested page", "the raw HTML
 returned", the headers, console output and resources, and the screenshot
 only in the live test. Elsewhere on the same page it tells the reader to
 check that a video is "in the rendered HTML" with the same tool. The page
-does not say plainly which of the two the HTML tab shows.
+does not say plainly which of the two the HTML tab shows. G6 settles it:
+the Rich Results Test and URL Inspection show the "rendered DOM", and G6
+tells the reader to use either to check that the rendered HTML has the
+content expected. So `javascript-seo-google-vs-ia` ("Como conferir", step 5)
+is right that the live test shows the HTML Google rendered; no change
+(owner asked for the check, 2026-11-13).
 
 L2 found a second reason not to treat the tool as the crawler: on Next.js
 16, `notFound()` called only in `generateMetadata` answers 200 to a browser,
@@ -214,6 +220,7 @@ check decides the query (§(d)).
 | a11 | A count of API calls after load is not evidence that content comes from an API; compare the DOM | 3 | §3.2 |
 | a12 | With JavaScript off, `<noscript>` content parses as elements; a raw/rendered comparison that does not account for it overcounts the raw side | 3 | §3, correction |
 | a13 | This site's SEO suite checks the head in the rendered DOM; the raw response is read only for the alternate page's reciprocal hreflang | 2 | `tests/seo/seo.spec.ts` lines 113–198, 229 |
+| a14 | URL Inspection and the Rich Results Test show the rendered DOM; use them to check the rendered HTML Google got | 1 | G6 |
 
 ## (b) Claims to avoid
 
@@ -225,22 +232,18 @@ check decides the query (§(d)).
 | "14 of 14 pages" | The private studies' count, not reproducible from the repository |
 | "Dynamic rendering is the fix" | G2: a workaround, not recommended |
 | "The carousel's repeated text hurts S2" | No source; the documentation says nothing about repeated card text. State the change, not an effect |
-| "URL Inspection shows the rendered HTML" (or the raw) | G5 is ambiguous (§1.5) |
 | Platform names of the satellites | Anonymity (proposal §3) |
 
 ## (c) Open questions
 
 - c1 **Demand.** No verified Brazilian demand; the owner's manual check
   decides (§(d)).
-- c2 **The HTML tab of URL Inspection.** G5 does not say whether it shows
-  the response or the DOM. `javascript-seo-google-vs-ia` ("Como conferir",
-  step 5) says the live test shows "o HTML renderizado pelo Google". Either
-  verify it in Search Console on this site (the owner can: a page whose raw
-  and rendered HTML differ is needed) or soften that sentence.
+- c2 ~~The HTML tab of URL Inspection.~~ Settled by G6 (§1.5): it shows the
+  rendered DOM.
 - c3 **A test for this site.** a13 shows the suite would not catch a head
   field that moved into client code. A Playwright test that compares the
-  raw response with the DOM on every sitemap route would. Owner decision:
-  in the article's PR (like the soft-404 test of #133) or separately.
+  raw response with the DOM on every sitemap route would. Owner,
+  2026-11-13: no new test now; the article describes the gap.
 
 ## (d) Proposed angle and primaryQuery
 
