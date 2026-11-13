@@ -1,0 +1,1966 @@
+{
+  "date": "2026-11-13",
+  "collectedAt": "2026-11-13T22:35:29.969Z",
+  "userAgent": "seotecnico-render-compare/1.0 (+https://seotecnico.dev.br)",
+  "renderWaitMs": 5000,
+  "pauseMs": 1500,
+  "viewport": "Pixel 7 (Playwright)",
+  "measurementHostsBlocked": [
+    "googletagmanager.com",
+    "google-analytics.com",
+    "analytics.google.com",
+    "doubleclick.net",
+    "facebook.net",
+    "facebook.com",
+    "clarity.ms",
+    "hotjar.com",
+    "hotjar.io",
+    "tiktok.com",
+    "linkedin.com",
+    "licdn.com"
+  ],
+  "requestsRawSide": 49,
+  "method": "docs/research/2026-11-13-raw-vs-rendered.md; script scripts/raw-vs-rendered.mjs",
+  "rounding": "third-party targets: words to the nearest 10, raw size in KB, no paths",
+  "targets": [
+    {
+      "code": "SITE",
+      "label": "this site (control)",
+      "origin": "https://seotecnico.dev.br",
+      "robotsStatus": 200,
+      "pagesRead": 6,
+      "headEqual": 6,
+      "pages": [
+        {
+          "kind": "home",
+          "path": "/",
+          "rawKB": 191,
+          "headEqual": true,
+          "headDiff": [],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            3,
+            3
+          ],
+          "words": [
+            407,
+            407
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            18,
+            18
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 25,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "article",
+          "path": "/blog/soft-404",
+          "rawKB": 258,
+          "headEqual": true,
+          "headDiff": [],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            11,
+            11
+          ],
+          "words": [
+            2784,
+            2785
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            18,
+            18
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 17,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "article (English)",
+          "path": "/en/blog/soft-404",
+          "rawKB": 255,
+          "headEqual": true,
+          "headDiff": [],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            11,
+            11
+          ],
+          "words": [
+            2873,
+            2874
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            17,
+            17
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 18,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "hub",
+          "path": "/laboratorio",
+          "rawKB": 185,
+          "headEqual": true,
+          "headDiff": [],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            3,
+            3
+          ],
+          "words": [
+            691,
+            691
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            22,
+            22
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 9,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "tool",
+          "path": "/ferramentas/gerador-json-ld",
+          "rawKB": 175,
+          "headEqual": true,
+          "headDiff": [],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            4,
+            4
+          ],
+          "words": [
+            658,
+            658
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            13,
+            13
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 9,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "tool",
+          "path": "/ferramentas/checador-cwv",
+          "rawKB": 175,
+          "headEqual": true,
+          "headDiff": [],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            4,
+            4
+          ],
+          "words": [
+            807,
+            807
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            15,
+            15
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 9,
+            "otherOrigin": 0
+          }
+        }
+      ]
+    },
+    {
+      "code": "S1",
+      "label": "main site (server-rendered PHP)",
+      "robotsStatus": 200,
+      "pagesRead": 8,
+      "headEqual": 8,
+      "pages": [
+        {
+          "kind": "home",
+          "rawKB": 200,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            8,
+            8
+          ],
+          "words": [
+            1620,
+            1620
+          ],
+          "jsonldBlocks": [
+            0,
+            0
+          ],
+          "links": [
+            190,
+            190
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            28,
+            28
+          ],
+          "imagesWithRealSrc": [
+            28,
+            28
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "hub",
+          "rawKB": 199,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            9,
+            9
+          ],
+          "words": [
+            1750,
+            1750
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            217,
+            217
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            31,
+            31
+          ],
+          "imagesWithRealSrc": [
+            31,
+            31
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "hub",
+          "rawKB": 267,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            10,
+            10
+          ],
+          "words": [
+            3220,
+            3220
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            189,
+            189
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            13,
+            13
+          ],
+          "imagesWithRealSrc": [
+            13,
+            13
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "institutional",
+          "rawKB": 115,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            1,
+            1
+          ],
+          "words": [
+            1520,
+            1520
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            189,
+            189
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            3,
+            3
+          ],
+          "imagesWithRealSrc": [
+            3,
+            3
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "institutional",
+          "rawKB": 108,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            1,
+            1
+          ],
+          "words": [
+            1110,
+            1110
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            189,
+            189
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            3,
+            3
+          ],
+          "imagesWithRealSrc": [
+            3,
+            3
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "landing",
+          "rawKB": 464,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            10,
+            10
+          ],
+          "words": [
+            13330,
+            13330
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            196,
+            196
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            10,
+            10
+          ],
+          "imagesWithRealSrc": [
+            10,
+            10
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "landing",
+          "rawKB": 460,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            9,
+            9
+          ],
+          "words": [
+            12900,
+            12900
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            194,
+            194
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            8,
+            8
+          ],
+          "imagesWithRealSrc": [
+            8,
+            8
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "landing",
+          "rawKB": 460,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            10,
+            10
+          ],
+          "words": [
+            12910,
+            12910
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            194,
+            194
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            8,
+            8
+          ],
+          "imagesWithRealSrc": [
+            8,
+            8
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        }
+      ]
+    },
+    {
+      "code": "S1",
+      "label": "sibling brand site (client-rendered SPA)",
+      "robotsStatus": 200,
+      "pagesRead": 4,
+      "headEqual": 0,
+      "pages": [
+        {
+          "kind": "home",
+          "rawKB": 3,
+          "headEqual": false,
+          "headDiff": [
+            "h1"
+          ],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 0,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            7
+          ],
+          "words": [
+            0,
+            560
+          ],
+          "jsonldBlocks": [
+            0,
+            0
+          ],
+          "links": [
+            0,
+            3
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 3,
+          "images": [
+            0,
+            27
+          ],
+          "imagesWithRealSrc": [
+            0,
+            27
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "route",
+          "rawKB": 3,
+          "headEqual": false,
+          "headDiff": [
+            "h1"
+          ],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 0,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            9
+          ],
+          "words": [
+            0,
+            720
+          ],
+          "jsonldBlocks": [
+            0,
+            0
+          ],
+          "links": [
+            0,
+            3
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 3,
+          "images": [
+            0,
+            21
+          ],
+          "imagesWithRealSrc": [
+            0,
+            21
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "route",
+          "rawKB": 3,
+          "headEqual": false,
+          "headDiff": [
+            "h1"
+          ],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 0,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            1
+          ],
+          "words": [
+            0,
+            20
+          ],
+          "jsonldBlocks": [
+            0,
+            0
+          ],
+          "links": [
+            0,
+            1
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            0,
+            0
+          ],
+          "imagesWithRealSrc": [
+            0,
+            0
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "route",
+          "rawKB": 3,
+          "headEqual": false,
+          "headDiff": [
+            "h1"
+          ],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 0,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            0
+          ],
+          "words": [
+            0,
+            140
+          ],
+          "jsonldBlocks": [
+            0,
+            0
+          ],
+          "links": [
+            0,
+            3
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 3,
+          "images": [
+            0,
+            3
+          ],
+          "imagesWithRealSrc": [
+            0,
+            3
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 1,
+            "otherOrigin": 0
+          }
+        }
+      ]
+    },
+    {
+      "code": "S2",
+      "label": "main site (WordPress, page builder)",
+      "robotsStatus": 200,
+      "pagesRead": 8,
+      "headEqual": 8,
+      "pages": [
+        {
+          "kind": "home",
+          "rawKB": 468,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            7,
+            7
+          ],
+          "words": [
+            2250,
+            3040
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            98,
+            73
+          ],
+          "linksOnlyRaw": 25,
+          "linksOnlyRendered": 0,
+          "images": [
+            93,
+            159
+          ],
+          "imagesWithRealSrc": [
+            4,
+            111
+          ],
+          "imagesWithDataSrc": [
+            89,
+            156
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "page",
+          "rawKB": 237,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            7,
+            7
+          ],
+          "words": [
+            2370,
+            2360
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            34,
+            34
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            5,
+            4
+          ],
+          "imagesWithRealSrc": [
+            4,
+            3
+          ],
+          "imagesWithDataSrc": [
+            1,
+            1
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 229,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            9,
+            9
+          ],
+          "words": [
+            2140,
+            2130
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            52,
+            52
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            16,
+            15
+          ],
+          "imagesWithRealSrc": [
+            4,
+            3
+          ],
+          "imagesWithDataSrc": [
+            12,
+            12
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 235,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            6,
+            6
+          ],
+          "words": [
+            2840,
+            2830
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            60,
+            60
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            16,
+            15
+          ],
+          "imagesWithRealSrc": [
+            4,
+            3
+          ],
+          "imagesWithDataSrc": [
+            12,
+            12
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "listing",
+          "rawKB": 352,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 2,
+          "h1Rendered": 2,
+          "h2": [
+            3,
+            3
+          ],
+          "words": [
+            1330,
+            1660
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            45,
+            45
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            40,
+            83
+          ],
+          "imagesWithRealSrc": [
+            4,
+            21
+          ],
+          "imagesWithDataSrc": [
+            36,
+            78
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "listing",
+          "rawKB": 354,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 2,
+          "h1Rendered": 2,
+          "h2": [
+            4,
+            4
+          ],
+          "words": [
+            1490,
+            1830
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            45,
+            45
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            34,
+            75
+          ],
+          "imagesWithRealSrc": [
+            4,
+            22
+          ],
+          "imagesWithDataSrc": [
+            30,
+            66
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "category",
+          "rawKB": 205,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            0
+          ],
+          "words": [
+            400,
+            390
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            39,
+            39
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            6,
+            5
+          ],
+          "imagesWithRealSrc": [
+            4,
+            3
+          ],
+          "imagesWithDataSrc": [
+            2,
+            2
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "category",
+          "rawKB": 231,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            0
+          ],
+          "words": [
+            590,
+            580
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            54,
+            54
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            17,
+            16
+          ],
+          "imagesWithRealSrc": [
+            4,
+            3
+          ],
+          "imagesWithDataSrc": [
+            13,
+            13
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        }
+      ]
+    },
+    {
+      "code": "S3",
+      "label": "main site (WordPress)",
+      "robotsStatus": 200,
+      "pagesRead": 8,
+      "headEqual": 8,
+      "pages": [
+        {
+          "kind": "home",
+          "rawKB": 105,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            12,
+            12
+          ],
+          "words": [
+            1670,
+            1710
+          ],
+          "jsonldBlocks": [
+            3,
+            3
+          ],
+          "links": [
+            43,
+            44
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            57,
+            57
+          ],
+          "imagesWithRealSrc": [
+            57,
+            57
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 76,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            9,
+            9
+          ],
+          "words": [
+            1470,
+            1510
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            56,
+            57
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            14,
+            14
+          ],
+          "imagesWithRealSrc": [
+            14,
+            14
+          ],
+          "imagesWithDataSrc": [
+            6,
+            6
+          ],
+          "noscriptImages": 6,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 79,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            10,
+            10
+          ],
+          "words": [
+            1690,
+            1730
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            55,
+            56
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            13,
+            13
+          ],
+          "imagesWithRealSrc": [
+            13,
+            13
+          ],
+          "imagesWithDataSrc": [
+            5,
+            5
+          ],
+          "noscriptImages": 5,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "partner landing",
+          "rawKB": 71,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            6,
+            6
+          ],
+          "words": [
+            1200,
+            1240
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            37,
+            38
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            26,
+            26
+          ],
+          "imagesWithRealSrc": [
+            26,
+            26
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "partner landing",
+          "rawKB": 69,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            6,
+            6
+          ],
+          "words": [
+            1190,
+            1240
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            37,
+            38
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            26,
+            26
+          ],
+          "imagesWithRealSrc": [
+            26,
+            26
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "tag archive",
+          "rawKB": 51,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            0
+          ],
+          "words": [
+            330,
+            370
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            47,
+            48
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            8,
+            8
+          ],
+          "imagesWithRealSrc": [
+            8,
+            8
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "faq",
+          "rawKB": 61,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            5,
+            5
+          ],
+          "words": [
+            450,
+            490
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            50,
+            51
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            12,
+            12
+          ],
+          "imagesWithRealSrc": [
+            12,
+            12
+          ],
+          "imagesWithDataSrc": [
+            4,
+            4
+          ],
+          "noscriptImages": 4,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        },
+        {
+          "kind": "category",
+          "rawKB": 80,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 0,
+          "h1Rendered": 0,
+          "h2": [
+            13,
+            13
+          ],
+          "words": [
+            710,
+            750
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            68,
+            69
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 1,
+          "images": [
+            19,
+            19
+          ],
+          "imagesWithRealSrc": [
+            19,
+            19
+          ],
+          "imagesWithDataSrc": [
+            12,
+            12
+          ],
+          "noscriptImages": 12,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 7
+          }
+        }
+      ]
+    },
+    {
+      "code": "S3",
+      "label": "app subdomain (client-rendered SPA)",
+      "robotsStatus": 406,
+      "pagesRead": 1,
+      "headEqual": 0,
+      "pages": [
+        {
+          "kind": "home",
+          "rawKB": 3,
+          "headEqual": false,
+          "headDiff": [
+            "h1"
+          ],
+          "headDiffValues": [],
+          "titleRawEmpty": false,
+          "h1Raw": 0,
+          "h1Rendered": 1,
+          "h2": [
+            0,
+            0
+          ],
+          "words": [
+            0,
+            50
+          ],
+          "jsonldBlocks": [
+            0,
+            0
+          ],
+          "links": [
+            0,
+            0
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            0,
+            2
+          ],
+          "imagesWithRealSrc": [
+            0,
+            2
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 6
+          }
+        }
+      ]
+    },
+    {
+      "code": "S4",
+      "label": "main site (Next.js, headless WordPress blog)",
+      "robotsStatus": 200,
+      "pagesRead": 7,
+      "headEqual": 7,
+      "pages": [
+        {
+          "kind": "home",
+          "rawKB": 580,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            6,
+            6
+          ],
+          "words": [
+            1990,
+            2040
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            61,
+            61
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            95,
+            99
+          ],
+          "imagesWithRealSrc": [
+            95,
+            99
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 11
+          }
+        },
+        {
+          "kind": "page",
+          "rawKB": 475,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            2,
+            2
+          ],
+          "words": [
+            690,
+            690
+          ],
+          "jsonldBlocks": [
+            4,
+            4
+          ],
+          "links": [
+            71,
+            71
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            48,
+            50
+          ],
+          "imagesWithRealSrc": [
+            48,
+            50
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 2,
+            "otherOrigin": 9
+          }
+        },
+        {
+          "kind": "page",
+          "rawKB": 7,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            3,
+            3
+          ],
+          "words": [
+            190,
+            630
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            1,
+            11
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 10,
+          "images": [
+            2,
+            2
+          ],
+          "imagesWithRealSrc": [
+            2,
+            2
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 0,
+            "otherOrigin": 0
+          }
+        },
+        {
+          "kind": "blog home",
+          "rawKB": 718,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            5,
+            5
+          ],
+          "words": [
+            1210,
+            1260
+          ],
+          "jsonldBlocks": [
+            1,
+            1
+          ],
+          "links": [
+            114,
+            114
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            80,
+            84
+          ],
+          "imagesWithRealSrc": [
+            80,
+            84
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 12,
+            "otherOrigin": 9
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 516,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            12,
+            12
+          ],
+          "words": [
+            2130,
+            2180
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            72,
+            72
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            51,
+            55
+          ],
+          "imagesWithRealSrc": [
+            51,
+            55
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 11,
+            "otherOrigin": 10
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 444,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            6,
+            6
+          ],
+          "words": [
+            1300,
+            1350
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            71,
+            71
+          ],
+          "linksOnlyRaw": 0,
+          "linksOnlyRendered": 0,
+          "images": [
+            45,
+            49
+          ],
+          "imagesWithRealSrc": [
+            45,
+            49
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 9,
+            "otherOrigin": 10
+          }
+        },
+        {
+          "kind": "post",
+          "rawKB": 447,
+          "headEqual": true,
+          "headDiff": [],
+          "titleRawEmpty": false,
+          "h1Raw": 1,
+          "h1Rendered": 1,
+          "h2": [
+            6,
+            6
+          ],
+          "words": [
+            1460,
+            1500
+          ],
+          "jsonldBlocks": [
+            2,
+            2
+          ],
+          "links": [
+            72,
+            72
+          ],
+          "linksOnlyRaw": 2,
+          "linksOnlyRendered": 2,
+          "images": [
+            45,
+            49
+          ],
+          "imagesWithRealSrc": [
+            45,
+            49
+          ],
+          "imagesWithDataSrc": [
+            0,
+            0
+          ],
+          "noscriptImages": 0,
+          "apiCalls": {
+            "sameOrigin": 9,
+            "otherOrigin": 11
+          }
+        }
+      ]
+    }
+  ]
+}

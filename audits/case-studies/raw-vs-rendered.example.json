@@ -1,0 +1,21 @@
+[
+  {
+    "code": "SITE",
+    "label": "this site (control)",
+    "public": true,
+    "origin": "https://seotecnico.dev.br",
+    "paths": [
+      { "path": "/", "kind": "home" },
+      { "path": "/blog/soft-404", "kind": "article" }
+    ]
+  },
+  {
+    "code": "S0",
+    "label": "shape of a third-party target; the real ones live in raw-vs-rendered.local.json (gitignored)",
+    "origin": "https://example.com",
+    "paths": [
+      { "path": "/", "kind": "home" },
+      { "path": "/a-landing/", "kind": "landing" }
+    ]
+  }
+]
