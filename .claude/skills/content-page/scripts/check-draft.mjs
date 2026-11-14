@@ -20,8 +20,10 @@
 //   --type blog|project   default: blog (a project entry needs no pillar or
 //                      tool link, but must link a versioned artifact on GitHub)
 //   --ban "a,b,c"      framings the brief banned; any hit in prose fails
-//   --published        final-mode checks on every published article: the
-//                      regression test for this script (expected: 0 errors)
+//   --published        final-mode checks on every published page, blog
+//                      articles as blog and project entries as project (with
+//                      --type, only that collection): the regression test for
+//                      this script (expected: 0 errors)
 //
 // Exit code 1 when any ERROR is found; WARN lines never fail the run.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -193,19 +195,32 @@ const options = {
   type: opt('--type') || 'blog',
   ban: (opt('--ban') || '').split(',').map((s) => s.trim()).filter(Boolean),
 }
+// --published walks every collection with the type its pages are checked as.
+// Project entries were left out until 2026-11-14, when an English tldr of 302
+// characters passed this script and only the loader (npm test) caught it.
+const COLLECTIONS = [
+  { dir: 'blog', type: 'blog' },
+  { dir: path.join('en', 'blog'), type: 'blog' },
+  { dir: 'projeto', type: 'project' },
+  { dir: path.join('en', 'project'), type: 'project' },
+]
 const files = args.includes('--published')
-  ? ['blog', path.join('en', 'blog')].flatMap((d) =>
-      fs.readdirSync(path.join(ROOT, 'content', d)).filter((f) => f.endsWith('.mdx')).map((f) => path.join('content', d, f)))
-  : args.filter((a, i) => !a.startsWith('--') && !['--type', '--ban'].includes(args[i - 1]))
+  ? COLLECTIONS.filter((c) => !opt('--type') || c.type === opt('--type')).flatMap(({ dir, type }) =>
+      fs.readdirSync(path.join(ROOT, 'content', dir))
+        .filter((f) => f.endsWith('.mdx'))
+        .map((f) => ({ file: path.join('content', dir, f), type })))
+  : args
+      .filter((a, i) => !a.startsWith('--') && !['--type', '--ban'].includes(args[i - 1]))
+      .map((file) => ({ file, type: options.type }))
 
 if (!files.length) {
-  console.error('usage: check-draft.mjs <file.mdx> [--arrival] [--type blog|project] [--ban "a,b"] | --published')
+  console.error('usage: check-draft.mjs <file.mdx> [--arrival] [--type blog|project] [--ban "a,b"] | --published [--type blog|project]')
   process.exit(2)
 }
 
 let failed = 0
-for (const file of files) {
-  const { errors, warns } = checkFile(path.resolve(ROOT, file), options)
+for (const { file, type } of files) {
+  const { errors, warns } = checkFile(path.resolve(ROOT, file), { ...options, type })
   console.log(`${errors.length ? 'FAIL' : warns.length ? 'WARN' : 'OK  '}  ${file}`)
   for (const e of errors) console.log(`  ERROR ${e}`)
   for (const w of warns) console.log(`  WARN  ${w}`)
