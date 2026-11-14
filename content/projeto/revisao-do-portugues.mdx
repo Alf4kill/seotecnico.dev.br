@@ -1,0 +1,222 @@
+---
+title: "Como o texto em português é revisado neste site"
+description: "Um script compara cada página com 22 textos técnicos de autores brasileiros, e um leitor que não a escreveu a lê. O que a revisão mudou e o que achou."
+slug: "revisao-do-portugues"
+primaryQuery: "como o texto em português é revisado"
+keywords: ['revisão', 'revisão de texto', 'estilo', 'registro', 'português', 'pt-br', 'texto de ia', 'dois-pontos', 'portuguese-style', 'check-portuguese', 'corpus nativo', 'leitor novo']
+lang: "pt-BR"
+tldr: >-
+  Depois da verificação dos fatos, cada página em português passa por uma
+  revisão. Um script compara a pontuação com 22 páginas técnicas de autores
+  brasileiros, e um leitor que não escreveu a página a lê. As edições são
+  mínimas e não mudam fato, número nem ressalva.
+datePublished: "2026-11-14"
+dateModified: "2026-11-14"
+---
+
+Depois que os fatos de uma página são verificados, o português dela passa por
+uma revisão. Um script mede a pontuação e o jeito de falar com o leitor e
+compara os valores com 22 páginas técnicas escritas por autores brasileiros
+antes do lançamento do ChatGPT. Depois, um leitor que não escreveu a página a
+lê inteira. As edições são as menores que corrigem cada padrão e não mudam
+nenhum fato, número ou ressalva. A revisão começou com uma desconfiança minha
+sobre o texto, e uma medição de novembro de 2026 a confirmou. Das 30 páginas do
+site, 27 usavam mais dois-pontos no texto corrido do que 90% das páginas
+nativas.
+
+Esta página faz parte da seção [Projeto](/projeto). A cadeia inteira de uma
+página, da nota de pesquisa ao merge, está em [como uma página de conteúdo é
+feita](/projeto/como-uma-pagina-nasce), e a divisão do trabalho entre mim e o
+Claude, em [como a IA é usada neste projeto](/projeto/uso-de-ia). Aqui está só
+a revisão do português. O procedimento virou a [skill
+portuguese-style](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/portuguese-style),
+e o plano, com cada passo e cada decisão, está na [proposta do
+repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/proposals/portuguese-style.md).
+
+## Por que revisar
+
+Em novembro de 2026, eu desconfiei do texto das minhas próprias páginas. Eu
+achava a informação certa, mas algumas frases soavam escritas por um modelo, e
+eu queria saber se isso era impressão. A comparação precisava de uma
+referência. Uma sessão do Claude montou, com critérios que eu aprovei, um
+corpus de 22 páginas técnicas em português, de 9 sites e 11 autores
+brasileiros. Toda página entrou com a data conferida antes
+de 30 de novembro de 2022, o lançamento público do ChatGPT. Uma página mais
+nova poderia ter sido escrita com ajuda de IA, e a faixa mediria esse registro
+como se fosse nativo.
+
+O resultado veio em 11 de novembro de 2026, na [nota de pesquisa sobre o
+registro](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-11-portuguese-register-profile.md).
+A página nativa mediana usa 4,5 dois-pontos a cada 100 frases, e 90% das
+páginas nativas ficam abaixo de 16,7. A página mediana do site usava cerca de
+26. Das 30 páginas, 27 passavam do limite nos dois-pontos, e 23 passavam do
+limite no ponto e vírgula, que os autores nativos quase nunca usam no texto
+corrido.
+
+Os artigos de julho eram o caso mais forte. Os doze do grupo de Next.js
+tinham, na mediana, 31,2 dois-pontos e 30,4 travessões a cada 100 frases, e
+frases de 21,5 palavras. A partir do fim de setembro os travessões quase somem e as
+frases encurtam, mas os dois-pontos continuam em cerca de cinco vezes a mediana
+nativa.
+
+## O que a revisão mede
+
+O script `check-portuguese.mjs` mede oito traços do texto corrido e avisa em
+sete. A primeira pessoa é só informativa. Tabelas, títulos e código ficam de
+fora, e as listas entram só na contagem de itens.
+
+| Traço | Mediana nativa | 90% das páginas nativas ficam abaixo de |
+|---|---|---|
+| dois-pontos a cada 100 frases | 4,55 | 16,67 |
+| travessões a cada 100 frases | 0 | 4,76 |
+| ponto e vírgula a cada 100 frases | 0 | 1,94 |
+| palavras por frase (mediana da página) | 17 | 26 |
+| "você" a cada 100 palavras | 0,8 | 1,85 |
+| primeira pessoa a cada 100 palavras | 0,18 | 0,97 |
+| itens de lista a cada 1.000 palavras | 2 | 23,94 |
+| parágrafos abertos com rótulo em negrito, a cada 100 | 0 | 22,22 |
+
+Duas medidas avisam também para baixo. O "você" avisa abaixo de 0,3 a cada 100
+palavras, e a mediana de palavras por frase, abaixo de 13.
+
+Fora da faixa, o script avisa e não reprova. Um aviso é uma pergunta para
+quem revisa, e a resposta pode ser deixar como está. A meta também não é zero.
+Um dois-pontos antes de uma lista ou de um trecho de código é o uso normal, e
+os nativos também o fazem. O que a revisão procura é o dois-pontos que liga
+duas afirmações, frase após frase.
+
+## Como uma revisão acontece
+
+A revisão não muda fato, número, data,
+ressalva, código nem link. Ela mantém a minha voz, descrita num arquivo
+próprio da skill (`voz.md`), para que a revisão não troque um tom genérico por
+outro. E ela nunca usa um detector de IA como medida, nem tenta deixar um texto
+"indetectável". Os valores dentro da faixa mostram que a pontuação ficou mais
+perto da escrita nativa. Não provam que um leitor concordaria.
+
+Os passos, na ordem:
+
+1. **Inventário.** O script roda na página e lista os avisos e os padrões que
+   ele reconhece.
+2. **Lista de ressalvas.** Toda ressalva da página ("neste teste", "na maioria",
+   "pode") vai para um arquivo antes de qualquer edição. A revisão do inglês
+   de 27 de outubro perdeu duas ressalvas, depois recuperadas, e o script que
+   compara as versões não olha ressalvas.
+3. **Leitor novo.** Um agente que não escreveu nem verificou a página a lê
+   inteira (sem um agente à mão, a própria sessão lê depois de fechar o
+   contexto da redação) e propõe cada edição com o trecho de antes e o de depois. Problemas
+   de conteúdo ele não corrige. Ele os relata como nota para o autor.
+4. **Edição mínima.** Entram só as propostas que mantêm o sentido, no menor
+   trecho que resolve o padrão.
+5. **Invariantes.** Um script compara a página antes e depois (números,
+   código, links), e a lista de ressalvas é conferida uma a uma.
+6. **Checagens de novo.** Os scripts rodam outra vez na página editada, e
+   depois os testes.
+7. **Relatório.** Os valores de antes e depois e as propostas recusadas vão
+   para a descrição do PR, e eu reviso antes do merge.
+
+O script sozinho não bastaria. Ele mede a pontuação e acha algumas frases
+fixas. O leitor acha o que não tem forma fixa: a frase que prepara a
+afirmação ("O mecanismo é o seguinte.") e a expressão traduzida ao pé da letra
+("por design") e o fechamento que repete a abertura.
+
+## A primeira rodada: os três artigos de julho
+
+Em 13 de novembro de 2026, a revisão rodou nos três artigos mais antigos do
+site, em modo de análise. As cópias editadas ficaram fora do repositório, e
+nenhuma página publicada mudou. O resultado está na [nota sobre a revisão dos
+artigos de julho](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-13-early-pages-style-review.md).
+
+| Artigo | Propostas | Aceitas | Dois-pontos | Travessões | Ponto e vírgula |
+|---|---|---|---|---|---|
+| [`melhorar-lcp-nextjs`](/blog/melhorar-lcp-nextjs) | 72 | 67 | 28,4 → 15,8 | 43,2 → 3,2 | 9,5 → 2,1 |
+| [`lcp-alto-next-js`](/blog/lcp-alto-next-js) | 56 | 56 | 26,0 → 12,5 | 26,0 → 0 | 6,7 → 0 |
+| [`json-ld-nextjs`](/blog/json-ld-nextjs) | 77 | 70 | 31,2 → 18,3 | 21,4 → 0 | 7,8 → 1,1 |
+
+As ressalvas ficaram todas. As listas tinham 58, 38 e 59 entradas, e cada uma
+continuou na página com a mesma força.
+
+As 12 propostas recusadas mostraram um defeito da própria skill. Todas
+cortavam uma generalização sem medição, como "metade do conteúdo em português
+erra nisso". Os leitores tinham razão, porque nenhuma dessas generalizações tinha evidência
+na página. Mas
+cortar uma afirmação muda o que a página diz, e a primeira regra da revisão
+proíbe isso. O catálogo de padrões dizia para cortar, e os leitores seguiram o
+catálogo. O catálogo e o passo 3 da skill foram corrigidos no PR da rodada
+(#142). Agora um corte assim vira nota para mim e espera a minha decisão.
+
+Os leitores também relataram problemas de conteúdo que a verificação de julho
+deixou passar. Um deles foi conferido no repositório. O artigo
+`melhorar-lcp-nextjs` diz que o `next/image` serve AVIF/WebP automaticamente,
+mas o padrão do Next.js 16.2.12 é só WebP. Os problemas não foram editados. São decisões de conteúdo, listadas na nota.
+
+## Escrever já no registro
+
+A revisão também mudou como uma página nova é escrita. O guia de estilo
+(`estilo-ptbr.md`) passou a ser lido antes do rascunho, e a revisão roda
+depois da verificação. O primeiro artigo feito assim foi o de [HTML
+renderizado](/blog/html-renderizado), em 13 de novembro de 2026. O rascunho
+foi escrito por uma sessão do Claude com acesso ao repositório.
+
+| Página | Escrita | Dois-pontos a cada 100 frases |
+|---|---|---|
+| `soft-404` | antes do guia | 25,4 |
+| `uma-pagina-por-palavra-chave` | antes do guia | 21,9 |
+| `auditoria-de-sitemap` | antes do guia | 12,6 |
+| `html-renderizado`, rascunho verificado | depois do guia | 7,9 |
+| `html-renderizado`, publicado | depois da revisão | 5,1 |
+
+As três primeiras são estudos de caso do mesmo tipo, publicados antes do guia.
+O rascunho novo já chegou dentro da faixa nos dois-pontos, travessões e ponto e
+vírgula, e a revisão fez 7 propostas, contra
+56 a 77 em cada artigo de julho. Isso é um artigo de um redator só, num tema
+só. Não separa o efeito do guia do efeito de quem escreveu.
+
+O achado maior foi de conteúdo. A sessão que escreveu o rascunho também fez a
+verificação contra as fontes, e deixou passar 10 problemas, que o leitor da
+revisão achou. O pior era uma contagem: o texto dizia 49 páginas, mas a
+amostra tinha 42, e 49 era o número de requisições do lado do HTML bruto,
+contando os `robots.txt`. Como a mesma sessão escreve e verifica, ela lê o que quis dizer. O leitor da revisão era a
+única leitura independente dos fatos, e a skill de conteúdo não dizia isso.
+Agora diz, e a verificação recalcula cada total a partir do arquivo de origem.
+Tudo isso está na [análise das duas
+skills](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-13-style-skills-in-practice.md).
+
+## O que ainda não funciona
+
+- **O "você".** A medida não conta o imperativo, que é como o site fala com o
+  leitor ("rode", "compare", "confira"). Por isso 25 das 31 páginas medidas em
+  13 de novembro ficam abaixo da faixa, e o aviso aparece em quatro de cada cinco.
+  Acrescentar "você" para mudar o número seria escrever para o script. A decisão está aberta: contar o
+  imperativo e medir a faixa nativa de novo, ou tirar a medida dos avisos por
+  página.
+- **Uma amostra de um.** O efeito do guia sobre o rascunho foi visto num
+  artigo. Precisa de rascunhos das outras rotas, os da sessão de redação e os meus.
+- **O custo.** Cada página pede um leitor novo, e uma revisão em lote dos
+  artigos de julho vai precisar das propostas agrupadas por padrão, não uma
+  tabela por página.
+- **As páginas publicadas.** Nenhum artigo antigo foi revisado ainda. A revisão
+  em lote espera o fim do core update de novembro de 2026, para que uma mudança
+  de posição não seja lida como efeito da revisão.
+
+## Como conferir
+
+```bash
+git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --published --summary
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs content/blog/melhorar-lcp-nextjs.mdx content/blog/lcp-alto-next-js.mdx content/blog/json-ld-nextjs.mdx
+node .claude/skills/portuguese-style/scripts/calibrate-register-pt.mjs --pages
+git show --stat 1fbd515
+```
+
+A primeira linha depois do clone mostra cada página publicada contra a faixa,
+ordenada pela distância do nativo. Para reproduzir os números de uma data,
+rode os comandos no commit dela (`git checkout <commit>`). A segunda dá os valores de antes dos três
+artigos de julho, que não mudaram desde a rodada. Os valores de depois vêm de
+cópias que não estão no repositório, porque a revisão em lote vai refazer as
+edições nas páginas como elas estiverem então. A terceira mede de novo as 22
+páginas nativas e as do site. Ela precisa de rede, e as páginas podem ter mudado desde 11
+de novembro de 2026. O commit da última linha lista as correções do artigo de
+HTML renderizado. Os números de 11 de novembro são do commit `cf086ec`, os
+dos artigos de julho, do commit `99217a2`, e os do artigo de HTML renderizado
+e do "você", do commit `bda4f98`.

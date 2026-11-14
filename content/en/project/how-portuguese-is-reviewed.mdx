@@ -1,0 +1,256 @@
+---
+title: "How this site's Portuguese text is reviewed"
+description: "A script compares each Portuguese page with 22 technical pages by Brazilian authors, and a fresh reader reads it. What the review changed and found."
+slug: "how-portuguese-is-reviewed"
+primaryQuery: "how the portuguese text is reviewed"
+keywords: ['english', 'inglês', 'portuguese review', 'style review', 'register', 'portuguese', 'pt-br', 'ai-written text', 'colons', 'portuguese-style', 'check-portuguese', 'native corpus', 'fresh reader']
+lang: "en"
+translationOf: "revisao-do-portugues"
+tldr: >-
+  After the facts are verified, every Portuguese page is reviewed. A script
+  compares its punctuation with 22 technical pages by Brazilian authors, and
+  a reader who didn't write the page reads it. Edits are minimal and change
+  no fact, number, or hedge.
+datePublished: "2026-11-14"
+dateModified: "2026-11-14"
+---
+
+Portuguese is this site's primary language. Once a page's facts are verified,
+its Portuguese goes through a review. A script measures punctuation and how
+the text addresses the reader, then compares those values with 22 technical
+pages that Brazilian authors wrote before ChatGPT's release. After that, a
+reader who didn't write the page reads all of it. Each edit is the smallest
+one that fixes a pattern, and no edit changes a fact, number, or hedge. I
+started the review on a hunch about my own writing, and a measurement
+in November 2026 confirmed it. Of the site's 30 pages, 27 used more colons in
+running prose than 90% of native pages.
+
+This page is part of the [Project section](/en/project). For how a page gets from
+research note to merge, see
+[how a content page is made](/en/project/how-a-page-is-made). For how Claude
+and I split the work, see
+[how AI is used in this project](/en/project/how-ai-is-used). This one covers
+only the Portuguese review. English pages follow their own procedure, which
+that same page also describes. The Portuguese review became the
+[portuguese-style
+skill](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/portuguese-style),
+and a
+[proposal](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/proposals/portuguese-style.md)
+in the repository records the plan, with every step and decision.
+
+## Why the Portuguese gets reviewed
+
+In November 2026, I grew suspicious of the text on my own pages. I thought the
+information was right, but some sentences sounded as if a model had written
+them, and I wanted to know whether that was just an impression.
+
+To compare, I needed a reference. Using criteria I approved, a Claude session
+built a corpus of 22 technical pages in Portuguese from 9 sites and 11
+Brazilian authors. Each page's date was checked before it went in, and every
+one predates November 30, 2022, when ChatGPT was released to the public. A
+newer page could have been written with AI help, and the native band
+would then treat that register as native.
+
+A
+[research note on
+register](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-11-portuguese-register-profile.md)
+reported the results on November 11, 2026. Native pages use 4.5 colons per
+100 sentences at the median, and 90% of them stay below 16.7. This site's
+median page used about 26. Of the 30 pages, 27 went past the colon limit and
+23 past the semicolon limit. Native authors almost never use a semicolon in
+running prose.
+
+The July articles were the strongest case. Across the twelve Next.js cluster
+articles, the medians were 31.2 colons and 30.4 dash asides per 100 sentences,
+and 21.5 words per sentence. From late September on, dashes almost disappear and
+sentences get shorter, but colons stay at about five times the native median.
+
+## What the review measures
+
+A script, `check-portuguese.mjs`, measures eight features of running prose and
+warns on seven of them. It reports first person for information only. One feature counts
+"você", Portuguese for "you". Tables, headings, and code are left out, and
+lists count only toward the list-item feature.
+
+| Feature | Native median | 90% of native pages are below |
+|---|---|---|
+| colons per 100 sentences | 4.55 | 16.67 |
+| dash asides per 100 sentences | 0 | 4.76 |
+| semicolons per 100 sentences | 0 | 1.94 |
+| words per sentence (page median) | 17 | 26 |
+| "você" per 100 words | 0.8 | 1.85 |
+| first person per 100 words | 0.18 | 0.97 |
+| list items per 1,000 words | 2 | 23.94 |
+| paragraphs opening with a bold label, per 100 | 0 | 22.22 |
+
+Two measures also warn on the low side, when "você" falls below 0.3 per 100
+words and when a page's median sentence drops below 13 words.
+
+When a value falls outside the band, the script warns but never fails. A
+warning is a question for the reviewer, and one answer can be to leave the text as it is.
+
+Zero isn't the goal either. Native writers put a colon before a list or a code
+block too, and that's normal use. What the review looks for is a colon joining
+two claims, sentence after sentence.
+
+## How a review runs
+
+A review changes no fact, number, date, hedge, code, or link. It keeps my
+voice, which the skill describes in a file of its own (`voz.md`), so it
+doesn't trade one generic tone for another. It never uses an AI detector as a
+measure and never tries to make a text "undetectable".
+
+Values inside the band show that a page's punctuation moved closer to native writing.
+They don't prove that a reader would agree.
+
+A review follows these steps, in order:
+
+1. **Inventory.** A script runs on the page and lists warnings and any
+   patterns it recognizes.
+2. **Hedge list.** Before any edit, every hedge on the page goes into a file.
+   Hedges are phrases such as "neste teste" ("in this test"), "na maioria" ("in most"), or "pode"
+   ("can" or "may"). On October 27, the English revision lost two hedges
+   (later restored), and the script that compares versions doesn't look at hedges.
+3. **Fresh reader.** An agent that neither wrote nor verified the page reads
+   all of it and proposes each edit as a before-and-after span. If no agent is
+   available, the session reads it itself after closing its drafting context.
+   This reader doesn't fix content problems. It reports them to the author as
+   notes.
+4. **Minimal edit.** Only proposals that keep the meaning go in, each on the
+   smallest span that fixes its pattern.
+5. **Invariants.** A script compares numbers, code, and links before and
+   after, and each hedge on the list is checked one at a time.
+6. **Second check.** Both scripts run on the edited page again, and then the
+   test suite runs.
+7. **Report.** Before-and-after values and declined proposals go into the PR
+   description, and I review them before merging.
+
+A script alone wouldn't be enough. It measures punctuation and finds a few
+fixed phrases. A reader finds what has no fixed form, such as a setup sentence
+before a claim ("O mecanismo é o seguinte.", roughly "The mechanism is as
+follows."), an expression translated word for word ("por design", a calque of
+"by design"), or a closing that repeats the opening.
+
+## What the first round found in the July articles
+
+On November 13, 2026, a first round ran in analysis mode on the site's three
+oldest articles. Its edited copies stayed outside the repository, and no published
+page changed. You can read the results in a
+[note on reviewing the July
+articles](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-13-early-pages-style-review.md).
+Since the review measured Portuguese articles, this table lists their
+Portuguese slugs.
+
+| Article | Proposals | Accepted | Colons | Dashes | Semicolons |
+|---|---|---|---|---|---|
+| `melhorar-lcp-nextjs` | 72 | 67 | 28.4 → 15.8 | 43.2 → 3.2 | 9.5 → 2.1 |
+| `lcp-alto-next-js` | 56 | 56 | 26.0 → 12.5 | 26.0 → 0 | 6.7 → 0 |
+| `json-ld-nextjs` | 77 | 70 | 31.2 → 18.3 | 21.4 → 0 | 7.8 → 1.1 |
+
+Every hedge survived. Hedge lists for the three articles had 58, 38, and 59
+entries, and each entry stayed on its page at the same strength.
+
+Twelve declined proposals exposed a flaw in the skill itself. Each one cut an
+unmeasured generalization, such as "metade do conteúdo em português erra
+nisso" ("half of the content in Portuguese gets this wrong"). Those readers were
+right, because none of those generalizations had evidence on its page. But
+cutting a claim changes what a page says, which the review's first rule
+forbids. They cut because the skill's pattern catalog told them to.
+PR #142, from that round, fixed both the catalog and step 3. Now a cut like
+that becomes a note for me and waits for my decision.
+
+Readers in that round also reported content problems that the July
+verification pass missed. One of them has been checked against the
+repository. `melhorar-lcp-nextjs` says `next/image` serves AVIF/WebP
+automatically, but Next.js 16.2.12 defaults to WebP only. None of these
+problems were edited, since fixing them is a content decision. You'll find
+them listed in the note.
+
+## Writing new pages in the register from the start
+
+This review also changed how a new page gets written. Whoever drafts a
+page now reads a style guide (`estilo-ptbr.md`) first, and the review runs
+after verification.
+
+[Raw vs rendered HTML](/en/blog/raw-vs-rendered-html) is the first article
+made this way. It dates from November 13, 2026, and a Claude session with
+repository access drafted it. This table's first three rows are case studies
+of the same kind, published before the guide.
+
+| Page | Written | Colons per 100 sentences |
+|---|---|---|
+| `soft-404` | before the guide | 25.4 |
+| `uma-pagina-por-palavra-chave` | before the guide | 21.9 |
+| `auditoria-de-sitemap` | before the guide | 12.6 |
+| `html-renderizado`, verified draft | after the guide | 7.9 |
+| `html-renderizado`, published | after the review | 5.1 |
+
+Even as a verified draft, the new article sat inside the band for colons,
+dashes, and semicolons. Its review then made 7 proposals, compared with 56–77
+on each July article.
+That's one article by one drafter on one topic, so it doesn't separate what
+the guide did from what the drafter did.
+
+What mattered more was content. A single session wrote the draft and checked
+it against sources, and it let through 10 problems that the review's reader
+found. The worst was a count. The article said 49 pages, but its sample had
+42. That 49 was how many requests the raw-HTML side made, counting the
+`robots.txt` files.
+
+When one session both writes and verifies, it reads what it meant to say. Only
+the review's reader gave an independent reading of the facts, and the content
+skill didn't say so. Now it does, and every verification pass recomputes each
+total from its source file. All of this is in the
+[analysis of both
+skills](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-13-style-skills-in-practice.md).
+
+## What doesn't work yet
+
+- **"Você".** This measure doesn't count the imperative, which is how the site
+  addresses its reader ("rode", "compare", "confira", meaning run, compare,
+  check). As a result, 25 of 31 pages measured on November 13 fall below the
+  band, so the warning shows up on four pages in five. Adding "você" just to
+  move a number would be writing for the script. I haven't decided yet
+  whether to count the imperative and measure the native band again, or to
+  drop this measure from per-page warnings.
+- **A sample of one.** Only one article shows the guide's effect on
+  drafting. It still has to be tested on drafts from other routes,
+  from an external writing session and from me.
+- **Cost.** Each page needs a fresh reader. A batch review of the July articles
+  will need proposals grouped by pattern, not one table per page.
+- **Published pages.** No old article has been revised yet. I'm holding the
+  batch review until Google's November 2026 core update ends, so that a change in
+  position isn't mistaken for an effect of the review.
+
+## How to check
+
+```bash
+git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --published --summary
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs content/blog/melhorar-lcp-nextjs.mdx content/blog/lcp-alto-next-js.mdx content/blog/json-ld-nextjs.mdx
+node .claude/skills/portuguese-style/scripts/calibrate-register-pt.mjs --pages
+git show --stat 1fbd515
+```
+
+Once you've cloned the repository, the first command shows every published
+page against the band, sorted by distance from native. To reproduce a given
+date's numbers, run these commands at that date's commit
+(`git checkout <commit>`).
+
+Running the second gives you the "before" values for the three July articles,
+which haven't changed since that round. It won't show you the "after" values.
+Those came from copies kept out of the repository, because the batch review
+will redo each page's edits on its text as it stands then.
+
+With the third, you measure all 22 native pages again, plus the site's own. You need
+network access for it, and those pages may have changed since November 11,
+2026.
+
+In the last line, `git show` lists every correction made to the raw vs
+rendered HTML article.
+
+November 11's numbers come from commit `cf086ec`, the July articles' from
+`99217a2`, and those for the raw vs rendered HTML article and the "você" count
+from `bda4f98`.
+
+This is the English version of a page first published in Portuguese; the two declare each other.

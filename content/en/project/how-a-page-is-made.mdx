@@ -3,21 +3,22 @@ title: "How a content page is made on this site"
 description: "The steps behind every page here, from research note to merge, what checking drafts against sources and code corrected, and which checks are automated."
 slug: "how-a-page-is-made"
 datePublished: "2026-10-27"
-dateModified: "2026-11-01"
+dateModified: "2026-11-14"
 primaryQuery: "how a content page is made"
 lang: "en"
 translationOf: "como-uma-pagina-nasce"
 keywords: ['english', 'inglês', 'process', 'pipeline', 'editorial workflow', 'how a page is made', 'research note', 'brief', 'draft', 'verification', 'skill', 'check-draft', 'check-pair']
 tldr: >-
   Every page here is the end of a chain: a dated research note, an approved
-  brief, a draft, a verification pass against sources and code, an English
-  version, registration, check scripts, and a pull request. Every draft
+  brief, a draft, a verification pass against sources and code, a Portuguese
+  review, an English version, registration, check scripts, and a pull request. Every draft
   published so far needed a correction during verification.
 ---
 
 Making a page here isn't a writing task. It's the end of a chain: a dated
 research note, a brief I approve, a draft, a verification pass against
-sources and code, an English version, registration, check scripts, and a
+sources and code, a review of the Portuguese, an English version,
+registration, check scripts, and a
 pull request I merge. Verification carries the most weight. Every draft
 published so far, wherever it came from, arrived with something wrong that
 only verification found.
@@ -31,7 +32,9 @@ doc](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/content-pipeli
 and the procedure became the
 [content-page
 skill](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/content-page),
-which a session with access to the repository follows step by step.
+which a session with access to the repository follows step by step. The
+Portuguese review has an entry of its own:
+[how this site's Portuguese text is reviewed](/en/project/how-portuguese-is-reviewed).
 
 ## How the pipeline works
 
@@ -45,6 +48,7 @@ the repository keeps it.
 | Brief | Session with the repository, or an editorial session | The page plan, which I approve before any prose | No, the brief is deleted after use |
 | Draft | Writing session, me, or the session with the repository | Portuguese MDX | Only after verification |
 | Verification | Session with the repository, always | Corrected MDX, with each correction listed in the commit body | Yes |
+| Portuguese review | Session with the repository, with the `portuguese-style` skill and a reader who didn't write the page | Revised MDX, with before and after register values and the reader's content notes in the PR | Yes |
 | English version | Session with the repository, with the `english-version` skill | The pair in `content/en/`, plus the list of judgment calls in the PR | Yes |
 | Registration | Session with the repository | Hreflang pair and a row in the experiment log | Yes |
 | Checks | Session with the repository and CI | Script and test output | In the PR |
@@ -99,13 +103,18 @@ record for each one.
 | `pre-registro-seo` | My draft | A title without the query, a stimulus attributed to the wrong article, and a list of deviations different from the log's | `0d997fb` |
 | `sec-fetch-mode` | My draft | A false claim about HTTP clients. Testing it revealed a bug in the site's own classifier, fixed in PR #95. | `4de2df3` |
 | `scaled-content-abuse` | Writing session | Four factual alignments with the sources, and a short answer over the limit | `7e73fc1` |
+| `html-renderizado` | Session with the repository | A short answer over the limit, and a banned phrase inside the page's own disclaimer. Ten problems got through, and only the Portuguese review's reader found them, among them 49 pages for a sample of 42. | `1fbd515` |
 
 Placeholders like `[CODE-n]` put an end to invented code. A writing session
 can't see the repository, so it leaves a slot empty, and a session that can
 see it copies the excerpt from the file. Nothing has done that for "a fact
 that sounded right." So verification re-reads each source on the day and,
 when a claim can be tested here, tests whichever one looks most testable.
-That's how the `sec-fetch-mode` draft led to a real bug in the code.
+That's how the `sec-fetch-mode` draft led to a real bug in the code. The
+raw vs rendered HTML article showed where verification falls short. When
+the same session writes and verifies a page, it reads what it meant to
+say. In that case, the Portuguese review's reader is the only
+independent reading of the facts, and the skill now says so.
 
 ## What is automated, and what is not
 
@@ -120,8 +129,9 @@ the page.
 | One H1, title, description, canonical, JSON-LD, hreflang, contrast, accessibility | The Playwright suite | CI |
 | Leftover placeholder, H1 in the body, double braces, unmapped component, SVG color outside the tokens, banned framing, quote length, required links, lead paragraph | `check-draft.mjs` | When the draft arrives and before the PR |
 | Both sides exist, same facts and dates, links within their own language, translation note, log row | `check-pair.mjs` | Before the PR |
+| Punctuation and reader address compared with 22 technical pages by Brazilian authors, and fixed phrases of generated text | `check-portuguese.mjs` | After verification and before the English |
 | British spelling, day-month dates, translation note not on the last line, known calques from Portuguese, and register compared with native technical English | `check-english.mjs` | After the native read and before the PR |
-| Whether the subject deserves a page, whether a fact is still true, whether the code shown matches the repository's lines, whether the English reads as written in English | **No script**: verification, the native read, and me | Every page |
+| Whether the subject deserves a page, whether a fact is still true, whether the code shown matches the repository's lines, whether the Portuguese reads as written by a person, whether the English reads as written in English | **No script**: verification, the review's reader, the native read, and me | Every page |
 
 That last row is the one that matters. Scripts catch a problem that has
 already happened once. Deciding whether a page should exist, and whether a
@@ -131,7 +141,7 @@ sentence is still true today, still takes someone reading.
 
 Before the skill existed, the process was scattered across `CLAUDE.md`,
 tests, two research notes, and commit messages. Today, `content-page`
-gathers it into nine phases, and each one says where it runs and what it
+gathers it into ten phases, and each one says where it runs and what it
 delivers. It also holds templates for the research note and brief, the
 kit a writing session receives, a verification walkthrough with every
 correction made so far, and the two scripts. Instead of copying sections of

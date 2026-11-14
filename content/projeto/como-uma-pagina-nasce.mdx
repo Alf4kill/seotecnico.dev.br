@@ -7,17 +7,17 @@ keywords: ['processo', 'pipeline', 'fluxo editorial', 'como uma página é feita
 lang: "pt-BR"
 tldr: >-
   Cada página é o fim de uma cadeia: nota de pesquisa datada, brief aprovado,
-  rascunho, verificação contra as fontes e o código, versão em inglês, registro,
-  scripts de checagem e PR. Todo rascunho publicado até hoje precisou de
+  rascunho, verificação contra as fontes e o código, revisão do português,
+  versão em inglês, registro, scripts de checagem e PR. Todo rascunho publicado até hoje precisou de
   correção na verificação.
 datePublished: "2026-10-27"
-dateModified: "2026-11-01"
+dateModified: "2026-11-14"
 ---
 
 Uma página de conteúdo aqui não é uma tarefa de redação: é o fim de uma
 cadeia. Primeiro uma nota de pesquisa datada, depois um brief que eu aprovo,
-um rascunho, uma passada de verificação contra as fontes e o código, a versão
-em inglês, o registro, os scripts de checagem e um pull request de que eu faço
+um rascunho, uma passada de verificação contra as fontes e o código, a revisão
+do português, a versão em inglês, o registro, os scripts de checagem e um pull request de que eu faço
 o merge. A etapa que mais pesa é a verificação: todo rascunho publicado até
 hoje, venha de onde vier, chegou com algo errado que só ela encontrou.
 
@@ -27,7 +27,9 @@ projeto](/projeto/uso-de-ia); aqui está o processo em si. A fonte é o
 [documento do processo no repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/content-pipeline.md),
 e o procedimento virou a
 [skill content-page](https://github.com/Alf4kill/seotecnico.dev.br/tree/main/.claude/skills/content-page),
-que uma sessão com acesso ao repositório segue passo a passo.
+que uma sessão com acesso ao repositório segue passo a passo. A revisão do
+português tem uma entrada própria: [como o texto em português é
+revisado](/projeto/revisao-do-portugues).
 
 ## A cadeia
 
@@ -38,6 +40,7 @@ que uma sessão com acesso ao repositório segue passo a passo.
 | Brief | sessão com o repositório ou sessão editorial | plano da página, que eu aprovo antes de qualquer texto | não: o brief é apagado depois de usado |
 | Rascunho | sessão de redação, eu mesmo ou a sessão com o repositório | MDX em português | só depois da verificação |
 | Verificação | sessão com o repositório, sempre | MDX corrigido; as correções vão no corpo do commit | sim |
+| Revisão do português | sessão com o repositório, com a skill `portuguese-style` e um leitor que não escreveu a página | MDX revisado; os valores de registro de antes e depois e as notas de conteúdo do leitor vão no PR | sim |
 | Versão em inglês | sessão com o repositório, com a skill `english-version` | o par em `content/en/` e a lista de decisões de julgamento no PR | sim |
 | Registro | sessão com o repositório | par de hreflang e linha no registro de experimentos | sim |
 | Checagens | sessão com o repositório e CI | saída dos scripts e dos testes | no PR |
@@ -87,13 +90,17 @@ inteira refeita. Desde então, a nota viaja com o brief.
 | `pre-registro-seo` | meu rascunho | título sem a query; um estímulo atribuído ao artigo errado; uma lista de desvios diferente da do registro | `0d997fb` |
 | `sec-fetch-mode` | meu rascunho | uma afirmação falsa sobre clientes HTTP; testá-la revelou um defeito no classificador do próprio site, corrigido no PR #95 | `4de2df3` |
 | `scaled-content-abuse` | sessão de redação | quatro alinhamentos de fato com as fontes; resposta curta acima do limite | `7e73fc1` |
+| `html-renderizado` | sessão com o repositório | resposta curta acima do limite; uma frase proibida dentro do próprio aviso da página. Dez problemas passaram, e só o leitor da revisão do português os achou, entre eles 49 páginas numa amostra de 42 | `1fbd515` |
 
 Os marcadores `[CODE-n]` acabaram com o código inventado: a sessão de redação,
 que não vê o repositório, deixa o lugar vazio e a sessão com o repositório
 copia o trecho do arquivo. Nada acabou com "um fato que soava certo". Por isso a
 verificação relê as fontes no dia e testa a afirmação que mais parece testável,
 quando dá para testá-la aqui. Foi assim que o rascunho de `sec-fetch-mode` levou
-a um defeito real no código.
+a um defeito real no código. O artigo de HTML renderizado mostrou o limite da
+verificação: quando a mesma sessão escreve e verifica, ela lê o que quis dizer.
+Nesse caso, o leitor da revisão do português é a única leitura independente
+dos fatos, e a skill passou a dizer isso.
 
 ## O que é automático e o que não é
 
@@ -105,8 +112,9 @@ a um defeito real no código.
 | Um H1, título, descrição, canonical, JSON-LD, hreflang, contraste, acessibilidade | suíte do Playwright | CI |
 | Marcador esquecido, H1 no corpo, chaves duplas, componente não mapeado, cor de SVG fora dos tokens, enquadramento proibido, tamanho de citação, links obrigatórios, primeiro parágrafo | `check-draft.mjs` | na chegada do rascunho e antes do PR |
 | Os dois lados existem, mesmos fatos e datas, links dentro do próprio idioma, nota de tradução, linha no registro | `check-pair.mjs` | antes do PR |
+| Pontuação e tratamento do leitor comparados com 22 páginas técnicas de autores brasileiros; frases fixas de texto gerado | `check-portuguese.mjs` | depois da verificação e antes do inglês |
 | Grafia britânica, data no formato dia-mês, nota de tradução fora da última linha; decalques conhecidos do português e o registro comparado ao inglês técnico nativo | `check-english.mjs` | depois da leitura nativa e antes do PR |
-| O assunto merece uma página; um fato ainda é verdade; o código mostrado bate com as linhas do repositório; o inglês soa escrito em inglês | **ninguém**: a verificação, a leitura nativa e eu | toda página |
+| O assunto merece uma página; um fato ainda é verdade; o código mostrado bate com as linhas do repositório; o português soa escrito por uma pessoa; o inglês soa escrito em inglês | **ninguém**: a verificação, o leitor da revisão, a leitura nativa e eu | toda página |
 
 A última linha é a que importa. Os scripts pegam o defeito que já aconteceu
 uma vez. A pergunta de que a página deveria existir, e a de que uma frase ainda
@@ -115,7 +123,7 @@ uma vez. A pergunta de que a página deveria existir, e a de que uma frase ainda
 ## A skill
 
 O processo morava espalhado entre o `CLAUDE.md`, os testes, duas notas de
-pesquisa e mensagens de commit. A skill `content-page` junta tudo em nove
+pesquisa e mensagens de commit. A skill `content-page` junta tudo em dez
 fases, cada uma dizendo onde roda e o que entrega, mais modelos para a nota de
 pesquisa e o brief, o kit que vai para a sessão de redação, o roteiro da
 verificação com cada correção do histórico e os dois scripts. Ela aponta para
