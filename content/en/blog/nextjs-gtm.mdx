@@ -332,14 +332,12 @@ function, `pushEvent()`, sends them. An event that isn't in the type doesn't
 compile.
 
 ```ts
-// src/lib/analytics.ts
-// ─────────────────────────────────────────────────────────────────────────────
+// src/lib/analytics.ts (without the separator lines)
 // Typed dataLayer helper — the ONLY way custom events are pushed on this site.
 // Never call window.dataLayer.push directly from components (CLAUDE.md §7.2).
 //
 // Every event here MUST be documented in /docs/measurement-plan.md BEFORE
 // being implemented.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Custom events documented in docs/measurement-plan.md */
 export type AnalyticsEvent =

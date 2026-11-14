@@ -299,8 +299,7 @@ small (about 22 KB raw, about 5 KB compressed), so inlining it in the
 `.css` caching between pages, which is a favorable trade at this size.
 
 ```ts
-// next.config.ts
-  // ── CSS inline (LCP) ───────────────────────────────────────────────────────
+// next.config.ts (without the section comment)
   // O CSS do site é pequeno (~22KB brutos / ~5KB comprimidos); inlinado no
   // <head> elimina o único request render-blocking apontado pelo PSI, ao custo
   // de perder o cache do .css entre páginas — troca favorável neste tamanho.
@@ -334,30 +333,31 @@ between Next versions, and the symbol that meant
 "static" in one version may be a different glyph in yours.
 
 Here's this site's real output on Next.js 16.2.6 (the routes are the
-Portuguese site's paths):
+Portuguese site's paths, and the tree-drawing characters are replaced with
+spaces):
 
 ```
 Route (app)
-┌ ○ /
-├ ○ /_not-found
-├ ○ /blog
-├ ● /blog/[slug]
-│ ├ /blog/gtm-nextjs
-│ ├ /blog/inp-nextjs
-│ ├ /blog/metadata-api-nextjs
-│ └ [+7 more paths]
-├ ƒ /blog/-/opengraph-image
-├ ○ /busca
-├ ○ /feed.xml
-├ ○ /ferramentas
-├ ○ /ferramentas/gerador-json-ld
-├ ○ /guia/seo-tecnico-nextjs
-├ ○ /icon.svg
-├ ○ /opengraph-image
-├ ○ /politica-de-privacidade
-├ ○ /robots.txt
-├ ○ /sitemap.xml
-└ ○ /sobre
+  ○ /
+  ○ /_not-found
+  ○ /blog
+  ● /blog/[slug]
+    /blog/gtm-nextjs
+    /blog/inp-nextjs
+    /blog/metadata-api-nextjs
+    [+7 more paths]
+  ƒ /blog/-/opengraph-image
+  ○ /busca
+  ○ /feed.xml
+  ○ /ferramentas
+  ○ /ferramentas/gerador-json-ld
+  ○ /guia/seo-tecnico-nextjs
+  ○ /icon.svg
+  ○ /opengraph-image
+  ○ /politica-de-privacidade
+  ○ /robots.txt
+  ○ /sitemap.xml
+  ○ /sobre
 
 ○  (Static)   prerendered as static content
 ●  (SSG)      prerendered as static HTML (uses generateStaticParams)

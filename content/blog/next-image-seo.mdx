@@ -45,8 +45,7 @@ loading por padrão. A configuração deste site cobre AVIF e WebP com os
 breakpoints ajustados ao layout:
 
 ```ts
-// next.config.ts
-  // ── Otimização de imagens ──────────────────────────────────────────────────
+// next.config.ts (sem o comentário de seção)
   images: {
     // Formatos modernos em ordem de preferência (avif < webp < original)
     formats: ['image/avif', 'image/webp'],
@@ -173,14 +172,12 @@ abaixo da dobra e devem permanecer lazy. O comentário no override de MDX
 deste repositório existe para ninguém "otimizar" isso por engano:
 
 ```tsx
-// src/components/mdx/mdx-components.tsx
-// ─────────────────────────────────────────────────────────────────────────────
+// src/components/mdx/mdx-components.tsx (sem as linhas separadoras)
 // Componentes disponíveis dentro dos arquivos MDX de /content.
 //
 // `Image` (next/image) é a forma sancionada de embutir imagens em artigos:
 // exige width/height explícitos (sem CLS) e serve formato otimizado (§6).
 // Imagens de conteúdo ficam abaixo da dobra — nunca usar `preload` aqui.
-// ─────────────────────────────────────────────────────────────────────────────
 ```
 
 Não vou fingir um antes/depois de hero image que este site não tem. Se o seu

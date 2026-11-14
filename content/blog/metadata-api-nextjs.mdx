@@ -393,8 +393,7 @@ O contrato do helper — o cabeçalho real do arquivo, com o motivo de ele
 existir e a assinatura de entrada:
 
 ```ts
-// src/lib/metadata.ts
-// ─────────────────────────────────────────────────────────────────────────────
+// src/lib/metadata.ts (sem as linhas separadoras)
 // buildMetadata — helper único de metadados por página (CLAUDE.md §6).
 //
 // Motivo de existir: no Metadata API do Next.js, quando uma página define seu
@@ -405,7 +404,6 @@ existir e a assinatura de entrada:
 //
 // Limites de title (≤60, já com o sufixo do template) e description (≤155)
 // são validados aqui e estouram no build — mesma política de /lib/content.ts.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const TITLE_MAX = 60
 const DESCRIPTION_MAX = 155
