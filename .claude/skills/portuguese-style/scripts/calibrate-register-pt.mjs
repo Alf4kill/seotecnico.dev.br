@@ -19,6 +19,10 @@
 //   --pages   also print every page's values (corpus and site)
 //   --write   save the band to register-thresholds-pt.json (commit it with the
 //             research note that records the run)
+//   --only <feature>   with --write, replace that one feature's band and
+//             keep the others as committed; the JSON records the date,
+//             commit and page count of that measure under "remeasured"
+//             (first used 2026-11-14, when the imperative joined "você")
 //
 // Band: native p10, p50 and p90 per feature (nearest rank). Pages change, so a
 // rerun can move the numbers; the committed JSON records the date and commit.
@@ -159,7 +163,27 @@ if (showPages) {
   for (const p of native) console.log(`  ${p.url}\n    ${p.dates.map((d) => `${d.source} ${d.date}`).join('; ') || 'none in the markup (date from the corpus file)'}`)
 }
 
-if (process.argv.includes('--write')) {
+const onlyAt = process.argv.indexOf('--only')
+const only = onlyAt > 0 ? process.argv[onlyAt + 1] : null
+if (only && !FEATURES.some((f) => f.id === only)) {
+  console.error(`--only: no feature '${only}' (${FEATURES.map((f) => f.id).join(', ')})`)
+  process.exit(2)
+}
+
+if (process.argv.includes('--write') && only) {
+  // One feature measured again; the others keep the run they came from.
+  let commit = 'unknown'
+  try { commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim() } catch {}
+  const file = path.join(HERE, 'register-thresholds-pt.json')
+  const prev = JSON.parse(fs.readFileSync(file, 'utf8'))
+  prev.features[only] = band[only]
+  prev.remeasured = {
+    ...(prev.remeasured || {}),
+    [only]: { measured: new Date().toLocaleDateString('sv'), commit, pages: native.length, sites, authors, words: native.reduce((n, p) => n + p.words, 0) },
+  }
+  fs.writeFileSync(file, JSON.stringify(prev, null, 2) + '\n')
+  console.log(`\nwrote '${only}' to ${path.relative(ROOT, file)}; the other features keep ${prev.measured} (${prev.commit})`)
+} else if (process.argv.includes('--write')) {
   let commit = 'unknown'
   try { commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim() } catch {}
   const out = {
