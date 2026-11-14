@@ -119,8 +119,10 @@ function proseLines(body) {
   return body.split(/\r?\n/).map((line) => {
     if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; return '' }
     if (inFence) return ''
-    if (/<svg\b/.test(line)) inSvg = true
-    if (inSvg) { if (/<\/svg>/.test(line)) inSvg = false; return '' }
+    // An inline `<svg>` in code is text, not the start of a figure.
+    const bare = line.replace(/`[^`\n]*`/g, ' ')
+    if (/<svg\b/.test(bare)) inSvg = true
+    if (inSvg) { if (/<\/svg>/.test(bare)) inSvg = false; return '' }
     return line
       .replace(/`[^`\n]*`/g, ' ')
       .replace(/\]\([^)]*\)/g, ']')
