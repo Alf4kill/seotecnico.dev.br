@@ -49,7 +49,11 @@ content section is "No Next.js" / "In Next.js" with real code from the repo.
 
 ## 6b. Drafting
 - Route: A external writing session (handoff kit) | B owner | C this session
-- Banned framings (from the note's "claims to avoid"; become `check-draft.mjs --ban`):
+- Banned framings (from the note's "claims to avoid"; become `check-draft.mjs --ban`).
+  Each is the wording of the wrong claim ("renderização dinâmica é a solução"),
+  never a bare term the page may need in order to deny it ("renderização
+  dinâmica"): `--ban` matches substrings, and a bare term fails the page that
+  refutes it (2026-11-13, `html-renderizado`):
 - Length ceiling for running prose (tables and lists not counted):
 
 ## 7. Links

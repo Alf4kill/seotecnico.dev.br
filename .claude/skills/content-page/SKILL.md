@@ -152,9 +152,19 @@ fact, number, hedge, code or link (its rule 1). On a new page, `title` and
 `description` are still free; on a published page they are not (its
 `references/site.md` §7).
 
+That reader is also the page's second reader of facts, and on route C,
+where this session drafted and verified the page, it is the only one. Never
+skip it. Resolve its NOTA-REDACAO with phase 4's rules (correct the draft
+against the source, keep the reversible editorial ones, send the rest to
+the PR), then rerun phase 4's checks on what changed. Why: on 2026-11-13
+the phase 4 pass of a route C page missed ten content problems, among them
+a wrong page count, and this reader found all ten
+(`references/draft-verification.md`).
+
 Gate:
 
 - `check-portuguese.mjs` with 0 errors;
+- every NOTA-REDACAO of the reader resolved or listed for the PR;
 - `placeholders.mjs compare` between the verified file and the reviewed one,
   with nothing missing;
 - every hedge of the list still in the page.

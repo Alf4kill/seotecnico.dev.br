@@ -14,9 +14,13 @@ route has produced a draft that needed no correction.
 | `pre-registro-seo` | B (owner) | title without the primary query; a stimulus attributed to the wrong article; a deviation list that differed from the log; quotes that had to be verbatim from the log | `0d997fb` |
 | `sec-fetch-mode` | B (owner) | "plain HTTP clients send no Sec-Fetch" — false for Node's fetch; testing it found a defect in the site's own classifier (fixed in PR #95) | `4de2df3` |
 | `scaled-content-abuse` | A | a manual-action sentence not matching the help text; a "most visible sign" claim reduced to the mechanism; a timeline row corrected to the changelog; a missing source for the live-test claim; `tldr` over 300 | `7e73fc1` |
+| `html-renderizado` | C | this pass: `tldr` over 300, a banned phrase inside the page's own disclaimer. **Missed, found by the phase 4b reader:** 49 pages for a sample of 42 (49 was the request count), a paragraph contradicting its own table, "every field" for most, "all routes" for four, and six more | `1fbd515`, `docs/research/2026-11-13-style-skills-in-practice.md` |
 
 Read the pattern: placeholders ended invented code, and nothing has ended
-"a fact that sounded right". That is what steps 3 and 4 below are for.
+"a fact that sounded right". That is what steps 3 and 4 below are for. On
+route C the drafter runs this pass on its own draft, and reads what it
+meant; the phase 4b reader is then the only independent reading of the
+facts.
 
 ## The pass, in order
 
@@ -33,7 +37,10 @@ Read the pattern: placeholders ended invented code, and nothing has ended
    Console strings in pt-BR and en differ), "most/always/never" wording.
 4. **Repository facts.** Every number about this site comes from a versioned
    file (experiment log, audit, lab record). Quote it from there, not from the
-   draft.
+   draft. Recompute every total from that file, and name its unit: pages,
+   requests and routes are different counts of the same run. Then read the
+   draft against itself: a sentence that contradicts a table on the same page
+   is a wrong fact.
 5. **One test.** Pick the claim that most sounds like a testable fact and test
    it here if you can (a header a client sends, what the build output says).
 6. **Diagrams.** Build each `[SVG-x]` with the diagram tokens (§9),
