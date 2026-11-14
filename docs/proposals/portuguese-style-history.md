@@ -554,6 +554,32 @@ What it showed:
   recursos" and lists four.
   They are owner decisions, listed in the research note.
 
+### 2026-11-13 — the writing run and the analysis of both skills **[repo]**
+
+The second half of the practical use is a new page written through the whole
+pipeline: theme 07, `html-renderizado` ↔ `raw-vs-rendered-html`, route C
+(PR #143, merge `0efbf60`). Details and the analysis of both runs:
+`docs/research/2026-11-13-style-skills-in-practice.md`.
+
+- **The draft arrived inside the band.** Written after reading
+  `estilo-ptbr.md`, the verified draft had 7.9 colons per 100 sentences, no
+  dashes and no semicolons. The three outside-in case studies published
+  before the guide had 25.4, 21.9 and 12.6 colons. The review made 7
+  proposals, against 56–77 per July page, and took colons to 5.1. One page,
+  one drafter: not yet a measure of the guide.
+- **The reader caught the facts.** The phase 4 pass, run by the session
+  that drafted the page, missed 10 content problems. The 4b reader found all
+  of them, among them 49 pages for a sample of 42. Fixed in the skill
+  (content-page phase 4b and `draft-verification.md` step 4).
+- **"Você" flags the site's voice.** 23 of the 31 Portuguese pages are
+  below the band's p10, because the site addresses the reader in the
+  imperative. An owner decision: count the imperative and recalibrate, or
+  keep the measure out of the per-page WARNs.
+- **Decision 5 moved.** `como-uma-pagina-nasce` already has the English
+  procedure, so the plan's "no entry either" was out of date. The note
+  recommends a new entry on the Portuguese review, with
+  `como-uma-pagina-nasce` updated in the same PR.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 
