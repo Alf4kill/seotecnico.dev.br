@@ -2,10 +2,20 @@
 
 Every "Before" below is a real line from a published page (shortened, with
 its file and line at `631e4a3`). The "Proposed" column is a rewrite that
-keeps every fact, number, hedge and link. **None of them is applied yet:**
-the published pages are revised in steps 6 and 7 of the proposal, and each
-row here is replaced by the applied version when that happens, as
-`english-version/references/calques.md` records its revision.
+keeps every fact, number, hedge and link. The published pages are revised
+in steps 6 and 7 of the proposal, and each row here is replaced by the
+applied version when that happens, as `english-version/references/calques.md`
+records its revision.
+
+**Applied so far:** batch 1 of step 6 (2026-11-14) revised
+`melhorar-lcp-nextjs`, `lcp-alto-next-js` and `json-ld-nextjs`. The examples
+from those pages (the `filler`, `inflated`, `unit-space`, `register-colons`
+and `register-dashes` rows, and the closing of `json-ld-nextjs`) are applied:
+the rewrite in the page is close to "Proposed", and the line numbers refer to
+the page before the batch. Two examples stay, waiting for the owner (rule 1):
+the generalization "que quase ninguém explicita" (`melhorar-lcp-nextjs`
+105) and the heading at `json-ld-nextjs` 277. Every other row is not
+applied yet.
 
 The `id` is the rule name in `check-portuguese.mjs`. Rows without an id need
 a reader: no pattern separates them from correct Portuguese. Counts are
