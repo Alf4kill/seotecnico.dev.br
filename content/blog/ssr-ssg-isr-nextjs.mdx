@@ -284,8 +284,7 @@ atualização mais abaixo conta como isso mudou). Uma
 decisão de performance que só faz sentido nesse cenário está no config:
 
 ```ts
-// next.config.ts
-  // ── CSS inline (LCP) ───────────────────────────────────────────────────────
+// next.config.ts (sem o comentário de seção)
   // O CSS do site é pequeno (~22KB brutos / ~5KB comprimidos); inlinado no
   // <head> elimina o único request render-blocking apontado pelo PSI, ao custo
   // de perder o cache do .css entre páginas — troca favorável neste tamanho.

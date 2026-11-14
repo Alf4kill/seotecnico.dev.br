@@ -305,14 +305,12 @@ em componente. Existe uma union type com os eventos permitidos e uma única
 função `pushEvent()` — um evento que não está no tipo não compila:
 
 ```ts
-// src/lib/analytics.ts
-// ─────────────────────────────────────────────────────────────────────────────
+// src/lib/analytics.ts (sem as linhas separadoras)
 // Typed dataLayer helper — the ONLY way custom events are pushed on this site.
 // Never call window.dataLayer.push directly from components (CLAUDE.md §7.2).
 //
 // Every event here MUST be documented in /docs/measurement-plan.md BEFORE
 // being implemented.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Custom events documented in docs/measurement-plan.md */
 export type AnalyticsEvent =

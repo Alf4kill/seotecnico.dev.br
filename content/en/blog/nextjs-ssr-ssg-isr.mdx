@@ -299,8 +299,7 @@ small (about 22 KB raw, about 5 KB compressed), so inlining it in the
 `.css` caching between pages, which is a favorable trade at this size.
 
 ```ts
-// next.config.ts
-  // ── CSS inline (LCP) ───────────────────────────────────────────────────────
+// next.config.ts (without the section comment)
   // O CSS do site é pequeno (~22KB brutos / ~5KB comprimidos); inlinado no
   // <head> elimina o único request render-blocking apontado pelo PSI, ao custo
   // de perder o cache do .css entre páginas — troca favorável neste tamanho.
