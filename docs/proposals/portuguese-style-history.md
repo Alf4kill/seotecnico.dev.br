@@ -581,6 +581,23 @@ pipeline: theme 07, `html-renderizado` ↔ `raw-vs-rendered-html`, route C
   recommends a new entry on the Portuguese review, with
   `como-uma-pagina-nasce` updated in the same PR.
 
+### 2026-11-14 — decision 5 and the "você" measure **[repo]**
+
+- **Decision 5: (b).** A new project entry on the Portuguese review, PT + EN,
+  with `como-uma-pagina-nasce` updated in the same PR: PR #146 (merge
+  `69a74d2`), `/projeto/revisao-do-portugues` ↔
+  `/en/project/how-portuguese-is-reviewed`. The entry tells the whole
+  process from the start, using this file as its base.
+- **Decision 6, the "você" measure: (a).** The imperative is now counted
+  next to "você" (`fc02dd2`) and the native band was measured again for that
+  feature (`269e1f6`): p10 0.53, median 1.25, p90 2.06, on 21 of the 22
+  corpus pages (one answers 403 now). The explanation behind the decision
+  was wrong: in running prose the site uses the imperative at about the
+  native rate (median 0.14 against 0.17 per 100 words) and "você" a tenth as
+  often (0.08 against 0.80). 26 of 32 pages stay below the band. The
+  warning measures a real difference now, not a gap in the script.
+  `docs/research/2026-11-14-imperative-reader-address.md`.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 

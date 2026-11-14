@@ -14,14 +14,16 @@
 > and analysis of both skills (2026-11-13, PR #143 and
 > `docs/research/2026-11-13-style-skills-in-practice.md`): content-page
 > phase 4b now names the reader as the second reader of facts; decision 5
-> has two options there. Steps 6–7 not started; step 6 waits for the core
-> update.
+> has two options there. 2026-11-14: decision 5 taken as (b), the project
+> entry on the Portuguese review (PR #146); decision 6 taken as (a), the
+> imperative counted and the band measured again (26 of 32 pages still
+> below). Steps 6–7 not started; step 6 waits for the core update.
 > Revised the same day after a review against the repository (history file,
 > entry "review of the plan").
 > **Origin:** owner request, 2026-11-11: improve how the articles are written
 > and reviewed, so the Portuguese reads as written by a person, without
 > changing what it says; reusable in the owner's other projects later.
-> **Last updated:** 2026-11-11
+> **Last updated:** 2026-11-14
 > **Companion files:** `docs/proposals/portuguese-style-history.md` (what was
 > researched and measured before this plan, and the commands that reproduce
 > it), `.claude/skills/content-page/`, `.claude/skills/english-version/`
@@ -301,4 +303,5 @@ author. A packaged, site-free version is not part of this proposal.
 | 2 | Migrate `content-style-guide.md` from the Project into the repository, making the repository the source | yes; the file is not in the repository, so step 1 needs its content from the Project |
 | 3 | Corpus: approve the criteria in §5, or name sources | approve, with the date cut |
 | 4 | Whether the external research report is versioned. The repository is public, and the report quotes many third-party pages at length | no; the summary in the history file is enough |
-| 5 | Where the future page goes (history file, §3.1) | a new project entry on how the site's text is reviewed, in both languages (the English revision of 2026-10-27 has no entry either), with its own `primaryQuery`; decided at content-page gate 0.3. **2026-11-13:** the English revision is already in `como-uma-pagina-nasce`; the options are now (a) update that entry or (b) a new entry on the Portuguese review plus the update, (b) recommended (`docs/research/2026-11-13-style-skills-in-practice.md` §6) |
+| 5 | Where the future page goes (history file, §3.1) | a new project entry on how the site's text is reviewed, in both languages (the English revision of 2026-10-27 has no entry either), with its own `primaryQuery`; decided at content-page gate 0.3. **2026-11-13:** the English revision is already in `como-uma-pagina-nasce`; the options are now (a) update that entry or (b) a new entry on the Portuguese review plus the update, (b) recommended (`docs/research/2026-11-13-style-skills-in-practice.md` §6). **Decided 2026-11-14: (b)**, PR #146 |
+| 6 | The "você" measure warns on 25 of 31 pages: (a) count the imperative and measure the native band again, or (b) drop it from the per-page WARNs (`docs/research/2026-11-13-style-skills-in-practice.md` §5.4) | (a). **Decided 2026-11-14: (a)**, `fc02dd2` and `269e1f6`. 26 of 32 pages stay below: the site uses the imperative at about the native rate and "você" a tenth as often (`docs/research/2026-11-14-imperative-reader-address.md`) |

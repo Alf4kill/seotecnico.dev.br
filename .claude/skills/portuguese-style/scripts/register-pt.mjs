@@ -43,6 +43,70 @@ export function isProse(paragraph, minWords = PROFILE_MIN_WORDS) {
  */
 const dashAsides = (sentence) => Math.ceil((sentence.match(/—|\s[–-]\s/g) || []).length / 2)
 
+// ── the imperative ──────────────────────────────────────────────────────────
+// Brazilian technical prose addresses the reader in two ways: "você" and the
+// imperative ("rode", "confira", "abra o DevTools"). Until 2026-11-14 only
+// "você" was counted, so a page written in the imperative sat below the band
+// (25 of 31 pages at bda4f98). The owner chose to count both and measure the
+// native band again (docs/proposals/portuguese-style.md, decision 6).
+//
+// Portuguese has no imperative form of its own for "você": it is the present
+// subjunctive, which also follows "que". So the count is a lexicon of verbs
+// that technical prose uses to give instructions, taken only where an
+// instruction starts: the start of a sentence or clause (after , ; :), after
+// "e"/"ou", or after a clause-initial adverb ("Não use", "Depois abra").
+
+const IMPERATIVES = `abra acesse acompanhe adicione aguarde ajuste altere analise anime anote
+  aplique aponte aproveite assine atualize avalie baixe busque calcule carregue chame
+  clique cole coloque comece compare compile configure confira confirme conecte conte
+  considere consulte continue copie corrija crie defina deixe descubra desative
+  desligue digite diga edite elimine entenda envie escolha escreva espere evite
+  examine execute experimente explore faça feche filtre fique garanta gere grave
+  guarde habilite identifique ignore imagine implemente importe inclua informe insira
+  inspecione instale interaja leia lembre limpe liste mantenha marque meça mova mude
+  navegue note observe olhe otimize pare peça pegue pense perceba pergunte pesquise
+  ponha preencha prefira prepare priorize procure publique pule recarregue reduza
+  registre reinicie remova renderize repare repita responda revise rode salve saiba
+  selecione siga solicite substitua suba tente teste tire trate troque use utilize
+  valide verifique veja volte`.split(/\s+/)
+const IMPERATIVE_FORMS = new Set([...IMPERATIVES, ...IMPERATIVES.map((f) => `${f}m`)]) // "vejam", "usem"
+const IMPERATIVE_SE = new Set(['lembre-se', 'certifique-se', 'inscreva-se', 'atente-se', 'prepare-se', 'cadastre-se', 'preocupe-se', 'informe-se', 'acostume-se'])
+/** Forms that are also nouns or adjectives ("o teste", "peça por peça", "um erro grave"): counted only before a determiner. */
+const AMBIGUOUS = new Set(['teste', 'note', 'peça', 'grave', 'continue', 'gere', 'pare', 'marque', 'salve', 'registre', 'conte', 'diga'])
+const DETERMINER = /^(o|a|os|as|um|uma|se|que|seu|sua|seus|suas|esse|essa|esses|essas|este|esta|isso|isto|aquilo|como|no|na|nos|nas|X|cada|todo|toda|todos|todas|com|primeiro|antes|depois|sempre|também|agora)$/i
+const JOINERS = new Set(['e', 'ou'])
+const ADVERBS = new Set(['não', 'nunca', 'então', 'depois', 'agora', 'aí', 'só', 'primeiro', 'apenas', 'sempre', 'também'])
+const SUBJECTS = new Set(['que', 'se', 'você', 'vocês', 'eu', 'ele', 'ela', 'eles', 'elas', 'nós', 'o', 'a', 'os', 'as'])
+
+const bare = (w = '') => w.toLowerCase().replace(/^[(«“"'‘]+|[)»”"'’.,;:!?…]+$/g, '')
+const opensClause = (words, i) => i === 0 || /[,;:]$/.test(words[i - 1])
+
+/** Imperatives addressed to the reader in one sentence (a quoted prompt or phrase is not one). */
+export function imperativesOf(sentence) {
+  const w = sentence.split(/\s+/).filter(Boolean)
+  let n = 0
+  let quoted = false // inside "…", “…” or «…»: a quoted prompt or phrase
+  for (let i = 0; i < w.length; i++) {
+    const inQuote = quoted || /^[«“"]/.test(w[i])
+    for (const ch of w[i]) {
+      if (ch === '"') quoted = !quoted
+      else if (ch === '“' || ch === '«') quoted = true
+      else if (ch === '”' || ch === '»') quoted = false
+    }
+    const tok = bare(w[i])
+    if (!IMPERATIVE_FORMS.has(tok) && !IMPERATIVE_SE.has(tok)) continue
+    if (inQuote) continue
+    const prev = bare(w[i - 1])
+    const starts = opensClause(w, i)
+      || JOINERS.has(prev)
+      || (ADVERBS.has(prev) && (opensClause(w, i - 1) || JOINERS.has(bare(w[i - 2]))))
+    if (!starts || SUBJECTS.has(prev)) continue
+    if (AMBIGUOUS.has(tok.replace(/m$/, '')) && !DETERMINER.test(bare(w[i + 1]))) continue
+    n++
+  }
+  return n
+}
+
 const median = (v) => {
   const s = [...v].sort((a, b) => a - b)
   if (!s.length) return NaN
@@ -77,9 +141,9 @@ export const FEATURES = [
     compute: (s) => s.sentenceMedian,
   },
   {
-    id: 'voce', label: '"você" per 100 words', dir: 'low',
-    hint: 'impersonal frames ("é possível", "deve-se"): address the reader',
-    compute: (s) => (100 * s.voce) / s.words,
+    id: 'voce', label: '"você" and imperatives per 100 words', dir: 'low',
+    hint: 'impersonal frames ("é possível", "deve-se") where the reader acts: "você" or the imperative',
+    compute: (s) => (100 * (s.voce + s.imperatives)) / s.words,
   },
   {
     id: 'first-person', label: 'first person singular per 100 words', dir: 'info',
@@ -116,6 +180,7 @@ export function counts(paragraphs, structure = {}) {
     dashes: sentences.reduce((n, s) => n + dashAsides(s), 0),
     semicolons: c(/;\s/g),
     voce: c(/(?<![\p{L}])(você|vocês)(?![\p{L}])/giu),
+    imperatives: sentences.reduce((n, s) => n + imperativesOf(s), 0),
     firstPerson: c(/(?<![\p{L}])(eu|meu|minha|meus|minhas|mim|comigo)(?![\p{L}])/giu),
     listItems: structure.listItems ?? null,
     allParagraphs: structure.allParagraphs ?? paragraphs.length,
