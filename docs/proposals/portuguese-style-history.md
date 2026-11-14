@@ -598,6 +598,53 @@ pipeline: theme 07, `html-renderizado` ↔ `raw-vs-rendered-html`, route C
   warning measures a real difference now, not a gap in the script.
   `docs/research/2026-11-14-imperative-reader-address.md`.
 
+### 2026-11-14 — step 6: two batches, then stop **[repo]**
+
+- **Batch 1 (PR #150).** Pages: `melhorar-lcp-nextjs`, `lcp-alto-next-js`,
+  `json-ld-nextjs`.
+  - These pages were unchanged since the 2026-11-13 review, so the batch
+    applied the edits accepted in that round: 67 of 72, 56 of 56 and 70 of
+    77.
+  - A new reader made a second pass on `json-ld-nextjs`, which was still
+    above the colon p90, and proposed 20 more edits.
+  - Colons per 100 sentences: 28.4 → 15.8, 26.0 → 12.5, 31.2 → 10.6.
+  - Held back for the owner: 12 cuts of unmeasured generalizations.
+  - Shipped before the core update finished (deploy 2026-11-14T12:33:03Z).
+    The log row says so (PR #151).
+- **Batch 2 (PR #152).** Pages: `sitemap-dinamico-nextjs`,
+  `metadata-api-nextjs`, `next-image-seo`, `ssr-ssg-isr-nextjs`.
+  - Four fresh readers ran in parallel, one per page, and proposed 216
+    rows. All were applied after a read in context, plus one cut a reader
+    offered.
+  - Colons: 27.5 → 7.2, 35.3 → 15.9, 39.1 → 15.6, 37.3 → 15.4. Dashes went
+    to 0 on all four.
+- **What use found in the tooling.** The second reader of `next-image-seo`
+  noticed that the counts left part of the page out. An inline
+  `` `<svg>` `` made both scripts skip the prose up to the next figure's
+  `</svg>`, about a third of the page.
+  - The fix is `4c59283`. Only that page was affected.
+  - Its colon "before" had read 51.6 and is 39.1 with the fix.
+  - The evals of step 4 had no page with `<svg>` in inline code, so only
+    a batch that reached `next-image-seo` could find this.
+- **What the readers found beyond style.** The readers read for style, and
+  every one of the seven pages still got at least one factual note.
+  - The largest: `metadata-api-nextjs` says the page config's
+    `openGraph.images` beats a sibling `opengraph-image.tsx`. The docs
+    shipped with Next 16.2.12 say file-based metadata wins.
+  - Others: stale examples in `sitemap-dinamico-nextjs`, "cada artigo" on
+    `next-image-seo` (7 of 28 have a raster copy), and Googlebot called
+    "praticamente o único" crawler that renders on `ssr-ssg-isr-nextjs`.
+  - None is edited. They go through content-page phase 4.
+- **Owner decision: stop after batch 2.** In the owner's words: "o mais
+  importante para mim é o uso e documentação dessa skill no momento". Not
+  revised: `gtm-nextjs`, `inp-nextjs`, `redirects-canonicals-nextjs` and
+  `hreflang-nextjs`.
+  - Step 7 is not scheduled.
+  - The lessons from both batches went into `SKILL.md`, "Revising published
+    pages": one reader per page, a second reader limited to the feature
+    that is out, the script read first when counts look wrong, and the
+    NOTA groups.
+
 <!-- Next entries: corpus chosen, calibration run, skill evals, each batch
 revision with register before/after and its log row. -->
 
