@@ -71,13 +71,16 @@ fora, e as listas entram só na contagem de itens.
 | travessões a cada 100 frases | 0 | 4,76 |
 | ponto e vírgula a cada 100 frases | 0 | 1,94 |
 | palavras por frase (mediana da página) | 17 | 26 |
-| "você" a cada 100 palavras | 0,8 | 1,85 |
+| "você" e imperativo a cada 100 palavras | 1,25 | 2,06 |
 | primeira pessoa a cada 100 palavras | 0,18 | 0,97 |
 | itens de lista a cada 1.000 palavras | 2 | 23,94 |
 | parágrafos abertos com rótulo em negrito, a cada 100 | 0 | 22,22 |
 
-Duas medidas avisam também para baixo. O "você" avisa abaixo de 0,3 a cada 100
-palavras, e a mediana de palavras por frase, abaixo de 13.
+Duas medidas avisam também para baixo. O "você" com o imperativo avisa abaixo
+de 0,53 a cada 100 palavras, e a mediana de palavras por frase, abaixo de 13.
+Essa medida foi refeita em 14 de novembro, em 21 das 22 páginas nativas,
+porque uma delas passou a responder 403. As outras vêm da medição de 11 de
+novembro.
 
 Fora da faixa, o script avisa e não reprova. Um aviso é uma pergunta para
 quem revisa, e a resposta pode ser deixar como está. A meta também não é zero.
@@ -184,12 +187,17 @@ skills](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/20
 
 ## O que ainda não funciona
 
-- **O "você".** A medida não conta o imperativo, que é como o site fala com o
-  leitor ("rode", "compare", "confira"). Por isso 25 das 31 páginas medidas em
-  13 de novembro ficam abaixo da faixa, e o aviso aparece em quatro de cada cinco.
-  Acrescentar "você" para mudar o número seria escrever para o script. A decisão está aberta: contar o
-  imperativo e medir a faixa nativa de novo, ou tirar a medida dos avisos por
-  página.
+- **O "você".** Até 14 de novembro, a medida contava só o "você", e 25 das 31
+  páginas ficavam abaixo da faixa. A explicação era que o site fala com o
+  leitor no imperativo ("rode", "compare", "confira"). Decidi contar os dois e
+  medir a faixa nativa de novo. A explicação estava errada. No texto corrido,
+  o site usa o imperativo quase tanto quanto os autores nativos (mediana de
+  0,14 contra 0,17 a cada 100 palavras), mas usa o "você" dez vezes menos
+  (0,08 contra 0,80). Com a medida nova, 26 das 32 páginas continuam abaixo
+  da faixa, e o aviso aponta uma diferença real. Acrescentar "você" só para
+  mudar o número continua sendo escrever para o script. A
+  [nota da nova medição](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-14-imperative-reader-address.md)
+  tem o método e os números.
 - **Uma amostra de um.** O efeito do guia sobre o rascunho foi visto num
   artigo. Precisa de rascunhos das outras rotas, os da sessão de redação e os meus.
 - **O custo.** Cada página pede um leitor novo, e uma revisão em lote dos
@@ -216,7 +224,7 @@ artigos de julho, que não mudaram desde a rodada. Os valores de depois vêm de
 cópias que não estão no repositório, porque a revisão em lote vai refazer as
 edições nas páginas como elas estiverem então. A terceira mede de novo as 22
 páginas nativas e as do site. Ela precisa de rede, e as páginas podem ter mudado desde 11
-de novembro de 2026. O commit da última linha lista as correções do artigo de
+de novembro de 2026. Em 14 de novembro, uma delas já respondia 403. O commit da última linha lista as correções do artigo de
 HTML renderizado. Os números de 11 de novembro são do commit `cf086ec`, os
-dos artigos de julho, do commit `99217a2`, e os do artigo de HTML renderizado
-e do "você", do commit `bda4f98`.
+dos artigos de julho, do commit `99217a2`, os do artigo de HTML renderizado,
+do commit `bda4f98`, e os do "você" com o imperativo, do commit `269e1f6`.

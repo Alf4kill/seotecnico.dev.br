@@ -69,7 +69,7 @@ sentences get shorter, but colons stay at about five times the native median.
 
 A script, `check-portuguese.mjs`, measures eight features of running prose and
 warns on seven of them. It reports first person for information only. One feature counts
-"você", Portuguese for "you". Tables, headings, and code are left out, and
+"você", Portuguese for "you", together with the imperative. Tables, headings, and code are left out, and
 lists count only toward the list-item feature.
 
 | Feature | Native median | 90% of native pages are below |
@@ -78,13 +78,16 @@ lists count only toward the list-item feature.
 | dash asides per 100 sentences | 0 | 4.76 |
 | semicolons per 100 sentences | 0 | 1.94 |
 | words per sentence (page median) | 17 | 26 |
-| "você" per 100 words | 0.8 | 1.85 |
+| "você" and imperatives per 100 words | 1.25 | 2.06 |
 | first person per 100 words | 0.18 | 0.97 |
 | list items per 1,000 words | 2 | 23.94 |
 | paragraphs opening with a bold label, per 100 | 0 | 22.22 |
 
-Two measures also warn on the low side, when "você" falls below 0.3 per 100
-words and when a page's median sentence drops below 13 words.
+Two measures also warn on the low side, when "você" and imperatives fall below
+0.53 per 100 words and when a page's median sentence drops below 13 words.
+That first measure was taken again on November 14, on 21 of the 22 native
+pages, because one of them had started answering with a 403. Every other
+value comes from the November 11 run.
 
 When a value falls outside the band, the script warns but never fails. A
 warning is a question for the reviewer, and one answer can be to leave the text as it is.
@@ -206,13 +209,18 @@ skills](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/20
 
 ## What doesn't work yet
 
-- **"Você".** This measure doesn't count the imperative, which is how the site
-  addresses its reader ("rode", "compare", "confira", meaning run, compare,
-  check). As a result, 25 of 31 pages measured on November 13 fall below the
-  band, so the warning shows up on four pages in five. Adding "você" just to
-  move a number would be writing for the script. I haven't decided yet
-  whether to count the imperative and measure the native band again, or to
-  drop this measure from per-page warnings.
+- **"Você".** Until November 14, this measure counted only "você", and 25 of
+  31 pages fell below the band. The explanation was that the site addresses
+  its reader in the imperative instead ("rode", "compare", "confira", meaning
+  run, compare, check). I decided to count both and measure the native band
+  again, and that explanation turned out wrong. In running prose, the site
+  uses the imperative almost as often as native authors do (a median of 0.14
+  against 0.17 per 100 words), but it uses "você" a tenth as often (0.08
+  against 0.80). Under the new measure, 26 of 32 pages are still below the
+  band, so the warning points at a real difference. Adding "você" just to
+  move a number would still be writing for the script. A
+  [note on the new measurement](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-14-imperative-reader-address.md)
+  has the method and numbers.
 - **A sample of one.** Only one article shows the guide's effect on
   drafting. It still has to be tested on drafts from other routes,
   from an external writing session and from me.
@@ -244,13 +252,13 @@ will redo each page's edits on its text as it stands then.
 
 With the third, you measure all 22 native pages again, plus the site's own. You need
 network access for it, and those pages may have changed since November 11,
-2026.
+2026. By November 14, one of them was already answering with a 403.
 
 In the last line, `git show` lists every correction made to the raw vs
 rendered HTML article.
 
 November 11's numbers come from commit `cf086ec`, the July articles' from
-`99217a2`, and those for the raw vs rendered HTML article and the "você" count
-from `bda4f98`.
+`99217a2`, those for the raw vs rendered HTML article from `bda4f98`, and
+those for "você" with the imperative from `269e1f6`.
 
 This is the English version of a page first published in Portuguese; the two declare each other.
