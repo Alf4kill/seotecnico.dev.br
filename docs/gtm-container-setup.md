@@ -207,10 +207,15 @@ against `GTM-N5RB56R9`:
 - [x] "Recusar" / no choice → `gcs=G100`, **no `_ga` cookies** (cookieless ping)
 - [x] SPA navigation → second `page_view` with correct `dl`/`dt`
 - [x] No console errors
-- [ ] Tag Assistant (GTM Preview) connects to the live domain
+- [x] Tag Assistant (GTM Preview) connects to the live domain (2026-07-18, `web_vitals` tag validation)
 - [ ] Same hits confirmed in GA4 Admin → DebugView (`debug_mode`) on production
-- [ ] Tool / `article_read` / `outbound_click` / `scroll_depth` events (ship with the tools & articles)
+- [x] `tool_generate_jsonld`, `article_read`, `outbound_click`, `scroll_depth` published in GTM (2026-07-19)
+- [ ] `tool_validate_meta` and `tool_check_cwv` triggers, tags and custom dimensions in GTM/GA4 (the code pushes both events since 2026-07-26)
 - [ ] Tool events marked as **key events** in GA4 Admin → Events
+
+> The status of each event lives in the table of
+> [`measurement-plan.md`](measurement-plan.md); when the two disagree, that
+> table wins. This list was brought in line with it on 2026-11-14.
 
 ---
 
