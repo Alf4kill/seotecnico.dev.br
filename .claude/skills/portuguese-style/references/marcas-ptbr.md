@@ -92,8 +92,12 @@ closing that repeats the opening was confirmed on 2026-11-13, row above.)
   is the guide's form (`estilo-ptbr.md` §4). The `date-form` rule flags
   running sentences only; a hit inside a source line that the script took
   for prose is a script bug.
-- **"Você" below the band on a page in the imperative.** The measure counts
-  "você", not "Escolha", "Teste", "rode". A page that already addresses the
-  reader with imperatives can stay below p10: adding "você" to reach the
-  number is writing for the metric (found by the `revise-july-page` eval on
-  `redirects-canonicals-nextjs`, 0.2 after the pass).
+- **Adding "você" to reach the band.** Since 2026-11-14 the measure counts
+  "você" and the imperative ("Escolha", "Teste o", "rode") together. A page
+  can still sit below p10, and on this site most do: they use the imperative
+  at about the native rate and "você" a tenth as often
+  (`docs/research/2026-11-14-imperative-reader-address.md`). Change a frame
+  only where the reader acts. Adding "você" to sentences that did not need
+  it, to reach the number, is writing for the metric (found by the
+  `revise-july-page` eval on `redirects-canonicals-nextjs`, 0.2 after the
+  pass, under the old measure).

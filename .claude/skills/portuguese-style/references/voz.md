@@ -21,6 +21,12 @@ pages are measured against it like any other page.
 | "você" per 100 words | 0.1 | 0.1 | 0.8 (p10 0.3) |
 | bold-label paragraphs per 100 paragraphs | 0 | 24.4 | 0 / 22.2 |
 
+Since 2026-11-14 the script measures "você" and imperatives together: 0.1
+and 0.5 on these two pages, against a native 1.25 (p10 0.53)
+(`docs/research/2026-11-14-imperative-reader-address.md`). Both stay below
+the band. These pages give instructions in the imperative ("rode",
+"confira") and rarely say "você".
+
 So his colons are above the band too, but by less than the July pages
 (24 to 52). Sentence length, semicolons and dashes are native. A review of
 one of his pages starts from the colons and "você" (and, in `sec-fetch-mode`,

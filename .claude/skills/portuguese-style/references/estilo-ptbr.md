@@ -23,7 +23,9 @@ technical Portuguese written by Brazilian authors before 2022-11-30, is in
 `../scripts/register-thresholds-pt.json`
 (`docs/research/2026-11-11-portuguese-register-profile.md`). It enters the
 script as warnings, never as errors. For scale, native medians per 100
-sentences: 4.5 colons, 0 semicolons, 0 dash asides; 0.8 "você" per 100 words.
+sentences: 4.5 colons, 0 semicolons, 0 dash asides; 1.25 "você" and
+imperatives per 100 words (0.8 "você", 0.17 imperatives; measured again on
+2026-11-14, `docs/research/2026-11-14-imperative-reader-address.md`).
 The rules below are directions, with the counts that motivated them.
 
 ## 1. Person and voice

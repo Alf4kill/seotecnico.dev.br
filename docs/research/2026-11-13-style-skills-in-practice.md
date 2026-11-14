@@ -35,6 +35,7 @@ in the skill, and one measure that does not fit the site's voice.
 - **The "você" measure:** it flagged both runs and 25 of the 31 published
   Portuguese pages. The site addresses the reader in the imperative, which
   the measure does not count (§5.4). This is an owner decision, not a fix.
+  *2026-11-14:* decided as (a); the explanation turned out wrong (§5.4).
 
 ## 2. The writing run, step by step
 
@@ -184,6 +185,14 @@ is noise. Two options, for the owner:
 
 Changing the threshold alone would move the band without measuring it, so
 it is not an option.
+
+*Decided 2026-11-14:* the owner chose (a). Counting the imperative did not
+remove the warnings: the site uses the imperative almost as often as native
+authors in running prose (median 0.14 against 0.17 per 100 words), but uses
+"você" a tenth as often (0.08 against 0.80). With the new band (p10 0.53),
+26 of 32 pages are below. The second bullet of the observation above was a
+wrong explanation: the imperative is not what the site uses *instead* of
+"você". Method and numbers: `docs/research/2026-11-14-imperative-reader-address.md`.
 
 ### 5.5 Smaller gotchas, kept out of the skills
 
