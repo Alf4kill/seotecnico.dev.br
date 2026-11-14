@@ -571,8 +571,9 @@ pipeline: theme 07, `html-renderizado` ↔ `raw-vs-rendered-html`, route C
   that drafted the page, missed 10 content problems. The 4b reader found all
   of them, among them 49 pages for a sample of 42. Fixed in the skill
   (content-page phase 4b and `draft-verification.md` step 4).
-- **"Você" flags the site's voice.** 23 of the 31 Portuguese pages are
-  below the band's p10, because the site addresses the reader in the
+- **"Você" flags the site's voice.** 25 of the 31 Portuguese pages are
+  below the band's p10 (first written as 23 from the rounded summary
+  column; corrected 2026-11-14 from the WARN lines), because the site addresses the reader in the
   imperative. An owner decision: count the imperative and recalibrate, or
   keep the measure out of the per-page WARNs.
 - **Decision 5 moved.** `como-uma-pagina-nasce` already has the English

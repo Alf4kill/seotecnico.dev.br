@@ -32,7 +32,7 @@ in the skill, and one measure that does not fit the site's voice.
   (§2), and so did the July readers on pages verified in July. On route C,
   the drafter and the verifier are the same session, and the 4b reader is
   the only independent reading of the facts. The skill did not say so.
-- **The "você" measure:** it flagged both runs and 23 of the 31 published
+- **The "você" measure:** it flagged both runs and 25 of the 31 published
   Portuguese pages. The site addresses the reader in the imperative, which
   the measure does not count (§5.4). This is an owner decision, not a fix.
 
@@ -161,15 +161,19 @@ now covers this. No skill change was needed.
 **[observation]**
 
 - PT: `register-voce` WARN on `html-renderizado` (0.0), on the July pages
-  (0.3 at best), and on 23 of the 31 published Portuguese pages (below
-  p10 = 0.3).
+  (0.3 at best), and on 25 of the 31 published Portuguese pages (below
+  p10 = 0.3). *Corrected 2026-11-14:* this note first said 23. That count
+  read the rounded `--summary` column, which shows 0.3 for pages just under
+  it. The WARN lines give 25 (`check-portuguese.mjs --published` at
+  `bda4f98`). Found by the fresh reader of the project entry
+  `revisao-do-portugues`.
 - EN: `register-you` WARN at 0.4 against a p10 of 0.44.
 - The pages address the reader with imperatives ("Escolha", "compare",
   "rode"), which the measure does not count. "What not to fix" in
   `marcas-ptbr.md` already tells the reviewer not to add "você" for the
   number, and both runs followed it.
 
-**[inference]** A WARN on three pages in four no longer asks a question; it
+**[inference]** A WARN on four pages in five no longer asks a question; it
 is noise. Two options, for the owner:
 
 - **(a)** Count imperative address next to "você", and re-measure the
