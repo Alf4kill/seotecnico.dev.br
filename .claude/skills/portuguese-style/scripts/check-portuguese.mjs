@@ -297,7 +297,8 @@ if (args.includes('--summary')) {
 
   // Revision order: most features outside the band first, then the colon
   // density (the feature furthest from native across the site).
-  console.log(`\nregister, furthest from native first (band measured ${BAND.measured} at ${BAND.commit}, ${BAND.corpus.pages} native pages):`)
+  const again = Object.entries(BAND.remeasured || {}).map(([id, r]) => `; ${id} again ${r.measured} at ${r.commit}, ${r.pages} pages`).join('')
+  console.log(`\nregister, furthest from native first (band measured ${BAND.measured} at ${BAND.commit}, ${BAND.corpus.pages} native pages${again}):`)
   const ids = FEATURES.map((f) => f.id)
   console.log(`  ${'out'.padStart(3)} ${ids.map((i) => i.slice(0, 10).padStart(11)).join('')}  file`)
   ranking.sort((a, b) => b.outside - a.outside || (b.prof?.colons ?? 0) - (a.prof?.colons ?? 0))
