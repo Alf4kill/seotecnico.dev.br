@@ -188,7 +188,29 @@ pattern counts in the body.
 - A batch revision of published pages is a deliberate change: it gets a row
   in `docs/experiment-log.md` with each page's index state before it, and it
   waits for any running Google core update to finish, so the two are not
-  read as each other's effect (proposal §6–§7).
+  read as each other's effect (proposal §6–§7). The owner may ship one
+  anyway (batches 1 and 2 did, 2026-11-14): then the row says the batch
+  shipped during the rollout, and that a change in Search Console during it
+  cannot be separated from the update.
+- One fresh reader per page, each from scratch. Readers of different pages
+  can run in parallel, since they touch no shared file. Each reader returns
+  rows (`line | pattern | before | after | note`). Every `before` must
+  occur once in the page and still once when the rows are applied in order.
+  Read every row in its paragraph before applying it. A row that reads
+  well alone can still lose the subject of the next sentence.
+- A page still past the band after the first reader gets a second, new
+  reader, limited to the feature that is out (batch 2: colons only). Prefer
+  a cut the first reader already offered in its judgment calls.
+- When the counts look wrong for a page, read the script before the page.
+  In batch 2, an inline `` `<svg>` `` hid a third of `next-image-seo` from
+  both scripts (`4c59283`). If a script changes mid-batch, measure the
+  "before" files again with the fixed script, so before and after come
+  from the same code.
+- Group the readers' NOTA-REDACAO in the PR as factual, unmeasured
+  generalizations (rule 1), headings (anchors) and voice calls. In batches
+  1 and 2, readers reading for style reported at least one factual problem
+  on every one of the seven pages (#150, #152). Some were verified against
+  the code or the docs in the PR; the rest wait for content-page phase 4.
 - When a revision finds a new pattern, or applies a row of
   `marcas-ptbr.md`, update that file in the same PR: the "Proposed" lines
   become the applied ones.

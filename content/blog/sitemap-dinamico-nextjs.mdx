@@ -10,9 +10,9 @@ lang: pt-BR
 category: indexacao
 tldr: >-
   Um sitemap dinâmico é um app/sitemap.ts cujo array é derivado da fonte de
-  conteúdo, não digitado à mão — publicar um post basta para ele crescer
+  conteúdo, não digitado à mão. Publicar um post basta para ele crescer
   sozinho. Dos quatro campos que dá para declarar por URL, o Google lê de fato
-  só loc e lastmod; priority e changefreq são ignorados.
+  só loc e lastmod. Os campos priority e changefreq são ignorados.
 faq:
   - question: 'Preciso enviar o sitemap ao Google Search Console ou basta declará-lo no robots.txt?'
     answer: >-
@@ -20,21 +20,21 @@ faq:
       robots.ts, já basta para o Googlebot descobri-lo. Enviar manualmente pelo
       Search Console não é obrigatório, mas acelera a primeira descoberta e dá
       acesso ao relatório de Sitemaps, que mostra quantas URLs foram lidas do
-      arquivo — uma forma prática de confirmar que o Google está enxergando o
+      arquivo. É uma forma prática de confirmar que o Google está enxergando o
       que você espera.
   - question: 'priority e changeFrequency servem para alguma coisa?'
     answer: >-
-      Não para o Google: a documentação oficial afirma que os dois campos são
+      Não para o Google. A documentação oficial afirma que os dois campos são
       ignorados. Declará-los não causa dano, mas também não influencia
       ranqueamento nem ordem de rastreamento. Se o objetivo é otimizar para o
       Google, o tempo rende mais garantindo que o lastmod seja verificável do
       que ajustando esses dois valores.
   - question: 'Qual data devo usar em lastmod?'
     answer: >-
-      A data da última atualização significativa do conteúdo — mudança no texto
-      principal, nos dados estruturados ou nos links da página — nunca a data do
+      A data da última atualização significativa do conteúdo (mudança no texto
+      principal, nos dados estruturados ou nos links da página), nunca a data do
       build ou do deploy. O Google só usa o campo se ele for consistente e
-      verificável; new Date() a cada build produz uma data que nunca corresponde
+      verificável. Usar new Date() a cada build produz uma data que nunca corresponde
       a uma mudança real, o que ensina o Google a ignorar o campo.
   - question: 'Meu sitemap.ts existe mas /sitemap.xml dá 404. O que houve?'
     answer: >-
@@ -61,11 +61,11 @@ faq:
 ---
 
 Um sitemap dinâmico no Next.js é um arquivo `app/sitemap.ts` que exporta uma
-função default retornando um array — o Next.js serve esse array em
-`/sitemap.xml` automaticamente. A parte "dinâmica" não é o roteamento, que o
-Next.js já resolve: é o array em si ser *derivado* da fonte de conteúdo, em vez
+função default retornando um array, que o Next.js serve em
+`/sitemap.xml` automaticamente. O Next.js já resolve o roteamento. A parte
+"dinâmica" é o array em si ser *derivado* da fonte de conteúdo, em vez
 de digitado à mão. Publicar um post deveria bastar para o sitemap crescer
-sozinho; se isso não acontece no seu projeto, o sitemap não é dinâmico — é um
+sozinho. Se isso não acontece no seu projeto, o sitemap não é dinâmico. É um
 arquivo `.ts` com uma lista fixa dentro.
 
 O resto deste artigo não é sobre criar o arquivo, que sai em três linhas logo
@@ -84,7 +84,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 ```
 
 Isso já é um sitemap válido. O problema começa quando esse array não muda
-sozinho conforme o site cresce — e é aí que a maior parte dos tutoriais para.
+sozinho conforme o site cresce, e é aí que a maior parte dos tutoriais para.
 Este é o terceiro caminho do
 [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs), e cada seção
 abaixo é uma decisão tomada neste próprio site, com o código que está em
@@ -92,8 +92,8 @@ produção agora.
 
 ## O que o Next.js gera e o que o Google realmente lê
 
-O formato que aparece em praticamente todo tutorial — incluindo o exemplo
-oficial da documentação do Next.js — é este:
+O formato que aparece em praticamente todo tutorial, incluindo o exemplo
+oficial da documentação do Next.js, é este:
 
 ```ts
 { url: '...', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 }
@@ -101,15 +101,15 @@ oficial da documentação do Next.js — é este:
 
 Quatro campos. Segundo a documentação do Google sobre como construir um sitemap,
 `<priority>` e `<changefreq>` são ignorados. O único metadado que o Google
-efetivamente usa é o `<lastmod>` — e apenas quando o valor é consistente e
+efetivamente usa é o `<lastmod>`, e apenas quando o valor é consistente e
 verificável, por exemplo comparando com a última modificação real da página. De
 quatro campos, portanto, dois não fazem nada e o terceiro só funciona se for
 verdade.
 
-Isso não é opinião de blog de SEO, está na documentação. E a razão de o padrão
-persistir em tanto tutorial é simples: o exemplo oficial do próprio Next.js
+Isso não é opinião de blog de SEO, está na documentação. E o padrão
+persiste em tanto tutorial porque o exemplo oficial do próprio Next.js
 também usa `lastModified: new Date()` em toda entrada, que é exatamente o padrão
-que ensina o Google a desconfiar do campo — o assunto da seção depois da
+que ensina o Google a desconfiar do campo. Esse é o assunto da seção depois da
 próxima.
 
 | Campo | O Google usa? | Vale declarar |
@@ -175,8 +175,8 @@ Next.js serializa para XML e serve em `/sitemap.xml` sem nenhum passo adicional.
 </figure>
 
 A diferença entre um sitemap dinâmico e uma lista de URLs com extensão `.ts`
-cabe em uma função: `getAllPosts()`. Neste site, o `sitemap.ts` não lista posts —
-ele lê `/content/blog`, mapeia cada arquivo MDX para uma entrada e usa o
+cabe em uma função: `getAllPosts()`. Neste site, o `sitemap.ts` não lista posts.
+Ele lê `/content/blog`, mapeia cada arquivo MDX para uma entrada e usa o
 `dateModified` do frontmatter como `lastModified`. Publicar um arquivo é o único
 passo. Não existe uma segunda lista para lembrar de atualizar.
 
@@ -195,13 +195,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
 }
 ```
 
-Repare que `getAllPosts()` devolve objetos com o frontmatter aninhado —
-`frontmatter.slug`, `frontmatter.dateModified` — porque a função separa o
-frontmatter validado do corpo do MDX. Essa validação acontece no build: um
+Repare que `getAllPosts()` devolve objetos com o frontmatter aninhado
+(`frontmatter.slug`, `frontmatter.dateModified`) porque a função separa o
+frontmatter validado do corpo do MDX. Essa validação acontece no build. Um
 `title` acima de 60 caracteres ou um campo obrigatório ausente derruba a
 compilação antes de qualquer coisa chegar ao sitemap.
 
-A tabela abaixo é o espelho textual do diagrama acima — a mesma lógica, em texto:
+A tabela abaixo é o espelho textual do diagrama acima, com a mesma lógica:
 
 | Fonte | Derivação | Saída no sitemap | Quando o conteúdo muda |
 |---|---|---|---|
@@ -209,21 +209,21 @@ A tabela abaixo é o espelho textual do diagrama acima — a mesma lógica, em t
 | diagramas exportados do post | `postImages` mapeia slug para arquivos | `<image:loc>` | declarar um diagrama novo o inclui no sitemap sem edição extra |
 | *(alternativa não usada aqui)* lista mantida à mão | nenhuma; a lista é digitada | `<loc>` sem `lastmod` confiável | nada muda sozinho: a lista fica desatualizada até alguém lembrar dela |
 
-A última linha é o que a maioria dos projetos Next.js acaba fazendo por padrão:
+A última linha é o que a maioria dos projetos Next.js acaba fazendo por padrão. É
 um array literal que funciona até o dia em que alguém esquece de adicionar uma
 URL nova, ou remove uma página sem tirá-la da lista. Derivar do conteúdo elimina
-essa categoria inteira de erro, porque o sitemap nunca fica dessincronizado — ele
+essa categoria inteira de erro, porque o sitemap nunca fica dessincronizado. Ele
 *é* uma projeção do conteúdo.
 
-Vale marcar o que fica de fora dessa derivação: páginas estáticas sem data de
+Ficam de fora dessa derivação as páginas estáticas sem data de
 conteúdo associada, como `/ferramentas`, `/sobre` e `/politica-de-privacidade`,
-não têm um `dateModified` de onde derivar. A próxima seção explica por que isso
+que não têm um `dateModified` de onde derivar. A próxima seção explica por que isso
 é uma omissão deliberada, e não uma lacuna.
 
 ## O problema do `lastmod`
 
-A condição que o Google publica para usar o `<lastmod>` é específica: o valor
-precisa ser consistente e verificável — por exemplo, comparável com a última
+Pela condição que o Google publica, o `<lastmod>` só é usado se o valor
+for consistente e verificável, por exemplo, comparável com a última
 modificação real da página. Isso exclui, na prática, o padrão que aparece em
 quase todo exemplo de sitemap que existe, inclusive o da documentação do
 Next.js:
@@ -233,13 +233,13 @@ Next.js:
 { url: '...', lastModified: new Date() }
 ```
 
-`new Date()` executa no momento do build. Toda vez que o site é implantado —
-mudando ou não o conteúdo daquela página — a URL declara que mudou agora. Um
+`new Date()` executa no momento do build. Toda vez que o site é implantado,
+mudando ou não o conteúdo daquela página, a URL declara que mudou agora. Um
 redeploy de segunda sem alteração nenhuma produz o mesmo `lastmod` que um
 redeploy de terça com o artigo reescrito do zero. Não há como o Google verificar
 essa data contra coisa alguma, porque ela nunca corresponde a uma mudança real.
 É a razão prática por trás da recomendação de que o valor reflita apenas
-atualizações significativas — conteúdo principal, dados estruturados, links — e
+atualizações significativas (conteúdo principal, dados estruturados, links), e
 não uma data de build ou de copyright.
 
 A regra deste site inverte a lógica, e o comentário está no topo do arquivo em
@@ -253,21 +253,21 @@ produção:
 Na prática, isso produz três comportamentos diferentes dentro do mesmo
 `sitemap.ts`:
 
-- **Posts do blog** — `lastModified` vem do `dateModified` do frontmatter. Se o
+- **Posts do blog.** `lastModified` vem do `dateModified` do frontmatter. Se o
   post não muda, o campo não muda, mesmo que o site seja reimplantado dez vezes
   na semana.
-- **Home e `/blog`** — derivam o `lastModified` do `dateModified` mais recente
+- **Home e `/blog`.** As duas derivam o `lastModified` do `dateModified` mais recente
   entre o guia e todos os posts, porque essas páginas de fato mudam quando o
-  conteúdo que elas listam muda. Continua verificável: a data reflete uma
+  conteúdo que elas listam muda. Continua verificável, porque a data reflete uma
   mudança real no conjunto exibido.
-- **Páginas estáticas sem data de conteúdo** — não carregam `lastModified`
+- **Páginas estáticas sem data de conteúdo.** Não carregam `lastModified`
   nenhum. Omitir é a decisão. Inventar uma data seria pior do que não declarar
   nada, porque reintroduziria exatamente o padrão não verificável descrito
   acima.
 
 A terceira linha é a que costuma gerar dúvida: por que não usar a data de deploy
 também aqui? Porque a data de deploy não é a data em que o *conteúdo* daquela
-página mudou — é a data em que o *código* mudou, o que acontece por motivos sem
+página mudou. É a data em que o *código* mudou, o que acontece por motivos sem
 relação nenhuma com o conteúdo, como uma dependência atualizada ou um ajuste de
 estilo em outro componente. Declarar isso como `lastmod` seria tecnicamente
 fácil e editorialmente falso.
@@ -277,8 +277,8 @@ fácil e editorialmente falso.
 O `robots.ts` resolve um problema diferente do `sitemap.ts`, mas os dois andam
 juntos porque é o `robots.txt` que anuncia o sitemap. A decisão de design aqui é
 que o padrão é *não* indexar, e qualquer coisa que fuja do caminho feliz de
-produção cai nesse padrão automaticamente (trecho da versão de julho de 2026;
-hoje o arquivo também declara grupos por agente de IA, e o fail-safe continua
+produção cai nesse padrão automaticamente. O trecho abaixo é da versão de julho de 2026
+(hoje o arquivo também declara grupos por agente de IA, e o fail-safe continua
 idêntico):
 
 ```ts
@@ -302,14 +302,14 @@ export const indexable = process.env.SITE_INDEXABLE === 'true'
 ```
 
 O ponto está na direção do fail-safe. `indexable` só é `true` se a variável
-existir *e* valer exatamente `'true'`. Variável ausente, deploy de preview na
-Vercel, build local — todos falham *fechado*: a ausência de configuração produz
+existir *e* valer exatamente `'true'`. Com variável ausente, em deploy de preview na
+Vercel ou em build local, tudo falha *fechado*. A ausência de configuração produz
 `Disallow: /`, não o contrário. Indexar é opt-in, e o opt-in é uma variável que
 só existe em produção.
 
 Isso resolve um acidente comum e caro: uma URL de staging indexada, aparecendo
-na busca e competindo com a página de produção equivalente — duas URLs para o
-mesmo conteúdo, dividindo sinais. Com o padrão invertido, esse acidente exigiria
+na busca e competindo com a página de produção equivalente, com duas URLs para o
+mesmo conteúdo dividindo sinais. Com o padrão invertido, esse acidente exigiria
 alguém *definir* a variável errada num ambiente que não deveria indexar, em vez
 de simplesmente esquecer de defini-la, que é o modo de falha muito mais comum.
 
@@ -352,11 +352,11 @@ julho de 2026, encontrou um defeito real: a página `/busca` estava
 simultaneamente marcada como `noindex, follow` na meta tag `robots` **e**
 bloqueada por `Disallow: /busca` no `robots.txt`.
 
-Parece redundante — duas formas de dizer "não quero isso na busca" — mas as duas
-regras não se somam, elas se cancelam. O `Disallow` impede o rastreamento: o
+Parece redundante, já que são duas formas de dizer "não quero isso na busca". Mas as duas
+regras não se somam, elas se cancelam. O `Disallow` impede o rastreamento. O
 Googlebot nunca baixa a página, logo nunca lê o `noindex` que está no HTML dela.
 Se o Google descobre a URL por outro caminho, como um link externo, ele ainda
-pode indexá-la — agora como um resultado somente-URL, sem título nem descrição
+pode indexá-la, agora como um resultado somente-URL, sem título nem descrição
 extraídos do conteúdo, porque nunca teve permissão de olhar o conteúdo.
 
 | Objetivo | Use | Não use |
@@ -365,12 +365,12 @@ extraídos do conteúdo, porque nunca teve permissão de olhar o conteúdo.
 | impedir o rastreamento da URL | `Disallow` no `robots.txt` | `noindex`, esperando que ele resolva sozinho o rastreamento |
 | os dois na mesma URL | — | nunca; o `Disallow` vence por impedir que a outra diretiva seja lida |
 
-A regra prática, sem exceção: `noindex` quando o objetivo é tirar a URL do
-índice; `Disallow` apenas quando o objetivo é impedir o rastreamento por
+Sem exceção, use `noindex` quando o objetivo é tirar a URL do
+índice e `Disallow` apenas quando o objetivo é impedir o rastreamento por
 completo. Nunca os dois na mesma URL.
 
 O fix aqui foi remover o `Disallow: /busca` do `robots.ts` e manter apenas o
-`noindex` na página — deixando o Googlebot rastrear, ler a diretiva e de fato
+`noindex` na página, o que deixa o Googlebot rastrear, ler a diretiva e de fato
 respeitá-la. É por isso que o bloco de código da seção anterior lista somente
 `/api/` no `disallow`.
 
@@ -389,25 +389,25 @@ const postImages: Record<string, string[]> = {
 images: postImages[frontmatter.slug]?.map((path) => `${base}${path}`),
 ```
 
-Dois detalhes que o exemplo da documentação não deixa explícito. O primeiro: as
-URLs precisam ser absolutas, daí o `${base}` na frente do caminho. O segundo: o
+Dois detalhes que o exemplo da documentação não deixa explícito. Primeiro, as
+URLs precisam ser absolutas, daí o `${base}` na frente do caminho. Segundo, o
 encadeamento opcional devolve `undefined` para posts sem imagem declarada, e o
-Next.js simplesmente omite o campo — que é o comportamento desejado, diferente
-de emitir uma lista vazia.
+Next.js omite o campo, que é o comportamento desejado (diferente
+de emitir uma lista vazia).
 
 O campo `alternates.languages` emite
 `<xhtml:link rel="alternate" hreflang="…">` por entrada. Este site tem pares
 pt-BR/en desde setembro de 2026, mas declara o hreflang no `<head>` de cada
 página, gerado de um mapa único em `src/lib/hreflang.ts`, então nenhuma entrada
-do sitemap usa o campo. As duas formas são aceitas pelo Google; o
+do sitemap usa o campo. As duas formas são aceitas pelo Google. O
 [artigo de hreflang no Next.js](/blog/hreflang-nextjs) mostra como esse mapa
 funciona.
 
 Para sites grandes, `generateSitemaps` divide a saída em vários arquivos,
-respeitando o limite de 50.000 URLs ou 50 MB descomprimidos por arquivo — o que
-vier primeiro. A saída fica em caminhos como `/product/sitemap/1.xml`. Vale ser
-direto: **você provavelmente não precisa disso.** Esse limite existe para sites
-na casa das dezenas de milhares de URLs; abaixo disso, dividir o sitemap é
+respeitando o limite de 50.000 URLs ou 50 MB descomprimidos por arquivo, o que
+vier primeiro. A saída fica em caminhos como `/product/sitemap/1.xml`. **Você
+provavelmente não precisa disso.** Esse limite existe para sites
+na casa das dezenas de milhares de URLs. Abaixo disso, dividir o sitemap é
 complexidade sem benefício mensurável.
 
 ## O sitemap como fonte de verdade do teste
@@ -427,16 +427,16 @@ const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname)
 const routes = [...sitemapPaths, ...noindexPaths]
 ```
 
-O efeito prático: toda rota que aparece no sitemap é automaticamente submetida
-ao conjunto de asserções — exatamente um `<h1>`, título e descrição dentro dos
+Com isso, toda rota que aparece no sitemap é automaticamente submetida
+ao conjunto de asserções (exatamente um `<h1>`, título e descrição dentro dos
 limites, canonical auto-referenciado, JSON-LD que parseia, meta `robots` com o
-valor certo. Publicar um arquivo MDX não apenas adiciona a URL ao sitemap: adiciona
-a URL a *todo teste de SEO que existe*, sem nenhuma linha de configuração.
+valor certo). Publicar um arquivo MDX não apenas adiciona a URL ao sitemap, mas também
+a *todo teste de SEO que existe*, sem nenhuma linha de configuração.
 
 Existe ainda um teste dedicado que confirma que o `/sitemap.xml` servido de fato
 contém cada URL que a função enumera. Ele cobre um modo de falha específico: a
-função está correta, mas o que chega ao visitante está velho — cache de CDN,
-revalidação que não disparou, deploy parcial. Sem esse teste, o `sitemap.ts`
+função está correta, mas o que chega ao visitante está velho (cache de CDN,
+revalidação que não disparou, deploy parcial). Sem esse teste, o `sitemap.ts`
 pode estar perfeito no código e ainda assim mentir em produção.
 
 O mesmo padrão de derivar-do-conteúdo produz o `feed.xml` em
@@ -452,18 +452,18 @@ em vez do que o código deveria fazer:
 1. **Search Console, relatório de Sitemaps.** Envie a URL do sitemap, ou
    confirme que ela já foi descoberta pelo `robots.txt`, e observe a contagem de
    URLs descobertas. Esse número reflete o que o Google leu do arquivo.
-2. **Abrir `/sitemap.xml` e `/robots.txt` direto no navegador.** Confirma o que
-   está sendo servido em produção — a versão manual do teste dedicado da seção
+2. **Abra `/sitemap.xml` e `/robots.txt` direto no navegador.** Isso confirma o que
+   está sendo servido em produção. É a versão manual do teste dedicado da seção
    anterior.
-3. **Rodar o crawl de baseline do repositório.** Foi ele que encontrou o defeito
+3. **Rode o crawl de baseline do repositório.** Foi ele que encontrou o defeito
    do `/busca`. Rodar essa checagem depois de qualquer mudança em `robots.ts` ou
    `sitemap.ts` é o que pega esse tipo de erro antes da produção.
-4. **Não confundir descoberta com indexação.** Uma URL aparecer como descoberta
+4. **Não confunda descoberta com indexação.** Uma URL aparecer como descoberta
    garante que o Google sabe que ela existe, não que ela será indexada. A
    indexação depende de conteúdo, canonical e dos outros sinais que os demais
    artigos deste guia cobrem.
-5. **Auditar o sitemap contra o site.** O que cada URL listada responde, se o
-   `lastmod` bate com a página e o que o site linka sem listar: o checklist,
+5. **Audite o sitemap contra o site.** Confira o que cada URL listada responde, se o
+   `lastmod` bate com a página e o que o site linka sem listar. O checklist,
    com casos medidos em quatro sites reais, está em
    [auditoria de sitemap](/blog/auditoria-de-sitemap).
 
@@ -473,6 +473,6 @@ a primeira versão do seu, o [guia de SEO técnico para Next.js](/guia/seo-tecni
 coloca esses dois arquivos no contexto dos outros tópicos do cluster. E se a
 próxima dúvida for como o mesmo princípio de fonte única se aplica a dados
 estruturados, [o artigo sobre JSON-LD no Next.js](/blog/json-ld-nextjs) percorre
-a mesma suíte de testes pelo outro lado — com o
+a mesma suíte de testes pelo outro lado, com o
 [gerador de JSON-LD](/ferramentas/gerador-json-ld) para quando você quiser o
 schema pronto em vez da arquitetura por trás dele.

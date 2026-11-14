@@ -14,8 +14,13 @@ and `register-dashes` rows, and the closing of `json-ld-nextjs`) are applied:
 the rewrite in the page is close to "Proposed", and the line numbers refer to
 the page before the batch. Two examples stay, waiting for the owner (rule 1):
 the generalization "que quase ninguém explicita" (`melhorar-lcp-nextjs`
-105) and the heading at `json-ld-nextjs` 277. Every other row is not
-applied yet.
+105) and the heading at `json-ld-nextjs` 277. Batch 2 revised
+`sitemap-dinamico-nextjs`, `metadata-api-nextjs`, `next-image-seo` and
+`ssr-ssg-isr-nextjs`: the two `hedge-filler` rows (`metadata-api-nextjs`
+49, `next-image-seo` 62) and the `date-form` row (`next-image-seo` 62)
+are applied as proposed. The generalization "é por isso que quase ninguém
+corrige" (`next-image-seo` 153) stays, waiting for the owner. Every other
+row is not applied yet.
 
 The `id` is the rule name in `check-portuguese.mjs`. Rows without an id need
 a reader: no pattern separates them from correct Portuguese. Counts are

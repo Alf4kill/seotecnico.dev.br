@@ -283,7 +283,9 @@ export function fromMdx(body) {
     if (/^\s*(```|~~~)/.test(l)) { inFence = !inFence; return '' }
     return inFence ? '' : l
   })
-  const text = lines.join('\n').replace(/<svg\b[\s\S]*?<\/svg>/gi, ' ').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
+  // Inline code becomes a token first: an inline `<svg>` would otherwise open
+  // a match that runs to the next figure's </svg> and drops the prose between.
+  const text = lines.join('\n').replace(/`[^`\n]*`/g, ' X ').replace(/<svg\b[\s\S]*?<\/svg>/gi, ' ').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
   const blocks = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
   // A list marker is "-" or "*" followed by a space; a paragraph that opens
   // with **bold** is prose, as a <p><strong> is in fromHtml.

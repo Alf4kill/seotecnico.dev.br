@@ -9,30 +9,30 @@ category: dados-estruturados
 tldr: >-
   A herança entre layout e página na Metadata API é um merge raso: se a página
   define qualquer campo dentro de openGraph, o objeto inteiro do layout pai é
-  descartado em silêncio — inclusive og:image, og:url e og:locale. O mesmo vale
+  descartado em silêncio, inclusive og:image, og:url e og:locale. O mesmo vale
   para alternates, e é assim que o canonical some.
 datePublished: "2026-07-22"
 dateModified: "2026-10-18"
 faq:
   - question: "O openGraph do layout é herdado pela página?"
-    answer: "Não, se a página definir qualquer campo dentro de openGraph. O merge da Metadata API é raso: quando a página declara o próprio objeto openGraph, o objeto inteiro do layout pai é descartado — inclusive og:locale, og:site_name e og:image. A herança só acontece quando a página não declara openGraph nenhum. Comportamento verificado no Next.js 16.2.6 e documentado na referência oficial do generateMetadata."
+    answer: "Não, se a página definir qualquer campo dentro de openGraph. O merge da Metadata API é raso: quando a página declara o próprio objeto openGraph, o objeto inteiro do layout pai é descartado, inclusive og:locale, og:site_name e og:image. A herança só acontece quando a página não declara openGraph nenhum. Comportamento verificado no Next.js 16.2.6 e documentado na referência oficial do generateMetadata."
   - question: "Preciso de metadataBase?"
-    answer: "Sim, se você usa caminhos relativos em canonical ou em imagens Open Graph. O metadataBase é a URL base que transforma todo caminho relativo da Metadata API em URL absoluta — e Open Graph exige URL absoluta. Defina uma vez no root layout e use caminhos relativos em todo o resto."
+    answer: "Sim, se você usa caminhos relativos em canonical ou em imagens Open Graph. O metadataBase é a URL base que transforma todo caminho relativo da Metadata API em URL absoluta, e Open Graph exige URL absoluta. Defina uma vez no root layout e use caminhos relativos em todo o resto."
   - question: "Como faço canonical auto-referente no App Router?"
-    answer: "Defina alternates.canonical com o caminho da própria rota na metadata de cada página — com metadataBase no root layout, o caminho pode ser relativo. O ponto crítico é fazer isso via um helper único, porque alternates também é substituído (não mesclado) entre layout e página, e um canonical definido só no layout desaparece em qualquer rota que customize alternates."
+    answer: "Defina alternates.canonical com o caminho da própria rota na metadata de cada página. Com metadataBase no root layout, o caminho pode ser relativo. O ponto crítico é fazer isso via um helper único, porque alternates também é substituído (não mesclado) entre layout e página, e um canonical definido só no layout desaparece em qualquer rota que customize alternates."
   - question: "O opengraph-image.tsx vale para as rotas filhas?"
-    answer: "No Next.js 16.2.6, não: o arquivo aplica a imagem ao segmento onde está, sem cascatear para rotas aninhadas. Além disso, se a página do mesmo segmento definir openGraph.images na config, a config vence e o arquivo é ignorado. Como o comportamento já variou entre versões, confira na sua: view-source numa rota filha e procure a tag og:image."
+    answer: "No Next.js 16.2.6, não: o arquivo aplica a imagem ao segmento onde está, sem cascatear para rotas aninhadas. E, se a página do mesmo segmento definir openGraph.images na config, a config vence e o arquivo é ignorado. Como o comportamento já variou entre versões, confira na sua: view-source numa rota filha e procure a tag og:image."
   - question: "Por que o og:image dá 404 depois de mover rotas para um route group?"
     answer: "Porque, dentro de um route group, o Next.js acrescenta um sufixo com hash à URL das imagens de metadados geradas por file convention: app/(pt)/opengraph-image.tsx passa a ser servido em algo como /opengraph-image-35ziq1, e toda URL escrita à mão com o nome do arquivo (og:image num helper, image no JSON-LD) aponta para um 404. Verificado no Next.js 16.2.12. A saída é servir o card por um route handler (opengraph-image/route.tsx), que fica exatamente no caminho da pasta."
   - question: "Uso metadata ou generateMetadata?"
-    answer: "Use o objeto metadata estático quando todos os valores são conhecidos sem depender da rota. Use generateMetadata quando o valor vem de params ou de dados carregados — como o frontmatter de um post em /blog/[slug]. Os dois passam pelo mesmo pipeline de merge raso, então a armadilha do openGraph substituído vale igual para ambos."
+    answer: "Use o objeto metadata estático quando todos os valores são conhecidos sem depender da rota. Use generateMetadata quando o valor vem de params ou de dados carregados, como o frontmatter de um post em /blog/[slug]. Os dois passam pelo mesmo pipeline de merge raso, então a armadilha do openGraph substituído vale igual para ambos."
   - question: "Por que meu card do LinkedIn ou WhatsApp sai em branco?"
     answer: "Quase sempre é og:image ausente na página compartilhada, e a causa mais comum no App Router é o merge raso: a página customizou algum campo de openGraph e, sem perceber, apagou a imagem herdada do layout. Verifique com view-source se a rota emite og:image com URL absoluta, e revalide o cache do scraper na ferramenta de debug da própria plataforma."
 ---
 
 A Metadata API é o mecanismo do App Router para emitir `<title>`, meta
 description, canonical e Open Graph: um objeto `metadata` exportado da rota
-(estático) ou uma função `generateMetadata()` (dinâmico) — o `next/head` não
+(estático) ou uma função `generateMetadata()` (dinâmico). O `next/head` não
 existe mais aqui. O que os tutoriais não contam é que a herança entre layout
 e página é um **merge raso**: se a página define qualquer campo dentro de
 `openGraph`, o objeto inteiro do layout pai é descartado, silenciosamente. É
@@ -45,22 +45,22 @@ impedir que isso volte a acontecer.
 
 No Pages Router, meta tags eram JSX: você importava `next/head` e escrevia
 `<meta>` na mão, em qualquer componente. No App Router isso acabou. O `<head>`
-é montado pelo framework a partir de dados — o objeto `metadata` — e o
-`next/head` simplesmente não é suportado dentro de `app/`.
+é montado pelo framework a partir de dados (o objeto `metadata`), e o
+`next/head` não é suportado dentro de `app/`.
 
-A mudança é melhor do que parece: metadado virou dado estruturado, com tipo
+A mudança é melhor do que parece, porque metadado virou dado estruturado, com tipo
 (`Metadata` do próprio Next), avaliado por rota e verificável em build. Todo
 o [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) parte dessa
 premissa: o que é dado dá para derivar, validar e testar.
 
 O problema é que a mesma mudança criou uma semântica de herança que quase
-ninguém leu até o fim — e ela não funciona como cascata de CSS.
+ninguém leu até o fim. E ela não funciona como cascata de CSS.
 
 ## Objeto estático vs generateMetadata: quando cada um
 
-A regra que eu uso é uma só: **`generateMetadata()` apenas quando o valor
-depende da rota**. Se o metadado é conhecido sem olhar `params` — home,
-página de ferramentas, listagem do blog — é objeto estático:
+Eu uso **`generateMetadata()` apenas quando o valor
+depende da rota**. Se o metadado é conhecido sem olhar `params` (home,
+página de ferramentas, listagem do blog), é objeto estático:
 
 ```ts
 // app/ferramentas/page.tsx
@@ -70,8 +70,8 @@ export const metadata: Metadata = {
 };
 ```
 
-Se o valor vem de `params` ou de conteúdo carregado — o caso clássico é o
-frontmatter de um post em `/blog/[slug]` — é função:
+Se o valor vem de `params` ou de conteúdo carregado (o caso clássico é o
+frontmatter de um post em `/blog/[slug]`), é função:
 
 ```ts
 // app/blog/[slug]/page.tsx
@@ -81,9 +81,9 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 }
 ```
 
-Neste site, a rota de post usa exatamente esse formato — o
+Neste site, a rota de post usa exatamente esse formato. O
 `generateMetadata` real está em `src/app/(pt)/blog/[slug]/page.tsx` e aparece
-completo na seção do helper. O importante agora: **os dois caminhos passam
+completo na seção do helper. **Os dois caminhos passam
 pelo mesmo pipeline de merge**. Nada do que vem a seguir muda entre estático
 e dinâmico.
 
@@ -103,14 +103,14 @@ export const metadata: Metadata = {
 
 Com isso, `alternates.canonical: "/blog/meu-post"` vira
 `https://seotecnico.dev.br/blog/meu-post` no HTML emitido. Sem
-`metadataBase`, caminhos relativos não resolvem para o domínio de produção —
+`metadataBase`, caminhos relativos não resolvem para o domínio de produção,
 e um `og:image` relativo é inútil para o scraper do WhatsApp ou do LinkedIn,
 que não tem contexto de base.
 
 ## Canonical auto-referente em toda página
 
 A regra deste site é que **toda rota indexável emite canonical apontando para
-si mesma** — é um dos sinais de canonicalização que precisam contar a mesma
+si mesma**. É um dos sinais de canonicalização que precisam contar a mesma
 história que o [sitemap derivado do conteúdo](/blog/sitemap-dinamico-nextjs).
 No App Router, o campo é `alternates.canonical`:
 
@@ -120,10 +120,9 @@ export const metadata: Metadata = {
 };
 ```
 
-Parece simples demais para dar errado. E é aqui que entra o detalhe que
-justifica o artigo: `alternates`, como `openGraph`, **não é mesclado entre
+Parece simples demais para dar errado. Só que `alternates`, como `openGraph`, **não é mesclado entre
 layout e página**. Um canonical estratégico definido no layout desaparece na
-primeira rota que declarar o próprio `alternates` — junto com qualquer outra
+primeira rota que declarar o próprio `alternates`, junto com qualquer outra
 coisa que morasse ali.
 
 ## O merge que não existe
@@ -132,7 +131,7 @@ A documentação oficial do `generateMetadata` descreve o comportamento com
 precisão: os objetos de metadata dos segmentos de uma rota são mesclados de
 forma **rasa**, e campos aninhados como `openGraph` e `robots` definidos num
 segmento anterior são **sobrescritos por inteiro** pelo último segmento que
-os definir. Está documentado — mas nenhum tutorial de "SEO no Next.js" que
+os definir. Está documentado, mas nenhum tutorial de "SEO no Next.js" que
 eu encontrei na SERP em pt-BR menciona a consequência prática.
 
 ### openGraph: definir um campo apaga o resto
@@ -160,10 +159,10 @@ export const metadata: Metadata = {
 };
 ```
 
-Resultado emitido na página: `og:title` — **e nada mais**. Sem
+A página emite `og:title`, **e nada mais**. Sem
 `og:site_name`, sem `og:locale`, sem `og:image`. O objeto do layout foi
 substituído, não estendido. Verificado empiricamente neste site no Next.js
-16.2.6; se você estiver em outra versão, confira antes de assumir — mas o
+16.2.6. Se você estiver em outra versão, confira antes de assumir, mas o
 comportamento é o documentado desde o início do App Router.
 
 <figure>
@@ -221,34 +220,34 @@ O espelho do diagrama, no caso real deste site:
 
 ### alternates: o mesmo comportamento, e por que o feed RSS some
 
-`alternates` segue a mesma regra. E ele guarda mais coisa do que parece: além
+`alternates` segue a mesma regra. E ele guarda mais coisa do que parece. Além
 do canonical, é em `alternates.types` que vive o autodiscovery do feed RSS
 (`application/rss+xml`). Se o autodiscovery está declarado no root layout e
 uma página define `alternates: { canonical: "…" }`, essa página **perde a
-tag do feed** — sem warning, sem erro de build, sem nada.
+tag do feed**, sem warning, sem erro de build, sem nada.
 
 Foi por isso que, neste site, o autodiscovery do RSS foi movido para dentro
-do helper de metadados (a seção do helper mostra onde): é o único lugar que
+do helper de metadados (a seção do helper mostra onde). É o único lugar que
 garante que ele é reemitido em toda rota, já que confiar na herança do layout
 é confiar numa herança que não existe.
 
 ### O caso real: og:url apontando para a home em todo o site
 
-Em 2026-07-14, uma revisão externa da produção deste site apontou sete
-achados. Três deles — `og:image` ausente no site inteiro, `og:url` apontando
+Em 14 de julho de 2026, uma revisão externa da produção deste site apontou sete
+achados. Três deles (`og:image` ausente no site inteiro, `og:url` apontando
 para a home em toda subpágina, e a página do guia sem `og:locale` e
-`og:site_name` — tinham **a mesma causa raiz**: eu tinha tratado a herança
+`og:site_name`) tinham **a mesma causa raiz**: eu tinha tratado a herança
 como cascata.
 
 O `og:url` é o caso mais didático. Ele estava definido uma única vez, no
 `openGraph` do root layout, apontando para a home. Nas rotas que não
-customizavam `openGraph`, o objeto do root era herdado por inteiro — ou
+customizavam `openGraph`, o objeto do root era herdado por inteiro, ou
 seja, toda subpágina anunciava a home como sua URL canônica de card. Nas
 rotas que customizavam `openGraph`, acontecia o oposto: o objeto do root era
 descartado e a página perdia locale, site_name e imagem. Os dois sintomas,
 opostos na aparência, eram o mesmo comportamento.
 
-A correção não foi "adicionar os campos que faltavam" página a página — foi
+A correção não foi "adicionar os campos que faltavam" página a página. Foi
 arquitetural, e é a tese deste artigo: **metadado por página não pode ser
 montado ad hoc**. O comentário que hoje existe nos metadados de root layout
 deste site, explicando por que `openGraph.url` deliberadamente **não** está
@@ -275,15 +274,15 @@ O histórico completo dos sete achados está documentado em
 O App Router tem um segundo caminho para imagem Open Graph: a file
 convention. Um `opengraph-image.tsx` (ou `.png`) ao lado do `page.tsx` gera
 e emite a tag `og:image` daquele segmento. Dois comportamentos, ambos
-verificados neste site no Next.js 16.2.6, merecem atenção — e como esse
-comportamento já variou entre versões do Next, vale conferir na sua com um
+verificados neste site no Next.js 16.2.6, merecem atenção. Como esse
+comportamento já variou entre versões do Next, confira na sua com um
 view-source antes de assumir.
 
 ### opengraph-image.tsx não cascateia
 
-No 16.2.6, o arquivo aplica a imagem ao **segmento onde está** — ele não
+No 16.2.6, o arquivo aplica a imagem ao **segmento onde está**. Ele não
 desceu para as rotas aninhadas como um layout desce. Um
-`app/opengraph-image.tsx` não garantiu `og:image` em `/blog/meu-post`; para
+`app/opengraph-image.tsx` não garantiu `og:image` em `/blog/meu-post`. Para
 a rota de post ter imagem, o segmento `app/blog/[slug]/` precisou do próprio
 `opengraph-image.tsx`. Se você contava com "coloco um arquivo no root e o
 site inteiro tem card", confira o HTML emitido nas rotas profundas.
@@ -292,7 +291,7 @@ site inteiro tem card", confira o HTML emitido nas rotas profundas.
 
 Quando o mesmo segmento tem `opengraph-image.tsx` **e** a página define
 `openGraph.images` na config, a config vence e o arquivo é ignorado. Neste
-site isso importou por meses: o helper sempre emite o conjunto completo de
+site isso importou por meses, porque o helper sempre emite o conjunto completo de
 `openGraph`, o que suprimiria a imagem por post gerada pelo arquivo do
 segmento. A primeira solução foi uma flag no helper (`fileOgImage: true`) que
 omitia `openGraph.images` da config para deixar o arquivo irmão vencer. A
@@ -331,18 +330,18 @@ segmento; e o arquivo de um segmento pai **não** se aplica às rotas filhas.
 ### Route group muda a URL da imagem
 
 Em setembro de 2026 este site passou a ter um root layout por idioma, com as
-rotas movidas para dois route groups, `(pt)` e `(en)` — o motivo está no
+rotas movidas para dois route groups, `(pt)` e `(en)`. O motivo está no
 [artigo de hreflang no Next.js](/blog/hreflang-nextjs). O build passou e toda
 a suíte de SEO continuou verde. Mesmo assim, o `og:image` padrão que o helper
 escreve (`/opengraph-image`) e a `image` do JSON-LD `Article` dos 11 artigos
 passaram a apontar para 404.
 
-A causa: dentro de um route group, o Next.js acrescenta um sufixo com hash à
+A causa é que, dentro de um route group, o Next.js acrescenta um sufixo com hash à
 URL das imagens de metadados geradas por file convention. O card da marca, em
 `app/(pt)/opengraph-image.tsx`, passou a ser servido em
-`/opengraph-image-35ziq1`; o de cada post, em
+`/opengraph-image-35ziq1`, e o de cada post, em
 `/blog/<slug>/opengraph-image-18vth1`. No Next.js 16.2.12, quem monta o sufixo
-é a função `getMetadataRouteSuffix`. O nome do arquivo continua o mesmo; o que
+é a função `getMetadataRouteSuffix`. O nome do arquivo continua o mesmo. O que
 quebra é todo lugar que escreveu a URL à mão, contando com esse nome.
 
 A correção foi abandonar a file convention para as imagens. Cada card virou um
@@ -372,7 +371,7 @@ Sem a file convention, nada injeta `og:image` sozinho. A flag `fileOgImage`
 perdeu o motivo de existir, e o helper passou a emitir a imagem em toda rota,
 recebendo o card do post como parâmetro. A suíte de SEO ganhou a asserção que
 faltava: em toda rota, ela baixa o `og:image` e cada imagem citada no JSON-LD e
-exige resposta 200 com `image/png`. Checar que a tag existe não basta; é
+exige resposta 200 com `image/png`. Checar que a tag existe não basta. É
 preciso checar que a URL responde.
 
 Se você usa route groups e escreve a URL de uma imagem de metadados em
@@ -382,14 +381,14 @@ build a URL servida, não o nome do arquivo.
 ## A solução: um helper único de metadados
 
 Se `openGraph` e `alternates` são substituídos por inteiro, a única
-arquitetura segura é: **nenhuma rota monta metadado na mão; toda rota chama
+arquitetura segura é aquela em que **nenhuma rota monta metadado na mão e toda rota chama
 um helper que sempre emite o conjunto completo.** É o oposto do que os
 tutoriais ensinam (espalhar `export const metadata` parcial por rota), e é a
 mesma filosofia que este site já aplica ao [JSON-LD derivado do
 frontmatter](/blog/json-ld-nextjs): uma fonte, um formato, zero montagem
 ad hoc.
 
-O contrato do helper — o cabeçalho real do arquivo, com o motivo de ele
+O contrato do helper está no cabeçalho real do arquivo, com o motivo de ele
 existir e a assinatura de entrada:
 
 ```ts
@@ -563,21 +562,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 ```
 
-O contrato do helper é o que importa, mais do que a implementação: toda
+O contrato do helper é o que importa, mais do que a implementação. Toda
 chamada emite title, description, canonical auto-referente, o objeto
 `openGraph` **completo** (locale, site_name, type, imagem e url casado com o
 canonical), o `alternates` completo (canonical, hreflang quando a rota tem
 tradução e autodiscovery do RSS em `types`) e a diretiva `robots`. Uma rota
 não tem como emitir um `openGraph` pela metade, porque
-nenhuma rota escreve `openGraph` — todas recebem o conjunto pronto.
+nenhuma rota escreve `openGraph`. Todas recebem o conjunto pronto.
 
-Detalhe que vale registrar: o token de verificação do Search Console
+O token de verificação do Search Console
 (`verification.google`) entra pelo root layout via variável de ambiente,
-nunca hardcoded — chave de configuração não é conteúdo.
+nunca hardcoded, porque chave de configuração não é conteúdo.
 
 ## Validar em build, não em produção
 
-O incidente de 2026-07-14 foi descoberto por uma revisão externa — ou seja,
+O incidente de 14 de julho de 2026 foi descoberto por uma revisão externa, ou seja,
 tarde. A resposta foi mover a validação para o único lugar onde ela não
 depende de disciplina: o build.
 
@@ -623,7 +622,7 @@ function parseFrontmatter(data: Record<string, unknown>, file: string): PostFron
 }
 ```
 
-Um title de 61 caracteres não gera um deploy com title truncado na SERP —
+Um title de 61 caracteres não gera um deploy com title truncado na SERP,
 gera um build vermelho. É a materialização de uma regra que eu repito no
 [guia](/guia/seo-tecnico-nextjs): o CI é o único revisor que não esquece.
 Junto com as assertions de Playwright que conferem canonical, `og:url` e a
@@ -632,22 +631,22 @@ olho depois do deploy.
 
 ## Como verificar que está correto
 
-Fechar o loop, como sempre, com verificação — nesta ordem:
+Feche o loop, como sempre, com a verificação, nesta ordem:
 
 1. **View-source numa subpágina, não na home.** A home quase sempre está
-   certa; o merge raso quebra as rotas internas. Procure `og:url` (tem que
+   certa. O merge raso quebra as rotas internas. Procure `og:url` (tem que
    ser a URL da própria página), `og:locale`, `og:site_name` e `og:image`
    com URL absoluta. Se preferir não garimpar HTML cru, o [validador de meta
    tags](/ferramentas/validador-meta-tags) deste site lê essa mesma resposta
    e devolve title, description, canonical e Open Graph com o veredito de
-   cada um — é o passo 1 automatizado, incluindo os limites de 60 e 155.
+   cada um. É o passo 1 automatizado, incluindo os limites de 60 e 155.
 2. **Compare duas rotas: uma que customiza `openGraph` e uma que não.** Se o
    conjunto de tags emitido for diferente entre elas, você tem montagem ad
-   hoc em algum lugar — e o helper tem um furo.
+   hoc em algum lugar, e o helper tem um furo.
 3. **Debugger da plataforma.** O scraper do LinkedIn e o do Facebook mantêm
-   cache; depois de corrigir, force o re-scrape na ferramenta de inspeção de
+   cache. Depois de corrigir, force o re-scrape na ferramenta de inspeção de
    cada um antes de concluir que "não funcionou".
-4. **Rich Results Test para o JSON-LD** que sai do mesmo frontmatter — se
+4. **Rich Results Test para o JSON-LD** que sai do mesmo frontmatter. Se
    você ainda monta o bloco na mão, o [gerador de
    JSON-LD](/ferramentas/gerador-json-ld) deste site produz o formato que eu
    uso em produção.

@@ -17,7 +17,11 @@
 > has two options there. 2026-11-14: decision 5 taken as (b), the project
 > entry on the Portuguese review (PR #146); decision 6 taken as (a), the
 > imperative counted and the band measured again (26 of 32 pages still
-> below). Steps 6–7 not started; step 6 waits for the core update.
+> below). Step 6 stopped after two batches (owner, 2026-11-14): seven of
+> the eleven July pages revised (PR #150, PR #152), both shipped during the
+> November core update; `gtm-nextjs`, `inp-nextjs`,
+> `redirects-canonicals-nextjs` and `hreflang-nextjs` were not revised.
+> Step 7 is not scheduled. Next: the skill's use and documentation.
 > Revised the same day after a review against the repository (history file,
 > entry "review of the plan").
 > **Origin:** owner request, 2026-11-11: improve how the articles are written
@@ -254,6 +258,12 @@ Steps 1–5 are tooling and can start now. **Step 6 waits for the November
 2026 core update (started 2026-11-10) to finish** on the Search Status
 Dashboard, so a ranking change is not read as an effect of the revision, or
 the other way round.
+
+*2026-11-14:* the owner shipped batch 1 (PR #150, deploy
+2026-11-14T12:33:03Z) during the rollout and chose to ship batch 2 the same
+way. Batch 1's log row says so (PR #151), and batch 2's will. Step 6 then stopped at seven of the
+eleven pages, because the owner's priority moved to the skill's use and
+documentation.
 
 ## 7. Measurement
 
