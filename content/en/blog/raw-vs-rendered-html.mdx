@@ -1,0 +1,291 @@
+---
+title: "Raw vs rendered HTML: what JavaScript changed on real sites"
+description: "Rendered HTML is the DOM after JavaScript runs. I compared it with raw HTML on four real sites. The head never changed, except on their SPA satellites."
+slug: "raw-vs-rendered-html"
+datePublished: "2026-11-13"
+dateModified: "2026-11-13"
+primaryQuery: "raw vs rendered html"
+lang: "en"
+translationOf: "html-renderizado"
+category: "indexacao"
+basedOn: ['which-ai-assistants-run-javascript']
+keywords: ['english', 'inglês', 'raw html', 'rendered html', 'rendered dom', 'view source', 'page source', 'rendering', 'javascript', 'spa', 'csr', 'ssr', 'googlebot', 'playwright', 'noscript', 'lazy loading', 'data-src']
+tldr: >-
+  Rendered HTML is the DOM after JavaScript runs. Google indexes it, but the
+  raw HTML decides whether rendering happens, and it's all a reader without
+  JavaScript gets. On four real sites, the head never changed on
+  server-rendered pages. On their two SPAs, the content depended on JavaScript.
+faq:
+  - question: "What's the difference between raw and rendered HTML?"
+    answer: "Raw HTML is the document the server sends in its response, the one view-source shows. Rendered HTML is the DOM after the browser runs the page's JavaScript, with everything scripts added, changed, or removed. On a server-rendered site, the two are usually almost the same. On an SPA, the raw HTML is a shell, and the content exists only in the rendered DOM."
+  - question: "Does Google index the rendered HTML?"
+    answer: "Yes. Google's documentation says every page that returns 200 and has no noindex goes to the render queue, and Google uses the rendered HTML for indexing. Raw HTML still counts, though. A noindex in it can stop rendering, and a non-200 response can skip that step."
+  - question: "How do I see a page's rendered HTML?"
+    answer: "In your browser, the Elements panel in DevTools shows the DOM after JavaScript runs, and view-source shows the raw HTML. To see what Google rendered, use Search Console's URL Inspection tool or the Rich Results Test, which show the rendered DOM. To compare the two field by field across many pages, run a script like the one in this article."
+  - question: "Does JSON-LD injected with JavaScript work?"
+    answer: "For Google, yes, if the block is in the rendered DOM. Google's documentation tells you to test the result, and it warns that for Product markup, dynamically generated markup can make Shopping crawls less frequent and less reliable. For a reader that doesn't run JavaScript, the block doesn't exist."
+---
+
+Rendered HTML is the DOM after the page's JavaScript runs. Raw HTML is what
+the server sends. Google indexes the rendered version, but the raw one decides
+whether rendering happens, and it's all that a reader without JavaScript gets.
+That's why you compare them field by field: title, description, canonical,
+robots, `lang`, H1, structured data, links, and images.
+
+On November 13, 2026, I ran that comparison on 42 pages with one script. It
+covered four public sites, two SPA satellites of those sites, and this site as
+the control. On server-rendered pages, JavaScript didn't
+change a single head field. It changed the body on three of the four sites. On
+the two SPAs, every route depended on JavaScript for its content.
+
+## Raw HTML, rendered HTML, and who reads each
+
+Google processes a JavaScript page in three phases: crawling, rendering, and
+indexing. Every page that returns a 200 status and doesn't ask for `noindex`
+goes into the render queue. Google's documentation says a page can stay there
+for a few seconds or longer, and it doesn't publish a maximum. After rendering, Google indexes the rendered HTML.
+
+Raw HTML still decides two things, though. A `noindex` in it can make Google
+skip rendering, so removing that `noindex` with JavaScript may not work. Google can also
+skip rendering for a non-200 response.
+
+Google also isn't the only reader. Its documentation notes that not all
+bots run JavaScript, and it recommends server-side rendering or static pages
+for that reason. It calls dynamic rendering, which serves one version to bots
+and another to people, a workaround, not a recommended solution.
+
+My [tests with five AI
+assistants](/en/blog/which-ai-assistants-run-javascript)
+show the split. ChatGPT, Claude, and Gemini read only the HTML the server
+sent. Grok and DeepSeek ran the JavaScript. Each was a fetch made because
+someone asked the assistant to open a URL, not a crawl.
+
+## What to compare, field by field
+
+Google's documentation has a rule for almost every one of these fields. Here's each
+rule, and what it means when raw and rendered HTML differ.
+
+| Field | What the documentation says | If the rendered HTML differs from the raw HTML |
+|---|---|---|
+| HTTP status | A non-200 response can skip rendering | JavaScript does not fix the status |
+| `noindex` | In the raw HTML, it can stop rendering | Removing it with JavaScript may not work |
+| Canonical | JavaScript can set it but should not change it. If it must, it should use the same value as the raw HTML | Two different canonicals are two signals |
+| Title and description | JavaScript can set or change both | Google sees the rendered one. A reader without JavaScript sees the raw one |
+| `lang` and H1 | No rule specific to JavaScript | A reader without JavaScript keeps the raw value, or nothing |
+| JSON-LD | Google reads it if it is in the rendered DOM. For Product, dynamic markup can make Shopping crawls less frequent and less reliable | Exists only for readers that render |
+| Links | Google only follows `<a>` elements with an `href` | A link that exists only after JavaScript depends on rendering to be discovered |
+| Images and lazy-loaded content | Load everything that matters when it enters the viewport. Google does not scroll or click | An image that gets its real file only after an event may not be seen |
+
+You can read the table the other way, too. A field that matches on both sides
+reaches every reader the same way.
+
+## How I ran the comparison
+
+My script reads each page twice. First it fetches the raw HTML with a declared
+user agent, respects robots.txt, and waits 1.5 s between requests. It loads
+that HTML into Chromium with JavaScript off and no subresources, so the
+signals come from the document exactly as the server sent it. Then the same
+Chromium opens the URL with JavaScript on, in a phone-sized viewport, waits
+for `load` plus 5 s, and reads the DOM. Both sides go through the same
+extraction function, so any difference comes from the document, not from the
+parser.
+
+In this article, "head" means seven fields: title, description, canonical,
+robots, `lang`, the H1 text, and the JSON-LD types. The script also counts
+H2s, words, internal links, and images. While rendering, it blocks requests to
+analytics and ad hosts, so my visits don't show up in the sites' metrics.
+
+For the sample, I took each site's home page and its main templates from the
+sitemap or the HTML site map, with two pages per template wherever two
+existed. That came to 8, 8, 8, and 7 pages on the four sites, 5 on the two
+satellites, and 6 on this site. I refer to the sites by code, S1 to S4, and round
+word counts to the nearest 10.
+
+I made a mistake in the day's first run, and you should know about it before
+you reuse the method. With JavaScript off, a browser treats `<noscript>`
+content as elements, so my raw side counted fallback images twice. That made
+it look as if JavaScript removed images from S3's posts. The extractor now
+ignores what's inside `<noscript>` on both sides, and every number below comes
+from the second run.
+
+## The head never changed on any server-rendered site
+
+| Target | Stack, as far as the HTML shows | Head equal |
+|---|---|---|
+| This site (control) | Next.js, static | 6 of 6 |
+| S1 | Server-rendered PHP | 8 of 8 |
+| S2 | WordPress with a page builder | 8 of 8 |
+| S3 | WordPress | 8 of 8 |
+| S4 | Next.js, with the blog coming from a headless WordPress | 7 of 7 |
+| S1's satellite | Client-rendered SPA | 0 of 4 |
+| S3's satellite | Client-rendered SPA | 0 of 1 |
+
+All seven fields matched on 31 pages across the four sites and on all
+6 of this site's pages. So did H2 counts and JSON-LD block counts. Three
+different stacks gave the same result. What a crawler reads in the raw HTML's
+head is what the page shows after JavaScript.
+
+## What JavaScript changed
+
+JavaScript changed the body on three of the four sites, but none of the
+changes touched the head.
+
+| Change | Where | Size |
+|---|---|---|
+| A carousel clones its cards | S2's home and listing pages | Home page from about 2,250 to 3,040 words. About 330 more on listings |
+| The same carousel removes links from the DOM | S2's home | 25 of the 98 internal links exist only in the raw HTML |
+| Images swap a placeholder for the real file | Every S2 template | On the home page, from 4 to 111 images with a real `src`. The file was in `data-src`, with no `<noscript>` fallback |
+| A cookie banner adds text and a link | Every S3 page | About 40 words and 1 internal link |
+| A script builds the list of links | One standalone S4 page, outside the main stack | From 1 to 11 internal links, and from about 190 to 630 words |
+| Widgets and images | S4's other pages | Up to about 50 words and 2 to 4 more images |
+
+S1 didn't change at all. Words, links, and images were identical on all 8
+pages. On this site, articles gained one word, and nothing else changed.
+
+Going by the field table, two of these cases depend on rendering. The first is
+the standalone S4 page, whose links exist only after JavaScript. Google looks
+for links again in the rendered HTML, but a reader that doesn't render never
+finds them. The second is S2's images, which get their real file through lazy
+loading. Google's documentation asks for the swap to happen when the image
+enters the viewport, because Google doesn't interact with the page.
+
+S2's carousel is a different story. The 25 links it removes from the DOM are
+still in the raw HTML, and Googlebot reads links from the raw HTML
+during the crawl phase, before rendering.
+
+Watch out for one measurement trap. API calls aren't content. This site's
+pages made 9 to 25 `fetch` requests after `load`, and S4's blog pages made 9
+to 12. On this site, those requests are Next.js prefetching data for linked
+routes. None of them changed the page. Without the DOM comparison, a count of
+XHR and `fetch` requests tells you nothing.
+
+## When everything depends on JavaScript
+
+At the other extreme are the two satellites. Their raw HTML is about 3 KB on
+every route, with no text in the body.
+
+On S1's satellite, the four routes I fetched have the same title, declare
+`lang="en"` on a site written in Portuguese, and have no canonical. After
+JavaScript, each route gets its own H1 and 20 to 720 words. That H1, which
+exists only after JavaScript, is the one head field that differs. The other
+six match on both sides, because the shell sets title, description, and
+`lang` once for all routes.
+
+S3's satellite is a web app. Its raw HTML has no description and no H1, and
+after rendering it has about 50 words.
+
+Google renders these pages, so it sees their content. But the four routes I
+fetched on S1's satellite share one title, and the site declares the wrong
+language. For a reader that
+doesn't run JavaScript, like three of the five assistants I tested, each route
+is an empty page with a title.
+
+## How to compare raw and rendered HTML on your site
+
+You can get the script from the
+[repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/raw-vs-rendered.mjs).
+It takes a file of origins and paths and writes a summary for each page.
+
+```bash
+node scripts/raw-vs-rendered.mjs --targets meus-alvos.json --out resultado
+```
+
+For the targets file's format, see
+`audits/case-studies/raw-vs-rendered.example.json`.
+
+Without the script, you can follow the same procedure by hand, in this order:
+
+1. **Pick the pages.** Take the home page and two pages per template.
+2. **Compare the head.** Check the seven head fields in the raw HTML and in
+   the DOM.
+3. **Count links and images.** On both sides, count the internal links and the
+   images with a real file.
+4. **Ignore `<noscript>`.** Skip what's inside `<noscript>` on both sides, or
+   the raw side comes out inflated.
+5. **Investigate only what differs.** Use the field table above to interpret each
+   difference.
+
+If you need to check one specific piece of text, such as a price or a paragraph, the
+[checklist in my JavaScript SEO
+article](/en/blog/javascript-seo-google-vs-ai#how-to-check)
+is faster. The [meta tag validator](/en/tools/meta-tag-validator) reads title,
+description, and canonical from the HTML a server delivers. To see what Google
+rendered, use URL Inspection or the Rich Results Test. Both show the rendered
+DOM.
+
+Error pages need a separate check. An SPA that returns 200 for any route has a
+[soft 404](/en/blog/soft-404) problem, and no head comparison will catch it.
+
+## Raw and rendered HTML in Next.js
+
+This site is statically generated. The [Metadata
+API](/en/blog/nextjs-metadata-api) writes title, description, and canonical,
+and a Server Component outputs the JSON-LD, so all of it is in the build's
+HTML. That's why the 6 control pages had the same head on both sides. For what
+each rendering strategy delivers in the first HTML, see
+[SSR, SSG, and ISR in Next.js](/en/blog/nextjs-ssr-ssg-isr).
+
+Running the comparison also exposed a gap in my SEO test suite. The suite opens every
+sitemap route with `page.goto`, so it reads the DOM after JavaScript.
+
+```ts
+// tests/seo/seo.spec.ts (lines 113–127, without the section comments)
+for (const route of routes) {
+  test(`SEO invariants: ${route}`, async ({ page }) => {
+    const response = await page.goto(route)
+    expect(response?.status(), `GET ${route}`).toBe(200)
+
+    const h1 = page.locator('h1')
+    await expect(h1, 'exactly one <h1>').toHaveCount(1)
+    expect((await h1.innerText()).trim(), '<h1> must not be empty').not.toBe('')
+
+    const title = await page.title()
+    expect(title.trim(), '<title> must not be empty').not.toBe('')
+    expect(title.length, `<title> "${title}" exceeds ${TITLE_MAX} chars`)
+      .toBeLessThanOrEqual(TITLE_MAX)
+```
+
+Suppose a `'use client'` component started setting the title with
+`document.title`. The test would still pass, because the title would be in the
+DOM, but neither the raw HTML nor a reader without JavaScript would have it.
+Nothing on the site does that today. A test that compares each route's raw
+response with its DOM, as the script does, would close the gap. That test
+doesn't exist yet.
+
+## Method and limits
+
+- **The renderer.** Playwright's Chromium isn't Google's renderer. My
+  comparison shows what each page's JavaScript does in a current browser, not
+  what went into Google's index.
+- **One day.** I measured on November 13, 2026. Sites change.
+- **Analytics blocked.** Content that only an analytics script or a tag
+  manager would inject, such as JSON-LD added through a tag manager, doesn't
+  appear on the rendered side.
+- **The sample.** On the four sites, I read 7–8 pages each, chosen by
+  template. I also read 5 routes on the two satellites and 6 pages on this site. A
+  template outside the sample may behave differently.
+- **Not measured.** I didn't measure what went into Google's index for each
+  site, because I analyzed them from the outside, with no access to their
+  Search Console. I didn't run any Google searches.
+- **The data.** The run's summary, with codes in place of site names, is in
+  `audits/case-studies/raw-vs-rendered-2026-11-13/summary.json`. Sources and
+  decisions are in the [research
+  note](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-13-raw-vs-rendered.md).
+
+I analyzed these public sites from outside, only to study the method. I
+don't identify them, I have no relationship with them, and they didn't take
+part. This isn't an audit, a recommendation to their owners, or a verdict on
+them. Nobody sponsored it, and I don't sell any service from it.
+
+For the reference implementation in Next.js, see my [technical SEO guide for
+Next.js](/en/guide/technical-seo-nextjs).
+
+## Sources
+
+- [Google: Understand the JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), last updated 2026-03-04, read on 2026-11-13
+- [Google: Dynamic rendering as a workaround](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering), last updated 2025-12-10, read on 2026-11-13
+- [Google: Generate structured data with JavaScript](https://developers.google.com/search/docs/appearance/structured-data/generate-structured-data-with-javascript), last updated 2025-12-10, read on 2026-11-13
+- [Google: Fix lazy-loaded content](https://developers.google.com/search/docs/crawling-indexing/javascript/lazy-loading), last updated 2025-12-10, read on 2026-11-13
+- [Google: Fix Search-related JavaScript problems](https://developers.google.com/search/docs/crawling-indexing/javascript/fix-search-javascript), last updated 2025-12-18, read on 2026-11-13
+
+This is the English version of an article first published in Portuguese; the two declare each other.

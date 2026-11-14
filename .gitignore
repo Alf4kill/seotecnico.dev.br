@@ -63,3 +63,8 @@ audits/case-studies/template-anatomy-*/**
 # Only summary.json (codes, rounded counts, shares) is versioned.
 audits/case-studies/sitemap-audit-*/**
 !audits/case-studies/sitemap-audit-*/summary*.json
+
+# scripts/raw-vs-rendered.mjs: raw.json carries hosts, paths, titles and links.
+# Only summary.json (codes, page kinds, rounded counts) is versioned.
+audits/case-studies/raw-vs-rendered-*/**
+!audits/case-studies/raw-vs-rendered-*/summary*.json

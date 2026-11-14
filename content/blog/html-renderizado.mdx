@@ -1,0 +1,280 @@
+---
+title: "HTML renderizado: o que o JavaScript muda em sites reais"
+description: "Compare o HTML do servidor com o DOM depois do JavaScript, campo a campo. Em quatro sites reais, o head não mudou. Só mudou nas SPAs satélites."
+slug: "html-renderizado"
+primaryQuery: "html renderizado"
+keywords: ['html renderizado', 'html bruto', 'dom renderizado', 'código-fonte', 'view-source', 'renderização', 'javascript', 'spa', 'csr', 'ssr', 'googlebot', 'playwright', 'noscript', 'lazy load', 'data-src']
+lang: "pt-BR"
+category: indexacao
+basedOn: ['quais-ias-executam-javascript']
+tldr: >-
+  HTML renderizado é o DOM depois que o JavaScript roda. O Google indexa essa
+  versão, mas o HTML bruto decide se ela acontece e é tudo o que um leitor
+  sem JavaScript recebe. Em quatro sites reais, o head não mudou nas páginas
+  renderizadas no servidor. Nas duas SPAs, o conteúdo dependia do JavaScript.
+datePublished: "2026-11-13"
+dateModified: "2026-11-13"
+faq:
+  - question: "Qual a diferença entre HTML bruto e HTML renderizado?"
+    answer: "O HTML bruto é o documento que o servidor envia na resposta, o que aparece no código-fonte da página. O renderizado é o DOM depois que o navegador executa o JavaScript: tudo o que os scripts acrescentaram, trocaram ou removeram. Num site renderizado no servidor os dois costumam ser quase iguais. Numa SPA, o bruto é uma casca e o conteúdo só existe no renderizado."
+  - question: "O Google indexa o HTML renderizado?"
+    answer: "Sim. A documentação do Google diz que toda página que responde 200 e não tem noindex vai para a fila de renderização, e que o HTML renderizado é usado para indexar. O HTML bruto ainda conta: um noindex nele pode impedir a renderização, e uma resposta diferente de 200 pode pular essa etapa."
+  - question: "Como ver o HTML renderizado de uma página?"
+    answer: "No navegador, a aba Elements do DevTools mostra o DOM depois do JavaScript, e o código-fonte mostra o HTML bruto. Para ver o que o Google renderizou, use a Inspeção de URL do Search Console ou o Teste de pesquisa aprimorada, que mostram o DOM renderizado. Para comparar os dois campo a campo em várias páginas, rode um script como o deste artigo."
+  - question: "JSON-LD inserido por JavaScript funciona?"
+    answer: "Para o Google, funciona se o bloco estiver no DOM renderizado. A documentação pede para testar o resultado e avisa que, para markup de Product, a marcação gerada dinamicamente pode deixar os rastreamentos do Shopping menos frequentes e menos confiáveis. Para um leitor que não executa JavaScript, o bloco não existe."
+---
+
+HTML renderizado é o DOM depois que o JavaScript da página roda. O HTML
+bruto é o que o servidor envia. O Google indexa o renderizado, mas o bruto
+decide se a renderização acontece e é tudo o que um leitor sem JavaScript
+recebe. Por isso vale comparar os dois campo a campo: title, description,
+canonical, robots, `lang`, H1, dados estruturados, links e imagens.
+
+Em 13 de novembro de 2026 fiz essa comparação em 42 páginas, com o mesmo
+script: quatro sites públicos, dois sites satélites deles feitos como SPA e
+este site, como controle. Nas páginas renderizadas no servidor, o
+JavaScript não mudou nenhum campo do head. O que ele mudou foi o corpo, em
+três dos quatro sites. Nas duas SPAs, cada rota dependia do JavaScript para
+ter conteúdo.
+
+## HTML bruto e HTML renderizado
+
+O Google processa uma página em três fases: rastreia, renderiza e indexa.
+Toda página que responde 200 e não pede `noindex` entra na fila de
+renderização. A documentação diz que ela pode ficar ali alguns segundos ou
+mais, sem publicar um prazo máximo. Depois de renderizar, o Google usa o HTML
+renderizado para indexar.
+
+O HTML bruto continua decidindo duas coisas. Um `noindex` nele pode fazer o
+Google pular a renderização, então tirar esse `noindex` com JavaScript pode
+não funcionar. E uma resposta diferente de 200 também pode fazer o Google
+pular a renderização.
+
+O Google não é o único leitor. A própria documentação lembra que nem todo
+bot executa JavaScript, e por isso recomenda renderizar no servidor ou gerar
+a página estática. Ela chama a renderização dinâmica, uma versão para bots e outra
+para pessoas, de solução paliativa, não recomendada. Nos [testes deste site com cinco assistentes de
+IA](/blog/quais-ias-executam-javascript), ChatGPT, Claude e Gemini leram só
+o HTML que o servidor enviou. Grok e DeepSeek executaram o JavaScript. Essas
+foram leituras feitas quando alguém pediu ao assistente para abrir uma URL,
+não um rastreamento.
+
+## O que comparar, campo a campo
+
+Quase todo campo tem uma regra na documentação do Google. A tabela diz o que uma
+diferença entre bruto e renderizado significa em cada um.
+
+| Campo | O que a documentação diz | Se o renderizado difere do bruto |
+|---|---|---|
+| Status HTTP | uma resposta diferente de 200 pode pular a renderização | o JavaScript não conserta o status |
+| `noindex` | no bruto, pode impedir a renderização | tirá-lo com JavaScript pode não funcionar |
+| canonical | o JavaScript pode definir, mas não deve mudar; se mudar, que seja para o mesmo valor do bruto | dois canonicals diferentes são dois sinais |
+| title e description | o JavaScript pode definir ou mudar os dois | o Google vê o renderizado; um leitor sem JavaScript vê o bruto |
+| `lang` e H1 | sem regra específica para JavaScript | o leitor sem JavaScript fica com o valor do bruto, ou com nada |
+| JSON-LD | lido se estiver no DOM renderizado; para Product, a marcação dinâmica pode deixar os rastreamentos do Shopping menos frequentes e menos confiáveis | só existe para quem renderiza |
+| links | o Google só segue `<a>` com `href` | um link que só existe depois do JavaScript depende da renderização para ser descoberto |
+| imagens e conteúdo com lazy load | carregar tudo o que importa quando entra no viewport; o Google não rola nem clica | uma imagem que só ganha o arquivo real depois de um evento pode não ser vista |
+
+A tabela vale também ao contrário. Um campo igual nos dois lados é um campo
+que todo leitor recebe do mesmo jeito.
+
+## Como a comparação foi feita
+
+O script lê cada página duas vezes. Primeiro pede o HTML bruto, com um
+user agent declarado, respeitando o robots.txt e com 1,5 s entre
+requisições. Esse HTML passa por um Chromium com JavaScript desligado e
+nenhum subrecurso carregado, para os sinais saírem do documento exatamente
+como o servidor mandou. Depois, o mesmo Chromium abre a URL com JavaScript,
+numa tela de celular, espera o `load` e mais 5 s, e lê o DOM. A mesma função
+de extração roda nos dois lados, então uma diferença vem do documento, e
+não do parser.
+
+Chamo de "head", aqui, sete campos: title, description, canonical, robots,
+`lang`, o texto do H1 e os tipos de JSON-LD. O script também conta H2,
+palavras, links internos e imagens. Na renderização, ele bloqueia as
+requisições a analytics e anúncios, para a visita não entrar nas métricas
+dos sites.
+
+A amostra foi a home e os modelos principais de cada site, duas páginas por
+modelo quando havia duas, tiradas do sitemap ou do mapa do site em HTML.
+Foram 8, 8, 8 e 7 páginas nos quatro sites, 5 nos dois satélites e 6 neste
+site. Os sites são citados por código, S1 a S4, e as contagens de palavras saem
+arredondadas à dezena.
+
+A primeira rodada do dia teve um erro meu, que vale conhecer antes de
+repetir o método. Com o JavaScript desligado, o navegador trata o conteúdo
+de `<noscript>` como elementos. O lado bruto contava as imagens de fallback
+duas vezes, e parecia que o JavaScript removia imagens dos posts do S3. O
+extrator agora ignora o que está dentro de `<noscript>` nos dois lados, e os
+números abaixo são da segunda rodada.
+
+## O head não mudou em nenhum site renderizado no servidor
+
+| Alvo | Stack, pelo que o HTML mostra | Head igual |
+|---|---|---|
+| Este site (controle) | Next.js, estático | 6 de 6 |
+| S1 | PHP renderizado no servidor | 8 de 8 |
+| S2 | WordPress com construtor de páginas | 8 de 8 |
+| S3 | WordPress | 8 de 8 |
+| S4 | Next.js, com o blog vindo de um WordPress headless | 7 de 7 |
+| Satélite do S1 | SPA renderizada no cliente | 0 de 4 |
+| Satélite do S3 | SPA renderizada no cliente | 0 de 1 |
+
+Nas 31 páginas dos quatro sites e nas 6 deste site, os sete campos saíram
+iguais. A contagem de H2 e de blocos de JSON-LD também. Foram três stacks
+diferentes, e em todas o que o crawler lê no head do HTML bruto é o
+que a página mostra depois do JavaScript.
+
+## O que o JavaScript mudou de fato
+
+O corpo mudou em três dos quatro sites. Nenhuma das mudanças tocou o head.
+
+| Mudança | Onde | Tamanho |
+|---|---|---|
+| Um carrossel clona os cards | home e anúncios do S2 | home de cerca de 2.250 para 3.040 palavras; anúncios com cerca de 330 a mais |
+| O mesmo carrossel tira links do DOM | home do S2 | 25 dos 98 links internos só existem no HTML bruto |
+| As imagens trocam um placeholder pelo arquivo real | todos os modelos do S2 | na home, de 4 para 111 imagens com `src` real; o arquivo estava em `data-src`, sem fallback em `<noscript>` |
+| Um banner de cookies acrescenta texto e um link | todas as páginas do S3 | cerca de 40 palavras e 1 link interno |
+| Um script monta a lista de links | uma página avulsa do S4, fora da stack principal | de 1 para 11 links internos, de cerca de 190 para 630 palavras |
+| Widgets e imagens | demais páginas do S4 | até cerca de 50 palavras e 2 a 4 imagens a mais |
+
+O S1 não mudou em nada. Palavras, links e imagens saíram idênticos nas 8
+páginas. Este site ganhou uma palavra nos artigos e nada mais.
+
+Pela tabela de campos, dois casos dependem da renderização. Os
+links da página avulsa do S4 só existem depois do JavaScript. O Google
+procura links de novo no HTML renderizado, mas quem não renderiza não os
+encontra. As imagens do S2 ganham o arquivo real por lazy load, e a
+documentação pede que isso aconteça quando a imagem entra no viewport,
+porque o Google não interage com a página. Já os 25 links que o carrossel
+tira do DOM continuam no HTML bruto, e o Googlebot lê os links do HTML bruto
+ainda na fase de rastreamento, antes de renderizar.
+
+Chamadas de API não são conteúdo. As páginas
+deste site fizeram de 9 a 25 requisições `fetch` depois do `load`, e as do
+blog do S4, de 9 a 12. No caso deste site, é o Next.js buscando de antemão os dados
+das rotas linkadas. Nenhuma dessas chamadas mudou a página. Uma contagem de
+XHR e `fetch` não diz nada sem a comparação do DOM.
+
+## Quando tudo depende do JavaScript
+
+Os dois satélites são o outro extremo. O HTML bruto tem cerca de 3 KB em
+toda rota e nenhum texto no corpo.
+
+No satélite do S1, as quatro rotas lidas têm o mesmo title, `lang="en"` num
+site em português e nenhum canonical. Depois do JavaScript, cada rota ganha
+o próprio H1 e de 20 a 720 palavras. Esse H1, que só existe depois do
+JavaScript, é o único campo do head que difere. Os outros seis são iguais nos dois lados, porque a casca define
+title, description e `lang` uma vez, para todas as rotas.
+
+O satélite do S3 é a área de um app. O HTML bruto não tem description nem
+H1, e o renderizado tem cerca de 50 palavras.
+
+Para o Google, que renderiza, esses sites têm conteúdo. Mas as quatro rotas
+lidas do satélite do S1 dividem um title, e o site declara o idioma errado. Para um leitor
+que não executa JavaScript, como três dos cinco assistentes testados aqui,
+cada rota é uma página vazia com um título.
+
+## Como comparar no seu site
+
+O [script está no repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/raw-vs-rendered.mjs).
+Ele recebe um arquivo com as origens e os caminhos e grava um resumo por
+página:
+
+```bash
+node scripts/raw-vs-rendered.mjs --targets meus-alvos.json --out resultado
+```
+
+O formato do arquivo de alvos está em
+`audits/case-studies/raw-vs-rendered.example.json`. Sem o script, o roteiro
+é o mesmo:
+
+1. Escolha a home e duas páginas de cada modelo do site.
+2. Para cada uma, compare os sete campos do head no HTML bruto e no DOM.
+3. Conte links internos e imagens com arquivo real nos dois lados.
+4. Ignore o que está dentro de `<noscript>` nos dois lados, ou o bruto sai
+   inflado.
+5. Investigue só o que difere, com a tabela de campos acima.
+
+Para conferir um texto específico, como um preço ou um parágrafo, o roteiro
+de [JavaScript e SEO](/blog/javascript-seo-google-vs-ia#como-conferir) é
+mais rápido. O [validador de meta tags](/ferramentas/validador-meta-tags)
+lê title, description e canonical do HTML que o servidor entrega. Para ver o
+que o Google renderizou, a Inspeção de URL e o Teste de pesquisa aprimorada
+mostram o DOM renderizado.
+
+Uma página de erro precisa de cuidado à parte. Uma SPA que responde 200 a
+qualquer rota tem o problema do [soft 404](/blog/soft-404), que nenhuma
+comparação de head mostra.
+
+## No Next.js
+
+Este site é gerado estaticamente. A [Metadata
+API](/blog/metadata-api-nextjs) escreve title, description e canonical, e o
+JSON-LD sai de um Server Component, os dois no HTML do build. Por isso as 6 páginas do controle saíram com o head
+igual nos dois lados. As estratégias de renderização e o que cada uma entrega no
+primeiro HTML estão em [SSR, SSG e ISR no Next.js](/blog/ssr-ssg-isr-nextjs).
+
+A comparação mostrou uma lacuna na suíte de SEO deste site. O teste abre
+cada rota do sitemap com `page.goto`, ou seja, lê o DOM depois do
+JavaScript:
+
+```ts
+// tests/seo/seo.spec.ts (linhas 113–127, sem os comentários de seção)
+for (const route of routes) {
+  test(`SEO invariants: ${route}`, async ({ page }) => {
+    const response = await page.goto(route)
+    expect(response?.status(), `GET ${route}`).toBe(200)
+
+    const h1 = page.locator('h1')
+    await expect(h1, 'exactly one <h1>').toHaveCount(1)
+    expect((await h1.innerText()).trim(), '<h1> must not be empty').not.toBe('')
+
+    const title = await page.title()
+    expect(title.trim(), '<title> must not be empty').not.toBe('')
+    expect(title.length, `<title> "${title}" exceeds ${TITLE_MAX} chars`)
+      .toBeLessThanOrEqual(TITLE_MAX)
+```
+
+Se um componente com `'use client'` passasse a definir o título com
+`document.title`, o teste continuaria passando, porque o título estaria no
+DOM. O HTML bruto ficaria sem ele, e um leitor sem JavaScript também. Hoje
+nada no site faz isso. O que fecharia a lacuna é um teste que compare o
+HTML bruto com o DOM em cada rota, como o script faz. Não existe ainda.
+
+## Método e limites
+
+- **O renderizador.** O Chromium do Playwright não é o renderizador do
+  Google. A comparação mostra o que o JavaScript da página faz num navegador
+  atual, e não o que entrou no índice do Google.
+- **Um dia.** A medição é de 13 de novembro de 2026. Os sites mudam.
+- **Analytics bloqueados.** Conteúdo que só um script de analytics ou um
+  gerenciador de tags injetaria, como um JSON-LD inserido pelo gerenciador de tags, não aparece no
+  lado renderizado.
+- **A amostra.** De 7 a 8 páginas por site nos quatro sites, escolhidas por
+  modelo, 5 rotas nos dois satélites e 6 páginas neste site. Um
+  modelo fora da amostra pode se comportar diferente.
+- **O que não foi medido.** O que entrou no índice do Google para cada site,
+  porque a análise é de fora, sem acesso ao Search Console deles. Nenhuma
+  busca foi feita no Google.
+- **Os dados.** O resumo da rodada, com códigos no lugar dos sites, está em
+  `audits/case-studies/raw-vs-rendered-2026-11-13/summary.json`, e as fontes
+  e decisões, na [nota de
+  pesquisa](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-13-raw-vs-rendered.md).
+
+Análise feita de fora, sobre sites públicos, só para estudo do método. Os
+sites não são identificados, não têm relação com o autor e não participaram.
+Não é auditoria, recomendação aos donos nem veredito sobre eles. Não há
+patrocínio nem serviço vendido a partir dela.
+
+A implementação de referência de tudo isso no Next.js está no [guia de SEO
+técnico para Next.js](/guia/seo-tecnico-nextjs).
+
+## Fontes
+
+- [Google: Understand the JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), atualizada em 04/03/2026, consultada em 13/11/2026
+- [Google: Dynamic rendering as a workaround](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering), atualizada em 10/12/2025, consultada em 13/11/2026
+- [Google: Generate structured data with JavaScript](https://developers.google.com/search/docs/appearance/structured-data/generate-structured-data-with-javascript), atualizada em 10/12/2025, consultada em 13/11/2026
+- [Google: Fix lazy-loaded content](https://developers.google.com/search/docs/crawling-indexing/javascript/lazy-loading), atualizada em 10/12/2025, consultada em 13/11/2026
+- [Google: Fix Search-related JavaScript problems](https://developers.google.com/search/docs/crawling-indexing/javascript/fix-search-javascript), atualizada em 18/12/2025, consultada em 13/11/2026
