@@ -169,6 +169,74 @@ automatically, but Next.js 16.2.12 defaults to WebP only. None of these
 problems were edited, since fixing them is a content decision. You'll find
 them listed in the note.
 
+## Revising the published articles
+
+On a published page, the review changes only the language. It leaves a
+page's title, description, `dateModified`, section headings, FAQ questions,
+code, numbers, and links as they are. A hedge can change its wording but not
+its strength. The short answer (`tldr`) and the FAQ answers can change. These
+pages' English versions aren't part of the review. Before each batch, the
+skill also asks for a row in the
+[experiment log](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/experiment-log.md)
+that records each page's index state, so you have a baseline to compare any
+later change in Search Console with.
+
+Both batches ran on November 14, 2026.
+[Batch 1](https://github.com/Alf4kill/seotecnico.dev.br/pull/150) applied the
+analysis round's accepted proposals to the same three articles. After that
+batch, `nextjs-json-ld` was still past the colon limit, and a second reader
+made 20 more proposals on it. In
+[batch 2](https://github.com/Alf4kill/seotecnico.dev.br/pull/152), each of
+the four pages got its own fresh reader, and all four worked in parallel.
+Together they returned 216 proposals. The Claude session read each one in
+its paragraph before applying it, since a swap that reads well on its own can
+leave the following sentence without its subject.
+
+| Article | Batch | Colons | Dashes | Semicolons |
+|---|---|---|---|---|
+| [`improve-lcp-nextjs`](/en/blog/improve-lcp-nextjs) | 1 | 28.4 → 15.8 | 43.2 → 3.2 | 9.5 → 2.1 |
+| [`nextjs-high-lcp`](/en/blog/nextjs-high-lcp) | 1 | 26.0 → 12.5 | 26.0 → 0 | 6.7 → 0 |
+| [`nextjs-json-ld`](/en/blog/nextjs-json-ld) | 1 | 31.2 → 10.6 | 21.4 → 0 | 7.8 → 0.5 |
+| [`nextjs-dynamic-sitemap`](/en/blog/nextjs-dynamic-sitemap) | 2 | 27.5 → 7.2 | 30.4 → 0 | 5.8 → 0 |
+| [`nextjs-metadata-api`](/en/blog/nextjs-metadata-api) | 2 | 35.3 → 15.9 | 27.9 → 0 | 11.8 → 2.4 |
+| [`next-image-seo`](/en/blog/next-image-seo) | 2 | 39.1 → 15.6 | 39.1 → 0 | 15.2 → 0 |
+| [`nextjs-ssr-ssg-isr`](/en/blog/nextjs-ssr-ssg-isr) | 2 | 37.3 → 15.4 | 37.3 → 0 | 5.1 → 0 |
+
+Values are per 100 sentences of Portuguese text, even though each row links
+to an English version. Two pages are still past the semicolon limit. On
+both, the semicolons that remain are in a diagram's prose restatement, and
+they were kept there on purpose.
+
+Batch 2 also turned up a bug in the skill's own scripts. On
+`next-image-seo`, an `<svg>` written as inline code made both scripts skip
+every line until the next figure closed, so they had never measured lines
+232 to 337. None of the skill's evaluations had a page like that, so the bug
+showed up only in use.
+[The fix](https://github.com/Alf4kill/seotecnico.dev.br/commit/4c59283)
+changes how that one page is measured and nothing else. Rerun with the fixed
+script, its "before" colon value was 39.1, not 51.6.
+
+Although they were looking for style problems, the readers reported at
+least one content problem on each of the seven pages. The most important is
+on `nextjs-metadata-api`, which says the config's `openGraph.images` wins
+over an `opengraph-image.tsx` in the same folder. Next.js 16.2.12's bundled
+documentation says the opposite. That behavior was checked on 16.2.6, and
+nobody has measured it again. The review fixed none of these problems. Both
+PRs list them, and they're waiting for a content verification pass, which
+changes `dateModified`.
+
+I had planned to publish the batches after Google's November 2026 core
+update. Instead, I decided to publish both during it. Their log rows say so,
+because you can't separate a change in Search Console during that period
+from the update itself. Batch 2 also missed a step. It was merged before the
+URL Inspection check, so its log row has no "before" state.
+
+I stopped the review after batch 2, with seven of the eleven July blog
+articles revised. I left out `nextjs-gtm`, `nextjs-inp`,
+`nextjs-redirects-canonicals`, and `nextjs-hreflang`. Neither batch included
+the pillar guide, which is the twelfth page in the Next.js group. For now, my
+priority is to use the skill and document it.
+
 ## Writing new pages in the register from the start
 
 This review also changed how a new page gets written. Whoever drafts a
@@ -221,44 +289,53 @@ skills](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/20
   move a number would still be writing for the script. A
   [note on the new measurement](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-14-imperative-reader-address.md)
   has the method and numbers.
+  No reader in either batch added "você" just to move the number. Two of the
+  seven revised pages are still below the band. One more imperative lifted
+  `nextjs-metadata-api` above the 0.53 floor.
 - **A sample of one.** Only one article shows the guide's effect on
   drafting. It still has to be tested on drafts from other routes,
   from an external writing session and from me.
-- **Cost.** Each page needs a fresh reader. A batch review of the July articles
-  will need proposals grouped by pattern, not one table per page.
-- **Published pages.** No old article has been revised yet. I'm holding the
-  batch review until Google's November 2026 core update ends, so that a change in
-  position isn't mistaken for an effect of the review.
+- **Cost.** I expected a batch to need its proposals grouped by the pattern
+  they fix rather than in one table per page. One table per page worked,
+  with the readers running in parallel. Reading each proposal inside its
+  paragraph is where the cost lies, and batch 2 had 216.
+- **What's left for later.** Four July articles still have their old text.
+  Each content problem the readers reported waits for a verification pass on
+  its own page. Batch 2 has no "before" index state to compare against.
 
 ## How to check
 
 ```bash
 git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
 node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --published --summary
-node .claude/skills/portuguese-style/scripts/check-portuguese.mjs content/blog/melhorar-lcp-nextjs.mdx content/blog/lcp-alto-next-js.mdx content/blog/json-ld-nextjs.mdx
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --quiet --summary content/blog/melhorar-lcp-nextjs.mdx content/blog/lcp-alto-next-js.mdx content/blog/json-ld-nextjs.mdx content/blog/sitemap-dinamico-nextjs.mdx content/blog/metadata-api-nextjs.mdx content/blog/next-image-seo.mdx content/blog/ssr-ssg-isr-nextjs.mdx
+git show fd5a4ab:content/blog/next-image-seo.mdx > antes.mdx && node .claude/skills/portuguese-style/scripts/check-portuguese.mjs antes.mdx
 node .claude/skills/portuguese-style/scripts/calibrate-register-pt.mjs --pages
 git show --stat 1fbd515
 ```
 
-Once you've cloned the repository, the first command shows every published
-page against the band, sorted by distance from native. To reproduce a given
-date's numbers, run these commands at that date's commit
-(`git checkout <commit>`).
+After the clone, the first command shows every published page against the
+native band, sorted by distance from native. To reproduce a given date's
+numbers, check out that date's commit first (`git checkout <commit>`) and
+run the commands there.
 
-Running the second gives you the "before" values for the three July articles,
-which haven't changed since that round. It won't show you the "after" values.
-Those came from copies kept out of the repository, because the batch review
-will redo each page's edits on its text as it stands then.
+The second command gives you the "after" values for all seven revised
+pages. The third measures a page as it stood before its batch, using today's
+script. Commit `fd5a4ab` is the one before batch 2. For a batch 1 page, swap
+in its file and use `acc10d3`, the commit before batch 1. (`antes` is
+Portuguese for "before".) The analysis round's "after" values come from
+copies that aren't in the repository.
 
-With the third, you measure all 22 native pages again, plus the site's own. You need
-network access for it, and those pages may have changed since November 11,
-2026. By November 14, one of them was already answering with a 403.
+The fourth command measures the 22 native pages again, along with this
+site's own. You'll need network access, and those pages may have changed
+since November 11, 2026. By November 14, one of them was already answering
+with a 403. The last command shows you every correction made to the article
+on raw versus rendered HTML.
 
-In the last line, `git show` lists every correction made to the raw vs
-rendered HTML article.
-
-November 11's numbers come from commit `cf086ec`, the July articles' from
-`99217a2`, those for the raw vs rendered HTML article from `bda4f98`, and
-those for "você" with the imperative from `269e1f6`.
+Each set of numbers was measured at its own commit. November 11's come from
+`cf086ec`, and the analysis round's July numbers from `99217a2`. Numbers for
+the raw versus rendered HTML article come from `bda4f98`, and those for
+"você" with the imperative from `269e1f6`. Both batches' numbers come from
+`f62826b`.
 
 This is the English version of a page first published in Portuguese; the two declare each other.

@@ -153,6 +153,71 @@ deixou passar. Um deles foi conferido no repositório. O artigo
 `melhorar-lcp-nextjs` diz que o `next/image` serve AVIF/WebP automaticamente,
 mas o padrão do Next.js 16.2.12 é só WebP. Os problemas não foram editados. São decisões de conteúdo, listadas na nota.
 
+## A revisão das páginas publicadas
+
+Numa página publicada, a revisão muda só a língua. Título, descrição,
+`dateModified`, títulos de seção, perguntas do FAQ, código, números e links
+ficam como estão, e as ressalvas mantêm a força. O `tldr` e as respostas do
+FAQ podem mudar, e a revisão não mexe na versão em inglês. A skill pede que,
+antes de cada lote, o [registro de
+experimentos](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/experiment-log.md)
+ganhe uma linha com o estado de indexação de cada página, para que uma mudança
+no Search Console tenha um ponto de comparação.
+
+Foram dois lotes, os dois em 14 de novembro de 2026. O
+[primeiro](https://github.com/Alf4kill/seotecnico.dev.br/pull/150) aplicou as
+propostas aceitas na rodada de análise, nos mesmos três artigos. O
+`json-ld-nextjs` ainda passava do limite nos dois-pontos, e um segundo leitor
+fez mais 20 propostas nele. No
+[segundo](https://github.com/Alf4kill/seotecnico.dev.br/pull/152), cada uma das
+quatro páginas teve um leitor novo, e os quatro trabalharam ao mesmo tempo.
+Eles devolveram 216 propostas, e a sessão do Claude leu cada uma no parágrafo
+dela antes de aplicar. Uma troca que soa bem sozinha pode tirar o sujeito da
+frase seguinte.
+
+| Artigo | Lote | Dois-pontos | Travessões | Ponto e vírgula |
+|---|---|---|---|---|
+| [`melhorar-lcp-nextjs`](/blog/melhorar-lcp-nextjs) | 1 | 28,4 → 15,8 | 43,2 → 3,2 | 9,5 → 2,1 |
+| [`lcp-alto-next-js`](/blog/lcp-alto-next-js) | 1 | 26,0 → 12,5 | 26,0 → 0 | 6,7 → 0 |
+| [`json-ld-nextjs`](/blog/json-ld-nextjs) | 1 | 31,2 → 10,6 | 21,4 → 0 | 7,8 → 0,5 |
+| [`sitemap-dinamico-nextjs`](/blog/sitemap-dinamico-nextjs) | 2 | 27,5 → 7,2 | 30,4 → 0 | 5,8 → 0 |
+| [`metadata-api-nextjs`](/blog/metadata-api-nextjs) | 2 | 35,3 → 15,9 | 27,9 → 0 | 11,8 → 2,4 |
+| [`next-image-seo`](/blog/next-image-seo) | 2 | 39,1 → 15,6 | 39,1 → 0 | 15,2 → 0 |
+| [`ssr-ssg-isr-nextjs`](/blog/ssr-ssg-isr-nextjs) | 2 | 37,3 → 15,4 | 37,3 → 0 | 5,1 → 0 |
+
+Os valores são a cada 100 frases. Em duas páginas o ponto e vírgula ainda
+passa do limite. Nas duas, os que sobraram estão no texto que repete um
+diagrama em prosa, e ficaram de propósito.
+
+O lote 2 também achou um defeito nos próprios scripts. No `next-image-seo`, um
+`<svg>` escrito como código inline fazia os dois scripts pularem o texto até o
+fim da figura seguinte, e as linhas 232 a 337 nunca tinham sido medidas. As
+avaliações da skill não tinham nenhuma página assim. A
+[correção](https://github.com/Alf4kill/seotecnico.dev.br/commit/4c59283) só
+muda a medida dessa página, e o valor de antes foi medido de novo com o script
+corrigido. Os dois-pontos de antes eram 39,1, e não 51,6.
+
+Os leitores procuravam problemas de estilo, mas relataram pelo menos um
+problema de conteúdo em cada uma das sete páginas. O que mais pesa está no
+`metadata-api-nextjs`. A página diz que o `openGraph.images` da configuração
+ganha de um `opengraph-image.tsx` na mesma pasta, e a documentação que vem com
+o Next.js 16.2.12 diz o contrário. Esse comportamento foi conferido na 16.2.6,
+e ninguém mediu de novo. Nenhum desses problemas foi corrigido na revisão. Eles
+estão listados nos dois PRs e esperam a verificação de conteúdo, que muda o
+`dateModified`.
+
+O plano era publicar os lotes depois do core update de novembro de 2026.
+Decidi publicar os dois durante a atualização. As linhas do registro dizem
+isso, porque uma mudança no Search Console nesse período não se separa dela.
+No lote 2 faltou uma etapa. O merge veio antes da Inspeção de URL, e a linha
+do lote ficou sem o estado de antes.
+
+Depois do lote 2, parei a revisão com sete dos onze artigos de julho do blog
+revisados. Ficaram de fora o `gtm-nextjs`, o `inp-nextjs`, o
+`redirects-canonicals-nextjs` e o `hreflang-nextjs`. O guia, o décimo segundo
+do grupo de Next.js, nunca fez parte desses lotes. Agora a prioridade é o uso
+da skill e a documentação dela.
+
 ## Escrever já no registro
 
 A revisão também mudou como uma página nova é escrita. O guia de estilo
@@ -197,34 +262,43 @@ skills](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/20
   da faixa, e o aviso aponta uma diferença real. Acrescentar "você" só para
   mudar o número continua sendo escrever para o script. A
   [nota da nova medição](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-14-imperative-reader-address.md)
-  tem o método e os números.
+  tem o método e os números. Nos dois lotes, nenhum leitor acrescentou "você"
+  só para mudar o número. Duas das sete páginas revisadas continuam abaixo da
+  faixa, e o `metadata-api-nextjs` saiu dela com um imperativo a mais.
 - **Uma amostra de um.** O efeito do guia sobre o rascunho foi visto num
   artigo. Precisa de rascunhos das outras rotas, os da sessão de redação e os meus.
-- **O custo.** Cada página pede um leitor novo, e uma revisão em lote dos
-  artigos de julho vai precisar das propostas agrupadas por padrão, não uma
-  tabela por página.
-- **As páginas publicadas.** Nenhum artigo antigo foi revisado ainda. A revisão
-  em lote espera o fim do core update de novembro de 2026, para que uma mudança
-  de posição não seja lida como efeito da revisão.
+- **O custo.** Eu esperava que um lote precisasse das propostas agrupadas pelo
+  padrão que corrigem. Uma tabela por página funcionou, com os leitores
+  trabalhando ao mesmo tempo. O
+  custo está em ler cada proposta no parágrafo dela, e foram 216 no lote 2.
+- **O que ficou para depois.** Quatro artigos de julho continuam com o texto
+  de antes. Os problemas de conteúdo que os leitores relataram esperam a
+  verificação, página por página. E o lote 2 não tem estado de indexação de antes para
+  comparar.
 
 ## Como conferir
 
 ```bash
 git clone https://github.com/Alf4kill/seotecnico.dev.br && cd seotecnico.dev.br
 node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --published --summary
-node .claude/skills/portuguese-style/scripts/check-portuguese.mjs content/blog/melhorar-lcp-nextjs.mdx content/blog/lcp-alto-next-js.mdx content/blog/json-ld-nextjs.mdx
+node .claude/skills/portuguese-style/scripts/check-portuguese.mjs --quiet --summary content/blog/melhorar-lcp-nextjs.mdx content/blog/lcp-alto-next-js.mdx content/blog/json-ld-nextjs.mdx content/blog/sitemap-dinamico-nextjs.mdx content/blog/metadata-api-nextjs.mdx content/blog/next-image-seo.mdx content/blog/ssr-ssg-isr-nextjs.mdx
+git show fd5a4ab:content/blog/next-image-seo.mdx > antes.mdx && node .claude/skills/portuguese-style/scripts/check-portuguese.mjs antes.mdx
 node .claude/skills/portuguese-style/scripts/calibrate-register-pt.mjs --pages
 git show --stat 1fbd515
 ```
 
 A primeira linha depois do clone mostra cada página publicada contra a faixa,
 ordenada pela distância do nativo. Para reproduzir os números de uma data,
-rode os comandos no commit dela (`git checkout <commit>`). A segunda dá os valores de antes dos três
-artigos de julho, que não mudaram desde a rodada. Os valores de depois vêm de
-cópias que não estão no repositório, porque a revisão em lote vai refazer as
-edições nas páginas como elas estiverem então. A terceira mede de novo as 22
-páginas nativas e as do site. Ela precisa de rede, e as páginas podem ter mudado desde 11
-de novembro de 2026. Em 14 de novembro, uma delas já respondia 403. O commit da última linha lista as correções do artigo de
-HTML renderizado. Os números de 11 de novembro são do commit `cf086ec`, os
-dos artigos de julho, do commit `99217a2`, os do artigo de HTML renderizado,
-do commit `bda4f98`, e os do "você" com o imperativo, do commit `269e1f6`.
+rode os comandos no commit dela (`git checkout <commit>`). A segunda linha dá
+os valores de depois das sete páginas revisadas. A terceira mede uma página
+como ela era antes do lote, com o script de agora. O commit `fd5a4ab` é o
+anterior ao lote 2. Para uma página do lote 1, troque o arquivo e use o
+`acc10d3`, o anterior ao lote 1. Os valores de depois da rodada
+de análise vêm de cópias que não estão no repositório. A quarta mede de novo
+as 22 páginas nativas e as do site. Ela precisa de rede, e as páginas podem
+ter mudado desde 11 de novembro de 2026. Em 14 de novembro, uma delas já
+respondia 403. O commit da última linha lista as correções do artigo de HTML
+renderizado. Os números de 11 de novembro são do commit `cf086ec`, os dos
+artigos de julho na rodada de análise, do commit `99217a2`, os do artigo de HTML renderizado, do
+commit `bda4f98`, os do "você" com o imperativo, do commit `269e1f6`, e os
+dos lotes, do commit `f62826b`.
