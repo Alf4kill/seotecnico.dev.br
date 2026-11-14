@@ -127,6 +127,13 @@ Rich Results Test, and confirm `/feed.xml` + `sitemap.xml` on the live domain.
 
 ## 6. Still open (backlog from the review)
 
+> **State on 2026-11-14:** `llms.txt` shipped on 2026-07-25 (`9b8965a`;
+> its hypothesis is closed in `experiment-log.md`). The Playwright SEO suite
+> shipped on 2026-07-18 in PR #10 and gates `main`. No record in `docs/`
+> shows a Bing Webmaster Tools submission or per-chapter OG images for the
+> guide; both are still open. The post-deploy spot-checks of §5 have no
+> dated record either.
+
 - `llms.txt` at the root (AEO/GEO positioning).
 - Bing Webmaster Tools submission (feeds ChatGPT/Copilot answers).
 - Per-chapter OG images for the guide (infrastructure now exists).

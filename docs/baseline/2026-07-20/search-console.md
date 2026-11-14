@@ -1,8 +1,10 @@
 # Search Console baseline — 2026-07-20
 
-> **Status: awaiting capture (owner-run).** GSC access needs credentials that
-> never enter this repo (CLAUDE.md §14), so this file is filled by hand. Fill
-> every `_pending_` below, then change this line to `Status: captured`.
+> **Status: never captured, superseded.** The Search Console capture planned
+> here was not made on 2026-07-20. The first capture of the project is
+> [`../2026-09-11/search-console.md`](../2026-09-11/search-console.md), and the
+> 2026-09-11 evaluation pass of `experiment-log.md` reads from it. This file
+> is kept as the plan of that date; do not fill it in.
 >
 > Property: `seotecnico.dev.br` (domain property, DNS-verified — covers every
 > subdomain and protocol).

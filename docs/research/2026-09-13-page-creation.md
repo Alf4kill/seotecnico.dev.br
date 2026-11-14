@@ -1,6 +1,11 @@
 # Research — how to build a content page in September 2026
 
 > **Status:** research note · 2026-09-13
+> **Decisions of §4 (2026-11-14 note):** 2 was answered by building
+> `/en/case-studies` on the technical work (PR #65, 2026-09-25); 3 was
+> answered by publishing `detectar-crawlers-ia` on 2026-09-13. Decision 1,
+> the redefinition of the first deliberate experiment, is still open, and
+> `CLAUDE.md` §11 item 11 still names the FAQ experiment that §2 calls void.
 > **Why now:** agreed with the owner before the next content page (and before
 > `/en/case-study`). The site's pages are indexed; the constraint is authority
 > ([baseline 2026-09-11](../baseline/2026-09-11/search-console.md)). This note

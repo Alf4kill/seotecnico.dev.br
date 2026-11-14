@@ -177,6 +177,17 @@ Valores do `check-english.mjs --published --summary` depois do lote 5:
 
 ## Pendências do dono
 
+> **Resolvidas em 2026-11-01** (nota de 2026-11-14). A linha dessa data em
+> [`experiment-log.md`](experiment-log.md) registra as correções nos dois
+> idiomas: itens 1, 3 a 7, 9 e 10, e o código de `accessibility-tree` do
+> item 11. Ficaram como estão, de propósito: o item 8 (o link é a URL que o
+> PerplexityBot buscou); o código de `improve-lcp` (comentários localizados
+> em código ilustrativo) e de `metadata-api` (cada idioma cita a própria
+> rota); e as datas de `datePublished` do item 11 (cada URL em inglês entrou
+> no ar em 2026-10-18). O item 2 não aparece naquela linha, mas os dois
+> idiomas de `llms-txt-funciona` já dizem que a janela fechou, com o
+> veredito.
+
 Estes itens estão nos dois idiomas ou no código. Ficaram fora porque esta era
 uma revisão de idioma:
 

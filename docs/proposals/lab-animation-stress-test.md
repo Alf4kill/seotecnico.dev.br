@@ -4,6 +4,9 @@
 > **Origin:** owner's draft (2026-07-22), reviewed against the repo state and the
 > July 2026 library landscape
 > **Last updated:** 2026-07-22
+> **Parked (2026-11-14 note):** no work since 2026-07-22. The decisions of §7
+> were resolved, but nothing was built. Building it or archiving it is an
+> open owner decision.
 
 ---
 

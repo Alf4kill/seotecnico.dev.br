@@ -1,8 +1,9 @@
 # Field data (CrUX) baseline — 2026-07-20
 
-> **Status: awaiting capture (owner-run).** Needs a CrUX/PSI API key, which per
-> CLAUDE.md §14 lives only in Vercel environment variables. Fill every
-> `_pending_`, then flip this line to `Status: captured`.
+> **Status: never captured, superseded.** The field-data capture planned here
+> was not made on 2026-07-20. The first CrUX capture of the project is
+> [`../2026-09-11/crux.md`](../2026-09-11/crux.md). This file is kept as the
+> plan of that date; do not fill it in.
 
 ## Expected result at this date: no field data
 
