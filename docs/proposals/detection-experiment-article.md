@@ -1,8 +1,12 @@
 # Proposal — Publishing the crawler detection experiment as site content
 
 > Status: **article 1 written 2026-09-13** (`content/blog/detectar-crawlers-ia.mdx`) — later than the
-> ≈2026-08-08 plan below, and with 28 days of data instead of 14. Article 2 still waits for the
-> ≈2026-10-23 windows. Original proposal date: 2026-07-25
+> ≈2026-08-08 plan below, and with 28 days of data instead of 14. Original proposal date: 2026-07-25
+> **Article 2 superseded (2026-11-14 note).** The H1–H6 round was closed early as a pilot on
+> 2026-09-20 (`experiment-log.md`, row of that date), so the 90-day results article planned in §2
+> was never written as such. The pilot's verdicts went into the section "O que o piloto mostrou" of
+> `detectar-crawlers-ia` (status `fechado`) and into the English case study
+> `/en/case-studies/ai-crawler-detection`.
 > Source material: [`detection-experiment.md`](../detection-experiment.md) (method),
 > [`measurement-plan.md`](../measurement-plan.md) (event + synthetic exclusions),
 > [`experiment-log.md`](../experiment-log.md) (dated hypotheses H1–H6).

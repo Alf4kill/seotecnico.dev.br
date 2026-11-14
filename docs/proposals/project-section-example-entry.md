@@ -1,6 +1,12 @@
 # Worked example: one `/projeto` entry, from brief to registered pair
 
 > **Status:** example for owner review · 2026-10-26
+> **Outcome (2026-11-14):** entry 1 was published as
+> `/projeto/uso-de-ia` + `/en/project/how-ai-is-used` (PR #116, deployed
+> 2026-10-27). The three open decisions of §9 are settled: the per-model
+> table was kept, the `[owner]` lines were settled on 2026-10-26, and the
+> page carries the sentence on the 2026-10-19 history rewrite. Read the
+> published pages, not this draft, for what the entry says.
 > **What this is:** entry 1 of `docs/proposals/project-section.md` §6 ("How
 > AI is used in this project") walked through every phase of the
 > `content-page` skill, so the section's process is documented on a real

@@ -3,6 +3,13 @@
 > **Status:** proposal — accepted with changes on 2026-10-26; the changes,
 > including the skill renamed `content-page`, are in
 > `project-section-review.md`, which wins where the two differ
+> **Outcome (2026-11-14):** built. Policy in PR #115, section and entry 1 in
+> PR #116 (deployed 2026-10-27), closing notes of §9 in PR #117, entry 3 of
+> §6 in PR #118. The six decisions of §8 are settled: `/projeto` +
+> `/en/project`; O8 added to `CLAUDE.md` §3; search and `llms.txt` yes; the
+> per-model table kept on `/projeto/uso-de-ia`; the `[owner]` lines settled
+> on 2026-10-26 (review §3.4); the closing note added to both English
+> articles. The rest of this file is the proposal as written.
 > **Origin:** owner request, 2026-10-26: a sub-section about the project
 > itself, its actions and the content made in it, as documentation; no
 > personal subjects, only the owner's content about the project.
