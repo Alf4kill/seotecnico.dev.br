@@ -367,6 +367,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/project/how-a-page-is-made',
     },
   },
+  {
+    id: 'revisao-do-portugues',
+    paths: {
+      'pt-BR': '/projeto/revisao-do-portugues',
+      en: '/en/project/how-portuguese-is-reviewed',
+    },
+  },
 ] as const
 
 /** O par a que uma rota pertence, ou undefined se ela não tem tradução. */
