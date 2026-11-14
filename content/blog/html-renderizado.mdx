@@ -221,18 +221,16 @@ cada rota do sitemap com `page.goto`, ou seja, lê o DOM depois do
 JavaScript:
 
 ```ts
-// tests/seo/seo.spec.ts (linhas 113–127)
+// tests/seo/seo.spec.ts (linhas 113–127, sem os comentários de seção)
 for (const route of routes) {
   test(`SEO invariants: ${route}`, async ({ page }) => {
     const response = await page.goto(route)
     expect(response?.status(), `GET ${route}`).toBe(200)
 
-    // ── Exactly one <h1>, non-empty ─────────────────────────────────────────
     const h1 = page.locator('h1')
     await expect(h1, 'exactly one <h1>').toHaveCount(1)
     expect((await h1.innerText()).trim(), '<h1> must not be empty').not.toBe('')
 
-    // ── <title> present, ≤60 chars ──────────────────────────────────────────
     const title = await page.title()
     expect(title.trim(), '<title> must not be empty').not.toBe('')
     expect(title.length, `<title> "${title}" exceeds ${TITLE_MAX} chars`)
