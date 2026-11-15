@@ -109,14 +109,14 @@ _Search Console → Links. Baseline for objective O5 (the tool as a link magnet)
 
 ## Capture checklist
 
-- [ ] Coverage totals recorded
-- [ ] Sitemap status recorded
-- [ ] 28-day performance totals recorded
-- [ ] Query list recorded (or "no queries yet" stated explicitly)
-- [ ] Enhancements recorded
-- [ ] Links recorded
-- [ ] Status line at the top flipped to `captured`
-- [ ] Row added to [`../../experiment-log.md`](../../experiment-log.md) noting the baseline date
+- [–] ~~Coverage totals recorded~~ (never captured; superseded)
+- [–] ~~Sitemap status recorded~~ (never captured; superseded)
+- [–] ~~28-day performance totals recorded~~ (never captured; superseded)
+- [–] ~~Query list recorded (or "no queries yet" stated explicitly)~~ (never captured; superseded)
+- [–] ~~Enhancements recorded~~ (never captured; superseded)
+- [–] ~~Links recorded~~ (never captured; superseded)
+- [–] ~~Status line at the top flipped to `captured`~~ (never captured; superseded)
+- [–] ~~Row added to [`../../experiment-log.md`](../../experiment-log.md) noting the baseline date~~ (never captured; superseded)
 
 > "No data yet" is a valid and useful capture. Write it down explicitly rather
 > than leaving the section empty — an empty section is indistinguishable from a

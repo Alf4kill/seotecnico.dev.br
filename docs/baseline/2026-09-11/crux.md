@@ -110,5 +110,5 @@ Lighthouse column imply more than it can.
 
 - [x] Origin query run and result recorded (including "not in dataset")
 - [x] URL-level queries explicitly skipped with a reason
-- [ ] GA4 RUM distribution recorded
+- [–] ~~GA4 RUM distribution recorded~~ (not captured; closed 2026-11-15)
 - [x] Status line at the top set to `captured (partial)`

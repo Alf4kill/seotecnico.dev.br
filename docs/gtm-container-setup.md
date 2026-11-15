@@ -208,10 +208,10 @@ against `GTM-N5RB56R9`:
 - [x] SPA navigation → second `page_view` with correct `dl`/`dt`
 - [x] No console errors
 - [x] Tag Assistant (GTM Preview) connects to the live domain (2026-07-18, `web_vitals` tag validation)
-- [ ] Same hits confirmed in GA4 Admin → DebugView (`debug_mode`) on production
+- [–] ~~Same hits confirmed in GA4 Admin → DebugView (`debug_mode`) on production~~ (moved to the owner list in [`README.md`](README.md), 2026-11-15)
 - [x] `tool_generate_jsonld`, `article_read`, `outbound_click`, `scroll_depth` published in GTM (2026-07-19)
-- [ ] `tool_validate_meta` and `tool_check_cwv` triggers, tags and custom dimensions in GTM/GA4 (the code pushes both events since 2026-07-26)
-- [ ] Tool events marked as **key events** in GA4 Admin → Events
+- [–] ~~`tool_validate_meta` and `tool_check_cwv` triggers, tags and custom dimensions in GTM/GA4 (the code pushes both events since 2026-07-26)~~ (moved to the owner list in [`README.md`](README.md), 2026-11-15)
+- [–] ~~Tool events marked as **key events** in GA4 Admin → Events~~ (moved to the owner list in [`README.md`](README.md), 2026-11-15)
 
 ### 9.1 Runbook: the two remaining tool events and the key events
 
@@ -257,7 +257,7 @@ blocks `/g/collect` and the hits never arrive.
 2. Alternative after hits exist: Admin → Data display → **Events** → turn on
    **Mark as key event** on each row.
 
-**After A–C:** tick the matching lines above, change the two "Remaining"
+**After A–C:** change the two "Remaining"
 cells of the [`measurement-plan.md`](measurement-plan.md) table to the date
 you published, and remove these items from the owner list in
 [`README.md`](README.md). Re-export the container (§10) in the same PR.

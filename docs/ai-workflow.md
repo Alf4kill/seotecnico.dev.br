@@ -6,7 +6,7 @@
 > his own workflow; not recorded in the repo). Numbers are as of commit
 > `b141722` (merge of PR #114, 2026-10-24).
 > **Source for:** the first entry of the project section
-> (`docs/proposals/project-section.md`).
+> (`docs/archive/project-section.md`).
 
 ## 1. Summary
 

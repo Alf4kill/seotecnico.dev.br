@@ -168,7 +168,7 @@ Tools must work without login. No stored user data (LGPD simplicity).
 
 Entries document how this site is built and run: decisions, methods,
 tooling, processes (including how AI is used), postmortems. Since 2026-10-26
-(owner decision; `docs/proposals/project-section.md` and its review).
+(owner decision; `docs/archive/project-section.md` and its review).
 
 - **Scope:** this project only. No personal subjects (§13).
 - **Evidence:** every entry links at least one versioned artifact (commit,

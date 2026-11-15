@@ -1,13 +1,13 @@
 # Review: the `/projeto` proposal
 
-> **Status:** review of `docs/proposals/project-section.md` (draft of
+> **Status:** review of `docs/archive/project-section.md` (draft of
 > 2026-10-26, delivered outside the repo with `docs/ai-workflow.md`,
 > `docs/skills.md` and `.claude/skills/bilingual-page/`)
 > **Reviewed at:** `b141722` (merge of PR #114), 2026-10-26
 > **Outcome (2026-11-14):** accepted and built (PRs #115–#118). §7 is
 > closed: every decision of the proposal's §8 is settled (see the outcome
 > line at the top of `project-section.md`).
-> **Companion:** `docs/proposals/project-section-example-entry.md` — the
+> **Companion:** `docs/archive/project-section-example-entry.md` — the
 > worked example of one entry, from brief to registered pair.
 
 ## 1. Verdict

@@ -273,11 +273,11 @@ warnings). What the site lacks is authority, and authority is links.
 ## Capture checklist
 
 - [x] Coverage totals recorded
-- [ ] Sitemap status recorded
+- [–] ~~Sitemap status recorded~~ (not captured; closed 2026-11-15)
 - [x] 28-day performance totals recorded (plus the 3-month window)
 - [x] Query list recorded
 - [x] Page list recorded
-- [ ] Enhancements recorded
-- [ ] Links recorded
+- [–] ~~Enhancements recorded~~ (not captured; closed 2026-11-15)
+- [–] ~~Links recorded~~ (not captured; closed 2026-11-15)
 - [x] Status line at the top set to `captured (partial)`
 - [x] Row added to [`../../experiment-log.md`](../../experiment-log.md)

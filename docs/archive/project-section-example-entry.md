@@ -7,12 +7,12 @@
 > table was kept, the `[owner]` lines were settled on 2026-10-26, and the
 > page carries the sentence on the 2026-10-19 history rewrite. Read the
 > published pages, not this draft, for what the entry says.
-> **What this is:** entry 1 of `docs/proposals/project-section.md` §6 ("How
+> **What this is:** entry 1 of `docs/archive/project-section.md` §6 ("How
 > AI is used in this project") walked through every phase of the
 > `content-page` skill, so the section's process is documented on a real
 > case before any code exists. Everything below is a draft; nothing here is
 > published or registered.
-> **Review:** `docs/proposals/project-section-review.md`
+> **Review:** `docs/archive/project-section-review.md`
 
 The pages themselves are not written here: phase 2 of the skill says the
 owner reviews the brief before any prose. What this file adds over the

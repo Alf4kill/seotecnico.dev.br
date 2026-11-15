@@ -2,7 +2,7 @@
 
 > Working record of the first full crawl audit of seotecnico.dev.br. It holds the
 > method, every finding with its verdict, what was fixed and how, and what was
-> kept on purpose. The public case study and `relatorio-auditoria-crawl.md` are
+> kept on purpose. The public case study and `archive/relatorio-auditoria-crawl.md` are
 > written from this file once the Search Console join is done (§7).
 
 ## 1. Why, and what this audit is not
@@ -249,7 +249,7 @@ still have no impressions then, check their status in URL Inspection.
 3. ~~Register the time of the owner's Screaming Frog run against production~~:
    done (§3, `measurement-plan.md`).
 4. Report the `216.198.79.0/24` route to Vercel support (owner).
-5. ~~Write `relatorio-auditoria-crawl.md`~~: done. ~~PT/EN article~~: done,
+5. ~~Write `archive/relatorio-auditoria-crawl.md`~~: done. ~~PT/EN article~~: done,
    `/blog/screaming-frog-gratuito` and `/en/blog/screaming-frog-free-version`.
 
 ## 8. Reproduce
