@@ -191,7 +191,8 @@ pattern counts in the body.
   read as each other's effect (proposal §6–§7). The owner may ship one
   anyway (batches 1 and 2 did, 2026-11-14): then the row says the batch
   shipped during the rollout, and that a change in Search Console during it
-  cannot be separated from the update.
+  cannot be separated from the update. The row registers no later check of
+  the pages (`CLAUDE.md` §7.3, nothing pending at publication).
 - One fresh reader per page, each from scratch. Readers of different pages
   can run in parallel, since they touch no shared file. Each reader returns
   rows (`line | pattern | before | after | note`). Every `before` must

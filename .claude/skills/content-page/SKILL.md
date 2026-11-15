@@ -206,9 +206,12 @@ the calques, which is why the English writer no longer sees it
 
 1. `TRANSLATION_PAIRS` in `src/lib/hreflang.ts`, at the end: `id` = PT slug,
    `paths` with both routes. Comments there are in Portuguese.
-2. `docs/experiment-log.md` row **before** publishing: date, change, a
-   hypothesis the site's volume can test, its power note (§7.3). Existence and
-   indexing predictions are fine; ranking promises are not.
+2. `docs/experiment-log.md` row: date, change, "No prediction" and a result
+   that records the publication (PR, deploy). Nothing pending at publication
+   (`CLAUDE.md` §7.3, owner rule of 2026-11-15): no hypothesis with a window
+   that closes after the merge. Any research or experiment the page reports
+   is closed, with its verdict written, before this PR opens; if it is not,
+   the page waits. Ranking promises are never written.
 3. Raster images (`<Image>` with a file under `public/images/blog/<slug>/`):
    add them to `postImages` in `src/app/sitemap.ts`.
 4. Tests that pin "the newest post" (`src/lib/content.test.ts`) may change;
@@ -254,8 +257,9 @@ committed), each level-3 claim with its source, the scripts' output, the Portugu
 register values before and after the style review and the suggestions
 declined, the English judgment calls from `english-version`, open
 `NOTA-REDACAO` decisions, and the after-merge steps: request indexing for
-**both** URLs, distribute once (LinkedIn PT + EN, one developer community),
-write that date into the log row.
+**both** URLs on the day of the deploy and distribute once (LinkedIn PT + EN,
+one developer community). The indexing request is routine maintenance, not a
+measured intervention: it opens no window and nothing is checked later.
 
 Never merge. The owner reviews and merges every PR (§14).
 

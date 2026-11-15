@@ -20,8 +20,9 @@ the documented before/after results are the portfolio artifact.
 **Name / domain:** **SEO Técnico** — `seotecnico.dev.br`
 **Niche:** Technical SEO for developers who build modern websites (React,
 Next.js and equivalent stacks), with Next.js as the reference implementation.
-The differentiator is the method: public lab, pre-registered hypotheses, open
-code, measurement on this domain. Portuguese-first, with selected pages in
+The differentiator is the method: public lab, experiments registered before
+their data and closed before anything is published about them, open code,
+measurement on this domain. Portuguese-first, with selected pages in
 English under `/en` using hreflang. *Widened from "Next.js developers" on
 2026-10-04 (owner decision): what the lab measures is a property of the HTML a
 server delivers, not of one framework, and Next.js-only queries in pt-BR carry
@@ -167,7 +168,7 @@ Tools must work without login. No stored user data (LGPD simplicity).
 
 Entries document how this site is built and run: decisions, methods,
 tooling, processes (including how AI is used), postmortems. Since 2026-10-26
-(owner decision; `docs/proposals/project-section.md` and its review).
+(owner decision; `docs/archive/project-section.md` and its review).
 
 - **Scope:** this project only. No personal subjects (§13).
 - **Evidence:** every entry links at least one versioned artifact (commit,
@@ -284,7 +285,7 @@ All custom events pushed via a typed `dataLayer` helper in
   `scripts/baseline-lighthouse.mjs`. There is no time series.
 - `experimento.py`: before/after deltas with confidence tiers for every
   deliberate SEO change. Changes are logged in `/docs/experiment-log.md`
-  (date, change, hypothesis, result).
+  (date, change, hypothesis or "No prediction", result).
 - `ai-search-monitor`: monthly AEO citation checks. **Not running:** the
   toolkit has never run against this site (owner, 2026-10-26), so no AEO
   citation check has been made with it.
@@ -294,6 +295,16 @@ All custom events pushed via a typed `dataLayer` helper in
   per-visitor test (a pilot hypothesis needed 10× the fetches the domain gets),
   so prefer units with volume: agent requests, lab runs, public datasets
   (CrUX, HTTP Archive), dated prompts to AI assistants. Rule since 2026-09-25.
+- **Nothing pending at publication** (owner, 2026-11-15). A page publishes
+  only finished work: the research, the measurement and any experiment it
+  reports are closed, with their verdict written, before the PR opens. Its
+  log row records the publication as a fact (date, deploy, PR, indexing
+  request) with "No prediction" and a result, never `pending` and never a
+  window that closes after the merge. Registering a hypothesis before its
+  data still applies, but only to lab experiments, and the experiment closes
+  before an article about it ships. A document never keeps an open owner
+  checklist after its PR merges: an owner action that cannot be done in the
+  PR goes to the single list in `docs/README.md`, and nowhere else.
 
 ---
 
@@ -474,7 +485,8 @@ not run stay at level 1 until measured.
 
 **Phase 3 — Expansion + measurement:**
 9. Remaining spokes (2/week), Tools 2–3, English versions + hreflang.
-10. Weekly monitoring via own toolkits; log everything in experiment-log.
+10. Monitoring from manual exports (the toolkits do not run, §7.3); log every
+    deliberate change in experiment-log.
 11. First deliberate experiment (e.g., FAQ schema on half the articles →
     measure CTR delta with confidence tiers).
 
@@ -496,6 +508,8 @@ A page or feature is DONE only when:
 - [ ] JSON-LD validates in Rich Results Test (spot-check)
 - [ ] Any new event is documented in measurement-plan.md AND visible in GA4 DebugView
 - [ ] Content follows frontmatter schema and AEO first-paragraph rule
+- [ ] Nothing left pending (§7.3): the work it reports is closed and its log
+      row has a result
 - [ ] Committed with a descriptive English commit message
 
 ---

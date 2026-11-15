@@ -156,7 +156,7 @@ The risk is volume without editorial value, not the tool used.
    study has a real before/after to report. The alternative is a case study of
    the technical work only, which is already measured.
 3. **Candidate for the next content page.** The existing proposal
-   [`proposals/detection-experiment-article.md`](../proposals/detection-experiment-article.md)
+   [`archive/detection-experiment-article.md`](../archive/detection-experiment-article.md)
    (approved direction, not drafted) fits §3.3 better than any new topic: it is
    first-hand data nobody else has.
 

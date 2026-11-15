@@ -1,7 +1,7 @@
 # Record — AI crawler policy: allow retrieval, block training
 
 > Status: **adopted and live in production** · 2026-07-25 (PR #31) · scope: [`src/lib/ai-crawlers.ts`](../src/lib/ai-crawlers.ts),
-> [`src/app/robots.ts`](../src/app/robots.ts), [`proxy.ts`](../proxy.ts)
+> [`src/app/robots.ts`](../src/app/robots.ts), [`src/proxy.ts`](../src/proxy.ts)
 > Companion to [`measurement-plan.md`](measurement-plan.md) (the `ai_crawler_hit`
 > event) and [`experiment-log.md`](experiment-log.md).
 

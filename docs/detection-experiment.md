@@ -467,7 +467,7 @@ out to be quiet.
   of what it is and why it exists. Nothing on this domain is deceptive to a human
   reader, including this.
 - The `/lab` namespace is reserved by the animations proposal
-  (`docs/proposals/lab-animation-stress-test.md`) with an indexed hub at `/lab`.
+  (`docs/archive/lab-animation-stress-test.md`) with an indexed hub at `/lab`.
   The traps are leaf routes that hub must **never** link — recorded here and in
   the proposal's way when it ships.
 

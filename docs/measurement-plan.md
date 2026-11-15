@@ -446,9 +446,9 @@ final sign-off on the live domain (needs `debug_mode` / GA4 access).
 - [x] Choice persists across reloads (localStorage; banner does not reappear)
 - [x] `page_view` fires on load **and on SPA navigation** (History Change → correct `dl`/`dt`)
 - [x] GTM Preview (Tag Assistant) connects to the production URL (2026-07-18, `web_vitals` tag validation)
-- [ ] Confirm the same hits in GA4 Admin → DebugView on the live domain (`debug_mode`)
-- [ ] Each tool event appears in DebugView with its parameters (when tools ship)
-- [ ] Key events marked in GA4 Admin → Events (after first real events arrive)
+- [–] ~~Confirm the same hits in GA4 Admin → DebugView on the live domain (`debug_mode`)~~ (moved to the owner list in [`README.md`](README.md), 2026-11-15)
+- [–] ~~Each tool event appears in DebugView with its parameters (when tools ship)~~ (moved to the owner list in [`README.md`](README.md), 2026-11-15)
+- [–] ~~Key events marked in GA4 Admin → Events (after first real events arrive)~~ (moved to the owner list in [`README.md`](README.md), 2026-11-15)
 - [x] `ai_crawler_hit` arrives in the **crawler** property with its parameters (2026-07-25, Realtime, 4/4 synthetic hits, `bot_name` split across the 4 agents sent). Not DebugView: the hit is server-side from `proxy.ts`, so there is no browser to attach `debug_mode` to — Realtime is the equivalent ground truth for a Measurement Protocol event
 - [x] Custom dimensions registered for `bot_name`, `bot_vendor`, `bot_purpose`, `bot_policy`, `page_path` + the detection-experiment set `bot_verified`, `ua_class`, `has_sec_fetch`, `req_conditional`, `net_id`, `is_trap`, `trap_channel` (owner, 2026-07-25, before the PR #33 deploy)
 - [x] Custom dimension `bot_signer` registered (owner, 2026-09-13, right after the PR #50 deploy). GA4 custom dimensions are not retroactive: `bot_signer` is queryable only for events received after registration

@@ -8,7 +8,7 @@ commit after them.
 
 Every number below comes from a crawl export, a script output or a command run
 on 2026-10-23. Anything that was not measured says so. The working record,
-with the evidence for each line, is [`crawl-audit-2026-10.md`](crawl-audit-2026-10.md).
+with the evidence for each line, is [`crawl-audit-2026-10.md`](../crawl-audit-2026-10.md).
 
 ## Tools and why
 

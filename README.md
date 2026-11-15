@@ -6,7 +6,8 @@ A live, public **technical SEO laboratory**: Portuguese-first content and free
 web tools focused on technical SEO for developers who build modern websites,
 with Next.js as the reference implementation. The site itself is
 the experiment — every technique documented here is implemented on this very
-domain and measured with real Google Search Console and CrUX data.
+domain and measured there: Search Console exports, lab runs, the site's own
+field data (RUM in GA4) and its request logs.
 
 Built and maintained by Nalpi — technical SEO engineer.
 

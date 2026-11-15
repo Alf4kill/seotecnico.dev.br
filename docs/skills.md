@@ -3,7 +3,7 @@
 > **Status:** reference · first written 2026-10-26 · `portuguese-style` added
 > 2026-11-12
 > **Related:** `docs/ai-workflow.md` (how AI is used here),
-> `docs/proposals/project-section.md` (where this becomes public content)
+> `docs/archive/project-section.md` (where this becomes public content)
 
 ## 1. What a skill is
 

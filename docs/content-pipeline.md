@@ -5,7 +5,7 @@
 > this repository or its PRs; **[owner]** is the owner's description of work
 > done outside it (editorial sessions, briefs, session logs), not versioned.
 > **Source for:** the project-section entry "Como uma página nasce aqui"
-> (`docs/proposals/project-section-review.md` §6.2). **Procedure:** the
+> (`docs/archive/project-section-review.md` §6.2). **Procedure:** the
 > `content-page` skill (`.claude/skills/content-page/`).
 
 ## 1. Summary

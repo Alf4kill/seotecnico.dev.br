@@ -78,7 +78,7 @@ removes lab-visible causes.
 
 ## Capture checklist
 
-- [ ] Origin query run and result recorded (including "not in dataset")
-- [ ] URL-level queries run or explicitly skipped with a reason
-- [ ] GA4 RUM distribution recorded
-- [ ] Status line at the top flipped to `captured`
+- [–] ~~Origin query run and result recorded (including "not in dataset")~~ (never captured; superseded)
+- [–] ~~URL-level queries run or explicitly skipped with a reason~~ (never captured; superseded)
+- [–] ~~GA4 RUM distribution recorded~~ (never captured; superseded)
+- [–] ~~Status line at the top flipped to `captured`~~ (never captured; superseded)
