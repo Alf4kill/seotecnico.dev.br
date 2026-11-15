@@ -213,6 +213,55 @@ against `GTM-N5RB56R9`:
 - [ ] `tool_validate_meta` and `tool_check_cwv` triggers, tags and custom dimensions in GTM/GA4 (the code pushes both events since 2026-07-26)
 - [ ] Tool events marked as **key events** in GA4 Admin → Events
 
+### 9.1 Runbook: the two remaining tool events and the key events
+
+Owner steps, written on 2026-11-15 for when there is time. The code has
+pushed both events since 2026-07-26 (`src/lib/analytics.ts`); only GTM and
+GA4 are missing. Names come from §4.3, §5 and §6, so the container stays
+consistent with this document. Do it in Chrome or Edge, not Brave: Shields
+blocks `/g/collect` and the hits never arrive.
+
+**A. `tool_validate_meta`** (about 10 minutes)
+
+1. GTM → **Variables** → User-Defined Variables → **New** → Data Layer
+   Variable. Name `DLV - issues_found`, Data Layer Variable Name
+   `issues_found`, version 2. Save.
+2. **Triggers** → **New** → Custom Event. Name `CE - tool_validate_meta`,
+   Event name `tool_validate_meta`, fires on All Custom Events. Save.
+3. **Tags** → **New** → Google Analytics: GA4 Event. Name
+   `GA4 - tool_validate_meta`, Measurement ID `{{CONST - GA4 Measurement ID}}`
+   (the constant of §4, `G-59LQZ6LR72`), Event Name
+   `tool_validate_meta`, Event Parameters: `issues_found` =
+   `{{DLV - issues_found}}`. Advanced Settings → Consent Settings → **not
+   required** (§7; never add a consent trigger). Triggering:
+   `CE - tool_validate_meta`. Save.
+4. **Preview** → connect to `https://seotecnico.dev.br/ferramentas/validador-meta-tags`,
+   accept the banner, validate any URL. In Tag Assistant the tag must show
+   under **Tags Fired**, with `issues_found` resolved to a number.
+5. **Submit** → version name `tool_validate_meta` → **Publish**.
+6. GA4 → **Admin** → Data display → **Custom definitions** → Create custom
+   dimension: name `issues_found`, scope **Event**, event parameter
+   `issues_found`. It is not retroactive: it counts from the day it is
+   created.
+
+**B. `tool_check_cwv`**: the same six steps with `DLV - lcp_bucket`
+(`lcp_bucket`), `CE - tool_check_cwv`, `GA4 - tool_check_cwv`, the page
+`/ferramentas/checador-cwv` (check any domain) and the custom dimension
+`lcp_bucket`. A and B can go in one container version.
+
+**C. Key events** (all three tools)
+
+1. GA4 → **Admin** → Data display → **Key events** → **New key event** →
+   type the exact name: `tool_generate_jsonld`, then `tool_validate_meta`,
+   then `tool_check_cwv`. This works before the first hit arrives.
+2. Alternative after hits exist: Admin → Data display → **Events** → turn on
+   **Mark as key event** on each row.
+
+**After A–C:** tick the matching lines above, change the two "Remaining"
+cells of the [`measurement-plan.md`](measurement-plan.md) table to the date
+you published, and remove these items from the owner list in
+[`README.md`](README.md). Re-export the container (§10) in the same PR.
+
 > The status of each event lives in the table of
 > [`measurement-plan.md`](measurement-plan.md); when the two disagree, that
 > table wins. This list was brought in line with it on 2026-11-14.
