@@ -210,7 +210,7 @@ function checkPair(ptSlug, pairs, logText, type) {
 
   // 7. Publication bookkeeping.
   if (logText && !logText.includes(ptSlug) && !logText.includes(enSlug)) {
-    warn(`docs/experiment-log.md mentions neither '${ptSlug}' nor '${enSlug}' (§7.3: register before publishing)`)
+    warn(`docs/experiment-log.md mentions neither '${ptSlug}' nor '${enSlug}' (§7.3: every published page has a log row)`)
   }
 
   return { errors, warns, notes, enSlug }

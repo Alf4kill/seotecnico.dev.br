@@ -4,6 +4,13 @@
 > result is known — date, change, hypothesis, result. Results are evaluated
 > with `experimento.py` confidence tiers where a before/after window exists;
 > never judge a change by day-after data (CrUX/GSC use a 28-day p75 window).
+>
+> **Since 2026-11-15 (owner rule, CLAUDE.md §7.3): nothing pending at
+> publication.** A row for a published page records the publication with "No
+> prediction" and a result. Hypotheses with a window are registered only for
+> lab experiments, and those close before any article about them ships. Rows
+> written before this date may still say `pending`; they are being closed
+> with the data available.
 
 ## Evaluation pass — 2026-09-11
 

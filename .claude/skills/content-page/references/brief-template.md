@@ -64,9 +64,10 @@ content section is "No Next.js" / "In Next.js" with real code from the repo.
 | related | | |
 
 ## 8. Experiment-log row (draft)
-| Date | Change | Hypothesis (+ power note) | Result |
+Nothing pending at publication (`CLAUDE.md` §7.3): no window after the merge.
+| Date | Change | Hypothesis | Result |
 |---|---|---|---|
-| | | | pending |
+| | | No prediction | Published: PR, deploy time |
 
 ## 9. Open decisions for the owner
 - [NOTA-REDACAO] …
