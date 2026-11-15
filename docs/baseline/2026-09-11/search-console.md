@@ -166,7 +166,9 @@ matching this site lexically ("next" + "seo" + the domain name), not topically,
 and placing it around page 7. The country profile confirms it: Vietnam 175,
 India 145, United States 129, Philippines 120, Indonesia 96, Bangladesh 61.
 
-Two observations flagged for follow-up, not resolved here:
+Two observations flagged for follow-up, not resolved here (the first was
+looked at on 2026-11-15, `experiment-log.md` row of that date; the second
+stays unexplained and is not followed up):
 
 - `seotecnico.dev.br` — an exact navigational query for the site's own domain —
   averages **position 33.22** over 32 impressions with zero clicks. For a
