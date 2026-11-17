@@ -52,7 +52,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 0,
       "onlyTemplateDescriptionShare": 0,
-      "medianInboundPages": 10,
+      "medianInboundPages": 9,
+      "linkedByAnotherPageShare": 1,
       "medianTtfbMs": 339,
       "medianKb": 265,
       "jsonLdTypes": [
@@ -114,8 +115,114 @@
    "label": "main site",
    "collectedAt": "2026-11-17T01:37:43.648Z",
    "probes": {
-    "probedAt": "2026-11-17T01:20:40.319Z",
+    "probedAt": "2026-11-17T01:56:46.807Z",
     "hosts": [
+     {
+      "label": "main site",
+      "linkedFromShareOfPagesRead": 1,
+      "linkedFromHome": true,
+      "robotsIsText": true,
+      "results": [
+       {
+        "kind": "root",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route",
+        "chain": [
+         404
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route, Accept */*",
+        "chain": [
+         404
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept text/html",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml",
+        "chain": [
+         301,
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/xml",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml, Accept */*",
+        "chain": [
+         301,
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/xml",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       }
+      ]
+     },
      {
       "label": "old blog subdomain",
       "linkedFromShareOfPagesRead": 0.13,
@@ -478,7 +585,8 @@
       "multipleDescriptionTagsShare": 0.99,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 0.01,
-      "medianInboundPages": 4,
+      "medianInboundPages": 3,
+      "linkedByAnotherPageShare": 0.92,
       "medianTtfbMs": 1500,
       "medianKb": 83,
       "jsonLdTypes": [
@@ -526,6 +634,7 @@
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 0.36,
       "medianInboundPages": 710,
+      "linkedByAnotherPageShare": 0.61,
       "medianTtfbMs": 1590,
       "medianKb": 71,
       "jsonLdTypes": [
@@ -589,7 +698,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
-      "medianInboundPages": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
       "medianTtfbMs": 1280,
       "medianKb": 53,
       "jsonLdTypes": [
@@ -633,7 +743,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
-      "medianInboundPages": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
       "medianTtfbMs": 1230,
       "medianKb": 69,
       "jsonLdTypes": [
@@ -678,7 +789,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
-      "medianInboundPages": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
       "medianTtfbMs": 1580,
       "medianKb": 61,
       "jsonLdTypes": [
@@ -722,7 +834,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
-      "medianInboundPages": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0.02,
       "medianTtfbMs": 1460,
       "medianKb": 61,
       "jsonLdTypes": [
@@ -767,6 +880,7 @@
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 0,
       "medianInboundPages": 710,
+      "linkedByAnotherPageShare": 1,
       "medianTtfbMs": 1630,
       "medianKb": 71,
       "jsonLdTypes": [
@@ -810,6 +924,7 @@
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
       "medianInboundPages": 200,
+      "linkedByAnotherPageShare": 1,
       "medianTtfbMs": 1430,
       "medianKb": 80,
       "jsonLdTypes": [
@@ -854,7 +969,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
-      "medianInboundPages": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0.02,
       "medianTtfbMs": 1480,
       "medianKb": 52,
       "jsonLdTypes": [
@@ -899,7 +1015,8 @@
       "multipleDescriptionTagsShare": 0,
       "templateDescriptionShare": 1,
       "onlyTemplateDescriptionShare": 1,
-      "medianInboundPages": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
       "medianTtfbMs": 1630,
       "medianKb": 150,
       "jsonLdTypes": [

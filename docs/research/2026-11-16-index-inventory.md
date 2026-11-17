@@ -98,17 +98,22 @@ S3's sitemaps list about **720** URLs; about **630** are indexable (0.88).
 | Sitemap type | Listed | Indexable | Median own words | Note |
 |---|---|---|---|---|
 | posts | ~330 | ~330 | ~1,380 | none under 300 own words |
-| tag archives | ~180 | ~180 | ~20 | median 1 post listed; 0.94 list one post or none; median 1 page links to each |
-| FAQ entries (one question per URL) | ~50 | ~50 | ~50 | 0.89 under 100 own words; 1–4 listed URLs answer 404 |
-| testimonials (one per URL) | ~10 | ~10 | ~40 | all under 100 own words |
+| tag archives | ~180 | ~180 | ~20 | median 1 post listed; 0.94 list one post or none; 0.02 are linked by another page read (self-links excluded) |
+| FAQ entries (one question per URL) | ~50 | ~50 | ~50 | 0.89 under 100 own words; 0.02 linked by another page; 1–4 listed URLs answer 404 |
+| testimonials (one per URL) | ~10 | ~10 | ~40 | all under 100 own words; none linked by another page |
 | campaign pages | ~80 | 0 | — | all `noindex`; already in `auditoria-de-sitemap` |
-| pages, partner landings | ~30, ~20 | all | ~450, ~910 | linked from almost every page |
+| pages, partner landings | ~30, ~20 | all | ~450, ~910 | 0.61 of pages and every partner landing linked by another page |
 | category archives | under 10 | all | ~420 | none has an H1 |
 | author archives | under 10 | under 10 | — | 0.14 answer 200; 5–9 redirect (in `auditoria-de-sitemap`) |
 | policy, page-builder entries | under 10 each | all | — | — |
 
 The three types that hold one small item per URL (tags, FAQ entries,
-testimonials) are **0.38 of everything indexable**.
+testimonials) are **0.38 of everything indexable** (0.376 on the exact counts;
+the rounded per-type shares add up to 0.37).
+
+Posts: 0.92 are linked by another page read. Inbound counts exclude a page's
+links to itself; an earlier version of the script counted them, which is
+why the first version of this note (`b35d8be`) had "median 1 page links to each" for tags.
 
 ### 1.2 The description every page shares
 
@@ -128,6 +133,7 @@ sentence is a search key and is never quoted.
 
 | Host | Root | Invented route | `/robots.txt` | `/sitemap.xml` | Linked from |
 |---|---|---|---|---|---|
+| main site | 200 | 404 | 200, text | 301 to the plugin index, 200 XML | — |
 | old blog subdomain | 526 | 526 | 526 | 526 | 0.13 of the pages read, and the home |
 | app subdomain (client-rendered SPA) | 200 | 200, same HTML as the root | 406 with `Accept: text/plain`; 200 with the app's HTML with `*/*` or `text/html` | 406 with `application/xml`; 200 with the app's HTML with `*/*` | every page read |
 | subdomain run by a third party | 200 | 301 to `/404`, which answers 200 without `noindex` | 200, text | 200, XML | 0.02 of the pages read, not the home |
@@ -287,7 +293,7 @@ depends on the theme and the SEO plugin **[inference]**.
 | Claim | Level (§10) | Source IDs |
 |---|---|---|
 | About 0.88 of what the sitemaps list is indexable; 0.38 of the indexable set is tags, FAQ entries and testimonials | 3 | §1.1 |
-| Tag archives: median ~20 own words, 0.94 list one post or none, median one page links to each | 3 | §1.1 |
+| Tag archives: median ~20 own words, 0.94 list one post or none, 0.02 linked by another page | 3 | §1.1 |
 | FAQ entries ~50 own words, testimonials ~40; posts ~1,380, none under 300 | 3 | §1.1 |
 | Every page carries the same site-wide description; on thin types it is the only one; posts carry two description tags | 3 | §1.2 |
 | Category archives have no H1 | 3 | §1.1 |

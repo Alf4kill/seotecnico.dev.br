@@ -528,12 +528,15 @@ function analyzeTarget(t) {
     const linked = new Set(p.regionLinks.map((h) => norm(h, p.loc)).filter((u) => u && postSet.has(u) && (linkPages.get(u) ?? 0) < minPages))
     p.postsListed = linked.size
   }
-  // Links internos de entrada (de qualquer página lida, contando uma vez por página).
+  // Links internos de entrada: de qualquer outra página lida, uma vez por página.
+  // O link de uma página para ela mesma (título do arquivo, migalha) não conta.
   const inbound = new Map()
   for (const p of read) {
-    const from = new Set(p.allLinks.map((h) => bare(h, p.loc)?.replace(/\/$/, '')).filter(Boolean))
+    const self = bare(p.loc, p.loc).replace(/\/$/, '')
+    const from = new Set(p.allLinks.map((h) => bare(h, p.loc)?.replace(/\/$/, '')).filter((u) => u && u !== self))
     for (const u of from) inbound.set(u, (inbound.get(u) ?? 0) + 1)
   }
+  const inboundOf = (p) => inbound.get(bare(p.loc, p.loc).replace(/\/$/, '')) ?? 0
   // Titles repetidos entre indexáveis.
   const indexable = read.filter((p) => p.status === 200 && !p.noindex && p.canonicalKind !== 'other')
   const titleCount = new Map()
@@ -578,7 +581,8 @@ function analyzeTarget(t) {
             multipleDescriptionTagsShare: share(idx.filter((p) => p.descriptions.length > 1).length, idx.length),
             templateDescriptionShare: share(idx.filter(hasTemplateDesc).length, idx.length),
             onlyTemplateDescriptionShare: share(idx.filter(onlyTemplateDesc).length, idx.length),
-            medianInboundPages: R.value(median(idx.map((p) => inbound.get(bare(p.loc, p.loc).replace(/\/$/, '')) ?? 0))),
+            medianInboundPages: R.value(median(idx.map(inboundOf))),
+            linkedByAnotherPageShare: share(idx.filter((p) => inboundOf(p) > 0).length, idx.length),
             medianTtfbMs: R.value(median(idx.map((p) => p.ttfbMs))),
             medianKb: R.value(median(idx.map((p) => p.bytes / 1024))),
             jsonLdTypes: [...new Set(idx.flatMap((p) => p.jsonLdTypes))].sort(),
