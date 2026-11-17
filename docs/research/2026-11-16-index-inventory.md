@@ -87,7 +87,11 @@ control for the method, not a comparison of sites.
   footer, the "most read" box and the fixed call to action fall out because
   they repeat on every page. Checked by hand on one tag archive and one FAQ
   entry: what is left is the tag name, the category, the one post's title
-  and the call to action; on the FAQ, the question and its answer;
+  and a short label of the tag template; on the FAQ, the question and its
+  answer. The call to action is template (on about a third of the pages
+  read). A block repeated only inside one type, like that label, counts as
+  own when the whole type is under 30% of the pages, so the tags' count errs
+  high, if anything (corrected on 2026-11-17 after a block-by-block check);
 - *posts listed* by an archive: links in its content to URLs of the posts
   sitemap, without links that appear on 30% of pages or more.
 
