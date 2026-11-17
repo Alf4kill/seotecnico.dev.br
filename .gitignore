@@ -68,3 +68,8 @@ audits/case-studies/sitemap-audit-*/**
 # Only summary.json (codes, page kinds, rounded counts) is versioned.
 audits/case-studies/raw-vs-rendered-*/**
 !audits/case-studies/raw-vs-rendered-*/summary*.json
+
+# scripts/index-inventory.mjs: html/, raw-*.json and crux-*.json carry hosts,
+# paths and page text. Only summary.json (codes, rounded counts) is versioned.
+audits/case-studies/index-inventory-*/**
+!audits/case-studies/index-inventory-*/summary*.json

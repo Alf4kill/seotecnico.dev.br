@@ -1,0 +1,27 @@
+[
+  {
+    "code": "SITE",
+    "label": "this site (control)",
+    "public": true,
+    "origin": "https://seotecnico.dev.br",
+    "sitemapPaths": ["/sitemap.xml"],
+    "sitemapLabels": [{ "match": ".", "label": "all pages" }],
+    "postsLabel": "all pages",
+    "archiveLabels": [],
+    "thinTypes": []
+  },
+  {
+    "code": "S0",
+    "label": "shape of a third-party target; the real ones live in index-inventory.local.json (gitignored)",
+    "origin": "https://example.com",
+    "sitemapLabels": [
+      { "match": "post_tag", "label": "tag archives" },
+      { "match": "post-sitemap", "label": "posts" },
+      { "match": ".", "label": "other" }
+    ],
+    "postsLabel": "posts",
+    "archiveLabels": ["tag archives"],
+    "thinTypes": ["tag archives"],
+    "markers": { "default": { "start": "<div[^>]*class=\"[^\"]*entry-content", "end": "<footer" } }
+  }
+]
