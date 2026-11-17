@@ -49,6 +49,9 @@ All accessed **2026-11-16**. IDs are this note's own.
 | G17 | [Time to First Byte (TTFB)](https://web.dev/articles/ttfb) (web.dev) | 2025-11-28 |
 | G18 | [Posts Tags screen](https://wordpress.org/documentation/article/posts-tags-screen/) (WordPress documentation) | not printed |
 | G19 | [Spam policies for Google web search](https://developers.google.com/search/docs/essentials/spam-policies) | 2026-08-28 |
+| G20 | [Site moves with URL changes](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes) | not read (read 2026-11-17) |
+| G21 | [Error 526](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-526/) (Cloudflare) | 2026-10-12 (read 2026-11-17) |
+| G22 | [Index bloat](https://ahrefs.com/seo/glossary/index-bloat) (Ahrefs SEO glossary, industry definition) | not printed (read 2026-11-17) |
 
 ---
 
@@ -253,6 +256,12 @@ each URL has is unknown, and the article says so.
   content would. A missing description is not an error in G10's terms.
 - G14: title links come from several sources, `<title>` first, also headings.
 - G2: heading count and order do not matter to Search.
+- G10, best practices (re-read 2026-11-17): identical or similar descriptions
+  on every page of a site are not helpful when pages appear in results;
+  create descriptions that describe each specific page; site-level
+  descriptions are fine on the home page and other aggregation pages. A tag
+  archive is an aggregation page, so the fixed sentence there is within G10;
+  on FAQ entries and testimonials (single-item pages) it is not.
 
 **[inference]** Missing descriptions and missing H1s are presentation
 defects (what the snippet and the title link are built from), not indexing
@@ -289,6 +298,34 @@ URLs. (Already covered by `auditoria-de-sitemap`; this page only links it.)
 Clicking a tag under a post opens a tag archive listing every post with that
 tag. G18 says nothing about indexing; whether a tag archive is indexable
 depends on the theme and the SEO plugin **[inference]**.
+
+### 2.9 The term itself, and what a host should answer **[documented]** — G22, G20, G21, G7, G15, G12, G5
+
+- G22 (industry, not Google) defines index bloat as an index holding too many
+  of a site's pages, many of little value to users, and says it can waste
+  crawl budget and affect rankings. The definition is about the **index**,
+  which cannot be seen from outside. G1 and G4, re-read 2026-11-17, do not
+  use the word "bloat". **[inference]** The article can say the site offers
+  the ingredients, not that it has index bloat; the Page indexing report is
+  where an owner confirms it. G22's crawl-budget claim does not fit a site of
+  hundreds of URLs (G1); its ranking claim matches G4 only as a possibility.
+- G21: 526 means Cloudflare could not validate the origin's SSL certificate,
+  a configuration fault.
+- G20: moved URLs get permanent server-side redirects (301/308); URLs not
+  moved answer 404 or 410; many old URLs redirected to one unrelated page
+  may be treated as a soft 404.
+- G7: 5xx slows crawling; indexed URLs are kept, then eventually dropped. 4xx
+  removes indexed URLs. A 301 is a strong signal to process the target.
+- G15: robots.txt must be UTF-8 plain text; 4xx (not 429) means no
+  restrictions; HTML is parsed for valid lines; 5xx stops crawling for 12
+  hours, then the cached copy for 30 days, then, if the host has general
+  availability problems, crawling stops.
+- G12: use a meaningful status code; in client-routed SPAs, avoid soft 404s
+  with a JavaScript redirect to a URL that answers 404, or a `noindex` added
+  by JavaScript on error screens.
+- G5: soft 404 is a "not found" message without a 404 code; Google
+  recommends a 404 for pages that truly do not exist, and fixing 404s the
+  site links to itself or lists in a sitemap.
 
 ---
 
