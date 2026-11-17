@@ -56,11 +56,22 @@ Remove a line in the PR that does it.
 - Export the GTM container to `docs/gtm-container-export.json`
   ([`gtm-container-setup.md`](gtm-container-setup.md) §10).
 
-**To close the windows registered before 2026-11-15** (next PR)
-- Search Console: Pages report and Performance (pages, queries, last 3
-  months) exports.
-- GA4 crawler property: export since 2026-09-25 (H14 `accept_md`, and the
-  probe windows of `chatgpt-le-javascript` and `quais-ias-executam-javascript`).
+**Exports still needed** (the rest of the closing pass of 2026-11-16 is in
+[`experiment-log.md`](experiment-log.md))
+- **GA4 crawler property → Explore → Free form**, event `ai_crawler_hit`,
+  metric Event count, Export → CSV. A free-form table takes at most 6
+  dimensions, so it is three exports. Filters may use a dimension that is not
+  in the rows.
+  - *H14 (row 2026-09-25):* 2026-09-25 → today, filter `accept_md` = `true`;
+    rows Date, `page_path`, `ua_class`, `bot_verified`, `bot_name`, `net_id`.
+  - *H14 denominator:* same period, no filter; rows `has_sec_fetch`,
+    `ua_class`.
+  - *Part (c) of `detectar-crawlers-ia` (row 2026-09-13):* 2026-09-13 →
+    today, filter `is_trap` = `true`; rows Date, `page_path`,
+    `trap_channel`, `ua_class`, `bot_name`, `net_id`.
+- **Search Console → Indexing → Pages, not-indexed reasons:** open each
+  reason with URLs and export its list. It explains the 15 URLs missing from
+  the indexed list of 2026-11-12 (row 2026-11-16).
 
 **Decisions**
 - Redefine or drop the first deliberate experiment (`CLAUDE.md` §11 item 11
