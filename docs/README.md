@@ -10,6 +10,7 @@ list at the end of this file, and nowhere else.
 | File | What it is |
 |---|---|
 | [`experiment-log.md`](experiment-log.md) | Every deliberate change, with date, prediction (or "No prediction") and result |
+| [`gsc-reading-notes.md`](gsc-reading-notes.md) | How to read the Search Console exports, and the inconsistencies between them |
 | [`measurement-plan.md`](measurement-plan.md) | Every analytics event, its trigger and its status. Source of truth for events |
 | [`gtm-container-setup.md`](gtm-container-setup.md) | The GTM container spec, its verification and the owner runbook (§9.1) |
 | [`design-system.md`](design-system.md) | Tokens, type, grid, components, art rules |
@@ -60,18 +61,12 @@ Remove a line in the PR that does it.
 [`experiment-log.md`](experiment-log.md))
 - **GA4 crawler property → Explore → Free form**, event `ai_crawler_hit`,
   metric Event count, Export → CSV. A free-form table takes at most 6
-  dimensions, so it is three exports. Filters may use a dimension that is not
+  dimensions, so it is two exports. Filters may use a dimension that is not
   in the rows.
   - *H14 (row 2026-09-25):* 2026-09-25 → today, filter `accept_md` = `true`;
     rows Date, `page_path`, `ua_class`, `bot_verified`, `bot_name`, `net_id`.
   - *H14 denominator:* same period, no filter; rows `has_sec_fetch`,
     `ua_class`.
-  - *Part (c) of `detectar-crawlers-ia` (row 2026-09-13):* 2026-09-13 →
-    today, filter `is_trap` = `true`; rows Date, `page_path`,
-    `trap_channel`, `ua_class`, `bot_name`, `net_id`.
-- **Search Console → Indexing → Pages, not-indexed reasons:** open each
-  reason with URLs and export its list. It explains the 15 URLs missing from
-  the indexed list of 2026-11-12 (row 2026-11-16).
 
 **Decisions**
 - Redefine or drop the first deliberate experiment (`CLAUDE.md` §11 item 11
