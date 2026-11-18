@@ -1,0 +1,546 @@
+---
+title: "Index bloat: anatomia de um site com texto original"
+description: "Um site WordPress com posts originais e quase 4 em 10 URLs indexáveis em tags, FAQs e depoimentos: o que o servidor entrega e o que o Google documenta."
+slug: "index-bloat"
+primaryQuery: "index bloat"
+keywords: ['index bloat', 'inchaço do índice', 'páginas finas', 'thin content', 'páginas de tag', 'tags wordpress', 'arquivo de tag', 'noindex', 'meta description duplicada', 'soft 404', 'subdomínio', 'orçamento de rastreamento', 'crawl budget']
+lang: "pt-BR"
+category: indexacao
+tldr: >-
+  Index bloat é um índice com muitas páginas de pouco valor de um site. Num
+  WordPress com posts originais, quase 4 em cada 10 URLs indexáveis são tags
+  de um post, FAQs de uma pergunta e depoimentos. Para esse tamanho, o Google
+  documenta a leitura do site como um todo, não o rastreio.
+datePublished: "2026-11-17"
+dateModified: "2026-11-17"
+faq:
+  - question: "O que é index bloat?"
+    answer: "É o nome que o mercado de SEO dá a um índice com muitas páginas de um site que valem pouco para quem busca, em geral URLs que o CMS cria sozinho: arquivos de tag, paginação, uma URL por item pequeno. O termo não aparece nas páginas do Google consultadas para este artigo. O que a documentação do Google descreve é o inventário de URLs que o Google conhece e a avaliação do site como um todo."
+  - question: "Páginas de tag do WordPress devem ser indexadas?"
+    answer: "Depende do que a página tem. Nenhuma das páginas do Google consultadas para este artigo manda tirar tags do índice. Uma tag que reúne vários posts sobre um assunto pode servir a quem busca. Uma tag que lista um post só repete, com menos texto, uma página que já existe. No site medido aqui, mais de 9 em cada 10 tags listavam um post ou nenhum."
+  - question: "Quantas palavras uma página precisa ter para o Google?"
+    answer: "Nenhum número. O guia de SEO do Google diz que o tamanho do conteúdo sozinho não importa para o ranqueamento e que não existe mínimo nem máximo de palavras. A contagem de palavras serve para descrever um tipo de página, não para decidir se ela é boa."
+  - question: "Noindex economiza orçamento de rastreamento?"
+    answer: "Não. O guia de orçamento de rastreamento do Google diz que a página com noindex continua sendo pedida e só é descartada depois que o Google lê a regra. Para rastrear menos, o guia indica responder 404, que ele trata como sinal forte para não voltar à URL, ou bloquear a URL no robots.txt, o que também impede o Google de ver o noindex."
+---
+
+Index bloat é o nome que o SEO dá a um índice com muitas páginas de um site
+que valem pouco para quem busca, em geral URLs que o CMS cria sozinho, como
+arquivos de tag, paginação e uma URL por item pequeno. O site que medi para
+este artigo tem os ingredientes, mesmo com posts longos e originais. Quase 4
+em cada 10 URLs que ele oferece para indexar são arquivos de tag que, na
+mediana, listam um post, páginas com uma pergunta de FAQ e páginas com um
+depoimento.
+
+O termo é do mercado, não do Google, e se refere ao índice. De fora, sem o
+Search Console, eu meço o que o site oferece. Se o Google indexou boa parte
+dessas URLs, o site tem index bloat no sentido do termo. Os efeitos que as
+definições atribuem a ele estão numa seção própria, comparados com a
+documentação do Google.
+
+É o caso oposto ao de [uma página por palavra-chave](/blog/uma-pagina-por-palavra-chave).
+Lá, o texto era o problema e passava em qualquer verificador de duplicidade.
+Aqui, o texto dos posts não é o problema. O que sobra é tudo o que o CMS, o
+tema e três subdomínios oferecem em volta dele. O site não é identificado, e
+não uso resultado de busca. O que está aqui é o que o servidor enviou, o que a
+documentação diz e o resultado provável de cada peça.
+
+## O site e como foi medido
+
+É um site WordPress com um blog de cerca de 330 posts, algumas páginas de
+serviço e um índice de sitemaps gerado por plugin. Nos artigos sobre
+[auditoria de sitemap](/blog/auditoria-de-sitemap) e
+[HTML renderizado](/blog/html-renderizado), ele é o S3. Aqui ele aparece
+inteiro.
+
+A medição é de um [script deste repositório](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/index-inventory.mjs).
+Ele abre os sitemaps, pede cada URL listada uma vez e mede o que cada tipo de
+página tem. Faz no máximo uma requisição por segundo, lê o `robots.txt` antes
+e se identifica no User-Agent. Lê só o HTML bruto, sem executar JavaScript, e
+não faz nenhuma busca no Google. A rodada foi em 17 de novembro de 2026 (UTC).
+
+Duas definições sustentam os números. Uma URL é indexável quando responde 200
+sem redirect, não tem `noindex` e aponta a canônica para si mesma ou não tem
+canônica. As palavras próprias de uma página são as dos blocos de texto que
+não se repetem em 30% ou mais das páginas lidas. Menu, rodapé, a caixa de mais
+lidos e a chamada para ação fixa saem da conta, porque aparecem em quase
+todas.
+
+Os números do site analisado vão arredondados, porque um valor exato ajuda a
+identificar um site. Como controle, o mesmo script rodou na mesma noite sobre
+o sitemap deste site, e os números dele são exatos. Ele mostra o que o método
+devolve num site sem esses tipos de página.
+
+## O que o sitemap oferece para indexar
+
+Os sitemaps do site listam cerca de 720 URLs, e cerca de 630 delas são
+indexáveis. A tabela separa por tipo de sitemap.
+
+| Tipo | Listadas | Indexáveis | Palavras próprias (mediana) |
+|---|---|---|---|
+| Posts | cerca de 330 | todas | cerca de 1.400 |
+| Arquivos de tag | cerca de 180 | todas | cerca de 20 |
+| FAQ, uma pergunta por URL | cerca de 50 | quase todas | cerca de 50 |
+| Depoimentos, um por URL | cerca de 10 | todas | cerca de 40 |
+| Páginas de campanha | cerca de 80 | nenhuma (`noindex`) | — |
+| Páginas e landings de parceiro | cerca de 50 | quase todas | de 450 a 900 |
+| Arquivos de categoria | menos de 10 | todas | cerca de 400 |
+| Arquivos de autor | menos de 10 | a maioria redireciona | — |
+
+<figure>
+  <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Composição aproximada das URLs indexáveis por tipo: posts cerca de metade, arquivos de tag mais de um quarto, FAQ, depoimentos, páginas e outros em frações menores. Tags, FAQ e depoimentos somam quase 4 em cada 10. Palavras próprias na mediana: posts cerca de 1.400, FAQ cerca de 50, depoimentos cerca de 40, tags cerca de 20">
+    <title>O que é indexável no site, por tipo</title>
+    <desc>Uma barra horizontal dividida, de forma aproximada, pela fração de cada tipo nas URLs indexáveis: posts cerca de metade, arquivos de tag mais de um quarto, FAQ e depoimentos em frações pequenas, páginas e landings de parceiro menos de 1 em cada 10 e outros uma fração pequena. Os três tipos com um item pequeno por URL estão destacados e somam quase 4 em cada 10. Abaixo, barras com a mediana de palavras próprias de cada tipo: posts cerca de 1.400, FAQ cerca de 50, depoimentos cerca de 40, tags cerca de 20.</desc>
+    <text x="20" y="26" fontSize="13" fill="var(--foreground)">URLs indexáveis, por tipo (aproximado)</text>
+    <rect x="20" y="40" width="340" height="44" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="360" y="40" width="204" height="44" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="564" y="40" width="34" height="44" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="598" y="40" width="14" height="44" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="612" y="40" width="68" height="44" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="680" y="40" width="20" height="44" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="190" y="67" textAnchor="middle" fontSize="13" fill="var(--foreground)">posts, cerca de metade</text>
+    <text x="462" y="67" textAnchor="middle" fontSize="13" fill="var(--color-diagram-on-accent)">tags, mais de 1/4</text>
+    <text x="360" y="104" fontSize="12" fill="var(--color-diagram-accent-text)">tags, FAQ e depoimentos: quase 4 em 10</text>
+    <text x="700" y="122" textAnchor="end" fontSize="12" fill="var(--foreground)">páginas e outros</text>
+    <text x="20" y="148" fontSize="13" fill="var(--foreground)">Palavras próprias por página (mediana)</text>
+    <text x="20" y="174" fontSize="12" fill="var(--foreground)">posts</text>
+    <rect x="130" y="162" width="520" height="16" fill="var(--color-diagram-phase-a)" />
+    <text x="658" y="175" fontSize="12" fill="var(--foreground)">1.400</text>
+    <text x="20" y="198" fontSize="12" fill="var(--foreground)">FAQ</text>
+    <rect x="130" y="186" width="19" height="16" fill="var(--color-accent)" />
+    <text x="157" y="199" fontSize="12" fill="var(--foreground)">50</text>
+    <text x="20" y="222" fontSize="12" fill="var(--foreground)">depoimentos</text>
+    <rect x="130" y="210" width="15" height="16" fill="var(--color-accent)" />
+    <text x="153" y="223" fontSize="12" fill="var(--foreground)">40</text>
+    <text x="20" y="246" fontSize="12" fill="var(--foreground)">tags</text>
+    <rect x="130" y="234" width="8" height="16" fill="var(--color-accent)" />
+    <text x="146" y="247" fontSize="12" fill="var(--foreground)">20</text>
+  </svg>
+  <figcaption>Rodada de 17/11/2026. As larguras da barra de cima são aproximadas, arredondadas para não identificar o site. Os três tipos destacados guardam um item pequeno por URL.</figcaption>
+</figure>
+
+| Tipo | Fração das URLs indexáveis |
+|---|---|
+| Posts | cerca de metade |
+| Arquivos de tag | mais de um quarto |
+| FAQ | menos de 1 em cada 10 |
+| Páginas e landings de parceiro | menos de 1 em cada 10 |
+| Depoimentos | uma fração pequena |
+| Outros (categorias, políticas, autor, entradas do construtor) | uma fração pequena |
+| Tags, FAQ e depoimentos, somados | quase 4 em cada 10 |
+
+No controle, as 88 URLs do sitemap deste site são indexáveis, e só 2% delas
+têm menos de 300 palavras próprias. No caso, todas as tags, todas as páginas
+de depoimento e a grande maioria das páginas de FAQ ficam abaixo de 100.
+
+## Uma URL por tag, por pergunta e por depoimento
+
+As tags são o maior grupo depois dos posts. Na mediana, cada arquivo de tag
+lista um post, e mais de 9 em cada 10 listam um post ou nenhum. O que a página
+tem de próprio é o nome da tag, a categoria e o título desse post, cerca de 20
+palavras. O arquivo de tag é uma segunda URL para um post que já tem a sua,
+com menos texto.
+
+O WordPress cria esse arquivo sozinho. Pela
+[documentação dele](https://wordpress.org/documentation/article/posts-tags-screen/),
+clicar numa tag abre a página com todos os posts que a usam. Ela não fala de
+indexação, que fica por conta do tema e do plugin de SEO. No site analisado,
+todas as tags estão indexáveis e no sitemap.
+
+E quase nada leva até elas. Contei, em todas as páginas lidas, quais linkam
+cada tag, sem contar o link da tag para ela mesma. Só algumas tags recebem
+link de outra página. Os posts não linkam as próprias tags, e as demais só
+aparecem no sitemap.
+
+As FAQs seguem a mesma lógica. Cada pergunta é uma URL, com a pergunta e a
+resposta, cerca de 50 palavras próprias, e quase nenhuma recebe link de outra
+página lida. Os depoimentos também, um por URL, cerca de 40 palavras, nenhum
+linkado por outra página. De 1 a 4 URLs de FAQ listadas no sitemap respondem
+404.
+
+Por que isso pode ser ruim, e por que não dá para dizer mais do que "pode"?
+A contagem de palavras não decide nada. O
+[guia de SEO do Google](https://developers.google.com/search/docs/fundamentals/seo-starter-guide)
+diz que o tamanho do conteúdo sozinho não importa para o ranqueamento e que
+não existe número mínimo nem máximo de palavras. O
+[guia de conteúdo útil](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
+pergunta se o texto foi escrito para atingir uma contagem de palavras que o
+Google prefira, e responde que ele não tem nenhuma. Por isso este artigo não
+chama nenhuma dessas páginas de fina por ter poucas palavras.
+
+O argumento que a documentação sustenta é outro. A
+[página sobre core updates](https://developers.google.com/search/docs/appearance/core-updates)
+manda avaliar o site como um todo, e não só páginas soltas, quando a queda é
+do site inteiro. Ela trata apagar conteúdo como último recurso e acrescenta
+que, se seções inteiras foram criadas para buscadores primeiro, apagar o
+conteúdo pouco útil pode ajudar o conteúdo bom do site. O
+[texto do Google sobre experiência na página](https://developers.google.com/search/docs/appearance/page-experience)
+diz que os sistemas avaliam o conteúdo página a página, em geral, mas que há
+algumas avaliações do site inteiro. Uma tag com um post, uma URL por pergunta
+e uma por depoimento são o tipo de seção que essas páginas descrevem, se não
+servem a ninguém que busca. É uma possibilidade documentada, sem número e sem
+garantia de efeito, e é a única que dá para sustentar de fora.
+
+## A mesma description em todas as páginas
+
+O tema imprime uma `<meta name="description">` fixa, a mesma frase sobre a
+empresa, em todas as páginas. Nos posts e nas landings de parceiro, o plugin
+de SEO imprime antes a description da página, e a do tema vem depois, então
+quase todos os posts e todas as landings de parceiro têm duas tags
+description. Nas tags, nas FAQs, nos depoimentos, nas categorias e nos
+arquivos de autor, a frase fixa é a única description da página.
+
+Por que isso é ruim tem resposta direta na
+[página de snippets do Google](https://developers.google.com/search/docs/appearance/snippet).
+Ela diz que descriptions idênticas ou parecidas em todas as páginas de um site
+não ajudam quando as páginas aparecem nos resultados, e pede uma description
+que descreva cada página. A mesma página abre uma exceção. Description do site
+inteiro serve para a home e para páginas de agregação, e um arquivo de tag é
+uma. Pela documentação, então, a frase fixa nas tags é aceitável. Nas FAQs e
+nos depoimentos, que são páginas individuais, não é.
+
+A mesma página explica o que muda. O snippet sai sobretudo do conteúdo da
+página, e o Google às vezes usa a description, quando ela descreve a página
+melhor que o conteúdo. Uma frase que é a mesma em cerca de 630 URLs não
+descreve nenhuma delas, então muda o material de onde o snippet sai. Não muda
+se a página entra no índice.
+
+Nos posts, o defeito é a segunda tag. Não encontrei, nas páginas do Google
+consultadas, qual de duas tags description ele usa, e eu não testei, então o
+efeito dela fica sem medida. O controle não tem description repetida.
+
+Nenhum arquivo de categoria tem H1. O guia de SEO do Google diz que número e
+ordem de títulos não importam para a busca, então isso vale pela leitura de
+quem usa leitor de tela, não pelo índice. O
+[validador de meta tags](/ferramentas/validador-meta-tags) mostra o title, a
+primeira description, a contagem de H1 e o status da URL que você digitar. A
+segunda tag description você só vê no código-fonte da página.
+
+## Três subdomínios e o status que cada um deveria dar
+
+O status HTTP é a parte da resposta que diz ao rastreador o que aconteceu com
+a URL: existe (200), mudou de lugar (301), não existe (404) ou o servidor
+falhou (5xx). O
+[guia de JavaScript do Google](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
+pede um status com significado, como 404 para página que não foi encontrada.
+Uma resposta é errada quando o status diz uma coisa e a situação é outra.
+
+O site principal faz isso certo e responde 404 para uma URL inventada. Os três
+subdomínios ligados a ele, não. Sondei cada um no mesmo dia com uma rota
+inventada, o `/robots.txt` e o `/sitemap.xml`.
+
+| Host | Raiz | Rota inventada | `/robots.txt` | Linkado por |
+|---|---|---|---|---|
+| Blog antigo | 526 | 526 | 526 | a home e pouco mais de 1 em cada 10 páginas lidas |
+| App (SPA renderizada no cliente) | 200 | 200, o mesmo HTML da raiz | 406 ou o HTML do app, conforme o `Accept` | todas as páginas lidas |
+| Subdomínio operado por um parceiro | 200 | 301 para `/404`, que responde 200 sem `noindex` | 200, texto | poucas páginas lidas, não a home |
+
+### Blog antigo: 526 em qualquer caminho
+
+Pela
+[documentação da Cloudflare](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-526/),
+o 526 quer dizer que a Cloudflare não conseguiu validar o certificado SSL do
+servidor de origem. É um defeito de configuração, não uma decisão sobre o
+conteúdo, e ele vale para o host inteiro, inclusive o `robots.txt`.
+
+O problema é que a resposta não diz o que aconteceu com o blog. Pela
+[documentação de status HTTP do Google](https://developers.google.com/crawling/docs/troubleshooting/http-status-codes),
+um 5xx faz o rastreador ir mais devagar e mantém as URLs já indexadas por um
+tempo, até que saiam do índice. Pela
+[especificação do robots.txt](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec),
+um `robots.txt` em 5xx faz o Google parar de rastrear o host nas primeiras 12
+horas. Depois de 30 dias, se o host continua com problema de disponibilidade,
+o Google para de rastreá-lo.
+
+A resposta certa depende do que aconteceu. Se o conteúdo mudou de endereço, o
+[guia de mudança de site do Google](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes)
+pede redirect permanente (301 ou 308) de cada URL antiga para a nova. Se foi
+removido, pede 404 ou 410. As duas respostas dizem ao Google o que fazer com
+cada URL. O 526 só diz que algo quebrou.
+
+E a home do site principal ainda linka esse host. O
+[relatório de indexação do Search Console](https://support.google.com/webmasters/answer/7440203?hl=en),
+ao falar de 404, recomenda corrigir os erros que o próprio site linka ou põe
+no sitemap. O raciocínio vale para um host inteiro que não abre, linkado da
+home. O efeito sobre o ranqueamento do host principal não está documentado,
+porque o
+[guia de orçamento de rastreamento](https://developers.google.com/crawling/docs/crawl-budget)
+trata cada hostname como um site separado.
+
+### App: 200 para qualquer rota
+
+O app responde 200, com o mesmo HTML curto, para qualquer rota, inclusive uma
+que não existe. Para o rastreador, cada URL inventada que alguém linkar é uma
+página válida com o conteúdo da tela inicial do app. O guia de JavaScript
+trata esse caso pelo nome. Em SPAs com roteamento no cliente, ele indica duas
+saídas para evitar soft 404. Uma é redirecionar por JavaScript para uma URL
+que o servidor responde com 404. A outra é pôr `noindex` na tela de erro, por
+JavaScript.
+
+O `/robots.txt` do app tem outro defeito. Ele responde 406 quando o pedido
+aceita só texto e devolve o HTML do app quando aceita qualquer coisa. A
+especificação pede um arquivo de texto puro em UTF-8, e cobre os dois desvios.
+Um 4xx conta como se o arquivo não existisse, sem restrição de rastreamento.
+Um HTML é lido em busca de linhas válidas, e o resto é ignorado. Nos dois
+casos, o app fica sem regras.
+
+Isso só é um problema se o dono esperava ter regras nesse host, ou se quer as
+telas do app fora da busca. Como todas as páginas lidas do site principal
+linkam o app, o Google chega a ele. Para tirar telas da busca, o meio
+documentado é o
+[`noindex`](https://developers.google.com/search/docs/crawling-indexing/block-indexing),
+e não o `robots.txt`.
+
+### Subdomínio do parceiro: 404 que responde 200
+
+O subdomínio do parceiro manda a rota inventada para `/404` com um 301, e
+`/404` responde 200, sem `noindex`. O relatório de indexação chama isso de
+soft 404, uma mensagem de "não encontrado" sem o código 404, e recomenda
+responder 404 para páginas que de fato não existem.
+
+A documentação explica por que a cadeia engana. O Google trata o 301 como
+sinal forte de que o destino deve ser processado, e o destino responde 200. O
+guia de mudança de site avisa que mandar muitas URLs antigas para uma única
+página sem relação com elas pode ser tratado como soft 404. E o guia de
+orçamento de rastreamento lembra que páginas soft 404 continuam sendo
+rastreadas. Num host pequeno, esse rastreio a mais pesa pouco. O defeito é o
+sinal, porque o Google precisa deduzir pelo conteúdo o que o status deveria
+ter dito.
+
+Em 9 de novembro, esse host respondia 403 ao User-Agent identificado da sonda
+deste site. Em 17 de novembro, respondeu normalmente, e o defeito pôde ser
+medido direto. O artigo sobre [soft 404](/blog/soft-404) mostra os outros
+tipos.
+
+## Tempo de resposta e Core Web Vitals de campo
+
+O servidor do site é lento para responder. Na rodada, o tempo até o primeiro
+byte ficou em cerca de 1,5 s na mediana dos posts e cerca de 2 s na home. No
+controle, 339 ms. É uma máquina, no Brasil, numa noite: descreve a rodada, não
+os usuários.
+
+Os usuários estão no CrUX, que dá o percentil 75 de 28 dias por origem, aqui
+de 18 de outubro a 14 de novembro de 2026. Arredondei os valores, porque o p75
+exato de uma origem numa data basta para identificá-la.
+
+| | LCP | INP | CLS | TTFB |
+|---|---|---|---|---|
+| Celular | cerca de 4 s, precisa melhorar | cerca de 250 ms, precisa melhorar | cerca de 0,2, precisa melhorar | cerca de 3 s, ruim |
+| Desktop | cerca de 3,5 s, precisa melhorar | cerca de 100 ms, bom | cerca de 0,1, bom | cerca de 2,5 s, ruim |
+
+O
+[guia do Google sobre Core Web Vitals](https://developers.google.com/search/docs/appearance/core-web-vitals)
+põe o limite de bom em 2,5 s para o LCP, 200 ms para o INP e 0,1 para o CLS.
+A [página de experiência](https://developers.google.com/search/docs/appearance/page-experience)
+diz que essas métricas são usadas pelos sistemas de ranqueamento, que não
+existe um sinal único de experiência e que um bom resultado não garante
+posição. O TTFB não é Core Web Vital, mas o
+[guia do web.dev](https://web.dev/articles/ttfb) considera ruim acima de
+1,8 s, e ele vem antes de tudo o que a página desenha. O
+[checador de Core Web Vitals](/ferramentas/checador-cwv) consulta o mesmo
+CrUX para a origem que você digitar.
+
+## O que as definições de index bloat afirmam
+
+O [glossário da Ahrefs](https://ahrefs.com/seo/glossary/index-bloat) define
+index bloat como um índice com páginas demais de um site, muitas sem valor
+para o usuário, e diz que isso pode gastar orçamento de rastreamento e afetar
+o ranqueamento. O termo não aparece nas páginas do Google consultadas aqui. A
+documentação do Google trata cada efeito de um jeito, e nem sempre a favor da
+definição.
+
+| A definição comum diz que index bloat | O que a documentação do Google diz | Neste caso |
+|---|---|---|
+| Gasta orçamento de rastreamento | O [guia de orçamento](https://developers.google.com/crawling/docs/crawl-budget) se dirige a sites com mais de 1 milhão de páginas que mudam toda semana, mais de 10 mil que mudam todo dia, ou com grande parte das URLs em "Descoberta, mas não indexada no momento". Ele mesmo chama esses números de estimativa | Cerca de 630 URLs indexáveis. O terceiro critério só o Search Console mostra, mas pelo tamanho o rastreio não é o problema provável |
+| Afeta o ranqueamento | A [página sobre core updates](https://developers.google.com/search/docs/appearance/core-updates) manda olhar o site como um todo e diz que apagar conteúdo pouco útil feito para buscadores pode ajudar o conteúdo bom | Possível, sem número. Tags de um post, FAQs de uma pergunta e depoimentos soltos são o tipo de seção que a página descreve |
+| Faz o buscador exibir páginas de forma errada | A [página de snippets](https://developers.google.com/search/docs/appearance/snippet) diz que descriptions iguais em todas as páginas não ajudam | Medido. A frase fixa não descreve as FAQs nem os depoimentos |
+
+Por isso o artigo usa o termo como nome do sintoma e a documentação para os
+efeitos. Dos três, só o último foi medido aqui, e o primeiro não se aplica a
+um site desse tamanho.
+
+## O que o site faz e não é problema
+
+| Fato | Por que não é achado |
+|---|---|
+| Posts longos, com cerca de 1.400 palavras próprias na mediana | O texto dos posts não é o defeito desse site |
+| Canônica autorreferente nos posts | É o recomendado |
+| 404 de verdade no site principal | É o comportamento que a documentação pede |
+| Head do HTML bruto igual ao do renderizado | Medido em 8 de 8 páginas no artigo sobre [HTML renderizado](/blog/html-renderizado); o JavaScript só acrescenta o banner de cookies |
+| Cerca de 630 URLs indexáveis | Bem abaixo dos tamanhos para os quais o guia de orçamento de rastreamento foi escrito |
+| Description fixa nas tags e categorias | A página de snippets aceita description do site em páginas de agregação |
+| Páginas de campanha com `noindex` | A decisão de não indexar está certa; listá-las no sitemap é o defeito, contado na [auditoria de sitemap](/blog/auditoria-de-sitemap) |
+
+## O resultado provável, peça por peça
+
+| Peça | Medido | Onde o Google descreve | Resultado provável |
+|---|---|---|---|
+| Arquivos de tag | cerca de 180, mais de um quarto das indexáveis; mais de 9 em 10 com um post ou nenhum | Core updates; experiência na página | Uma segunda URL, mais pobre, para cada post. Pode pesar na leitura do site como um todo, não no rastreio |
+| FAQ e depoimento, um por URL | cerca de 60 URLs, de 40 a 50 palavras próprias | Core updates | O mesmo, em escala menor |
+| Description fixa | todas as indexáveis; a única em tags, FAQs e depoimentos | Snippets | O snippet sai do conteúdo da página; nas FAQs e nos depoimentos, a description não descreve a página |
+| Categoria sem H1 | todas | Guia de SEO | Nenhum efeito documentado na busca |
+| Blog antigo em 526 | o host inteiro, linkado pela home | Status HTTP; `robots.txt`; mudança de site | O que restar indexado nesse host sai com o tempo; a home linka um endereço quebrado |
+| App sem 404 e sem `robots.txt` | toda rota responde 200 | JavaScript; `robots.txt` | Qualquer rota inventada responde 200, como uma página válida |
+| `/404` com 200 | o subdomínio do parceiro | Relatório de indexação; status HTTP | Soft 404 |
+| Orçamento de rastreamento | cerca de 630 indexáveis | Guia de orçamento | Não é o problema desse site |
+| Core Web Vitals | LCP, INP e CLS precisam melhorar no celular; o LCP também no desktop | Experiência na página | Um sinal entre vários |
+
+O que não dá para saber de fora: quantas tags, FAQs e depoimentos estão no
+índice, em qual status do relatório de indexação cada um cai, se alguma
+dessas URLs traz cliques e se o site como um todo perdeu alguma coisa. Tudo
+isso está no Search Console do site, que eu não tenho.
+
+## O que eu faria no lugar
+
+São recomendações condicionais. Antes de cada uma, o Search Console do site
+diria quais dessas URLs têm impressões, e essas ficam até haver motivo para
+sair.
+
+- **Tags com um post saem do índice.** Se uma tag reúne menos de dois posts,
+  ela recebe `noindex` e sai do sitemap, ou a tag é juntada a outra. As que
+  reúnem um assunto de verdade ficam.
+- **FAQ vira uma página.** As perguntas viram seções de uma página de
+  perguntas frequentes, e as URLs antigas redirecionam para a seção certa.
+- **Depoimento vai para onde convence.** Cada depoimento entra na página do
+  serviço de que ele fala, e as URLs próprias saem.
+- **Uma description por página.** O tema para de imprimir a frase fixa nos
+  posts, nas FAQs e nos depoimentos. Fica a do plugin, e as páginas que não
+  têm uma ganham.
+- **Cada host responde por si.** O blog antigo ganha certificado válido e
+  redirect para o blog atual, ou responde 404 ou 410, e a home deixa de
+  linkar esse host. O app manda rotas inexistentes para uma URL que responde
+  404, como o guia de JavaScript indica. O parceiro responde 404 de verdade
+  para o que não existe.
+
+`noindex` tira uma URL do índice, mas não economiza rastreio, porque a página
+continua sendo pedida. As perguntas frequentes desta página explicam o que o
+guia de orçamento indica para rastrear menos.
+
+## No Next.js
+
+O [guia de SEO técnico para Next.js](/guia/seo-tecnico-nextjs) usa este site
+como implementação de referência, e o controle acima é ele. Nele, o tipo de
+página que mais pesa no caso depois dos posts, o arquivo de taxonomia, não
+existe. Foi uma decisão, e o motivo está no código.
+
+```ts
+// src/lib/categories.ts, linhas 8 a 10
+// Categorias NÃO geram URL. Com 12 artigos em 4 eixos, uma página de arquivo
+// por categoria seria uma lista de três links — página fina, o risco que o §1
+// nomeia. Elas servem ao filtro da /blog (sem JavaScript) e aos relacionados.
+```
+
+O comentário é de quando o blog tinha 12 artigos. Com este, são 29 em quatro
+categorias, e a menor delas tem 3 artigos. Um arquivo dela ainda seria uma
+lista de três links.
+
+O filtro da página do blog é o que faz o papel do arquivo. São botões de rádio
+e CSS com `:has()`, sem JavaScript e sem URL nova.
+
+```css
+/* src/app/globals.css, linhas 397 a 398 e 401 a 410 */
+/* Rádios + :has(): filtra sem JavaScript e sem URL nova (nenhuma página de     */
+/* categoria é indexável — decisão registrada em docs/design-system.md).        */
+.category-filter:has(input:checked:not([value='all'])) [data-category] {
+  display: none;
+}
+.category-filter:has(input[value='cwv']:checked) [data-category='cwv'],
+.category-filter:has(input[value='indexacao']:checked) [data-category='indexacao'],
+.category-filter:has(input[value='dados-estruturados']:checked) [data-category='dados-estruturados'],
+.category-filter:has(input[value='medicao']:checked) [data-category='medicao'],
+.category-filter:has(input[value='experimento']:checked) [data-kind='experimento'] {
+  display: grid;
+}
+```
+
+Como nenhuma categoria tem rota, o sitemap também não tem o que listar além
+dos artigos e das páginas escritas. O mesmo raciocínio vale para qualquer
+`generateStaticParams`: cada valor que ele devolve vira uma URL indexável,
+então pergunte, para cada valor, se ele tem uma página que se sustenta
+sozinha. O [sitemap dinâmico no Next.js](/blog/sitemap-dinamico-nextjs)
+mostra como o sitemap deste site sai do mesmo conteúdo.
+
+## Como verificar no seu site
+
+1. Liste as URLs do seu sitemap por tipo, pelo nome de cada sitemap filho, e
+   conte quantas de cada tipo respondem 200, sem `noindex` e com canônica
+   própria.
+2. Para cada tipo, conte as palavras que não se repetem nas outras páginas.
+   Olhe primeiro para o tipo inteiro que tiver algumas dezenas de palavras.
+3. Conte as tags `description` de cada página. Duas tags indicam tema e plugin
+   imprimindo cada um a sua. A mesma frase em todas as páginas indica uma
+   description fixa.
+4. Peça uma URL inventada em cada host que é seu, inclusive subdomínios de app
+   e de parceiro, e o `/robots.txt` de cada um.
+5. No Search Console, abra o relatório de indexação e veja em qual status
+   cada tipo cai. Para páginas assim, os status a procurar são "Rastreada, mas
+   não indexada no momento", "Cópia sem página canônica selecionada pelo
+   usuário" e "Erro soft 404". É aqui que você confirma se há index bloat no
+   sentido do termo.
+
+O script deste artigo faz os passos 1 a 3 com as fases `fetch` e `analyze`. O
+passo 4 é a fase `probe`, quando o arquivo de alvos lista os hosts a sondar.
+
+```bash
+node scripts/index-inventory.mjs fetch   --targets audits/case-studies/index-inventory.example.json --only SITE
+node scripts/index-inventory.mjs analyze --targets audits/case-studies/index-inventory.example.json --only SITE
+```
+
+## Método e limites
+
+- **Coleta.** Rodada de 17/11/2026 (UTC; noite de 16/11 no horário de
+  Brasília), com User-Agent próprio e identificado, `robots.txt` respeitado e
+  no máximo uma requisição por segundo. O
+  [resumo versionado](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/index-inventory-2026-11-17/summary.json)
+  traz só código e números. Os endereços, o HTML baixado e as frases do site
+  não são publicados.
+- **Arredondamento.** Para não identificar o site, os totais do caso aparecem
+  arredondados à dezena, as medianas grandes à centena, as contagens pequenas
+  em faixas e as frações em palavras ou em proporções aproximadas. Os valores
+  do CrUX também, porque o p75 exato de uma origem é consultável por qualquer
+  pessoa. Os números do controle são exatos. O controle não está no CrUX, por
+  ter poucos visitantes.
+- **Definições.** Palavras próprias são as dos blocos de texto que aparecem em
+  menos de 30% das páginas lidas. Conferi à mão numa tag e numa FAQ. Na tag,
+  sobram o nome da tag, a categoria, o título do post e um rótulo do modelo de
+  tag; na FAQ, a pergunta e a resposta. Um bloco que se repete só dentro de um
+  tipo, como esse rótulo, conta como próprio quando o tipo inteiro fica abaixo
+  de 30% das páginas. Se erra, a contagem das tags erra para cima. Posts
+  listados por uma tag são os links do conteúdo para URLs do sitemap de
+  posts, sem os links que se repetem no site.
+- **O que não foi medido.** Índice, cliques, posições e ações manuais, porque
+  a análise é de fora. Sem o índice, o artigo não afirma que o site tem index
+  bloat, só que tem os ingredientes. Nenhuma busca no Google foi feita para
+  este artigo. O efeito da description dupla não foi testado.
+- **Correção.** Uma leitura anterior desse site, de 07/11/2026 e não
+  publicada, contou as tags e as FAQs como páginas sem description. Ela leu o
+  campo do plugin. A frase fixa do tema estava lá.
+- **Renderização.** O script não executa JavaScript. A comparação com o HTML
+  renderizado vem da rodada de 13/11/2026.
+
+Análise feita de fora, sobre um site público, só para estudo do método. O site
+não é identificado, não tem relação com o autor e não participou. Não é
+auditoria nem veredito sobre ele, e as recomendações são gerais e
+condicionais. Não há patrocínio nem serviço vendido a partir dela.
+
+## Fontes
+
+- [Google: Optimize your crawl budget](https://developers.google.com/crawling/docs/crawl-budget), atualizada em 22/07/2026, consultada em 17/11/2026
+- [Google: SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide), atualizada em 10/12/2025, consultada em 16/11/2026
+- [Google: Creating helpful, reliable, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content), atualizada em 05/10/2026, consultada em 16/11/2026
+- [Google: Core updates and your website](https://developers.google.com/search/docs/appearance/core-updates), atualizada em 10/12/2025, consultada em 17/11/2026
+- [Google: Understanding page experience in Google Search results](https://developers.google.com/search/docs/appearance/page-experience), atualizada em 22/09/2026, consultada em 16/11/2026
+- [Google: Understanding Core Web Vitals and Google search results](https://developers.google.com/search/docs/appearance/core-web-vitals), atualizada em 10/12/2025, consultada em 16/11/2026
+- [Google: Control your snippets in search results](https://developers.google.com/search/docs/appearance/snippet), atualizada em 20/04/2026, consultada em 17/11/2026
+- [Google: How HTTP status codes affect Google's crawlers](https://developers.google.com/crawling/docs/troubleshooting/http-status-codes), atualizada em 04/02/2026, consultada em 17/11/2026
+- [Google: How Google interprets the robots.txt specification](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec), atualizada em 23/10/2026, consultada em 17/11/2026
+- [Google: Understand the JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), atualizada em 04/03/2026, consultada em 17/11/2026
+- [Google: Site moves with URL changes](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes), sem data lida, consultada em 17/11/2026
+- [Google: Block Search indexing with noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing), atualizada em 10/12/2025, consultada em 16/11/2026
+- [Search Console: Page indexing report](https://support.google.com/webmasters/answer/7440203?hl=en), sem data impressa, consultada em 17/11/2026
+- [Cloudflare: Error 526](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-526/), atualizada em 12/10/2026, consultada em 17/11/2026
+- [Ahrefs: Index bloat (glossário)](https://ahrefs.com/seo/glossary/index-bloat), sem data impressa, consultada em 17/11/2026
+- [Chrome for Developers: CrUX methodology](https://developer.chrome.com/docs/crux/methodology), atualizada em 20/06/2024, consultada em 16/11/2026
+- [web.dev: Time to First Byte (TTFB)](https://web.dev/articles/ttfb), atualizada em 28/11/2025, consultada em 16/11/2026
+- [WordPress: Posts Tags screen](https://wordpress.org/documentation/article/posts-tags-screen/), sem data impressa, consultada em 16/11/2026
+- Nota de pesquisa: [`docs/research/2026-11-16-index-inventory.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-16-index-inventory.md)

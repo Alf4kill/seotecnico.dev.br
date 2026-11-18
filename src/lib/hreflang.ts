@@ -351,6 +351,13 @@ export const TRANSLATION_PAIRS: readonly TranslationPair[] = [
       en: '/en/blog/raw-vs-rendered-html',
     },
   },
+  {
+    id: 'index-bloat',
+    paths: {
+      'pt-BR': '/blog/index-bloat',
+      en: '/en/blog/index-bloat',
+    },
+  },
   // Entradas do projeto, /projeto/<slug> ↔ /en/project/<slug-en>: mesma regra
   // dos artigos (id = slug português = `translationOf` do MDX inglês).
   {

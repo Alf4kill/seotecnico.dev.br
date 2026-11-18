@@ -1,0 +1,1124 @@
+{
+ "date": "2026-11-17",
+ "script": "scripts/index-inventory.mjs",
+ "userAgent": "seotecnico-index-inventory/1.0 (+https://seotecnico.dev.br)",
+ "pauseMs": 1000,
+ "rounding": "third-party targets: totals to 10 (to 100 from 1,000), small counts in bands 1-4/5-9, shares with two decimals, medians to 10",
+ "targets": [
+  {
+   "code": "SITE",
+   "label": "this site (control)",
+   "collectedAt": "2026-11-17T01:18:41.454Z",
+   "probes": null,
+   "requests": 91,
+   "homeChain": [
+    200
+   ],
+   "method": {
+    "boilerplateBlockShare": 0.3,
+    "ownWords": "words in content blocks that appear on fewer than 30% of the pages read",
+    "indexable": "200, no noindex (meta or header), canonical self or missing"
+   },
+   "sitemapEntries": 88,
+   "uniqueUrls": 88,
+   "indexable": 88,
+   "templateDescriptions": 0,
+   "indexableShareOfListed": 1,
+   "singleItemTypes": [],
+   "singleItemTypesShareOfIndexable": 0,
+   "byType": [
+    {
+     "sitemapType": "all pages",
+     "listed": 88,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": 88,
+     "shareOfAllIndexable": 1,
+     "ofIndexable": {
+      "medianWords": 2932,
+      "medianOwnWords": 2857,
+      "p90OwnWords": 3873,
+      "ownWordsUnder100Share": 0,
+      "ownWordsUnder300Share": 0.02,
+      "noDescriptionShare": 0,
+      "noH1Share": 0,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 0,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 0,
+      "onlyTemplateDescriptionShare": 0,
+      "medianInboundPages": 9,
+      "linkedByAnotherPageShare": 1,
+      "medianTtfbMs": 339,
+      "medianKb": 265,
+      "jsonLdTypes": [
+       "Answer",
+       "Article",
+       "BreadcrumbList",
+       "FAQPage",
+       "ListItem",
+       "Offer",
+       "Organization",
+       "Person",
+       "Question",
+       "SoftwareApplication",
+       "Thing",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "main"
+      ]
+     }
+    }
+   ],
+   "home": {
+    "ttfbMs": 72,
+    "kb": 192,
+    "thirdPartyScriptHosts": 0
+   },
+   "crux": {
+    "queriedAt": "2026-11-17T01:20:15.253Z",
+    "source": "Chrome UX Report API via /api/checador-cwv (origin, p75, 28 days)",
+    "rounding": "exact",
+    "results": [
+     {
+      "formFactor": "PHONE",
+      "status": 200,
+      "inDataset": false,
+      "period": {
+       "firstDate": "",
+       "lastDate": ""
+      },
+      "metrics": []
+     },
+     {
+      "formFactor": "DESKTOP",
+      "status": 200,
+      "inDataset": false,
+      "period": {
+       "firstDate": "",
+       "lastDate": ""
+      },
+      "metrics": []
+     }
+    ]
+   }
+  },
+  {
+   "code": "S3",
+   "label": "main site",
+   "collectedAt": "2026-11-17T01:37:43.648Z",
+   "probes": {
+    "probedAt": "2026-11-17T01:56:46.807Z",
+    "hosts": [
+     {
+      "label": "main site",
+      "linkedFromShareOfPagesRead": 1,
+      "linkedFromHome": true,
+      "robotsIsText": true,
+      "results": [
+       {
+        "kind": "root",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route",
+        "chain": [
+         404
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route, Accept */*",
+        "chain": [
+         404
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept text/html",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml",
+        "chain": [
+         301,
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/xml",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml, Accept */*",
+        "chain": [
+         301,
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/xml",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       }
+      ]
+     },
+     {
+      "label": "old blog subdomain",
+      "linkedFromShareOfPagesRead": 0.13,
+      "linkedFromHome": true,
+      "robotsIsText": false,
+      "results": [
+       {
+        "kind": "root",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": null,
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": null,
+        "isHtml": false,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route, Accept */*",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": null,
+        "isHtml": false,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept */*",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept text/html",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml, Accept */*",
+        "chain": [
+         526
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": true,
+        "error": null
+       }
+      ]
+     },
+     {
+      "label": "app subdomain (SPA)",
+      "linkedFromShareOfPagesRead": 1,
+      "linkedFromHome": true,
+      "robotsIsText": false,
+      "results": [
+       {
+        "kind": "root",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt",
+        "chain": [
+         406
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept text/html",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml",
+        "chain": [
+         406
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": true,
+        "noindex": false,
+        "error": null
+       }
+      ]
+     },
+     {
+      "label": "subdomain run by a third party",
+      "linkedFromShareOfPagesRead": 0.02,
+      "linkedFromHome": false,
+      "robotsIsText": true,
+      "results": [
+       {
+        "kind": "root",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route",
+        "chain": [
+         301,
+         200
+        ],
+        "endsOn404Path": true,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "invented route, Accept */*",
+        "chain": [
+         301,
+         200
+        ],
+        "endsOn404Path": true,
+        "contentType": "text/html",
+        "isHtml": true,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "robots.txt, Accept text/html",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "text/plain",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "application/xml",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       },
+       {
+        "kind": "sitemap.xml, Accept */*",
+        "chain": [
+         200
+        ],
+        "endsOn404Path": false,
+        "contentType": "application/xml",
+        "isHtml": false,
+        "sameBodyAsRoot": false,
+        "noindex": false,
+        "error": null
+       }
+      ]
+     }
+    ]
+   },
+   "requests": 831,
+   "homeChain": [
+    200
+   ],
+   "method": {
+    "boilerplateBlockShare": 0.3,
+    "ownWords": "words in content blocks that appear on fewer than 30% of the pages read",
+    "indexable": "200, no noindex (meta or header), canonical self or missing"
+   },
+   "sitemapEntries": 720,
+   "uniqueUrls": 720,
+   "indexable": 630,
+   "templateDescriptions": 1,
+   "indexableShareOfListed": 0.88,
+   "singleItemTypes": [
+    "tag archives",
+    "FAQ entries",
+    "testimonials"
+   ],
+   "singleItemTypesShareOfIndexable": 0.38,
+   "byType": [
+    {
+     "sitemapType": "posts",
+     "listed": 330,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": 330,
+     "shareOfAllIndexable": 0.52,
+     "ofIndexable": {
+      "medianWords": 1530,
+      "medianOwnWords": 1380,
+      "p90OwnWords": 2400,
+      "ownWordsUnder100Share": 0,
+      "ownWordsUnder300Share": 0,
+      "noDescriptionShare": 0,
+      "noH1Share": 0,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 0.01,
+      "multipleDescriptionTagsShare": 0.99,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 0.01,
+      "medianInboundPages": 3,
+      "linkedByAnotherPageShare": 0.92,
+      "medianTtfbMs": 1500,
+      "medianKb": 83,
+      "jsonLdTypes": [
+       "Article",
+       "BreadcrumbList",
+       "CommentAction",
+       "EntryPoint",
+       "ImageObject",
+       "ListItem",
+       "Person",
+       "PropertyValueSpecification",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    },
+    {
+     "sitemapType": "pages",
+     "listed": 30,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0.03,
+     "canonicalOtherShare": 0,
+     "indexableShare": 0.97,
+     "indexable": 30,
+     "shareOfAllIndexable": 0.04,
+     "ofIndexable": {
+      "medianWords": 500,
+      "medianOwnWords": 450,
+      "p90OwnWords": 1500,
+      "ownWordsUnder100Share": 0.14,
+      "ownWordsUnder300Share": 0.29,
+      "noDescriptionShare": 0,
+      "noH1Share": 0.07,
+      "multipleH1Share": 0.18,
+      "sharedTitleShare": 0.07,
+      "sharedDescriptionShare": 0.36,
+      "multipleDescriptionTagsShare": 0.64,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 0.36,
+      "medianInboundPages": 710,
+      "linkedByAnotherPageShare": 0.61,
+      "medianTtfbMs": 1590,
+      "medianKb": 71,
+      "jsonLdTypes": [
+       "Answer",
+       "BreadcrumbList",
+       "CollectionPage",
+       "ContactPoint",
+       "EntryPoint",
+       "FAQPage",
+       "ImageObject",
+       "ListItem",
+       "Organization",
+       "PropertyValueSpecification",
+       "Question",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body",
+       "main"
+      ]
+     }
+    },
+    {
+     "sitemapType": "campaign pages",
+     "listed": 80,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 1,
+     "canonicalOtherShare": 0,
+     "indexableShare": 0,
+     "indexable": 0,
+     "shareOfAllIndexable": 0,
+     "ofIndexable": null
+    },
+    {
+     "sitemapType": "page-builder home entries",
+     "listed": "under 10",
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": "under 10",
+     "shareOfAllIndexable": 0,
+     "ofIndexable": {
+      "medianWords": 100,
+      "medianOwnWords": 4,
+      "p90OwnWords": 7,
+      "ownWordsUnder100Share": 1,
+      "ownWordsUnder300Share": 1,
+      "noDescriptionShare": 0,
+      "noH1Share": 0.5,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
+      "medianTtfbMs": 1280,
+      "medianKb": 53,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ListItem",
+       "PropertyValueSpecification",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    },
+    {
+     "sitemapType": "policy pages",
+     "listed": "under 10",
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": "under 10",
+     "shareOfAllIndexable": 0,
+     "ofIndexable": {
+      "medianWords": 1060,
+      "medianOwnWords": 900,
+      "p90OwnWords": 2470,
+      "ownWordsUnder100Share": 0.33,
+      "ownWordsUnder300Share": 0.33,
+      "noDescriptionShare": 0,
+      "noH1Share": 0.33,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0.67,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
+      "medianTtfbMs": 1230,
+      "medianKb": 69,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ImageObject",
+       "ListItem",
+       "PropertyValueSpecification",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    },
+    {
+     "sitemapType": "testimonials",
+     "listed": 10,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": 10,
+     "shareOfAllIndexable": 0.02,
+     "ofIndexable": {
+      "medianWords": 200,
+      "medianOwnWords": 44,
+      "p90OwnWords": 54,
+      "ownWordsUnder100Share": 1,
+      "ownWordsUnder300Share": 1,
+      "noDescriptionShare": 0,
+      "noH1Share": 0.15,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
+      "medianTtfbMs": 1580,
+      "medianKb": 61,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ListItem",
+       "PropertyValueSpecification",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    },
+    {
+     "sitemapType": "FAQ entries",
+     "listed": 50,
+     "status200": 0.96,
+     "redirects": 0,
+     "errors4xx5xx": "1-4",
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 0.96,
+     "indexable": 50,
+     "shareOfAllIndexable": 0.07,
+     "ofIndexable": {
+      "medianWords": 200,
+      "medianOwnWords": 48,
+      "p90OwnWords": 100,
+      "ownWordsUnder100Share": 0.89,
+      "ownWordsUnder300Share": 1,
+      "noDescriptionShare": 0,
+      "noH1Share": 0.02,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0.02,
+      "medianTtfbMs": 1460,
+      "medianKb": 61,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ListItem",
+       "PropertyValueSpecification",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    },
+    {
+     "sitemapType": "partner landings",
+     "listed": 20,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": 20,
+     "shareOfAllIndexable": 0.03,
+     "ofIndexable": {
+      "medianWords": 950,
+      "medianOwnWords": 910,
+      "p90OwnWords": 930,
+      "ownWordsUnder100Share": 0,
+      "ownWordsUnder300Share": 0,
+      "noDescriptionShare": 0,
+      "noH1Share": 0,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 0,
+      "multipleDescriptionTagsShare": 1,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 0,
+      "medianInboundPages": 710,
+      "linkedByAnotherPageShare": 1,
+      "medianTtfbMs": 1630,
+      "medianKb": 71,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "EntryPoint",
+       "ListItem",
+       "PropertyValueSpecification",
+       "ReadAction",
+       "SearchAction",
+       "WebPage",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    },
+    {
+     "sitemapType": "category archives",
+     "listed": "under 10",
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": "under 10",
+     "shareOfAllIndexable": 0.01,
+     "ofIndexable": {
+      "medianWords": 470,
+      "medianOwnWords": 420,
+      "p90OwnWords": 450,
+      "ownWordsUnder100Share": 0.22,
+      "ownWordsUnder300Share": 0.33,
+      "noDescriptionShare": 0,
+      "noH1Share": 1,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0.44,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 200,
+      "linkedByAnotherPageShare": 1,
+      "medianTtfbMs": 1430,
+      "medianKb": 80,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ImageObject",
+       "ListItem",
+       "PropertyValueSpecification",
+       "SearchAction",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ],
+      "medianPostsListed": 12,
+      "onePostOrFewerShare": 0.22
+     }
+    },
+    {
+     "sitemapType": "tag archives",
+     "listed": 180,
+     "status200": 1,
+     "redirects": 0,
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 1,
+     "indexable": 180,
+     "shareOfAllIndexable": 0.28,
+     "ofIndexable": {
+      "medianWords": 61,
+      "medianOwnWords": 19,
+      "p90OwnWords": 23,
+      "ownWordsUnder100Share": 1,
+      "ownWordsUnder300Share": 1,
+      "noDescriptionShare": 0,
+      "noH1Share": 0,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0.02,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0.02,
+      "medianTtfbMs": 1480,
+      "medianKb": 52,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ImageObject",
+       "ListItem",
+       "PropertyValueSpecification",
+       "SearchAction",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ],
+      "medianPostsListed": 1,
+      "onePostOrFewerShare": 0.94
+     }
+    },
+    {
+     "sitemapType": "author archives",
+     "listed": "under 10",
+     "status200": 0.14,
+     "redirects": "5-9",
+     "errors4xx5xx": 0,
+     "noindexShare": 0,
+     "canonicalOtherShare": 0,
+     "indexableShare": 0.14,
+     "indexable": "under 10",
+     "shareOfAllIndexable": 0,
+     "ofIndexable": {
+      "medianWords": 1490,
+      "medianOwnWords": 1410,
+      "p90OwnWords": 1410,
+      "ownWordsUnder100Share": 0,
+      "ownWordsUnder300Share": 0,
+      "noDescriptionShare": 0,
+      "noH1Share": 1,
+      "multipleH1Share": 0,
+      "sharedTitleShare": 0,
+      "sharedDescriptionShare": 1,
+      "multipleDescriptionTagsShare": 0,
+      "templateDescriptionShare": 1,
+      "onlyTemplateDescriptionShare": 1,
+      "medianInboundPages": 0,
+      "linkedByAnotherPageShare": 0,
+      "medianTtfbMs": 1630,
+      "medianKb": 150,
+      "jsonLdTypes": [
+       "BreadcrumbList",
+       "CollectionPage",
+       "EntryPoint",
+       "ImageObject",
+       "ListItem",
+       "PropertyValueSpecification",
+       "SearchAction",
+       "WebSite"
+      ],
+      "regionVia": [
+       "body"
+      ]
+     }
+    }
+   ],
+   "home": {
+    "ttfbMs": 2020,
+    "kb": 110,
+    "thirdPartyScriptHosts": "1-4"
+   },
+   "crux": {
+    "queriedAt": "2026-11-17T01:20:17.216Z",
+    "source": "Chrome UX Report API via /api/checador-cwv (origin, p75, 28 days)",
+    "rounding": "p75 rounded: LCP/FCP/TTFB to 500 ms, INP to 50 ms, CLS to 0.05",
+    "results": [
+     {
+      "formFactor": "PHONE",
+      "status": 200,
+      "inDataset": true,
+      "period": {
+       "firstDate": "2026-10-18",
+       "lastDate": "2026-11-14"
+      },
+      "metrics": [
+       {
+        "id": "lcp",
+        "p75": 4000,
+        "rating": "needs-improvement"
+       },
+       {
+        "id": "inp",
+        "p75": 250,
+        "rating": "needs-improvement"
+       },
+       {
+        "id": "cls",
+        "p75": 0.2,
+        "rating": "needs-improvement"
+       },
+       {
+        "id": "fcp",
+        "p75": 4000,
+        "rating": "poor"
+       },
+       {
+        "id": "ttfb",
+        "p75": 3000,
+        "rating": "poor"
+       }
+      ]
+     },
+     {
+      "formFactor": "DESKTOP",
+      "status": 200,
+      "inDataset": true,
+      "period": {
+       "firstDate": "2026-10-18",
+       "lastDate": "2026-11-14"
+      },
+      "metrics": [
+       {
+        "id": "lcp",
+        "p75": 3500,
+        "rating": "needs-improvement"
+       },
+       {
+        "id": "inp",
+        "p75": 100,
+        "rating": "good"
+       },
+       {
+        "id": "cls",
+        "p75": 0.1,
+        "rating": "good"
+       },
+       {
+        "id": "fcp",
+        "p75": 3000,
+        "rating": "poor"
+       },
+       {
+        "id": "ttfb",
+        "p75": 2500,
+        "rating": "poor"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}
