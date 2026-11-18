@@ -88,8 +88,11 @@ English side written with the `english-version` skill, not translated. A
 single shared component keeps the wording identical on every page.
 
 **Also outside the site.** The legal note in the case-study folder recommends
-checking the author's employment contract for rules on publishing. That is
-the owner's to check; it changes nothing in this plan.
+checking the author's employment contract for rules on publishing, and
+whether any analyzed site or its agency is a client of the author's
+employer. **Closed 2026-11-18 (owner):** the contract has no clause on
+publications, and there is no overlap: the employers work in other areas and
+have no link to any of the analyzed companies. Nothing in this plan changes.
 
 ## 4. Google results collected by an assistant
 

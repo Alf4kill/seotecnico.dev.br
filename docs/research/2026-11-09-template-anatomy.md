@@ -441,6 +441,8 @@ Levels per CLAUDE.md §10. Level 3 = a number from §1, always with the run date
 6. **Employment contract.** The owner's legal note recommends checking it
    before publishing analyses of sites served by other agencies. Outside this
    note; flagged because this is the most exposed article of the series.
+   **Closed 2026-11-18 (owner):** no clause on publications, and no overlap
+   between the analyzed sites and the employers' clients.
 
 ## (d) Proposed angle and primaryQuery
 

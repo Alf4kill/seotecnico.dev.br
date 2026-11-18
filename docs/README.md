@@ -69,6 +69,11 @@ Remove a line in the PR that does it.
     `ua_class`.
 
 **Decisions**
+- Demand for `index bloat`, the primary query of `/blog/index-bloat` (PR
+  #159): Trends (Brazil, 12 months) against `páginas de tag`, `tags
+  wordpress seo` and `páginas finas`, Autocomplete, Keyword Planner. Slug and
+  `primaryQuery` stay (§5.2); a near-zero result can change the title and
+  description, and the choice of the next queries.
 - Redefine or drop the first deliberate experiment (`CLAUDE.md` §11 item 11
   still names the FAQ experiment; options in
   [`research/2026-09-13-page-creation.md`](research/2026-09-13-page-creation.md) §4).
