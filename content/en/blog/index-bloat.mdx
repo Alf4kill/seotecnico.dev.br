@@ -1,0 +1,612 @@
+---
+title: "Index bloat: anatomy of a site with original posts"
+description: "On an anonymous WordPress site with original posts, nearly 4 in 10 indexable URLs are tags, FAQs, and testimonials. What it serves and what Google says."
+slug: "index-bloat"
+datePublished: "2026-11-17"
+dateModified: "2026-11-17"
+primaryQuery: "index bloat"
+lang: "en"
+translationOf: "index-bloat"
+category: "indexacao"
+keywords: ['english', 'inglês', 'index bloat', 'thin content', 'thin pages', 'tag pages', 'wordpress tags', 'tag archive', 'noindex', 'duplicate meta description', 'soft 404', 'subdomain', 'crawl budget']
+tldr: >-
+  Index bloat is an index holding many low-value pages from one site. On a
+  WordPress site with original posts, nearly 4 in 10 indexable URLs are
+  one-post tags, one-question FAQs, and testimonials. At that size, what Google
+  documents is a site-wide assessment, not a crawling problem.
+faq:
+  - question: "What is index bloat?"
+    answer: "It's the SEO industry's name for an index that holds many pages from one site that are worth little to searchers. They're usually URLs the CMS creates on its own, like tag archives, pagination, and one URL per small item. The term doesn't appear in the Google pages I consulted for this article. What Google's documentation does describe is the inventory of URLs Google knows about and how it evaluates a site as a whole."
+  - question: "Should WordPress tag pages be indexed?"
+    answer: "It depends on what's on the page. None of the Google pages I consulted for this article says to remove tags from the index. A tag that gathers several posts on a topic can serve searchers. A tag that lists one post does nothing but repeat an existing page, with less text. On the site measured here, more than 9 in 10 tags listed one post or none."
+  - question: "How many words does a page need for Google?"
+    answer: "There's no number. Google's SEO Starter Guide says content length alone doesn't matter for ranking and that there's no minimum or maximum word count. Word count describes a page type. It doesn't decide whether a page is good."
+  - question: "Does noindex save crawl budget?"
+    answer: "No. According to Google's crawl budget guide, Google still requests a noindex page and drops it only after it reads the rule. If you want Google to crawl less, the guide points to returning 404, which it treats as a strong signal not to crawl the URL again, or to blocking the URL in robots.txt, which also keeps Google from seeing the noindex."
+---
+
+Index bloat is the SEO industry's name for an index that holds many pages
+from one site that are worth little to searchers. They're usually URLs the CMS
+creates on its own, like tag archives, pagination, and one URL per small item.
+
+The site I measured has those ingredients, even though its posts are long and
+original. Nearly 4 in 10 of the URLs it offers for indexing are tag archives
+that list one post at the median, pages with a single FAQ question, and pages
+with a single testimonial.
+
+The term comes from the industry, not from Google, and it's about the index.
+From the outside, without Search Console, I can only measure what the site
+offers. If Google indexed a good share of those URLs, the site has index bloat
+in the term's sense. Common definitions attribute some effects to it. They get
+their own section below, each next to what Google's documentation says about
+it.
+
+My [one page per keyword](/en/blog/one-page-per-keyword) article covered the
+opposite case. Its pages' text was the problem, and that text still passed any
+duplicate checker. Here, the posts' text isn't what's wrong. What's left is
+everything that a CMS, a theme, and three subdomains offer around it. I don't
+identify the site, and I didn't use search results. You'll find what the
+server sent, what Google's documentation says, and each piece's probable
+outcome.
+
+## The site and how I measured it
+
+It's a WordPress site with a blog of about 330 posts, some service pages, and
+a sitemap index that a plugin generates. In my articles on [auditing a
+sitemap](/en/blog/sitemap-audit) and [raw versus rendered
+HTML](/en/blog/raw-vs-rendered-html), I called it "S3". Here it appears in
+full.
+
+I measured it with a [script in this
+repository](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/scripts/index-inventory.mjs).
+It opens the sitemaps, requests each listed URL once, and measures what each
+page type contains. It sends at most one request per second, reads
+`robots.txt` first, and identifies itself in its User-Agent. It reads raw HTML
+only, runs no JavaScript, and doesn't search Google. I ran it on November 17,
+2026 (UTC).
+
+Two definitions shape the numbers below. I count a URL as indexable when it
+answers 200 without a redirect, has no `noindex`, and either has a canonical
+that points to itself or has no canonical at all. Own words are the words in
+text blocks that don't repeat on 30% or more of the pages I read. That leaves
+out the menu, footer, "most read" box, and fixed call to action, because they
+appear on almost every page.
+
+I rounded the numbers for the site I analyzed, because an exact value helps
+identify a site. As a control, I ran the same script on the same night on this
+site's sitemap, and I give its numbers exactly. The control shows what the
+method returns on a site without these page types.
+
+## What the sitemaps offer for indexing
+
+The sitemaps list about 720 URLs, and about 630 of them are indexable. Here
+they are by sitemap type.
+
+| Type | Listed | Indexable | Own words (median) |
+|---|---|---|---|
+| Posts | about 330 | all | about 1,400 |
+| Tag archives | about 180 | all | about 20 |
+| FAQ, one question per URL | about 50 | nearly all | about 50 |
+| Testimonials, one per URL | about 10 | all | about 40 |
+| Campaign pages | about 80 | none (`noindex`) | — |
+| Pages and partner landing pages | about 50 | nearly all | 450 to 900 |
+| Category archives | fewer than 10 | all | about 400 |
+| Author archives | fewer than 10 | most redirect | — |
+
+<figure>
+  <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Approximate makeup of the indexable URLs by type: posts about half, tag archives more than a quarter, FAQ, testimonials, pages and other in smaller shares. Tags, FAQ and testimonials together are nearly 4 in 10. Median own words: posts about 1,400, FAQ about 50, testimonials about 40, tags about 20">
+    <title>What the site offers for indexing, by type</title>
+    <desc>A horizontal bar split, approximately, by each type's share of the indexable URLs: posts about half, tag archives more than a quarter, FAQ and testimonials small shares, pages and partner landing pages fewer than 1 in 10, and other a small share. The three types that hold one small item per URL are highlighted and add up to nearly 4 in 10. Below, bars with each type's median own words: posts about 1,400, FAQ about 50, testimonials about 40, tags about 20.</desc>
+    <text x="20" y="26" fontSize="13" fill="var(--foreground)">Indexable URLs, by type (approximate)</text>
+    <rect x="20" y="40" width="340" height="44" fill="var(--color-diagram-phase-a)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="360" y="40" width="204" height="44" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="564" y="40" width="34" height="44" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="598" y="40" width="14" height="44" fill="var(--color-accent)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="612" y="40" width="68" height="44" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <rect x="680" y="40" width="20" height="44" fill="var(--color-diagram-phase-b)" stroke="var(--color-diagram-axis)" strokeWidth="0.5" />
+    <text x="190" y="67" textAnchor="middle" fontSize="13" fill="var(--foreground)">posts, about half</text>
+    <text x="462" y="67" textAnchor="middle" fontSize="13" fill="var(--color-diagram-on-accent)">tags, over 1/4</text>
+    <text x="360" y="104" fontSize="12" fill="var(--color-diagram-accent-text)">tags, FAQ and testimonials: nearly 4 in 10</text>
+    <text x="700" y="122" textAnchor="end" fontSize="12" fill="var(--foreground)">pages and other</text>
+    <text x="20" y="148" fontSize="13" fill="var(--foreground)">Own words per page (median)</text>
+    <text x="20" y="174" fontSize="12" fill="var(--foreground)">posts</text>
+    <rect x="130" y="162" width="520" height="16" fill="var(--color-diagram-phase-a)" />
+    <text x="658" y="175" fontSize="12" fill="var(--foreground)">1,400</text>
+    <text x="20" y="198" fontSize="12" fill="var(--foreground)">FAQ</text>
+    <rect x="130" y="186" width="19" height="16" fill="var(--color-accent)" />
+    <text x="157" y="199" fontSize="12" fill="var(--foreground)">50</text>
+    <text x="20" y="222" fontSize="12" fill="var(--foreground)">testimonials</text>
+    <rect x="130" y="210" width="15" height="16" fill="var(--color-accent)" />
+    <text x="153" y="223" fontSize="12" fill="var(--foreground)">40</text>
+    <text x="20" y="246" fontSize="12" fill="var(--foreground)">tags</text>
+    <rect x="130" y="234" width="8" height="16" fill="var(--color-accent)" />
+    <text x="146" y="247" fontSize="12" fill="var(--foreground)">20</text>
+  </svg>
+  <figcaption>Run of 2026-11-17. The top bar's widths are approximate, rounded so the site can't be identified. The three highlighted types hold one small item per URL.</figcaption>
+</figure>
+
+Here are the same shares as a table.
+
+| Type | Share of indexable URLs |
+|---|---|
+| Posts | about half |
+| Tag archives | more than a quarter |
+| FAQ | fewer than 1 in 10 |
+| Pages and partner landing pages | fewer than 1 in 10 |
+| Testimonials | a small share |
+| Other (categories, policies, author, page-builder entries) | a small share |
+| Tags, FAQ, and testimonials combined | nearly 4 in 10 |
+
+My control shows how unusual those short types are. All 88 URLs in this site's
+sitemap are indexable, and only 2% have fewer than 300 own words. On the
+analyzed site, every tag, every testimonial page, and the large majority of
+FAQ pages are under 100.
+
+## When every tag, question, and testimonial gets its own URL
+
+After posts, tags are the largest group. At the median, each tag archive lists
+one post, and more than 9 in 10 list one post or none. A tag's own content is
+its name, its category, and that post's title, about 20 words in all. So a tag
+archive is a second URL, with less text, for a post that already has its own.
+
+WordPress creates these pages on its own. According to [its
+documentation](https://wordpress.org/documentation/article/posts-tags-screen/),
+when you click a tag, you get a page with every post that uses it. The
+documentation doesn't mention indexing, which is left to the theme and SEO
+plugin. On the analyzed site, every tag is indexable and in the sitemap.
+
+Almost nothing links to them. Across all the pages I read, I counted which
+pages link to each tag, leaving out each tag's link to itself. Only a few tags
+get a link from another page. Posts don't link to their own tags, and the rest
+appear only in the sitemap.
+
+FAQs and testimonials follow the same pattern. Each FAQ URL holds one question
+and its answer, about 50 own words, and almost none of them gets a link from
+another page I read. Each testimonial has its own URL with about 40 words, and
+no other page links to any of them. Between 1 and 4 of the FAQ URLs listed in
+the sitemap answer 404.
+
+All of this can be bad, and "can" is as far as I can go, because word count
+decides nothing. [Google's SEO Starter
+Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide)
+says content length alone doesn't matter for ranking, and that there's no
+minimum or maximum word count. Its [helpful content
+guide](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
+asks whether text was written to hit a word count that Google prefers, and
+answers that Google has none. So I don't call any of these pages thin for
+having few words.
+
+What the documentation does support is an argument about the whole site. When
+a drop is site-wide, Google's [core updates
+page](https://developers.google.com/search/docs/appearance/core-updates) tells
+you to evaluate the site as a whole, not just individual pages. It treats
+deleting content as a last resort, but adds that if whole sections were
+created for search engines first, deleting the unhelpful content can help the
+site's good content. [Google's page experience
+text](https://developers.google.com/search/docs/appearance/page-experience)
+says its systems generally evaluate content page by page, but that some
+assessments are site-wide.
+
+If they serve no one who searches, one-post tags, one URL per question, and
+one per testimonial are the kind of section those pages describe. That's a
+documented possibility, with no number and no guaranteed effect. It's also the
+only one I can support from the outside.
+
+## Every page carries the same description
+
+On every page, the theme prints the same `<meta name="description">`, a fixed
+sentence about the company. On posts and partner landing pages, the SEO plugin
+prints each page's own description first, and the theme's follows. So almost
+all posts and all partner landing pages end up with two description tags.
+Tags, FAQs, testimonials, categories, and author archives get only the fixed
+sentence.
+
+[Google's snippet
+page](https://developers.google.com/search/docs/appearance/snippet) says
+plainly why that's bad. Identical or similar descriptions on every page aren't
+helpful when pages show up in results, and it asks you to describe each
+specific page. It also makes an exception. Site-level descriptions are fine on
+the home page and on aggregation pages, and a tag archive is one of those. By
+the documentation, then, the fixed sentence is acceptable on tags, but not on
+FAQs and testimonials, which are individual pages.
+
+The fixed sentence affects snippets, not indexing. Google builds snippets
+mainly from page content, and sometimes uses the description when it
+describes the page better than the content does. A sentence repeated across
+about 630 URLs describes none of them, so it changes what Google has to build
+a snippet from. It doesn't change whether a page gets indexed.
+
+On posts, the second tag is the problem. Nowhere in the Google pages I
+consulted did I find which of two description tags Google uses, and I didn't
+test it, so its effect stays unmeasured. My control has no repeated
+description.
+
+No category archive has an H1. Google's SEO guide says the number and order of
+your headings don't matter for Search, so this affects screen-reader users,
+not the index. Enter a URL in the [meta tag
+validator](/en/tools/meta-tag-validator) and it shows the page's title, first
+description, H1 count, and status. You'll see a second description tag only in
+the page source.
+
+## Three subdomains and the status each one should return
+
+Every HTTP response carries a status code that tells a crawler what happened
+to the URL it requested. It says the URL exists (200), moved (301), or doesn't exist (404),
+or that the server failed (5xx). [Google's JavaScript SEO
+guide](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
+asks for a meaningful status, like 404 for a page that wasn't found. A
+response is wrong when its status says one thing and the situation is another.
+
+The main site gets this right and answers 404 for an invented URL. The three
+subdomains it links to don't. On the same day, I probed each one with an
+invented route, `/robots.txt`, and `/sitemap.xml`.
+
+| Host | Root | Invented route | `/robots.txt` | Linked from |
+|---|---|---|---|---|
+| Old blog | 526 | 526 | 526 | the home page and a little over 1 in 10 pages read |
+| App (client-rendered SPA) | 200 | 200, same HTML as the root | 406 or the app's HTML, depending on `Accept` | every page read |
+| Subdomain run by a partner | 200 | 301 to `/404`, which answers 200 without `noindex` | 200, text | few pages read, not the home page |
+
+### The old blog answers 526 on every path
+
+According to [Cloudflare's
+documentation](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-526/),
+526 means Cloudflare couldn't validate the origin server's SSL certificate.
+It's a configuration fault, not a decision about content, and it applies to
+the whole host, `robots.txt` included.
+
+A 526 doesn't say what happened to the blog, and that's the problem.
+According to [Google's HTTP status
+documentation](https://developers.google.com/crawling/docs/troubleshooting/http-status-codes),
+a 5xx slows the crawler down, and Google keeps URLs already in the index for a
+while, until they drop out. Under [the robots.txt
+specification](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec),
+if `robots.txt` returns 5xx, Google stops crawling the host for the first 12
+hours. After 30 days, if the host still has availability problems, Google
+stops crawling it.
+
+What the host should answer depends on what happened. If the content moved,
+[Google's site move
+guide](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes)
+asks for a permanent redirect (301 or 308) from each old URL to its new one.
+If it was removed, the right answer is 404 or 410. Either one tells Google
+what to do with each URL, while 526 only says that something broke.
+
+The main site's home page still links to this host. For 404s, the [Search
+Console Page indexing
+report](https://support.google.com/webmasters/answer/7440203?hl=en) recommends
+fixing the errors that your own site links to or lists in a sitemap. The same
+reasoning applies to a whole host that won't open and that the home page
+links to. Whether this affects the main host's ranking isn't documented,
+because the [crawl budget
+guide](https://developers.google.com/crawling/docs/crawl-budget) treats each
+hostname as a separate site.
+
+### The app answers 200 for any route
+
+For any route, including one that doesn't exist, the app answers 200 with the
+same short HTML. So to a crawler, any invented URL that someone links to is a
+valid page showing the app's start screen. Google's JavaScript guide covers
+this case by name. For client-routed SPAs, it gives two ways to avoid soft
+404s: a JavaScript redirect to a URL the server answers with 404, or a
+`noindex` that JavaScript adds to the error screen.
+
+The app's `/robots.txt` has a different problem. It answers 406 when the
+request accepts only text, and sends the app's HTML when the request accepts
+anything. The specification asks for a UTF-8 plain-text file, and it covers
+both cases. Google treats a 4xx as if no file existed, so nothing restricts
+crawling. From HTML, Google parses whatever valid lines it finds and ignores
+the rest. Either way, the app has no rules.
+
+That matters only if the owner expected rules on this host or wants the app's
+screens out of Search. Every page I read on the main site links to the app, so
+Google reaches it. To keep those screens out of Search, Google documents
+[`noindex`](https://developers.google.com/search/docs/crawling-indexing/block-indexing),
+not `robots.txt`.
+
+### The partner subdomain's 404 page answers 200
+
+On this host, an invented route gets a 301 to `/404`, and `/404` answers 200
+without `noindex`. The Page indexing report calls that a soft 404, a "not
+found" message without the 404 code, and recommends that you return 404 for
+pages that truly don't exist.
+
+This redirect chain misleads in a specific way. Google treats a 301 as a
+strong signal that it should process the target, and here the target answers
+200. The site move guide warns that sending many old URLs to one unrelated
+page may be treated as a soft 404, and the crawl budget guide notes that soft
+404 pages keep getting crawled. On a small host, the extra crawling matters
+little. The signal is what's wrong, because Google has to infer from the
+content what the status should have said.
+
+On November 9, this host answered 403 to my probe, which identifies itself as
+this site's in its User-Agent. On November 17, it answered normally, so I
+could measure the problem directly. My [soft 404 article](/en/blog/soft-404)
+covers the other kinds.
+
+## How fast the server responds, and Core Web Vitals in the field
+
+The server is slow. In my run, the median time to first byte was about 1.5 s
+on posts and about 2 s on the home page, against 339 ms for the control. That
+was one machine, in Brazil, on one night, so it describes the run, not users.
+
+For users, you need CrUX, which reports each origin's 75th percentile over 28
+days, here October 18 to November 14, 2026. I rounded the values, because an
+origin's exact p75 on a given date is enough to identify it.
+
+|  | LCP | INP | CLS | TTFB |
+|---|---|---|---|---|
+| Phone | about 4 s, needs improvement | about 250 ms, needs improvement | about 0.2, needs improvement | about 3 s, poor |
+| Desktop | about 3.5 s, needs improvement | about 100 ms, good | about 0.1, good | about 2.5 s, poor |
+
+[Google's Core Web Vitals
+guide](https://developers.google.com/search/docs/appearance/core-web-vitals)
+puts "good" at 2.5 s for LCP, 200 ms for INP, and 0.1 for CLS. Its [page
+experience
+page](https://developers.google.com/search/docs/appearance/page-experience)
+says ranking systems use these metrics, that there's no single page experience
+signal, and that good results don't guarantee ranking. TTFB isn't a Core Web
+Vital, but [web.dev's guide](https://web.dev/articles/ttfb) rates it poor
+above 1.8 s, and everything the page draws comes after it. You can query the
+same CrUX data for any origin with the [Core Web Vitals
+checker](/en/tools/cwv-checker).
+
+## What common definitions of index bloat claim
+
+The [Ahrefs glossary](https://ahrefs.com/seo/glossary/index-bloat) defines
+index bloat as an index holding too many pages from one site, many of them of
+no value to users. It says this can waste crawl budget and affect rankings.
+The term doesn't appear in the Google pages I consulted. Google's
+documentation treats each of those effects on its own terms, and not always in
+the definition's favor.
+
+| The common definition says index bloat | What Google's documentation says | In this case |
+|---|---|---|
+| Wastes crawl budget | The [crawl budget guide](https://developers.google.com/crawling/docs/crawl-budget) is for sites with 1 million+ pages that change weekly, 10,000+ pages that change daily, or a large share of URLs in "Discovered – currently not indexed". It calls these numbers rough estimates | About 630 indexable URLs. Only Search Console shows the third criterion, but at this size crawling is not the probable problem |
+| Affects rankings | The [core updates page](https://developers.google.com/search/docs/appearance/core-updates) says to look at the site as a whole, and that deleting unhelpful content made for search engines can help the good content | Possible, with no number. One-post tags, one-question FAQs, and stand-alone testimonials are the kind of section that page describes |
+| Makes search engines display pages badly | The [snippet page](https://developers.google.com/search/docs/appearance/snippet) says identical descriptions on every page are not helpful | Measured. The fixed sentence does not describe the FAQs or the testimonials |
+
+So I use the term to name the symptom, and Google's documentation for its
+effects. Here I measured only the third effect, and the first doesn't apply
+to a site this size.
+
+## What the site does that is not a problem
+
+Some of what I measured isn't a finding.
+
+| Fact | Why it is not a finding |
+|---|---|
+| Long posts, about 1,400 own words at the median | The posts' text is not this site's problem |
+| Self-referencing canonical on posts | It is the recommended practice |
+| Real 404 on the main site | It is the behavior the documentation asks for |
+| Raw HTML head identical to the rendered one | Measured on 8 of 8 pages in the [raw vs rendered HTML](/en/blog/raw-vs-rendered-html) article. JavaScript only adds the cookie banner |
+| About 630 indexable URLs | Far below the sizes the crawl budget guide was written for |
+| Fixed description on tags and categories | The snippet page accepts site-level descriptions on aggregation pages |
+| Campaign pages with `noindex` | Not indexing them is right. Listing them in the sitemap is the problem, counted in the [sitemap audit](/en/blog/sitemap-audit) |
+
+## What each piece probably leads to
+
+Each piece below sits next to the Google page that describes it.
+
+| Piece | Measured | Where Google describes it | Probable outcome |
+|---|---|---|---|
+| Tag archives | about 180, more than a quarter of indexable URLs, more than 9 in 10 with one post or none | Core updates and page experience | A second, poorer URL for each post. Can weigh on the site-wide assessment, not on crawling |
+| FAQ and testimonial, one per URL | about 60 URLs, 40 to 50 own words | Core updates | The same, on a smaller scale |
+| Fixed description | every indexable URL, and the only one on tags, FAQs, and testimonials | Snippets | The snippet comes from page content. On FAQs and testimonials, the description does not describe the page |
+| Category without H1 | all | SEO guide | No documented effect on Search |
+| Old blog at 526 | the whole host, linked from the home page | HTTP status, robots.txt, and site move | Whatever stays indexed on that host drops over time. The home page links a broken address |
+| App with no 404 and no robots.txt | every route answers 200 | JavaScript and robots.txt | Any invented route answers 200, like a valid page |
+| `/404` with 200 | the partner subdomain | Page indexing report and HTTP status | Soft 404 |
+| Crawl budget | about 630 indexable | Crawl budget guide | Not this site's problem |
+| Core Web Vitals | LCP, INP, and CLS need improvement on phones, and LCP on desktop too | Page experience | One signal among several |
+
+From the outside, I can't know how many tags, FAQs, and testimonials are in
+the index, or which Page indexing status each one falls into. I also can't
+know whether any of these URLs get clicks, or whether the site as a whole lost
+anything. All of that is in the site's Search Console, which I don't have
+access to.
+
+## What I would do if it were my site
+
+These recommendations are conditional. Before acting on any of them, I'd check
+the site's Search Console to see which of these URLs have impressions. I'd
+keep those until there's a reason to remove them.
+
+- **Take one-post tags out of the index.** If a tag gathers fewer than two
+  posts, give it `noindex` and take it out of the sitemap, or merge it into
+  another tag. Tags that cover a real topic stay.
+- **Turn the FAQ into one page.** The questions become sections of a single
+  FAQ page, and the old URLs redirect to the right section.
+- **Put each testimonial where it persuades.** Each one goes on the service
+  page it's about, and the testimonials' own URLs go away.
+- **Give each page one description.** The theme stops printing the fixed
+  sentence on posts, FAQs, and testimonials. The plugin's description stays,
+  and pages without one get one.
+- **Make each host answer for itself.** The old blog gets a valid certificate
+  and a redirect to the current blog, or answers 404 or 410, and the home page
+  stops linking to it. The app sends nonexistent routes to a URL that answers
+  404, as the JavaScript guide says. The partner returns a real 404 for what
+  doesn't exist.
+
+A `noindex` removes a URL from the index but doesn't save you any crawling,
+because Google still requests the page. If you want Google to crawl less, the FAQ on this
+page covers what the crawl budget guide points to.
+
+## Why this Next.js site has no taxonomy archives
+
+My [technical SEO guide for Next.js](/en/guide/technical-seo-nextjs) uses this
+site as its reference implementation, and this site is also the control above.
+After posts, taxonomy archives are the page type that weighs most on the
+analyzed site, and this site has none. That was a decision, and the code
+records why.
+
+```ts
+// src/lib/categories.ts, linhas 8 a 10
+// Categorias NÃO geram URL. Com 12 artigos em 4 eixos, uma página de arquivo
+// por categoria seria uma lista de três links — página fina, o risco que o §1
+// nomeia. Elas servem ao filtro da /blog (sem JavaScript) e aos relacionados.
+```
+
+The comment says categories don't get a URL. With 12 articles across 4 topics,
+a category archive would be a list of three links, a thin page in the
+comment's words. Categories feed the `/blog` filter, which works without
+JavaScript, and the related posts.
+
+That comment dates from when the blog had 12 articles. Counting this one, the
+blog has 29 across four categories, and the smallest has 3 articles. Its
+archive would still be a list of three links.
+
+On the blog page, a filter does the archive's job with radio buttons and CSS
+`:has()`. It needs no JavaScript and no new URL.
+
+```css
+/* src/app/globals.css, linhas 397 a 398 e 401 a 410 */
+/* Rádios + :has(): filtra sem JavaScript e sem URL nova (nenhuma página de     */
+/* categoria é indexável — decisão registrada em docs/design-system.md).        */
+.category-filter:has(input:checked:not([value='all'])) [data-category] {
+  display: none;
+}
+.category-filter:has(input[value='cwv']:checked) [data-category='cwv'],
+.category-filter:has(input[value='indexacao']:checked) [data-category='indexacao'],
+.category-filter:has(input[value='dados-estruturados']:checked) [data-category='dados-estruturados'],
+.category-filter:has(input[value='medicao']:checked) [data-category='medicao'],
+.category-filter:has(input[value='experimento']:checked) [data-kind='experimento'] {
+  display: grid;
+}
+```
+
+Its comment adds that no category page is indexable, and that the decision is
+recorded in `docs/design-system.md`.
+
+Because no category has a route, the sitemap has nothing to list beyond
+articles and written pages. The same reasoning applies to any
+`generateStaticParams`. Each value it returns becomes an indexable URL, so for
+each one, ask whether it gets a page that stands on its own. [Dynamic sitemap
+in Next.js](/en/blog/nextjs-dynamic-sitemap) shows how this site's sitemap
+comes from the same content.
+
+## How to check your own site
+
+1. List your sitemap URLs by type, using the name of each child sitemap. For
+   each type, count how many answer 200, have no `noindex`, and carry their
+   own canonical.
+2. For each type, count the words that don't repeat on other pages. Look first
+   at any whole type that has only a few dozen words.
+3. Count the `description` tags on each page. Two tags mean your theme and
+   plugin each print one. The same sentence on every page means a fixed
+   description.
+4. Request an invented URL on every host you own, including app and partner
+   subdomains, and request each host's `/robots.txt`.
+5. In Search Console, open the Page indexing report and see which status each
+   type falls into. For pages like these, look for "Crawled – currently not
+   indexed", "Duplicate without user-selected canonical", and "Soft 404". This
+   is where you confirm whether there's index bloat in the term's sense.
+
+This article's script covers steps 1 to 3 with its `fetch` and `analyze`
+phases. Step 4 is its `probe` phase, which runs when the targets file lists
+the hosts to probe.
+
+```bash
+node scripts/index-inventory.mjs fetch   --targets audits/case-studies/index-inventory.example.json --only SITE
+node scripts/index-inventory.mjs analyze --targets audits/case-studies/index-inventory.example.json --only SITE
+```
+
+## Method and limits
+
+- **Collection.** I ran the round on November 17, 2026 (the UTC date, which
+  was the evening of November 16 in Brasília time, UTC−3). The script
+  identified itself in its own User-Agent, respected `robots.txt`, and sent at
+  most one request per second. The [versioned
+  summary](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/audits/case-studies/index-inventory-2026-11-17/summary.json)
+  holds only codes and numbers. I don't publish addresses, the downloaded
+  HTML, or the site's sentences.
+- **Rounding.** So the site can't be identified, I rounded its totals to the
+  nearest ten and large medians to the nearest hundred. Small counts appear in
+  bands, and shares appear in words or as approximate proportions. I rounded
+  the CrUX values too, because anyone can look up an origin's exact p75. The
+  control's numbers are exact. The control isn't in CrUX, because it has too
+  few visitors.
+- **Definitions.** Own words are the words in text blocks that appear on fewer
+  than 30% of the pages I read. I checked this by hand on one tag and one FAQ.
+  On the tag, what's left is the tag's name and category, the post title, and
+  a label from the tag template. On the FAQ, it's the question and its answer.
+  A block repeated only within one type, like that label, counts as own text
+  when the whole type is under 30% of the pages. If anything, the tags' count
+  errs high. A tag's listed posts are its content links to URLs in the posts
+  sitemap, not counting links repeated across the site.
+- **Not measured.** What's indexed, clicks, rankings, and manual actions,
+  because I analyzed the site from the outside. Without the index, this
+  article doesn't claim the site has index bloat, only that it has the
+  ingredients. I ran no Google searches for this article, and I didn't test
+  what effect the double description has.
+- **Correction.** An earlier, unpublished pass over this site, from November
+  7, 2026, counted tags and FAQs as pages without a description. It checked
+  the plugin's field, but the theme's fixed sentence was there.
+- **Rendering.** The script runs no JavaScript. The comparison with rendered
+  HTML comes from the November 13, 2026 run.
+
+I analyzed this public site from the outside, only to study the method. I
+don't identify it, I have no relationship with it, and it didn't take part.
+This isn't an audit or a verdict on it, and the recommendations here are
+general and conditional. Nobody sponsored this analysis, and I don't sell any
+service based on it.
+
+## Sources
+
+- [Google: Optimize your crawl
+  budget](https://developers.google.com/crawling/docs/crawl-budget), updated
+  2026-07-22, read on 2026-11-17
+- [Google: SEO Starter
+  Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide),
+  updated 2025-12-10, read on 2026-11-16
+- [Google: Creating helpful, reliable, people-first
+  content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content),
+  updated 2026-10-05, read on 2026-11-16
+- [Google: Core updates and your
+  website](https://developers.google.com/search/docs/appearance/core-updates),
+  updated 2025-12-10, read on 2026-11-17
+- [Google: Understanding page experience in Google Search
+  results](https://developers.google.com/search/docs/appearance/page-experience),
+  updated 2026-09-22, read on 2026-11-16
+- [Google: Understanding Core Web Vitals and Google search
+  results](https://developers.google.com/search/docs/appearance/core-web-vitals),
+  updated 2025-12-10, read on 2026-11-16
+- [Google: Control your snippets in search
+  results](https://developers.google.com/search/docs/appearance/snippet),
+  updated 2026-04-20, read on 2026-11-17
+- [Google: How HTTP status codes affect Google's
+  crawlers](https://developers.google.com/crawling/docs/troubleshooting/http-status-codes),
+  updated 2026-02-04, read on 2026-11-17
+- [Google: How Google interprets the robots.txt
+  specification](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec),
+  updated 2026-10-23, read on 2026-11-17
+- [Google: Understand the JavaScript SEO
+  basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics),
+  updated 2026-03-04, read on 2026-11-17
+- [Google: Site moves with URL
+  changes](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes),
+  no date read, read on 2026-11-17
+- [Google: Block Search indexing with
+  noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing),
+  updated 2025-12-10, read on 2026-11-16
+- [Search Console: Page indexing
+  report](https://support.google.com/webmasters/answer/7440203?hl=en), no
+  printed date, read on 2026-11-17
+- [Cloudflare: Error
+  526](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-526/),
+  updated 2026-10-12, read on 2026-11-17
+- [Ahrefs: Index bloat
+  (glossary)](https://ahrefs.com/seo/glossary/index-bloat), no printed date,
+  read on 2026-11-17
+- [Chrome for Developers: CrUX
+  methodology](https://developer.chrome.com/docs/crux/methodology), updated
+  2024-06-20, read on 2026-11-16
+- [web.dev: Time to First Byte (TTFB)](https://web.dev/articles/ttfb), updated
+  2025-11-28, read on 2026-11-16
+- [WordPress: Posts Tags
+  screen](https://wordpress.org/documentation/article/posts-tags-screen/), no
+  printed date, read on 2026-11-16
+- Research note:
+  [`docs/research/2026-11-16-index-inventory.md`](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/research/2026-11-16-index-inventory.md)
+
+This is the English version of an article first published in Portuguese; the two declare each other.
