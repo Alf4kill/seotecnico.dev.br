@@ -27,7 +27,10 @@ The repository session will verify and finish it. Rules:
 2. Every external fact comes from a source in the research note, by its ID.
    If you check a source again, write the date you read it. No fact from
    memory. No number without a source (claims policy: mechanism, conditional,
-   or measured magnitude).
+   or measured magnitude). A sentence that says what Google does, or that
+   something hurts crawling, indexing or ranking, links its source's URL next
+   to the sentence, unless the brief gives a measurement of the site for it.
+   Other sentences need no link.
 3. NEVER write code that claims to be this site's code. Write a placeholder:
    {/* [CODE-n: what to paste, from which file] */}
    Illustrative code that is not from the site is allowed only with the label

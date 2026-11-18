@@ -56,6 +56,11 @@ The angle, the PT query, the EN query, and the first-hand element (§0 gate 1).
   needs its sample, method and conflict of interest written next to it.
 - **Printed date, not memory.** Record the "Last updated" the page prints. A
   claim that a page "used to say" needs the archived copy.
+- **The page that proves the claim.** In table (a), a claim about what
+  Google does, or that something hurts crawling, indexing or ranking, cites
+  the source that proves that claim, not only one on the topic. When no
+  source does, it goes to (b) or (c) as "not documented"
+  (`claim-proof.md`).
 - **Sources IDs are stable.** The brief, the draft and the delivery notes cite
   `G1`, `a3`; the writing session needs the note to resolve them.
 - **Sections (b) and (c) are not optional.** They are what keeps the draft

@@ -35,6 +35,10 @@ facts.
    Prefer the page over the research note when they differ, and record the
    difference. Pay attention to: dates and timelines, UI labels (Search
    Console strings in pt-BR and en differ), "most/always/never" wording.
+   For each link that sits next to a claim, read the passage it points to: it
+   must prove that sentence. A sentence of `claim-proof.md` with no link and
+   no measurement of this site gets one, or is reworded to what the sources
+   support.
 4. **Repository facts.** Every number about this site comes from a versioned
    file (experiment log, audit, lab record). Quote it from there, not from the
    draft. Recompute every total from that file, and name its unit: pages,
