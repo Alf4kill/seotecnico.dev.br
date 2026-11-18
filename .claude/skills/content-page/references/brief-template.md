@@ -42,6 +42,9 @@ content section is "No Next.js" / "In Next.js" with real code from the repo.
 | Claim | Level (1/2/3) | Source (file, line or commit) |
 |---|---|---|
 
+For a claim of `claim-proof.md`, the source is the page that proves it, or the
+site's measurement; the draft links it next to the sentence.
+
 ## 6. Code, diagrams and FAQ
 - Repo code to quote (path + line range) — becomes `[CODE-n]` on route A:
 - Diagrams (inline SVG + text mirror) — becomes `[SVG-X]` + spec on route A:

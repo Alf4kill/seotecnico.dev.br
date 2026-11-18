@@ -118,6 +118,7 @@ ideas `research-note` and `session-handoff` became two of its references.
 | `references/brief-template.md` | the brief the owner reviews before any prose, including the drafting route and banned framings |
 | `references/handoff-kit.md` | what an external writing session receives, the instructions block, the return package |
 | `references/draft-verification.md` | the verification pass, with every correction the history records |
+| `references/claim-proof.md` | which sentences link the page that proves them (and which need none), the source order, and the claim review of a published pair |
 | `references/page-types.md` | blog article (live) and project entry (proposed) |
 | `scripts/check-draft.mjs` | single-file checks on arrival and before the PR; exit 1 on error |
 | `scripts/check-pair.mjs` | pair-level checks; exit 1 on error |

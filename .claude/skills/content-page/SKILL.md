@@ -77,7 +77,10 @@ before the brief. The note is what makes the page "well informed": every
 external fact read on a dated day from the primary page itself, labelled by
 how sure it is, and ending in the list of claims the article may and may not
 make. Skip it only when every claim comes from this repository (an experiment
-record, an audit) — then the record is the note.
+record, an audit) — then the record is the note. A claim that says what
+Google or another crawler does, or that something hurts crawling, indexing
+or ranking, names the page that proves it, or is recorded as not documented
+(`references/claim-proof.md`).
 
 Commit it on its own: `docs: research note on <topic>`.
 
@@ -111,6 +114,10 @@ Rules for every route:
   maps). Any other capitalised tag in prose is undefined at render.
 - Every claim is level 1, 2 or 3 (§10); a level-3 claim cites its versioned
   source. Code presented as this site's is the repo's, with its path.
+- A sentence that says what Google does, or that something hurts crawling,
+  indexing or ranking, links the page that proves it next to the sentence,
+  unless a measurement of this site proves it. Most sentences need no link,
+  and there is no quota: `references/claim-proof.md`.
 - Diagrams: inline SVG, `role="img"` + `aria-label`, token colours, a text
   mirror next to it (§9).
 - Links: pillar, ≥1 tool, related articles, descriptive anchors.
@@ -126,7 +133,7 @@ Follow `references/draft-verification.md`. In order:
    Build every `[SVG-x]` from its spec with the diagram tokens.
 3. Re-read every external source the draft relies on, on the day, and every
    repo record it quotes (experiment log, audit). Correct the draft, not the
-   record.
+   record. A link next to a claim must prove that sentence, not only exist.
 4. Run the claim that sounds most like a fact you could test, if it can be
    tested here (4de2df3 found a false claim this way, and a repo bug with it).
 5. Resolve each `NOTA-REDACAO`: decide it if it is editorial and reversible;
@@ -273,3 +280,9 @@ it is `portuguese-style`, "Revising published pages", and leaves the English
 pair alone. Run the
 scripts; a WARN that PT `dateModified` is newer than EN means the change was
 not carried over.
+
+To check the claims of a published pair and add their proof (the claim
+review), follow `references/claim-proof.md`, "Claim review of a published
+pair": which pages to choose from a Search Console export, the state to
+record before, and the log row. It belongs here and not in
+`portuguese-style`, because it changes facts and adds sources.
