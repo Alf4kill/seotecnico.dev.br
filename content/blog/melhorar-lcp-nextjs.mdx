@@ -3,7 +3,7 @@ title: 'Como melhorar o LCP no Next.js: guia pelas 4 subpartes'
 description: 'Guia prático para melhorar o LCP no Next.js: diagnóstico pelas 4 subpartes, preload no next/image (v16), next/font e verificação no PSI e CrUX.'
 slug: melhorar-lcp-nextjs
 datePublished: '2026-07-17'
-dateModified: '2026-10-18'
+dateModified: '2026-11-18'
 primaryQuery: 'melhorar lcp next.js'
 keywords: ['lcp', 'core web vitals', 'cwv', 'performance', 'preload', 'next/image', 'next/font', 'ttfb', 'render delay']
 lang: pt-BR
@@ -11,8 +11,8 @@ category: cwv
 tldr: >-
   Antes de otimizar, descubra em qual das quatro subpartes do LCP o tempo é
   gasto (TTFB, load delay, load duration ou render delay), porque cada uma
-  pede um fix diferente. Na maioria dos casos basta manter o elemento LCP no HTML
-  inicial, usar preload só nele e carregar fontes com next/font.
+  pede um fix diferente. Depois, mantenha o elemento LCP no HTML inicial, dê
+  prioridade alta (fetchPriority) só a ele e carregue fontes com next/font.
 faq:
   - question: 'O que é um bom LCP?'
     answer: >-
@@ -22,19 +22,24 @@ faq:
   - question: 'O threshold do LCP mudou para 2,0s em 2026?'
     answer: >-
       Não. Circulam artigos afirmando que o Google baixou o limite para 2,0 s
-      em 2026, mas a documentação do web.dev mantém 2,5 s. O que mudou em 2026
-      foi a metodologia de medição do INP e o suporte a soft navigations no
-      CrUX, e não os thresholds.
+      em 2026, mas a documentação do web.dev mantém 2,5 s, e as notas de
+      versão do CrUX de 2026 não falam em mudança de threshold. O que entrou
+      no CrUX em 2026 foram métricas experimentais de soft navigation, para
+      SPAs.
   - question: 'Uso priority ou preload no next/image?'
     answer: >-
-      Use preload. O Next.js 16 depreciou a prop priority. A prop nova injeta
-      o link rel=preload no head já com fetchPriority alto. Aplique em uma
-      única imagem por página, a que é de fato o elemento LCP.
+      Na maioria dos casos, nenhum dos dois. O Next.js 16 depreciou priority
+      em favor de preload, mas a documentação do próprio Next recomenda
+      fetchPriority="high" (ou loading="eager") na maioria dos casos. A prop
+      preload só insere um link rel=preload no head e não aumenta a
+      prioridade sozinha. Use fetchPriority em uma única imagem por página, a
+      que é de fato o elemento LCP.
   - question: 'Devo dar preload em todas as imagens acima da dobra?'
     answer: >-
       Não. Múltiplos preloads competem por banda entre si e com CSS e
-      JavaScript críticos, e podem piorar o LCP. Um candidato real, um
-      preload.
+      JavaScript críticos, e podem piorar o LCP. A documentação do Next
+      desaconselha preload quando mais de uma imagem pode ser o LCP,
+      conforme o viewport.
   - question: 'Meu LCP é bom no Lighthouse mas ruim no Search Console. Por quê?'
     answer: >-
       O Lighthouse é lab (uma execução sintética). O Search Console mostra
@@ -47,12 +52,12 @@ faq:
 Para melhorar o LCP no Next.js, descubra primeiro em qual das quatro
 subpartes o tempo está sendo gasto: **TTFB**, **resource load delay**,
 **resource load duration** ou **element render delay**. Cada uma tem fixes
-diferentes, e otimizar a subparte errada não muda nada. Na prática, quatro
-passos resolvem a maioria dos casos: garantir que o
-elemento LCP está no HTML inicial (Server Component), usar `preload` no
-`next/image` apenas na imagem LCP (o Next.js 16 depreciou `priority`),
-carregar fontes com `next/font` e confirmar o resultado nas subpartes do
-PageSpeed Insights.
+diferentes, e otimizar a subparte errada não muda nada. Depois, quatro
+passos: garantir que o
+elemento LCP está no HTML inicial (Server Component), usar
+`fetchPriority="high"` no `next/image` apenas na imagem LCP (o Next.js 16
+depreciou `priority`), carregar fontes com `next/font` e confirmar o
+resultado nas subpartes do PageSpeed Insights.
 
 ```tsx
 // app/page.tsx — o essencial num único exemplo
@@ -68,16 +73,18 @@ export default function Page() {
         alt="Descrição real da imagem"
         fill
         sizes="100vw"
-        preload // Next.js 16: substitui a antiga `priority`
+        fetchPriority="high" // prioridade alta só na imagem LCP
       />
     </section>
   )
 }
 ```
 
-A partir do Next.js 16, o config `images.qualities` é obrigatório no
-`next.config`. Sem ele, o build reclama. O exemplo completo está na seção
-de [resource load duration](#resource-load-duration-agora-sim-o-arquivo).
+A partir do Next.js 16, a
+[documentação do `next/image`](https://nextjs.org/docs/app/api-reference/components/image#qualities)
+trata o config `images.qualities` como obrigatório. Sem ele, só a
+qualidade 75 é aceita. O exemplo completo está na seção de
+[resource load duration](#resource-load-duration-agora-sim-o-arquivo).
 
 O resto deste guia explica **por que** cada um desses passos funciona,
 mecanismo por mecanismo, e, principalmente, como descobrir de qual deles o
@@ -90,13 +97,17 @@ visível no viewport terminar de renderizar. O threshold oficial é
 **2,5 segundos ou menos no percentil 75 de dados de campo**. Ele não mudou em
 2026, apesar de haver artigos que afirmam o contrário (detalhe no
 [FAQ](#faq-titulo)). A referência é a
-[documentação do web.dev](https://web.dev/articles/lcp).
+[documentação do web.dev](https://web.dev/articles/lcp), e as
+[notas de versão do CrUX](https://developer.chrome.com/docs/crux/release-notes)
+de 2026 não falam em mudança de threshold.
 
 Dois detalhes que mudam decisões:
 
 **Lab não é campo.** O número do Lighthouse rodando na sua máquina é um
-teste sintético. O que o Google usa é o p75 dos usuários reais (CrUX),
-numa janela móvel de 28 dias. Um fix pode melhorar o lab hoje e só aparecer
+teste sintético. O
+[relatório de Core Web Vitals do Search Console](https://support.google.com/webmasters/answer/9205520?hl=pt-BR)
+mostra outra coisa: o p75 dos usuários reais, com dados do CrUX dos
+últimos 28 dias. Um fix pode melhorar o lab hoje e só aparecer
 no campo semanas depois. Para ver em que pé está o campo do seu domínio
 agora, o [checador de Core Web Vitals](/ferramentas/checador-cwv) consulta
 esse mesmo p75 do CrUX, inclusive a distribuição das visitas em cada faixa,
@@ -114,7 +125,7 @@ a folga que separa um número sintético de um número real.
 
 **O elemento LCP não é necessariamente uma imagem.** Pode ser um headline,
 um bloco de texto ou um card renderizado a partir de dados. Isso importa
-porque quase todo conteúdo sobre LCP assume imagem — e se o seu elemento
+porque muito conteúdo sobre LCP assume imagem — e se o seu elemento
 LCP é texto, otimizar imagem é esforço sem retorno.
 
 Este artigo cobre só o LCP e faz parte do
@@ -144,8 +155,9 @@ Insights também mostra o elemento no insight "Detalhamento da LCP".
 Duas pegadinhas que eu sempre confiro:
 
 - **Mobile e desktop podem ter elementos LCP diferentes.** Um layout que
-  esconde o hero no mobile pode fazer o headline virar o LCP lá, e o
-  Google avalia mobile primeiro.
+  esconde o hero no mobile pode fazer o headline virar o LCP lá. O p75 é
+  medido separado em mobile e desktop ([web.dev](https://web.dev/articles/lcp)),
+  e o Search Console mostra os dois em relatórios separados.
 - **O elemento pode mudar durante o carregamento.** Se algo re-renderiza
   maior depois (hidratação, slider), o LCP é remarcado para esse momento.
   Esse tipo de armadilha tem artigo próprio no cluster, sobre os
@@ -160,58 +172,65 @@ O LCP de uma página se decompõe em quatro fases sequenciais, e o
 trata cada uma separadamente:
 
 <figure>
-  <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Timeline das 4 subpartes do LCP: TTFB, resource load delay, resource load duration e element render delay. Os delays costumam dominar; o download raramente é o gargalo.">
+  <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Timeline das 4 subpartes do LCP: TTFB, resource load delay, resource load duration e element render delay. Nos sites com LCP ruim, TTFB e load delay costumam dominar. O download raramente é o gargalo.">
     <title>As 4 subpartes do LCP</title>
-    <text x="128" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">servidor responde</text>
-    <text x="315" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">navegador descobre o recurso</text>
-    <text x="485" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">bytes chegam</text>
-    <text x="638" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">CSS libera a pintura</text>
-    <line x1="128" y1="78" x2="128" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
-    <line x1="315" y1="78" x2="315" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
-    <line x1="485" y1="78" x2="485" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
-    <line x1="638" y1="78" x2="638" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
-    <rect x="60" y="110" width="136" height="40" fill="var(--color-diagram-phase-a, #DBEAFE)" />
-    <text x="128" y="135" fontSize="14" textAnchor="middle" fill="var(--foreground, #111827)">TTFB</text>
-    <rect x="196" y="110" width="238" height="40" fill="var(--color-accent, #F59E0B)" />
-    <text x="315" y="135" fontSize="14" textAnchor="middle" fill="var(--color-diagram-on-accent, #0E1116)">Resource load delay</text>
-    <rect x="434" y="110" width="102" height="40" fill="var(--color-diagram-phase-b, #D1FAE5)" />
-    <text x="485" y="135" fontSize="13" textAnchor="middle" fill="var(--foreground, #111827)">Download</text>
-    <rect x="536" y="110" width="204" height="40" fill="var(--color-accent, #F59E0B)" />
-    <text x="638" y="135" fontSize="14" textAnchor="middle" fill="var(--color-diagram-on-accent, #0E1116)">Element render delay</text>
+    <text x="179" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">servidor responde</text>
+    <text x="400" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">navegador descobre o recurso</text>
+    <text x="553" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">bytes chegam</text>
+    <text x="672" y="70" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">CSS libera a pintura</text>
+    <line x1="179" y1="78" x2="179" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
+    <line x1="400" y1="78" x2="400" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
+    <line x1="553" y1="78" x2="553" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
+    <line x1="672" y1="78" x2="672" y2="105" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
+    <rect x="60" y="110" width="238" height="40" fill="var(--color-accent, #F59E0B)" />
+    <text x="179" y="135" fontSize="14" textAnchor="middle" fill="var(--color-diagram-on-accent, #0E1116)">TTFB</text>
+    <rect x="298" y="110" width="204" height="40" fill="var(--color-accent, #F59E0B)" />
+    <text x="400" y="135" fontSize="14" textAnchor="middle" fill="var(--color-diagram-on-accent, #0E1116)">Resource load delay</text>
+    <rect x="502" y="110" width="102" height="40" fill="var(--color-diagram-phase-b, #D1FAE5)" />
+    <text x="553" y="135" fontSize="13" textAnchor="middle" fill="var(--foreground, #111827)">Download</text>
+    <rect x="604" y="110" width="136" height="40" fill="var(--color-diagram-phase-a, #DBEAFE)" />
+    <text x="672" y="135" fontSize="12" textAnchor="middle" fill="var(--foreground, #111827)">Element render delay</text>
     <line x1="60" y1="150" x2="740" y2="150" stroke="var(--color-diagram-axis, #9CA3AF)" strokeWidth="2" />
     <text x="60" y="180" fontSize="13" fill="var(--foreground, #111827)">0</text>
     <text x="740" y="180" fontSize="13" textAnchor="end" fill="var(--foreground, #111827)">LCP</text>
-    <text x="400" y="225" fontSize="13" textAnchor="middle" fill="var(--foreground, #111827)">Os delays (em destaque) costumam dominar o LCP — o download raramente é o gargalo.</text>
+    <text x="400" y="225" fontSize="13" textAnchor="middle" fill="var(--foreground, #111827)">Em destaque, as subpartes que costumam dominar nos sites com LCP ruim. O download raramente é o gargalo.</text>
   </svg>
   <figcaption>
-    As 4 subpartes do LCP. Proporções ilustrativas de um caso típico — meça
-    as suas no PageSpeed Insights.
+    As 4 subpartes do LCP. Proporções ilustrativas, não medidas: o destaque
+    segue o estudo do web.dev com dados do CrUX citado abaixo. Meça as suas
+    no PageSpeed Insights.
   </figcaption>
 </figure>
 
 | Subparte | O que é | Fix principal | Onde ver |
 |---|---|---|---|
 | **TTFB** | Tempo até o primeiro byte do HTML | Cache, streaming, CDN | PSI, `web-vitals` |
-| **Resource load delay** | Do TTFB até o navegador *começar* a baixar o recurso LCP | Recurso no HTML inicial + `preload` | Waterfall |
+| **Resource load delay** | Do TTFB até o navegador *começar* a baixar o recurso LCP | Recurso no HTML inicial + `fetchPriority` | Waterfall |
 | **Resource load duration** | O download em si | Formato, `sizes`, compressão | Waterfall |
 | **Element render delay** | Do fim do download até a pintura | CSS render-blocking, fontes | Trace |
 
-**Na maioria dos diagnósticos que eu faço,
-o gargalo está nos delays (descoberta e render), não no download**, e isso
-muda a estratégia. O
-arquivo da imagem — a única coisa que a maioria dos guias otimiza — é uma
-das quatro fases, e frequentemente a mais curta. É por isso que comprimir
-a imagem pela terceira vez não move o número.
+**Nos dados de campo do Chrome, o download quase nunca é o gargalo**, e
+isso muda a estratégia. Num
+[estudo do web.dev](https://web.dev/blog/common-misconceptions-lcp) sobre
+as origens do CrUX com LCP ruim, a origem mediana esperou cerca de quatro
+vezes mais para *começar* a baixar a imagem do que levou baixando, e o
+TTFB e o load delay eram as subpartes mais longas. O arquivo da imagem — a
+única coisa que muitos guias otimizam — é uma das quatro fases, e
+frequentemente a mais curta. É por isso que comprimir a imagem pela
+terceira vez não move o número.
 
 As quatro seções a seguir atacam uma subparte cada.
 
 ## TTFB: o piso do seu LCP
 
 Nada renderiza antes do primeiro byte do HTML chegar. O TTFB é um piso
-que se soma a todo o resto. Se o seu TTFB é 1,8 s, o LCP nunca será bom,
-não importa o que você faça com imagens.
+que se soma a todo o resto. Se o seu TTFB é 1,8 s, sobram 0,7 s para
+descobrir, baixar e pintar o elemento antes dos 2,5 s, e nenhum ajuste de
+imagem recupera o que o servidor gastou. No estudo do web.dev citado acima,
+o TTFB sozinho já deixava os 2,5 s quase fora de alcance para muitas das
+origens com LCP ruim.
 
-No Next.js, as alavancas em ordem de impacto:
+No Next.js, três alavancas:
 
 **Renderização estática sempre que possível.** Página estática servida de
 CDN elimina o tempo de servidor da equação. No App Router, isso significa
@@ -287,18 +306,25 @@ import Image from 'next/image'
 export function Hero() {
   return (
     <div className="relative aspect-[16/9]">
-      <Image src="/hero.webp" alt="..." fill sizes="100vw" preload />
+      <Image src="/hero.webp" alt="..." fill sizes="100vw" fetchPriority="high" />
     </div>
   )
 }
 ```
 
-A prop `preload` injeta um `<link rel="preload">` no `<head>` e já aplica
-`fetchPriority="high"`. Você não precisa dos dois. Use `preload` em **uma
-imagem por página**, a que é de fato o elemento LCP. Preload
-em várias imagens faz elas competirem por banda entre si e com o CSS
-crítico, o que pode *piorar* o LCP. O preload melhora quando o gargalo é load delay
-do elemento certo e atrapalha quando vira competição.
+No Next.js 16, `priority` foi depreciada em favor de `preload`. Mas as duas
+coisas não são a mesma. A prop `preload` só insere um `<link rel="preload">`
+no `<head>`, e a
+[documentação do `next/image`](https://nextjs.org/docs/app/api-reference/components/image#preload)
+recomenda, na maioria dos casos, `fetchPriority="high"` ou `loading="eager"`
+no lugar dela. Se a `<img>` já está no HTML inicial, o preload scanner já a
+descobre. O que falta é prioridade. A mesma documentação desaconselha
+`preload` junto com `fetchPriority` e quando mais de uma imagem pode ser o
+LCP, conforme o viewport.
+
+Use `fetchPriority="high"` em **uma imagem por página**, a que é de fato o
+elemento LCP. Prioridade alta em várias imagens faz elas competirem por
+banda entre si e com o CSS crítico, o que pode *piorar* o LCP.
 
 Se o hero precisa mesmo ser background CSS (decisão de design legítima em
 alguns layouts), avise o navegador manualmente:
@@ -322,8 +348,10 @@ descoberta antes.
 O load duration é o download em si, a única subparte que a compressão de
 imagem afeta. Três alavancas no Next.js:
 
-**Formato: deixe o `next/image` negociar.** O componente serve AVIF/WebP
-automaticamente conforme o navegador aceita. Você não precisa converter
+**Formato: deixe o `next/image` negociar.** Por padrão, o componente serve
+WebP ao navegador que aceita. AVIF só entra se você listar o formato em
+[`images.formats`](https://nextjs.org/docs/app/api-reference/components/image#formats),
+como o `next.config` deste site faz. Você não precisa converter
 manualmente. Precisa apenas não desligar a otimização (`unoptimized`)
 sem motivo.
 
@@ -342,7 +370,9 @@ qualquer outro layout, descreva a realidade:
 />
 ```
 
-**`qualities` no config (obrigatório no v16):**
+**`qualities` no config (obrigatório no v16, pela documentação).** Sem ele,
+só a qualidade 75 é aceita, e o Next avisa em desenvolvimento quando uma
+imagem pede outra:
 
 ```ts
 // next.config.ts
@@ -365,18 +395,20 @@ gargalo era duration. Confira no waterfall antes de gastar tempo aqui.
 
 O render delay é a subparte menos compreendida: o recurso já baixou, mas a
 pintura não acontece. **O navegador não constrói a render tree
-até o CSSOM estar completo.** Todo CSS é render-blocking por definição
+até o CSSOM estar completo.** CSS é render-blocking por padrão, a menos que
+o atributo `media` do `<link>` diga o contrário
 ([web.dev](https://web.dev/learn/performance/understanding-the-critical-path)).
 Uma imagem que baixou em 400 ms pode esperar 2 s parada na memória enquanto
 um stylesheet lento segura a renderização da página inteira.
 
-No Next.js, o caso mais comum de render delay evitável são **fontes**:
+No Next.js, uma causa de render delay que o código controla são as
+**fontes**:
 
 ```tsx
 // app/layout.tsx
 import { Inter } from 'next/font/google'
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' })
+const inter = Inter({ subsets: ['latin'], display: 'swap' }) // 'swap' já é o padrão do next/font
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -393,17 +425,21 @@ que ele cria. Isso melhora o render delay porque remove um recurso bloqueante
 de outra origem do caminho crítico. O tamanho do ganho depende da latência até o
 servidor de terceiros e do cache do usuário.
 
-Quando o elemento LCP é **texto**, `display: 'swap'` importa em dobro. Sem
-ele, o texto fica invisível durante o período de block da fonte, e texto
-invisível não conta como renderizado para o LCP.
+Quando o elemento LCP é **texto**, o `display` da fonte importa em dobro.
+Texto com fonte web durante o período de block não conta como renderizado
+para o LCP ([web.dev](https://web.dev/articles/lcp)). O `next/font` já usa
+`display: 'swap'` por padrão, que deixa o texto aparecer na fonte de reserva
+sem esperar.
 
-Neste próprio site a fonte carrega via `next/font` desde o primeiro deploy.
-E como o site ainda não aparece no CrUX, que exige um volume mínimo de
-tráfego, instrumentei um RUM próprio: o `web-vitals` reporta o LCP real de
-cada visita, com as 4 subpartes como parâmetros, direto para o GA4 (o
-código está na [seção de verificação](#como-verificar-se-funcionou)).
-Quando houver dados de campo numa janela estatisticamente útil, atualizo
-esta seção com a medição.
+Neste próprio site as três fontes carregam via `next/font`, mas com
+`display: 'optional'` e sem preload. Medido aqui, `swap` dava o mesmo LCP e
+somava CLS de 0,053 nos artigos, e o preload punha a fonte no caminho
+crítico, com 140 a 290 ms a mais
+([registro da medição](https://github.com/Alf4kill/seotecnico.dev.br/blob/main/docs/design-system.md#8-performance-cost-measured-accepted)).
+O site ainda não aparece no CrUX, que exige um volume mínimo de tráfego
+(consulta de 18/11/2026). Por isso há um RUM próprio: o `web-vitals` reporta
+o LCP real de cada visita, com as 4 subpartes como parâmetros, direto para o
+GA4 (o código está na [seção de verificação](#como-verificar-se-funcionou)).
 
 Outras causas de render delay (fade-in no hero, anti-flicker de A/B
 testing, cadeias de `@import`) são anti-patterns e estão catalogadas no
@@ -444,7 +480,7 @@ existe depois do fetch, então o LCP fica refém do banco de dados.
     <line x1="660" y1="158" x2="660" y2="180" stroke="var(--color-diagram-axis, #9CA3AF)" strokeDasharray="3 3" />
     <rect x="30" y="180" width="220" height="54" rx="8" fill="var(--background, #ffffff)" stroke="var(--color-diagram-axis, #9CA3AF)" />
     <text x="140" y="202" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">imagem no HTML inicial</text>
-    <text x="140" y="220" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">(Server Component) + preload</text>
+    <text x="140" y="220" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">(Server Component) + prioridade</text>
     <rect x="290" y="180" width="220" height="54" rx="8" fill="var(--background, #ffffff)" stroke="var(--color-diagram-axis, #9CA3AF)" />
     <text x="400" y="202" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">next/font +</text>
     <text x="400" y="220" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">display: swap</text>
@@ -461,8 +497,8 @@ existe depois do fetch, então o LCP fica refém do banco de dados.
     <text x="400" y="278" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">texto no HTML inicial</text>
     <text x="400" y="296" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">(fora de client component)</text>
     <rect x="550" y="256" width="220" height="54" rx="8" fill="var(--background, #ffffff)" stroke="var(--color-diagram-axis, #9CA3AF)" />
-    <text x="660" y="278" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">cache do dado / skeleton</text>
-    <text x="660" y="296" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">do tamanho do conteúdo</text>
+    <text x="660" y="278" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">cache do dado</text>
+    <text x="660" y="296" fontSize="12.5" textAnchor="middle" fill="var(--foreground, #111827)">(revalidação periódica)</text>
   </svg>
   <figcaption>
     Os três caminhos de fix, conforme o tipo do elemento LCP.
@@ -482,10 +518,13 @@ As opções, da melhor para a de emergência:
 2. **Cachear o dado que define o LCP.** Se o card principal muda pouco,
    cache de dados do Next (revalidação periódica) transforma o fetch lento
    em leitura de cache.
-3. **Cuidado com skeletons maiores que o conteúdo.** Se o fallback do
-   `Suspense` é *maior* que o conteúdo final, o skeleton pode virar o LCP
-   provisório e o conteúdo real remarca o LCP ao chegar. Você "paga" o
-   tempo do fetch de qualquer jeito. Skeleton do mesmo tamanho ou menor.
+3. **Skeleton não resolve o LCP data-driven.** Um skeleton feito só de
+   blocos de cor não é candidato a LCP, então o LCP espera o conteúdo real
+   de qualquer jeito. Se o skeleton tem texto ou imagem e é *maior* que o
+   conteúdo final, o problema é o oposto: o LCP só é remarcado por um
+   elemento maior, e um elemento removido continua sendo o LCP
+   ([web.dev](https://web.dev/articles/lcp)). O número passa a medir o
+   skeleton e esconde a espera pelo dado.
 
 Esse cenário quase não aparece em guias de LCP porque não tem fix de uma
 linha — é decisão de arquitetura. Mas é o caso real de qualquer app
@@ -500,9 +539,8 @@ Otimização sem verificação é palpite. O roteiro que eu uso, na ordem:
 2. **DevTools Performance local.** Grave um trace com throttling de rede
    (Fast 4G) e CPU (4x): o marcador LCP mostra o elemento e o waterfall
    mostra quando o recurso foi descoberto e quando terminou.
-3. **View-source, não o DOM.** Confirme que a `<img>` do LCP e o
-   `<link rel="preload">` gerado pela prop `preload` estão no HTML da
-   resposta do servidor. O DOM do DevTools mostra o estado *depois* de
+3. **View-source, não o DOM.** Confirme que a `<img>` do LCP, com
+   `fetchpriority="high"`, está no HTML da resposta do servidor. O DOM do DevTools mostra o estado *depois* de
    JS/CSS, que não é o que o preload scanner viu.
 4. **RUM próprio.** O pacote `web-vitals` (build de attribution) reporta o
    LCP real dos usuários com a subparte dominante. É o que este site faz.
@@ -555,8 +593,9 @@ feito para o passo 5 desse roteiro.
     height="425"
   />
   <figcaption>
-    Decomposição real da home deste site (lab, mobile): LCP de texto — por
-    isso só existem TTFB e render delay, e o render delay domina. É o
-    diagnóstico da seção de render delay acima.
+    Decomposição real da home deste site (lab, mobile, 17/07/2026, antes do
+    redesign de 21/09/2026): LCP de texto — por isso só existem TTFB e
+    render delay, e o render delay domina. É o diagnóstico da seção de
+    render delay acima.
   </figcaption>
 </figure>

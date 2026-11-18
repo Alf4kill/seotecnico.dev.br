@@ -77,8 +77,11 @@ Remove a line in the PR that does it.
 - Redefine or drop the first deliberate experiment (`CLAUDE.md` §11 item 11
   still names the FAQ experiment; options in
   [`research/2026-09-13-page-creation.md`](research/2026-09-13-page-creation.md) §4).
-- Content problems found in `melhorar-lcp-nextjs`, `lcp-alto-next-js` and
-  `json-ld-nextjs` ([`research/2026-11-13-early-pages-style-review.md`](research/2026-11-13-early-pages-style-review.md) §4): fix in one PR, PT + EN.
+- Content problems found in `lcp-alto-next-js` and `json-ld-nextjs`
+  ([`research/2026-11-13-early-pages-style-review.md`](research/2026-11-13-early-pages-style-review.md) §4): fix PT + EN, with the claim review of
+  `.claude/skills/content-page/references/claim-proof.md`. The
+  `melhorar-lcp-nextjs` items were fixed in its claim review (experiment
+  log, 2026-11-18).
 - `author.email` in `src/lib/site.ts` (`CLAUDE.md` §14).
 - GTM's ~+200 ms TBT (`CLAUDE.md` §6): plan a reduction or accept the cost.
 - CLS in the RUM (`src/lib/rum.ts` promises it): add it or drop the promise.
