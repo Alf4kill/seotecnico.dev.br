@@ -377,7 +377,13 @@ depends on the theme and the SEO plugin **[inference]**.
 3. Whether to mention the CrUX section at all, given that the article's
    subject is indexing. It explains the TTFB of the run and is the site's own
    tool, so the proposal is a short section with a link to the CWV checker.
-4. The employment-contract check (owner; proposal §3) is still open.
+4. The employment-contract check (owner; proposal §3). **Closed 2026-11-18
+   (owner):** no clause on publications, and no overlap between the analyzed
+   sites and the employers' clients.
+
+Resolved at publication (PR #159): 2 kept S3, with no detail more specific
+than the earlier articles; 3 kept a short CWV section. Question 1 moved to
+the owner list in `docs/README.md`.
 
 ## (d) Proposed angle and primaryQuery
 
