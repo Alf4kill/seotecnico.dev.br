@@ -17,6 +17,11 @@
     "test:a11y": "playwright test a11y",
     "lhci": "lhci autorun",
     "history:numbers": "node scripts/history-numbers.mjs",
+    "audit:sitemap": "node scripts/sitemap-audit.mjs",
+    "audit:soft404": "node scripts/soft404-probe.mjs",
+    "audit:template": "node scripts/template-anatomy.mjs",
+    "audit:raw-rendered": "node scripts/raw-vs-rendered.mjs",
+    "audit:index-inventory": "node scripts/index-inventory.mjs",
     "baseline:crawl": "node scripts/baseline-crawl.mjs",
     "baseline:lighthouse": "node scripts/baseline-lighthouse.mjs"
   },
