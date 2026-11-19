@@ -78,11 +78,11 @@ Four gates guard `main`. They run in parallel on every pull request, including
 stacked ones, and three check names are what branch protection requires.
 
 ```mermaid
-flowchart TD
-  PR([Pull request]) --> V["<b>verify</b><br/>eslint · tsc --noEmit<br/>vitest + coverage floor · build"]
-  PR --> S["<b>seo</b><br/>Playwright: every route in the sitemap<br/>SEO invariants · axe WCAG A/AA<br/>contrast per colour role, both themes"]
-  PR --> L["<b>lighthouse</b><br/>5 shards + 1 GTM job<br/>5 runs, median per metric"]
-  L --> LG["<b>lighthouse-gate</b><br/>one stable check name<br/>for the 5 shards"]
+flowchart LR
+  PR([Pull request]) --> V["<b>verify</b><br/>eslint · tsc · vitest · build"]
+  PR --> S["<b>seo</b><br/>Playwright, every route<br/>axe A/AA · contrast"]
+  PR --> L["<b>lighthouse</b><br/>5 shards + GTM job<br/>median of 5 runs"]
+  L --> LG["<b>lighthouse-gate</b>"]
   V --> MERGE{{"merge allowed"}}
   S --> MERGE
   LG --> MERGE
