@@ -16,6 +16,7 @@
     "test:seo": "playwright test",
     "test:a11y": "playwright test a11y",
     "lhci": "lhci autorun",
+    "history:numbers": "node scripts/history-numbers.mjs",
     "baseline:crawl": "node scripts/baseline-crawl.mjs",
     "baseline:lighthouse": "node scripts/baseline-lighthouse.mjs"
   },
