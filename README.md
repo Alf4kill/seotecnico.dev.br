@@ -36,6 +36,9 @@ rounded by the collecting script itself:
 [raw vs rendered HTML](https://seotecnico.dev.br/en/blog/raw-vs-rendered-html),
 [index bloat](https://seotecnico.dev.br/en/blog/index-bloat) and
 [one page per keyword](https://seotecnico.dev.br/en/blog/one-page-per-keyword).
+The five scripts that collected them take any domain, respect `robots.txt` and
+round third-party counts themselves:
+[`audits/case-studies/README.md`](./audits/case-studies/README.md).
 
 At commit `21e2df1` (2026-11-18): 698 commits, 162 merged pull requests, 67 MDX
 pages paired across Portuguese and English, 88 routes in the sitemap, five
