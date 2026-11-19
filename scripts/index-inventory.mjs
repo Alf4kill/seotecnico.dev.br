@@ -55,15 +55,27 @@ const arg = (name, fallback) => {
 
 const TODAY = new Date().toISOString().slice(0, 10)
 const TARGETS = arg('targets')
-const OUT = arg('out', path.join('audits', 'case-studies', `index-inventory-${TODAY}`))
+// Where runs land, and who the crawl says it is. The defaults keep every run
+// already recorded in this repository reproducible; the environment variables
+// are for pointing the toolkit at your own targets from your own repository
+// (audits/case-studies/README.md).
+const OUT_BASE = process.env.AUDIT_OUT_DIR ?? path.join('audits', 'case-studies')
+const OUT = arg('out', path.join(OUT_BASE, `index-inventory-${TODAY}`))
 const ONLY = arg('only')
-const UA_TOKEN = 'seotecnico-index-inventory'
-const UA = `${UA_TOKEN}/1.0 (+https://seotecnico.dev.br)`
+const UA_TOKEN = process.env.AUDIT_UA_TOKEN ?? 'seotecnico-index-inventory'
+const UA = `${UA_TOKEN}/1.0 (+${process.env.AUDIT_UA_CONTACT ?? 'https://seotecnico.dev.br'})`
 const PAUSE_MS = 1000
 const MAX_BYTES = 5_000_000
 const MAX_SITEMAPS = 200
 const DEFAULT_SITEMAP_PATHS = ['/sitemap.xml', '/sitemap_index.xml']
-const CWV_ENDPOINT = 'https://seotecnico.dev.br/api/checador-cwv'
+// The `crux` phase reads field data through this site's own public endpoint,
+// which returns CrUX already parsed into {inDataset, period, metrics[]} — the
+// shape the `analyze` phase expects. Calling the CrUX API directly returns a
+// different shape, so overriding this means pointing at an endpoint that
+// answers in the same one. It needs no API key, and it is the only part of
+// this toolkit still tied to this site (audits/case-studies/README.md).
+const CWV_ENDPOINT =
+  process.env.AUDIT_CWV_ENDPOINT ?? 'https://seotecnico.dev.br/api/checador-cwv'
 // Um bloco de texto que aparece em pelo menos esta fração das páginas lidas é
 // do molde (menu, rodapé, banner, chamada fixa), não da página.
 const BOILERPLATE_SHARE = 0.3

@@ -45,9 +45,14 @@ const arg = (name, fallback) => {
 
 const TODAY = new Date().toISOString().slice(0, 10)
 const TARGETS = arg('targets')
-const OUT = arg('out', path.join('audits', 'case-studies', `soft404-${TODAY}`))
-const UA_TOKEN = 'seotecnico-soft404-probe'
-const UA = `${UA_TOKEN}/1.0 (+https://seotecnico.dev.br)`
+// Where runs land, and who the crawl says it is. The defaults keep every run
+// already recorded in this repository reproducible; the environment variables
+// are for pointing the toolkit at your own targets from your own repository
+// (audits/case-studies/README.md).
+const OUT_BASE = process.env.AUDIT_OUT_DIR ?? path.join('audits', 'case-studies')
+const OUT = arg('out', path.join(OUT_BASE, `soft404-${TODAY}`))
+const UA_TOKEN = process.env.AUDIT_UA_TOKEN ?? 'seotecnico-soft404-probe'
+const UA = `${UA_TOKEN}/1.0 (+${process.env.AUDIT_UA_CONTACT ?? 'https://seotecnico.dev.br'})`
 const SLUG = `pagina-inexistente-sonda-${TODAY.replaceAll('-', '')}`
 const PAUSE_MS = 1000
 const MAX_HOPS = 5
