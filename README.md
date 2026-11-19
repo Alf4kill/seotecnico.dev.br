@@ -11,12 +11,82 @@ field data (RUM in GA4) and its request logs.
 
 Built and maintained by Nalpi — technical SEO engineer.
 
+## What to open first
+
+Three links, in the order that answers "is any of this real?".
+
+1. **[Case studies](https://seotecnico.dev.br/en/case-studies)** — changes made
+   on this domain, each with the problem, what was done and the measurement
+   that closed it. Every fact is checkable in this repository, and no claim
+   rests on a number the code or the log does not support.
+2. **[`docs/ai-workflow.md`](./docs/ai-workflow.md)** — the site is built with
+   Claude Code, and this says how: who decides what, which rules the CI refuses
+   to let through, and every number next to the command that reproduces it.
+   Nothing in it is a number I typed by hand.
+3. **[`.github/workflows/ci.yml`](./.github/workflows/ci.yml)** and a
+   [run of it](https://github.com/Alf4kill/seotecnico.dev.br/actions/workflows/ci.yml?query=branch%3Amain)
+   — the four gates below, and the comments explaining the two times they were
+   green and wrong.
+
+Five audits of real third-party sites, collected from the outside with no
+Search Console access, became published articles — anonymised, with counts
+rounded by the collecting script itself:
+[soft 404](https://seotecnico.dev.br/en/blog/soft-404),
+[sitemap audit](https://seotecnico.dev.br/en/blog/sitemap-audit),
+[raw vs rendered HTML](https://seotecnico.dev.br/en/blog/raw-vs-rendered-html),
+[index bloat](https://seotecnico.dev.br/en/blog/index-bloat) and
+[one page per keyword](https://seotecnico.dev.br/en/blog/one-page-per-keyword).
+
+At commit `21e2df1` (2026-11-18): 698 commits, 162 merged pull requests, 67 MDX
+pages paired across Portuguese and English, 88 routes in the sitemap, five
+layers of tests. `npm run history:numbers` reprints the history half of that
+line from `git log`, so it is never stale by more than the last commit.
+
 ## Stack
 
 - [Next.js](https://nextjs.org/) (App Router) + TypeScript
 - Tailwind CSS
 - MDX content in `/content` (no CMS)
 - Hosted on Vercel
+
+## How it works
+
+Every page is prerendered. The one thing that runs per request is
+[`src/proxy.ts`](./src/proxy.ts), and it only measures: it classifies the
+request, writes one `ai_crawler_hit` event, and always returns
+`NextResponse.next()`. It never blocks, rewrites or redirects — a crawler sees
+exactly what a browser sees.
+
+```mermaid
+flowchart LR
+  REQ[Request] --> MATCH{"matcher:<br/>HTML pages,<br/>robots.txt, sitemap.xml"}
+  MATCH -->|"static assets,<br/>RSC prefetch"| SKIP["served, not measured"]
+  MATCH --> PROXY["src/proxy.ts<br/>(Node runtime)"]
+  PROXY --> CLASS{"classify the<br/>user agent"}
+  CLASS -->|"declared AI crawler"| VERIFY["verify identity:<br/>IP ranges, FCrDNS,<br/>Web Bot Auth"]
+  CLASS -->|"browser-like"| ANON["anonymous,<br/>never verified"]
+  VERIFY --> EVENT["ai_crawler_hit → GA4"]
+  ANON --> EVENT
+  EVENT --> HTML["prerendered HTML"]
+```
+
+Why it exists: a crawler does not run JavaScript, so GTM — and therefore all of
+GA4 — is structurally blind to it, and Vercel Hobby drops function logs after
+about an hour. The request itself is the only window.
+
+Four gates guard `main`. They run in parallel on every pull request, including
+stacked ones, and three check names are what branch protection requires.
+
+```mermaid
+flowchart TD
+  PR([Pull request]) --> V["<b>verify</b><br/>eslint · tsc --noEmit<br/>vitest + coverage floor · build"]
+  PR --> S["<b>seo</b><br/>Playwright: every route in the sitemap<br/>SEO invariants · axe WCAG A/AA<br/>contrast per colour role, both themes"]
+  PR --> L["<b>lighthouse</b><br/>5 shards + 1 GTM job<br/>5 runs, median per metric"]
+  L --> LG["<b>lighthouse-gate</b><br/>one stable check name<br/>for the 5 shards"]
+  V --> MERGE{{"merge allowed"}}
+  S --> MERGE
+  LG --> MERGE
+```
 
 ## Development
 
@@ -53,9 +123,11 @@ NEXT_PUBLIC_DOMAIN=https://seotecnico.dev.br SITE_INDEXABLE=true npm run test:se
 npm run lhci
 ```
 
-Both variables are needed on **both** commands — the build bakes them into the
-HTML, and the suite reads them again to know what to assert. Getting this wrong
-does not fail loudly:
+<details>
+<summary><strong>Both variables are needed on both commands</strong> — and getting it wrong does not fail loudly</summary>
+
+The build bakes them into the HTML, and the suite reads them again to know what
+to assert.
 
 - **`NEXT_PUBLIC_DOMAIN`** — a local `.env.local` typically points it at
   `http://localhost:3000`, which Next bakes into every canonical and OG URL at
@@ -70,6 +142,8 @@ does not fail loudly:
 
 The suite runs against `next start` on port 3100 and Lighthouse on 3200, both
 deliberately off 3000 so a dev server is never audited by mistake.
+
+</details>
 
 What the SEO suite asserts, per route enumerated from `app/sitemap.ts`: exactly
 one `<h1>`, title and description within length limits, a self-referencing
