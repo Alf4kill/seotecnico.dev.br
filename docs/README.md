@@ -68,6 +68,16 @@ Remove a line in the PR that does it.
   - *H14 denominator:* same period, no filter; rows `has_sec_fetch`,
     `ua_class`.
 
+**Vercel storage** (Deployment Storage at 7.79 of 10 GB on 2026-11-22, which
+blocks a second project on the Hobby account)
+- Project → Settings → Deployment Retention Policy: shortest windows for
+  Preview, Canceled and Errored; a short one for Production (the current
+  production deployment is kept regardless). Then delete the old preview
+  deployments in the Deployments tab. The repository side is already done:
+  `vercel.json` skips every non-production build (CI builds on its own and
+  never used the previews) and `next.config.ts` drops the server source maps
+  (~15 MB of the ~100 MB each deployment held).
+
 **Decisions**
 - Demand for `index bloat`, the primary query of `/blog/index-bloat` (PR
   #159): Trends (Brazil, 12 months) against `páginas de tag`, `tags
