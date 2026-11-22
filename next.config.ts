@@ -23,6 +23,15 @@ const nextConfig: NextConfig = {
     // sintoma é um 404 sem estilo (status continua 404), coberto pelo teste
     // de 404 da suíte Playwright.
     globalNotFound: true,
+
+    // ── Sem source maps do servidor no build ────────────────────────────────
+    // Os .map do servidor eram ~15 MB dos ~20 MB de server/chunks em cada
+    // deploy, multiplicados por todo deploy que a Vercel guarda (a cota de
+    // Deployment Storage do plano Hobby chegou a 7,8 de 10 GB em 2026-11-22).
+    // O site é quase todo estático; o custo é um stack trace minificado nos
+    // logs de função da Vercel. Não afeta os source maps do navegador (já
+    // desligados por padrão) nem o `next dev`.
+    turbopackSourceMaps: false,
   },
 
   // ── Otimização de imagens ──────────────────────────────────────────────────
